@@ -1,0 +1,36 @@
+This directory contains a small set of scripts that aim to make it
+easier to analyze the openSUSE packages. This is used by the GNOME team,
+so the default settings might need to be changed for uses by other
+teams.
+
+All data created will be created in /tmp/obs-dissector unless the
+OBS_DISSECTOR_DIR environment variable is set.
+
+
+create-database:
+    Based on a checkout of packages (made with obs-checkout, eg), this
+    script gathers data from all packages in a database so that it's
+    easy to analyze.
+    See also 'create-database --help'.
+
+download-gnome-versions:
+    Download information about the latest versions of various GNOME
+    modules.
+
+gnome-opensuse-match.txt:
+    Data file that matches upstream GNOME module names to openSUSE
+    source package names.
+
+obs-checkout:
+    Check out packages from specified projects. By default, this assumes
+    the project has a "parent" like openSUSE:Factory (eg: GNOME:Factory is
+    considered a "child" of openSUSE:Factory).
+    It will create a $OBS_DISSECTOR_DIR/obs-co-stable directory that
+    contains all the checked out files.
+    This script should not be run too frequently because it does many
+    requests on the Build Service servers.
+    See also 'obs-checkout --help'.
+
+runme:
+    Small helper to show how to use everything, and get some data from
+    scratch.

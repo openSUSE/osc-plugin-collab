@@ -1,0 +1,940 @@
+#!/usr/bin/python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2008, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+import os
+import sys
+
+import optparse
+import re
+import shutil
+import sqlite3
+
+# This script was originally written for an usage with autobuild. It has been
+# adapted for the build service, but a few features might still need to be
+# ported. TODO-BS or FIXME-BS might indicate them.
+
+if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
+    OBS_DISSECTOR_DIR=os.getenv('OBS_DISSECTOR_DIR')
+else:
+    OBS_DISSECTOR_DIR='/tmp/obs-dissector'
+
+
+# Where to look for packages. Note that the structure has to be
+# PACKAGE_LOOKUP_PATH/$project/$package
+# Use the obs-checkout script to populate such a directory.
+PACKAGE_LOOKUP_PATH = os.path.join(OBS_DISSECTOR_DIR, 'obs-co-stable')
+
+MODULE_SRCPACKAGE_MATCH_FILE = os.path.join(OBS_DISSECTOR_DIR, 'gnome-opensuse-match.txt')
+UPSTREAMVERSIONS_FILE = os.path.join(OBS_DISSECTOR_DIR, 'versions')
+
+# Files to just ignore in the file list of a package.
+IGNORE_FILES = [ 'ready', 'MD5SUMS', 'MD5SUMS.meta' ]
+
+# This is data that comes from autobuild. Keep it empty for the build service
+# until we can get the same data without any internal access. TODO-BS
+PDBCACHE_FILE = ''
+MAINTAINER_FILE = ''
+
+# Would be nice to get the list of failed package builds. In autobuild, look
+# at /work/built/info/failed/ TODO-BS
+
+# In autobuild, it's easy to get access to the rpmlint reports. Keep this empty
+# until we find an easy way to do the same for the build service (maybe just
+# parse the output of the build log?) TODO-BS
+RPMLINT_ERRORS_PATH = ''
+
+# Changing this means breaking compatibility with previous db
+DB_MAJOR = 2
+# Changing this means changing the db while keeping compatibility
+# Increase when changing the db. Reset to 0 when changing DB_MAJOR.
+DB_MINOR = 0
+
+
+#######################################################################
+
+class DataCache:
+    def __init__(self, upstream_name, upstream_version, maintainer, pdb_cache):
+        self.db = sqlite3.connect(':memory:')
+        self.cursor = self.db.cursor()
+        self.use_pdb = (pdb_cache != None and pdb_cache != '')
+        self.has_autobuild_data = ((pdb_cache != None and pdb_cache != '') or (maintainer != None and maintainer != ''))
+
+        self._sql_setup()
+        self._fill_upstream_name(upstream_name)
+        self._fill_upstream_version(upstream_version)
+        if self.has_autobuild_data:
+            self._fill_autobuild_data(maintainer, pdb_cache)
+
+    def _sql_setup(self):
+        self.cursor.execute('''CREATE TABLE upstream_name (
+            id INTEGER PRIMARY KEY,
+            srcpackage TEXT,
+            upstream TEXT
+            );''')
+        self.cursor.execute('''CREATE TABLE upstream_version (
+            id INTEGER PRIMARY KEY,
+            upstream TEXT,
+            version TEXT
+            );''')
+        self.cursor.execute('''CREATE TABLE maintainer (
+            id INTEGER PRIMARY KEY,
+            srcpackage TEXT,
+            maintainer TEXT
+            );''')
+        self.cursor.execute('''CREATE TABLE pdb (
+            id INTEGER PRIMARY KEY,
+            srcpackage TEXT,
+            maintainer TEXT,
+            public INTEGER
+            );''')
+
+
+    def _fill_upstream_name(self, upstream_name):
+        file = open(upstream_name)
+        re_upstream_name = re.compile('^(.+):(.+)$')
+        line = file.readline()
+        while line != '':
+            match = re_upstream_name.match(line)
+            if match:
+                self.cursor.execute('''INSERT INTO upstream_name VALUES (
+                    NULL, ?, ?
+                    );''',
+                    (match.group(2), match.group(1)))
+            line = file.readline()
+        file.close()
+
+    def _fill_upstream_version(self, upstream_version):
+        file = open(upstream_version)
+        re_upstream_version = re.compile('^[^:]*:([^:]+):([^:]+)')
+        line = file.readline()
+        while line != '':
+            match = re_upstream_version.match(line)
+            if match:
+                self.cursor.execute('''INSERT INTO upstream_version VALUES (
+                    NULL, ?, ?
+                    );''',
+                    (match.group(1), match.group(2)))
+            line = file.readline()
+        file.close()
+
+    def _fill_autobuild_data(self, maintainer, pdb_cache):
+        if not self.use_pdb:
+            if maintainer:
+                file = open(maintainer)
+                re_maintainer = re.compile('^([^#]\S*)\s*(\S*)')
+                line = file.readline()
+                while line != '':
+                    match = re_maintainer.match(line)
+                    if match:
+                        self.cursor.execute('''INSERT INTO maintainer VALUES (
+                            NULL, ?, ?
+                            );''',
+                            (match.group(1), match.group(2)))
+                    line = file.readline()
+                file.close()
+        else:
+            file = open(pdb_cache)
+            re_pdb_cache = re.compile('^([^:]+):([^:]+):((?:yes|no))$')
+            line = file.readline()
+            while line != '':
+                match = re_pdb_cache.match(line)
+                if match:
+                    if match.group(3) == "yes":
+                        public = 1
+                    else:
+                        public = 0
+                    self.cursor.execute('''INSERT INTO pdb VALUES (
+                        NULL, ?, ?, ?
+                        );''',
+                        (match.group(1), match.group(2), public))
+                line = file.readline()
+            file.close()
+
+
+    def __del__(self):
+        self.cursor.close()
+        self.db.close()
+
+    def get_upstream_name(self, srcpackage):
+        self.cursor.execute('''SELECT upstream FROM upstream_name WHERE
+            srcpackage = ?;''', (srcpackage,))
+        row = self.cursor.fetchone()
+        if row:
+            return row[0]
+        else:
+            return ''
+
+    def get_upstream_version(self, upstream_name):
+        self.cursor.execute('''SELECT version FROM upstream_version WHERE
+            upstream = ?;''', (upstream_name,))
+        row = self.cursor.fetchone()
+        if row:
+            return row[0]
+        else:
+            return ''
+
+    def get_maintainer(self, srcpackage):
+        if not self.has_autobuild_data:
+            return ''
+
+        if self.use_pdb:
+            self.cursor.execute('''SELECT maintainer FROM pdb WHERE
+                srcpackage = ?;''', (srcpackage,))
+        else:
+            self.cursor.execute('''SELECT maintainer FROM maintainer WHERE
+                srcpackage = ?;''', (srcpackage,))
+        row = self.cursor.fetchone()
+        if row:
+            return row[0]
+        else:
+            return ''
+
+    def get_public(self, srcpackage):
+        if not self.has_autobuild_data:
+            return True
+
+        if self.use_pdb:
+            self.cursor.execute('''SELECT public FROM pdb WHERE
+                srcpackage = ?;''', (srcpackage,))
+            row = self.cursor.fetchone()
+            if row:
+                return (row[0] == 1)
+            else:
+                return True
+        else:
+            return False
+
+#######################################################################
+
+class Base: 
+    sql_table = 'undefined'
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        pass
+
+    @classmethod
+    def sql_lastid(cls, cursor):
+        cursor.execute('''SELECT MAX(id) FROM %s;''' % cls.sql_table)
+        return cursor.fetchone()[0]
+
+#######################################################################
+
+class File(Base):
+    sql_table = 'file'
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            filename TEXT,
+            srcpackage INTEGER
+            );''' % cls.sql_table)
+
+    def __init__(self, src, name):
+        self.filename = name
+        self.src_package = src
+
+    def sql_add(self, cursor, srcpackage_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?, ?
+            );''' % self.sql_table,
+            (self.filename, srcpackage_id))
+
+#######################################################################
+
+class Source(Base):
+    sql_table = 'source'
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            filename TEXT,
+            srcpackage INTEGER,
+            nb_in_pack INTEGER
+            );''' % cls.sql_table)
+
+    def __init__(self, src, name, i):
+        self.filename = name
+        self.src_package = src
+        self.number = i
+
+    def sql_add(self, cursor, srcpackage_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?, ?, ?
+            );''' % self.sql_table,
+            (self.filename, srcpackage_id, self.number))
+
+#######################################################################
+
+class Patch(Base):
+    sql_table = 'patch'
+
+    # Format of tag is: "# PATCH-{FIX|FEATURE}-{OPENSUSE|SLED|UPSTREAM} name-of-file.patch bncb.novell.com_bug_number bgob.gnome.org_bug_number you@example.com -- this patch..."
+    # PATCH-NEEDS-REBASE is also a known tag
+    # We remove trailing ':' for tags too...
+    re_strip_comment = re.compile('^#[#\s]*([\S]*[^:\s]):?\s*(.*)$')
+    # anything that looks like something.diff or something.patch
+    re_get_filename = re.compile('^\s*(\S+\.(?:diff|patch))\s*(.*)$')
+    # anything that looks like word123 or word#123
+    re_get_bug_number = re.compile('^\s*([a-zA-Z]+)#?(\d+)\s*(.*)$')
+    # anything that looks like a@a
+    re_get_email = re.compile('^\s*(\S+@\S+)\s*(.*)$')
+    # remove "--" if it's leading the string
+    re_get_short_descr = re.compile('^\s*(?:--\s*)?(.*)$')
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            filename TEXT,
+            srcpackage INTEGER,
+            nb_in_pack INTEGER,
+            apply_order INTEGER,
+            disabled INTEGER,
+            tag TEXT,
+            tag_filename TEXT,
+            short_descr TEXT,
+            descr TEXT,
+            bnc INTEGER,
+            bgo INTEGER,
+            bmo INTEGER,
+            bln INTEGER,
+            brc INTEGER,
+            fate INTEGER,
+            cve INTEGER
+            );''' % cls.sql_table)
+
+    def __init__(self, src, name, i, disabled=True):
+        self.filename = name
+        self.number = i
+        self.apply_order = -1
+        if disabled:
+            self.disabled = 1
+        else:
+            self.disabled = 0
+        self.src_package = src
+        self.tag = ''
+        self.tag_filename = ''
+        self.bnc = 0
+        self.bgo = 0
+        self.bmo = 0
+        self.bln = 0
+        self.brc = 0
+        self.fate = 0
+        self.cve = 0
+        self.short_descr = ''
+#FIXME read the header from the patch itself
+        self.descr = ''
+
+    def set_tag(self, tag_line):
+        match = Patch.re_strip_comment.match(tag_line)
+        if not match:
+            return
+        self.tag = match.group(1)
+        buf = match.group(2)
+
+        match = Patch.re_get_filename.match(buf)
+        if match:
+            self.tag_filename = match.group(1)
+            buf = match.group(2)
+
+        while True:
+            match = Patch.re_get_bug_number.match(buf)
+            if not match:
+                break
+
+            buf = match.group(3)
+
+            if match.group(1) == 'bnc':
+                self.bnc = int(match.group(2))
+            elif match.group(1) == 'bgo':
+                self.bgo = int(match.group(2))
+            elif match.group(1) == 'bmo':
+                self.bmo = int(match.group(2))
+            elif match.group(1) == 'bln':
+                self.bln = int(match.group(2))
+            elif match.group(1) == 'brc':
+                self.brc = int(match.group(2))
+            elif match.group(1) == 'fate':
+                self.fate = int(match.group(2))
+            elif match.group(1) == 'cve':
+                self.cve = int(match.group(2))
+
+        match = Patch.re_get_email.match(buf)
+        if match:
+#FIXME what to do with match.group(1)
+            buf = match.group(2)
+
+        match = Patch.re_get_short_descr.match(buf)
+        if match:
+            self.short_descr = match.group(1)
+        else:
+            print >> sys.stderr, 'Weird error with patch tag analysis on %s:' % tag_line
+            self.short_descr = buf
+
+    def set_apply_order(self, order):
+        self.apply_order = order
+
+    def set_disabled(self, disabled):
+        if disabled:
+            self.disabled = 1
+        else:
+            self.disabled = 0
+
+    def sql_add(self, cursor, srcpackage_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?
+            );''' % self.sql_table,
+            (self.filename, srcpackage_id, self.number, self.apply_order, self.disabled,
+             self.tag, self.tag_filename, self.short_descr, self.descr,
+             self.bnc, self.bgo, self.bmo, self.bln, self.brc, self.fate, self.cve))
+
+#######################################################################
+
+class RpmlintReport(Base):
+    sql_table = 'rpmlint'
+    re_rpmlint = re.compile('(.):\s+\S+\s+(\S*)(\s+.*)?')
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            package INTEGER,
+            level TEXT,
+            type TEXT,
+            detail TEXT
+            );''' % cls.sql_table)
+
+    def __init__(self, package, line):
+        self.package = package
+        self.level = ''
+        self.type = ''
+        self.detail = ''
+        self._analyze_line(line)
+
+    def sql_add(self, cursor, package_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?,
+            ?, ?, ?
+            );''' % self.sql_table,
+            (package_id,
+             self.level, self.type, self.detail))
+
+    def _analyze_line(self, line):
+        match = RpmlintReport.re_rpmlint.match(line)
+        if not match:
+            print >> sys.stderr, 'Can\'t analyze rpmlint:' % line
+
+        self.level = match.group(1)
+        self.type = match.group(2)
+        self.detail = match.group(3).strip()
+
+#######################################################################
+
+class Package(Base):
+    sql_table = 'package'
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            srcpackage INTEGER,
+            summary TEXT,
+            description TEXT
+            );''' % cls.sql_table)
+
+    def __init__(self, src, name):
+        self.name = name
+        self.src_package = src
+        self.rpmlint_reports = []
+        self.summary = ''
+#FIXME
+        self.description = ''
+
+    def sql_add(self, cursor, srcpackage_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?, ?,
+            ?, ?
+            );''' % self.sql_table,
+            (self.name, srcpackage_id,
+             self.summary, self.description))
+
+    def set_summary(self, summary):
+        self.summary = summary
+
+    def set_description(self, description):
+        self.description = description
+
+    def get_rpmlint_errors(self):
+        # FIXME: autobuild specific
+        if not RPMLINT_ERRORS_PATH or RPMLINT_ERRORS_PATH == '':
+            return
+
+#FIXME i386
+        filepath = os.path.join(os.sep, RPMLINT_ERRORS_PATH, 'i386', self.name)
+        if not os.path.exists(filepath):
+            return
+
+        file = open(filepath)
+        while True:
+            line = file.readline()
+            if line == '':
+                break
+            self.rpmlint_reports.append(RpmlintReport(self, line))
+        file.close()
+
+#######################################################################
+
+class SrcPackage(Base):
+    sql_table = 'srcpackage'
+
+    re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
+    re_spec__name = re.compile('^%define\s+_name\s+(\S*)', re.IGNORECASE)
+    re_spec_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
+    re_spec_summary = re.compile('^Summary:\s*(.*)', re.IGNORECASE)
+    re_spec_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
+    re_spec_patch = re.compile('^((?:#[#\s]*)?)Patch(\d*):\s*(\S*)', re.IGNORECASE)
+    re_spec_package = re.compile('^%package\s*(\S.*)', re.IGNORECASE)
+    re_spec_package2 = re.compile('^-n\s*(\S*)', re.IGNORECASE)
+    re_spec_lang_package = re.compile('^%lang_package', re.IGNORECASE)
+    re_spec_prep = re.compile('^%prep', re.IGNORECASE)
+    re_spec_build = re.compile('^%build', re.IGNORECASE)
+    re_spec_apply_patch = re.compile('^((?:#[#\s]*)?)%patch(\d*)', re.IGNORECASE)
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            project INTEGER,
+            upstream_name TEXT,
+            path TEXT,
+            maintainer TEXT,
+            version TEXT,
+            submitted_version TEXT,
+            upstream_version TEXT
+            );''' % cls.sql_table)
+
+    @classmethod
+    def sql_lastid(cls, cursor):
+        cursor.execute('''SELECT MAX(id) FROM srcpackage;''')
+        return cursor.fetchone()[0]
+
+    def __init__(self, name, parent_directory):
+        self.name = name
+        self.upstream_name = ''
+        self.path = os.path.join(parent_directory, name)
+        self.maintainer = ''
+        self.version = ''
+#FIXME
+        self.submitted_version = ''
+        self.upstream_version = ''
+        self.packages = []
+        self.sources = []
+        self.patches = []
+        self.files = []
+
+        self.public = True
+
+        self._list_files()
+        self._analyze_specs()
+        for package in self.packages:
+            package.get_rpmlint_errors()
+
+    def sql_add(self, cursor, project_id):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL,
+            ?, ?, ?, ?, ?, ?, ?, ?
+            );''' % self.sql_table,
+            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version))
+
+    def read_data(self, db_cache):
+        if not db_cache:
+            return
+
+        self.upstream_name = db_cache.get_upstream_name(self.name)
+        if self.upstream_name:
+#FIXME verbose
+        #print >> sys.stderr, '%s: can\'t get upstream version because there\'s no upstream name' % self.name
+            self.upstream_version = db_cache.get_upstream_version(self.upstream_name)
+        self.maintainer = db_cache.get_maintainer(self.name)
+        self.public = db_cache.get_public(self.name)
+        for package in self.packages:
+            self.public = db_cache.get_public(package.name)
+            if not self.public:
+                break
+
+    def _list_files(self):
+#TODO-BS: we should use _file, but for _link packages, this is weird
+        for file in os.listdir(self.path):
+            if file in IGNORE_FILES:
+                continue
+            self.files.append(File(self, file))
+
+    def _analyze_specs(self):
+        if not self.path:
+#FIXME verbose
+            #print >> sys.stderr, '%s: can\'t analyze spec because there\'s no path' % self.name
+            return
+
+#FIXME: maybe have SpecPackage between SrcPackage and Package? For libxml2, we have two times the upstream tarball as source because we have two spec files. This also means we write self.version twice
+        for file in self.files:
+            if file.filename[-5:] == '.spec':
+                self._analyze_spec(os.path.join(os.sep, self.path, file.filename))
+
+    def _analyze_spec(self, filename):
+        '''Analyze a spec file and extract the relevant data from there'''
+        spec = open(filename)
+
+        current_package = None
+        name = self.name
+        _name = None
+        version = None
+
+        def subst_name_version(s, name, _name, version):
+            '''Replace %{version} and %{name} in strings. Useful for sources
+               and patches '''
+            if version:
+                s = s.replace('%{version}', version)
+                s = s.replace('%version', version)
+            if name:
+                s = s.replace('%{name}', name)
+                s = s.replace('%name', name)
+            if _name:
+                s = s.replace('%{_name}', _name)
+                s = s.replace('%_name', _name)
+            return s
+
+        line = 'empty'
+        while True:
+            # we need to remember the previous line for patch tags
+#FIXME: some packages have comments on two lines...
+            previous_line = line
+            line = spec.readline()
+            if line == '':
+                break
+
+            match = SrcPackage.re_spec_prep.match(line)
+            if match:
+                break
+
+            match = SrcPackage.re_spec_name.match(line)
+            if match:
+                name = match.group(1)
+                current_package = Package(self, match.group(1))
+                self.packages.append(current_package)
+                continue
+
+            match = SrcPackage.re_spec__name.match(line)
+            if match:
+                _name = match.group(1)
+                continue
+
+            match = SrcPackage.re_spec_lang_package.match(line)
+            if match:
+                current_package = Package(self, name + '-lang')
+                self.packages.append(current_package)
+                continue
+
+            match = SrcPackage.re_spec_package.match(line)
+            if match:
+                pack_line = match.group(1)
+                match = SrcPackage.re_spec_package2.match(pack_line)
+                if match:
+                    current_package = Package(self, match.group(1))
+                else:
+                    current_package = Package(self, name + '-' + pack_line)
+                self.packages.append(current_package)
+                continue
+
+            match = SrcPackage.re_spec_version.match(line)
+            if match:
+                version = match.group(1)
+                self.version = version
+                continue
+
+            match = SrcPackage.re_spec_summary.match(line)
+            if match:
+                if not current_package:
+                    print >> sys.stderr, '%s: summary line found in spec without a package name' % self.name
+                    continue
+                current_package.set_summary(match.group(1))
+                continue
+
+            match = SrcPackage.re_spec_source.match(line)
+            if match:
+                if match.group(1) == '':
+                    nb = '0'
+                else:
+                    nb = match.group(1)
+                buf = subst_name_version(match.group(2), name, _name, version)
+                source = Source(self, buf, nb)
+                self.sources.append(source)
+                continue
+
+            match = SrcPackage.re_spec_patch.match(line)
+            if match:
+                # we don't need it here: we'll explicitly mark the patches as
+                # applied later
+                disabled = (match.group(1) != '')
+                if match.group(2) == '':
+                    nb = '0'
+                else:
+                    nb = match.group(2)
+                buf = subst_name_version(match.group(3), name, _name, version)
+                patch = Patch(self, buf, nb)
+                patch.set_tag(previous_line)
+                self.patches.append(patch)
+                continue
+
+        order = 0
+        while True:
+            line = spec.readline()
+            if line == '':
+                break
+
+            match = SrcPackage.re_spec_build.match(line)
+            if match:
+                break
+
+            match = SrcPackage.re_spec_apply_patch.match(line)
+            if match:
+                disabled = (match.group(1) != '')
+                if match.group(2) == '':
+                    nb = '0'
+                else:
+                    nb = match.group(2)
+                for patch in self.patches:
+                    if patch.number == nb:
+                        patch.set_disabled(disabled)
+                        patch.set_apply_order(order)
+                        break
+                order = order + 1
+                continue
+
+        spec.close()
+
+    def __str__(self):
+        ret = ''
+        ret = ret + "Name: %s\n" % self.name
+        ret = ret + "Upstream name: %s\n" % self.upstream_name
+        ret = ret + "Packaged version: %s\n" % self.version
+        ret = ret + "Upstream version: %s\n" % self.upstream_version
+        #ret = ret + "Path: %s\n" % self.path
+        ret = ret + "Maintainer: %s\n" % self.maintainer
+        ret = ret + "Sources:\n"
+        for source in self.sources:
+            ret = ret + "  %s\n" % source.filename
+        ret = ret + "Patches:\n"
+        for patch in self.patches:
+            ret = ret + "  %s: %s\n" % (patch.number, patch.filename)
+        ret = ret + "Packages:\n"
+        for package in self.packages:
+            ret = ret + "  %s (%d rpmlint errors)\n" % (package.name, len(package.rpmlint_reports))
+        return ret
+
+#######################################################################
+
+class Project(Base):
+    sql_table = 'project'
+
+    @classmethod
+    def sql_setup(cls, cursor):
+        cursor.execute('''CREATE TABLE %s (
+            id INTEGER PRIMARY KEY,
+            name TEXT
+            );''' % cls.sql_table)
+
+    def __init__(self, name, parent_directory):
+        self.name = name
+        self.parent_directory = parent_directory
+        self.srcpackages = []
+
+    def sql_add(self, cursor):
+        cursor.execute('''INSERT INTO %s VALUES (
+            NULL, ?
+            );''' % self.sql_table,
+            (self.name,))
+
+    def read_srcpackages(self, db_cache):
+        project_dir = os.path.join(self.parent_directory, self.name)
+        if not os.path.exists(project_dir):
+            return
+        for file in os.listdir(project_dir):
+            srcpackage = SrcPackage(file, project_dir)
+            srcpackage.read_data(db_cache)
+            self.srcpackages.append(srcpackage)
+
+#######################################################################
+
+def create_db(filename, projects, force):
+    if force and os.path.exists(filename):
+        os.unlink(filename)
+
+    dbconn = sqlite3.connect(filename)
+    cursor = dbconn.cursor()
+
+    cursor.execute('''CREATE TABLE db_version (
+        major INTEGER,
+        minor INTEGER
+        );''')
+    cursor.execute('''INSERT INTO db_version VALUES (
+        ?, ?
+        );''', (DB_MAJOR, DB_MINOR))
+
+    Project.sql_setup(cursor)
+    SrcPackage.sql_setup(cursor)
+    Package.sql_setup(cursor)
+    Source.sql_setup(cursor)
+    Patch.sql_setup(cursor)
+    File.sql_setup(cursor)
+    RpmlintReport.sql_setup(cursor)
+
+    for project in projects:
+        project.sql_add(cursor)
+        project_id = Project.sql_lastid(cursor)
+
+        for srcpackage in project.srcpackages:
+            # do not export non-public packages
+            if not srcpackage.public:
+                continue
+
+            srcpackage.sql_add(cursor, project_id)
+            srcpackage_id = SrcPackage.sql_lastid(cursor)
+
+            for package in srcpackage.packages:
+                package.sql_add(cursor, srcpackage_id)
+                package_id = Package.sql_lastid(cursor)
+                for rpmlint in package.rpmlint_reports:
+                    rpmlint.sql_add(cursor, package_id)
+
+            for source in srcpackage.sources:
+                source.sql_add(cursor, srcpackage_id)
+
+            for patch in srcpackage.patches:
+                patch.sql_add(cursor, srcpackage_id)
+
+            for file in srcpackage.files:
+                file.sql_add(cursor, srcpackage_id)
+
+    dbconn.commit()
+    cursor.close()
+    dbconn.close()
+
+
+def copy_files(destdir, srcpackages, use_symlink, force):
+    if force and os.path.exists(destdir):
+        shutil.rmtree(destdir)
+
+    if not os.path.exists(destdir):
+        os.makedirs(destdir)
+
+    srcpackagedir = os.path.join(os.sep, destdir, 'srcpackages')
+    packagedir = os.path.join(os.sep, destdir, 'packages')
+
+    os.mkdir(srcpackagedir)
+    os.mkdir(packagedir)
+
+    if use_symlink:
+        handle_file = os.symlink
+    else:
+        handle_file = shutil.copy2
+
+    for srcpackage in srcpackages:
+        # do not export non-public packages
+        if not srcpackage.public:
+            continue
+
+        dir = os.path.join(os.sep, srcpackagedir, srcpackage.name)
+        os.mkdir(dir)
+
+        upstream_source = None
+        for source in srcpackage.sources:
+            if int(source.number) == 0:
+                upstream_source = os.path.basename(source.filename)
+                break
+
+        for file in srcpackage.files:
+            if file.filename != upstream_source and not file.filename.endswith('tar.gz') and not file.filename.endswith('tar.bz2') and not file.filename.endswith('.xpi'):
+                handle_file(os.path.join(os.sep, srcpackage.path, file.filename), os.path.join(os.sep, dir, file.filename))
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option("-d", "--output-database", dest="outputdb",
+                      help="output sqlite database file")
+    parser.add_option("-f", "--force", action="store_true", dest="force",
+                      default=False, help="overwrite files if already existing")
+    parser.add_option("-i", "--output-directory", dest="outputdir",
+                      help="output directory where all relevant files will be copied")
+    parser.add_option("-s", "--symlink-files", action="store_true", dest="use_symlink",
+                      default=False, help="symlink files instead of copying them")
+
+    (options, args) = parser.parse_args()
+
+    if not options.outputdb and not options.outputdir:
+#FIXME error
+        return
+
+    db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE, UPSTREAMVERSIONS_FILE, MAINTAINER_FILE, PDBCACHE_FILE)
+    projects = []
+
+    for file in os.listdir(PACKAGE_LOOKUP_PATH):
+        project = Project(file, PACKAGE_LOOKUP_PATH)
+        project.read_srcpackages(db_cache)
+        projects.append(project)
+
+    del db_cache
+
+    if options.outputdb:
+        create_db(options.outputdb, projects, options.force)
+
+    if options.outputdir:
+        copy_files(options.outputdir, projects, options.use_symlink, options.force)
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass

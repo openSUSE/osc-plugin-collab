@@ -1,0 +1,331 @@
+#!/usr/bin/python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2008, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+import os
+import sys
+
+import optparse
+import shutil
+import subprocess
+import tempfile
+import urllib2
+
+from dissector_util import *
+
+try:
+    from xml.etree import cElementTree as ET
+except ImportError:
+    import cElementTree as ET
+
+from osc import conf
+from osc import core
+
+# We will check out everything in CHECKOUT_DIR_PARENT/$some_dir where $some_dir
+# is based on CHECKOUT_DIR_PREFIX and some random data.
+CHECKOUT_DIR_PARENT = '/tmp/obs-dissector'
+CHECKOUT_DIR_PREFIX = 'obs-co-'
+
+if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
+    CHECKOUT_DIR_PARENT=os.getenv('OBS_DISSECTOR_DIR')
+
+# This is the directory (as a symlink) that can be used by outside programs
+# when the checkout is complete. This means it will always contain complete &
+# consistent data.
+CHECKOUT_DIR_STABLE = os.path.join(CHECKOUT_DIR_PARENT, CHECKOUT_DIR_PREFIX + 'stable')
+
+# This is the project that is usually parent of everything else. It will be
+# used as a default value.
+DEFAULT_PARENT_PROJECT = 'openSUSE:Factory'
+
+conf_initialized = False
+
+
+def osc_conf_init():
+    global conf_initialized
+
+    if not conf_initialized:
+        try:
+            conf.get_config()
+            conf_initialized = True
+        except oscerr.NoConfigfile, e:
+            print >>sys.stderr, e.msg
+            sys.exit(1)
+
+
+def get_file_metadata_from_stable(old_dir, project, package, filename):
+    if old_dir == None:
+        return (None, None)
+
+    files = os.path.join(old_dir, project, package, '_files')
+    if not os.path.exists(files):
+        return (None, None)
+
+    try:
+        root = ET.parse(files).getroot()
+    except SyntaxError:
+        return (None, None)
+
+    for node in root.findall('entry'):
+        if node.get('name') == filename:
+            return (node.get('md5'), node.get('mtime'))
+
+    return (None, None)
+
+
+def get_file(old_dir, package_dir, project, package, filename, md5, mtime):
+    # first try to copy the file from the old checkout
+    (stable_md5, stable_mtime) = get_file_metadata_from_stable(old_dir, project, package, filename)
+    destfile = os.path.join(package_dir, filename)
+    copied = False
+    if md5 == stable_md5 and mtime == stable_mtime:
+        oldfile = os.path.join(old_dir, project, package, filename)
+        if os.path.exists(oldfile):
+            shutil.copyfile(oldfile, destfile)
+            copied = True
+
+    # couldn't copy the file from the old checkout, so download it
+    if not copied:
+        try:
+            core.get_source_file(conf.config['apiurl'], project, package, filename, destfile)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project
+
+
+def get_spec_for_link_package(new_dir, package_dir, project, package, orig_project, orig_package):
+    origdir = os.path.join(new_dir, orig_project, orig_package)
+    if not os.path.exists(origdir):
+        print >>sys.stderr, 'Could not get original files for ' + package + ' from ' + project
+        return
+
+    # copy .spec files from the "parent"
+    for file in os.listdir (origdir):
+        if file.endswith('.spec'):
+            shutil.copy2(os.path.join(origdir, file), package_dir)
+
+    # analyze the link data so we can apply all patches
+    link = os.path.join(package_dir, '_link')
+    if os.path.exists(link):
+        lroot = ET.parse(link).getroot()
+
+        patches = lroot.find('patches')
+        if not patches:
+            return
+
+        for node in patches.findall('apply'):
+            name = node.get('name')
+            # TODO: we should call get_file() here for the diff
+            # files, but we won't have the md5 and mtime
+            # anymore...
+            patchfile = os.path.join(package_dir, name)
+            if not os.path.exists(patchfile):
+                print >>sys.stderr, 'Ignoring non-downloaded patch ' + name + ' in' + package + ' from ' + project
+                continue
+
+            try:
+                # FIXME: ugly to call command line like this
+                process = subprocess.Popen('patch --force --silent -p0  > /dev/null < ' + patchfile, shell=True, cwd=package_dir)
+                # wait for the process; else we might start applying patches
+                # while the first hasn't finished being applied yet
+                process.wait()
+            except OSError:
+                print >>sys.stderr, 'Could not apply patch ' + name + ' in' + package + ' from ' + project
+
+
+def checkout_package(old_dir, new_dir, project, project_dir, package):
+    package_dir = os.path.join(project_dir, package)
+    files = os.path.join(package_dir, '_files')
+
+    # if we already have the files metadata, this means we've already been
+    # there in some way (because we're downloading multiple times something in
+    # openSUSE:Factory, eg -- it can happen if a package exists in both
+    # GNOME:Factory and Mozilla:Factory)
+    # In this case, we have nothing to do.
+    if os.path.exists(files):
+        return
+
+    # download files metadata
+    try:
+        metadata = core.show_files_meta(conf.config['apiurl'], project, package)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
+        return
+
+    safe_mkdir(package_dir)
+
+    f = open(files, 'w')
+    f.write(''.join(metadata))
+    f.close()
+
+    # find files we're interested in from the metadata
+    root = ET.parse(files).getroot()
+
+    # FIXME: this is a broken way to detect if it's a link package
+    linkinfos_nb = len(root.findall('linkinfo'))
+    is_link = False
+    if linkinfos_nb == 1:
+        is_link = True
+    elif linkinfos_nb > 1:
+        print >>sys.stderr, 'Ignoring link in' + package + ' from ' + project + ': more than one <linkinfo>'
+
+    # look at all files and download what might be interesting
+    for node in root.findall('entry'):
+        filename = node.get('name')
+        md5 = node.get('md5')
+        mtime = node.get('mtime')
+        # download:
+        #   + .spec files
+        #   + _link files
+        #   + diff files if we have a _link
+        if filename.endswith('.spec') or filename == '_link' or (is_link and filename.endswith('.diff')):
+            get_file(old_dir, package_dir, project, package, filename, md5, mtime)
+
+    # for a link package, we want to have the patched .spec files because
+    # that's where the interesting data lives
+    if is_link:
+        linkinfo = root.find('linkinfo')
+        get_spec_for_link_package(new_dir, package_dir, project, package, linkinfo.get('project'), linkinfo.get('package'))
+
+
+def checkout_packages_from_project(old_dir, new_dir, project, packages):
+    project_dir = os.path.join(new_dir, project)
+    safe_mkdir_p(project_dir)
+
+    for package in packages:
+        checkout_package(old_dir, new_dir, project, project_dir, package)
+
+
+def checkout_packages_existing_in_project(old_dir, new_dir, project, existing_in_project):
+    osc_conf_init()
+
+    try:
+        packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Ignoring packages from ' + existing_in_project + ' for project ' + project +': ' + e.msg
+        return
+
+    checkout_packages_from_project(old_dir, new_dir, project, packages)
+
+
+def checkout_project(old_dir, new_dir, project):
+    osc_conf_init()
+
+    try:
+        packages = core.meta_get_packagelist(conf.config['apiurl'], project)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Ignoring project' + project +': ' + e.msg
+        return
+
+    checkout_packages_from_project(old_dir, new_dir, project, packages)
+
+
+def checkout_project_with_parent(old_dir, new_dir, project, parent_project = DEFAULT_PARENT_PROJECT):
+    # we first check the parent project out, since the "child" project might
+    # contain packages with diff against it
+    if project != parent_project:
+        checkout_packages_existing_in_project(old_dir, new_dir, parent_project, project)
+    checkout_project(old_dir, new_dir, project)
+
+
+def find_stable_directory():
+    if os.path.lexists(CHECKOUT_DIR_STABLE):
+        if not os.path.islink(CHECKOUT_DIR_STABLE):
+            print >>sys.stderr, 'Broken setup: ' + CHECKOUT_DIR_STABLE + 'is not a symbolic link'
+            sys.exit(1)
+        return os.readlink(CHECKOUT_DIR_STABLE)
+    else:
+        return None
+
+
+def make_stable_directory(directory, old_stable_directory):
+    if os.path.lexists(CHECKOUT_DIR_STABLE):
+        if not os.path.islink(CHECKOUT_DIR_STABLE):
+            print >>sys.stderr, 'Broken setup: ' + CHECKOUT_DIR_STABLE + 'is not a symbolic link anymore'
+            sys.exit(1)
+        elif os.readlink(CHECKOUT_DIR_STABLE) != old_stable_directory:
+            print 'The stable directory has been updated while we were downloading data. Cancelling everything...'
+            shutil.rmtree(directory)
+            sys.exit(0)
+        os.unlink(CHECKOUT_DIR_STABLE)
+
+    os.symlink(directory, CHECKOUT_DIR_STABLE)
+
+    # Do this after symlinking the new directory: doing it before would just
+    # delay the access to the latest data
+    if old_stable_directory != None:
+        shutil.rmtree(old_stable_directory)
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option("-n", "--no-parent", action="store_true",
+                      dest="no_parent", default=False,
+                      help="download packages from the projects, with no download of packages from a parent project")
+    parser.add_option("-p", "--project", action="append", dest="projects",
+                      default=[],
+                      help="projects to check out")
+
+    (options, args) = parser.parse_args()
+
+    if len(options.projects) == 0:
+        projects = [ 'GNOME:Factory' ]
+    else:
+        # use set to make sure we don't do something twice
+        projects = set(options.projects)
+
+    # We check everything out in a temporary directory.
+    # At the end, we'll symlink this directory to the stable directory, and
+    # remove the old checkout. This way, we always have a valid & working
+    # stable checkout.
+
+    checkout_dir_stable = find_stable_directory()
+    checkout_dir_current = tempfile.mkdtemp('', CHECKOUT_DIR_PREFIX, CHECKOUT_DIR_PARENT)
+
+    for project in projects:
+        if options.no_parent:
+            checkout_project(checkout_dir_stable, checkout_dir_current, project)
+        else:
+            checkout_project_with_parent(checkout_dir_stable, checkout_dir_current, project)
+
+    make_stable_directory(checkout_dir_current, checkout_dir_stable)
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass
