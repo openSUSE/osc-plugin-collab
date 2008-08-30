@@ -44,8 +44,6 @@ import subprocess
 import tempfile
 import urllib2
 
-from dissector_util import *
-
 try:
     from xml.etree import cElementTree as ET
 except ImportError:
@@ -53,6 +51,9 @@ except ImportError:
 
 from osc import conf
 from osc import core
+
+from dissector_util import *
+from osc_extend import *
 
 # We will check out everything in CHECKOUT_DIR_PARENT/$some_dir where $some_dir
 # is based on CHECKOUT_DIR_PREFIX and some random data.
@@ -90,9 +91,11 @@ def get_file_metadata_from_stable(old_dir, project, package, filename):
     if old_dir == None:
         return (None, None)
 
-    files = os.path.join(old_dir, project, package, '_files')
+    files = os.path.join(old_dir, project, package, '_files-expanded')
     if not os.path.exists(files):
-        return (None, None)
+        files = os.path.join(old_dir, project, package, '_files')
+        if not os.path.exists(files):
+            return (None, None)
 
     try:
         root = ET.parse(files).getroot()
@@ -106,7 +109,7 @@ def get_file_metadata_from_stable(old_dir, project, package, filename):
     return (None, None)
 
 
-def get_file(old_dir, package_dir, project, package, filename, md5, mtime):
+def get_file(old_dir, package_dir, project, package, filename, md5, mtime, revision = None):
     # first try to copy the file from the old checkout
     (stable_md5, stable_mtime) = get_file_metadata_from_stable(old_dir, project, package, filename)
     destfile = os.path.join(package_dir, filename)
@@ -120,86 +123,68 @@ def get_file(old_dir, package_dir, project, package, filename, md5, mtime):
     # couldn't copy the file from the old checkout, so download it
     if not copied:
         try:
-            core.get_source_file(conf.config['apiurl'], project, package, filename, destfile)
+            core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project
 
 
-def get_spec_for_link_package(new_dir, package_dir, project, package, orig_project, orig_package):
-    origdir = os.path.join(new_dir, orig_project, orig_package)
-    if not os.path.exists(origdir):
-        print >>sys.stderr, 'Could not get original files for ' + package + ' from ' + project
-        return
-
-    # copy .spec files from the "parent"
-    for file in os.listdir (origdir):
-        if file.endswith('.spec'):
-            shutil.copy2(os.path.join(origdir, file), package_dir)
-
-    # analyze the link data so we can apply all patches
-    link = os.path.join(package_dir, '_link')
-    if os.path.exists(link):
-        lroot = ET.parse(link).getroot()
-
-        patches = lroot.find('patches')
-        if not patches:
-            return
-
-        for node in patches.findall('apply'):
-            name = node.get('name')
-            # TODO: we should call get_file() here for the diff
-            # files, but we won't have the md5 and mtime
-            # anymore...
-            patchfile = os.path.join(package_dir, name)
-            if not os.path.exists(patchfile):
-                print >>sys.stderr, 'Ignoring non-downloaded patch ' + name + ' in' + package + ' from ' + project
-                continue
-
-            try:
-                # FIXME: ugly to call command line like this
-                process = subprocess.Popen('patch --force --silent -p0  > /dev/null < ' + patchfile, shell=True, cwd=package_dir)
-                # wait for the process; else we might start applying patches
-                # while the first hasn't finished being applied yet
-                process.wait()
-            except OSError:
-                print >>sys.stderr, 'Could not apply patch ' + name + ' in' + package + ' from ' + project
-
-
-def checkout_package(old_dir, new_dir, project, project_dir, package):
-    package_dir = os.path.join(project_dir, package)
-    files = os.path.join(package_dir, '_files')
+def get_files_metadata(project, package, package_dir, basename, revision = None):
+    filename = os.path.join(package_dir, basename)
 
     # if we already have the files metadata, this means we've already been
     # there in some way (because we're downloading multiple times something in
     # openSUSE:Factory, eg -- it can happen if a package exists in both
-    # GNOME:Factory and Mozilla:Factory)
+    # GNOME:Factory and mozilla:Factory)
     # In this case, we have nothing to do.
-    if os.path.exists(files):
-        return
+    if os.path.exists(filename):
+        return None
 
     # download files metadata
     try:
-        metadata = core.show_files_meta(conf.config['apiurl'], project, package)
+        metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
     except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
-        return
+        if revision:
+            print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+        else:
+            print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
+        return None
 
     safe_mkdir(package_dir)
 
-    f = open(files, 'w')
+    f = open(filename, 'w')
     f.write(''.join(metadata))
     f.close()
 
-    # find files we're interested in from the metadata
-    root = ET.parse(files).getroot()
+    return ET.parse(filename).getroot()
 
-    # FIXME: this is a broken way to detect if it's a link package
+def checkout_package(old_dir, new_dir, project, project_dir, package):
+    if not project_dir:
+        project_dir = os.path.join(new_dir, project)
+        safe_mkdir_p(project_dir)
+
+    package_dir = os.path.join(project_dir, package)
+
+    # find files we're interested in from the metadata
+    root = get_files_metadata(project, package, package_dir, '_files')
+    if not root:
+        return
+
+    # detect if the package is a link package
     linkinfos_nb = len(root.findall('linkinfo'))
-    is_link = False
+    linkinfo = EasyLinkinfo()
     if linkinfos_nb == 1:
-        is_link = True
+        linkinfo.read(root.find('linkinfo'))
     elif linkinfos_nb > 1:
         print >>sys.stderr, 'Ignoring link in' + package + ' from ' + project + ': more than one <linkinfo>'
+
+    # this will be None if it's not a link that matters and else, this will be
+    # the right value to expand the link
+    revision = linkinfo.xsrcmd5
+
+    if linkinfo.needshandling():
+        root = get_files_metadata(project, package, package_dir, '_files-expanded', revision)
+        if not root:
+            return
 
     # look at all files and download what might be interesting
     for node in root.findall('entry'):
@@ -208,16 +193,8 @@ def checkout_package(old_dir, new_dir, project, project_dir, package):
         mtime = node.get('mtime')
         # download:
         #   + .spec files
-        #   + _link files
-        #   + diff files if we have a _link
-        if filename.endswith('.spec') or filename == '_link' or (is_link and filename.endswith('.diff')):
-            get_file(old_dir, package_dir, project, package, filename, md5, mtime)
-
-    # for a link package, we want to have the patched .spec files because
-    # that's where the interesting data lives
-    if is_link:
-        linkinfo = root.find('linkinfo')
-        get_spec_for_link_package(new_dir, package_dir, project, package, linkinfo.get('project'), linkinfo.get('package'))
+        if filename.endswith('.spec'):
+            get_file(old_dir, package_dir, project, package, filename, md5, mtime, revision)
 
 
 def checkout_packages_from_project(old_dir, new_dir, project, packages):
