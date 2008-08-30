@@ -35,6 +35,24 @@
 # Authors: Vincent Untz <vuntz@novell.com>
 #
 
+# TODO:
+#  + Support checking out a project/package in a already existing checkout.
+#    This implies that we handle an "update" operation, in case the package
+#    is already checked out.
+#
+#  + Fix ordering of functions arguments. And stop passing new_dir & old_dir
+#    as arguments to all functions.
+#
+#  + With the new handling of link packages, we don't have to download the
+#    "parent" package anymore. So stop doing it.
+#    Instead, provide a simple way with command line arguments to download
+#    all packages in GNOME:Factory from openSUSE:Factory.
+#    This means the usual use case will be:
+#      ./obs-checkout GNOME:Factory
+#      ./obs-checkout --packages-of GNOME:Factory openSUSE:Factory
+#    Note that this might imply that we move the "stable directory" handling
+#    out of this script.
+
 import os
 import sys
 
