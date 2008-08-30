@@ -230,8 +230,6 @@ def checkout_project(old_dir, new_dir, project):
 
 
 def checkout_project_with_parent(old_dir, new_dir, project, parent_project = DEFAULT_PARENT_PROJECT):
-    # we first check the parent project out, since the "child" project might
-    # contain packages with diff against it
     if project != parent_project:
         checkout_packages_existing_in_project(old_dir, new_dir, parent_project, project)
     checkout_project(old_dir, new_dir, project)
