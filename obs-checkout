@@ -40,9 +40,6 @@
 #    This implies that we handle an "update" operation, in case the package
 #    is already checked out.
 #
-#  + Fix ordering of functions arguments. And stop passing new_dir & old_dir
-#    as arguments to all functions.
-#
 #  + With the new handling of link packages, we don't have to download the
 #    "parent" package anymore. So stop doing it.
 #    Instead, provide a simple way with command line arguments to download
@@ -52,6 +49,8 @@
 #      ./obs-checkout --packages-of GNOME:Factory openSUSE:Factory
 #    Note that this might imply that we move the "stable directory" handling
 #    out of this script.
+#
+#  + Add a feature to automatically detect collaboration branches.
 
 import os
 import sys
@@ -90,6 +89,10 @@ CHECKOUT_DIR_STABLE = os.path.join(CHECKOUT_DIR_PARENT, CHECKOUT_DIR_PREFIX + 's
 # used as a default value.
 DEFAULT_PARENT_PROJECT = 'openSUSE:Factory'
 
+
+#######################################################################
+
+
 conf_initialized = False
 
 
@@ -105,152 +108,155 @@ def osc_conf_init():
             sys.exit(1)
 
 
-def get_file_metadata_from_stable(old_dir, project, package, filename):
-    if old_dir == None:
-        return (None, None)
+#######################################################################
 
-    files = os.path.join(old_dir, project, package, '_files-expanded')
-    if not os.path.exists(files):
-        files = os.path.join(old_dir, project, package, '_files')
-        if not os.path.exists(files):
+
+class ObsCheckout:
+    def __init__(self, dest_dir, cache_dir = None):
+        osc_conf_init()
+
+        self.dest_dir = dest_dir
+        if dest_dir != cache_dir:
+            self.cache_dir = cache_dir
+        else:
+            print >>sys.stderr, 'Ignoring specified cache directory that is also the destination directory'
+
+
+    def _get_file_metadata_from_cache(self, project, package, filename):
+        if not self.cache_dir:
             return (None, None)
 
-    try:
-        root = ET.parse(files).getroot()
-    except SyntaxError:
+        files = os.path.join(self.cache_dir, project, package, '_files-expanded')
+        if not os.path.exists(files):
+            files = os.path.join(self.cache_dir, project, package, '_files')
+            if not os.path.exists(files):
+                return (None, None)
+
+        try:
+            root = ET.parse(files).getroot()
+        except SyntaxError:
+            return (None, None)
+
+        for node in root.findall('entry'):
+            if node.get('name') == filename:
+                return (node.get('md5'), node.get('mtime'))
+
         return (None, None)
 
-    for node in root.findall('entry'):
-        if node.get('name') == filename:
-            return (node.get('md5'), node.get('mtime'))
 
-    return (None, None)
+    def _get_file(self, project, package, filename, md5, mtime, revision = None):
+        package_dir = os.path.join(self.dest_dir, project, package)
+        destfile = os.path.join(package_dir, filename)
 
+        # first try to copy the file from the cache
+        (cached_md5, cached_mtime) = self._get_file_metadata_from_cache(project, package, filename)
+        if md5 == cached_md5 and mtime == cached_mtime:
+            cached_file = os.path.join(self.cache_dir, project, package, filename)
+            if os.path.exists(cached_file):
+                shutil.copyfile(cached_file, destfile)
+                return
 
-def get_file(old_dir, package_dir, project, package, filename, md5, mtime, revision = None):
-    # first try to copy the file from the old checkout
-    (stable_md5, stable_mtime) = get_file_metadata_from_stable(old_dir, project, package, filename)
-    destfile = os.path.join(package_dir, filename)
-    copied = False
-    if md5 == stable_md5 and mtime == stable_mtime:
-        oldfile = os.path.join(old_dir, project, package, filename)
-        if os.path.exists(oldfile):
-            shutil.copyfile(oldfile, destfile)
-            copied = True
-
-    # couldn't copy the file from the old checkout, so download it
-    if not copied:
+        # couldn't copy the file from the cache, so download it
         try:
             core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project
+            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project + ': ' +  + e.msg
 
 
-def get_files_metadata(project, package, package_dir, basename, revision = None):
-    filename = os.path.join(package_dir, basename)
+    def _get_files_metadata(self, project, package, save_basename, revision = None):
+        package_dir = os.path.join(self.dest_dir, project, package)
+        filename = os.path.join(package_dir, save_basename)
 
-    # if we already have the files metadata, this means we've already been
-    # there in some way (because we're downloading multiple times something in
-    # openSUSE:Factory, eg -- it can happen if a package exists in both
-    # GNOME:Factory and mozilla:Factory)
-    # In this case, we have nothing to do.
-    if os.path.exists(filename):
-        return None
+        # if we already have the files metadata, this means we've already been
+        # there in some way (because we're downloading multiple times something
+        # in openSUSE:Factory, eg -- it can happen if a package exists in both
+        # GNOME:Factory and mozilla:Factory)
+        # In this case, we have nothing to do.
+        if os.path.exists(filename):
+            return None
 
-    # download files metadata
-    try:
-        metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
-    except urllib2.HTTPError, e:
-        if revision:
-            print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ' with specified revision: ' + e.msg
-        else:
-            print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
-        return None
+        # download files metadata
+        try:
+            metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
+        except urllib2.HTTPError, e:
+            if revision:
+                print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+            else:
+                print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
+            return None
 
-    safe_mkdir(package_dir)
+        f = open(filename, 'w')
+        f.write(''.join(metadata))
+        f.close()
 
-    f = open(filename, 'w')
-    f.write(''.join(metadata))
-    f.close()
+        return ET.parse(filename).getroot()
 
-    return ET.parse(filename).getroot()
 
-def checkout_package(old_dir, new_dir, project, project_dir, package):
-    if not project_dir:
-        project_dir = os.path.join(new_dir, project)
-        safe_mkdir_p(project_dir)
+    def checkout_package(self, project, package):
+        package_dir = os.path.join(self.dest_dir, project, package)
+        safe_mkdir_p(package_dir)
 
-    package_dir = os.path.join(project_dir, package)
-
-    # find files we're interested in from the metadata
-    root = get_files_metadata(project, package, package_dir, '_files')
-    if not root:
-        return
-
-    # detect if the package is a link package
-    linkinfos_nb = len(root.findall('linkinfo'))
-    linkinfo = EasyLinkinfo()
-    if linkinfos_nb == 1:
-        linkinfo.read(root.find('linkinfo'))
-    elif linkinfos_nb > 1:
-        print >>sys.stderr, 'Ignoring link in' + package + ' from ' + project + ': more than one <linkinfo>'
-
-    # this will be None if it's not a link that matters and else, this will be
-    # the right value to expand the link
-    revision = linkinfo.xsrcmd5
-
-    if linkinfo.needshandling():
-        root = get_files_metadata(project, package, package_dir, '_files-expanded', revision)
+        # find files we're interested in from the metadata
+        root = self._get_files_metadata(project, package, '_files')
         if not root:
             return
 
-    # look at all files and download what might be interesting
-    for node in root.findall('entry'):
-        filename = node.get('name')
-        md5 = node.get('md5')
-        mtime = node.get('mtime')
-        # download:
-        #   + .spec files
-        if filename.endswith('.spec'):
-            get_file(old_dir, package_dir, project, package, filename, md5, mtime, revision)
+        # detect if the package is a link package
+        linkinfos_nb = len(root.findall('linkinfo'))
+        linkinfo = EasyLinkinfo()
+        if linkinfos_nb == 1:
+            linkinfo.read(root.find('linkinfo'))
+        elif linkinfos_nb > 1:
+            print >>sys.stderr, 'Ignoring link in' + package + ' from ' + project + ': more than one <linkinfo>'
+
+        # this will be None if it's not a link that matters and else, this will
+        # be the right value to expand the link
+        revision = linkinfo.xsrcmd5
+
+        if linkinfo.needshandling():
+            root = self._get_files_metadata(project, package, '_files-expanded', revision)
+            if not root:
+                return
+
+        # look at all files and download what might be interesting
+        for node in root.findall('entry'):
+            filename = node.get('name')
+            md5 = node.get('md5')
+            mtime = node.get('mtime')
+            # download .spec files
+            if filename.endswith('.spec'):
+                self._get_file(project, package, filename, md5, mtime, revision)
 
 
-def checkout_packages_from_project(old_dir, new_dir, project, packages):
-    project_dir = os.path.join(new_dir, project)
-    safe_mkdir_p(project_dir)
-
-    for package in packages:
-        checkout_package(old_dir, new_dir, project, project_dir, package)
+    def _checkout_packages_from_project(self, project, packages):
+        for package in packages:
+            self.checkout_package(project, package)
 
 
-def checkout_packages_existing_in_project(old_dir, new_dir, project, existing_in_project):
-    osc_conf_init()
+    def checkout_project_packages_existing_in_project(self, project, existing_in_project):
+        try:
+            packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Ignoring packages from ' + existing_in_project + ' for project ' + project +': ' + e.msg
+            return
 
-    try:
-        packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Ignoring packages from ' + existing_in_project + ' for project ' + project +': ' + e.msg
-        return
-
-    checkout_packages_from_project(old_dir, new_dir, project, packages)
+        self._checkout_packages_from_project(project, packages)
 
 
-def checkout_project(old_dir, new_dir, project):
-    osc_conf_init()
+    def checkout_project(self, project):
+        try:
+            packages = core.meta_get_packagelist(conf.config['apiurl'], project)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Ignoring project' + project +': ' + e.msg
+            return
 
-    try:
-        packages = core.meta_get_packagelist(conf.config['apiurl'], project)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Ignoring project' + project +': ' + e.msg
-        return
-
-    checkout_packages_from_project(old_dir, new_dir, project, packages)
+        self._checkout_packages_from_project(project, packages)
 
 
-def checkout_project_with_parent(old_dir, new_dir, project, parent_project = DEFAULT_PARENT_PROJECT):
-    if project != parent_project:
-        checkout_packages_existing_in_project(old_dir, new_dir, parent_project, project)
-    checkout_project(old_dir, new_dir, project)
+    def checkout_project_with_parent(self, project, parent_project = DEFAULT_PARENT_PROJECT):
+        if project != parent_project:
+            self.checkout_project_packages_existing_in_project(parent_project, project)
+        self.checkout_project(project)
 
 
 def find_stable_directory():
@@ -308,11 +314,13 @@ def main(args):
     checkout_dir_stable = find_stable_directory()
     checkout_dir_current = tempfile.mkdtemp('', CHECKOUT_DIR_PREFIX, CHECKOUT_DIR_PARENT)
 
+    co = ObsCheckout(checkout_dir_current, checkout_dir_stable)
+
     for project in projects:
         if options.no_parent:
-            checkout_project(checkout_dir_stable, checkout_dir_current, project)
+            co.checkout_project(project)
         else:
-            checkout_project_with_parent(checkout_dir_stable, checkout_dir_current, project)
+            co.checkout_project_with_parent(project)
 
     make_stable_directory(checkout_dir_current, checkout_dir_stable)
 
