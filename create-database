@@ -644,6 +644,9 @@ class SrcPackage(Base):
                 s = s.replace('%_name', _name)
             return s
 
+        # to help if Summary is defined before Name
+        early_summary = False
+
         line = 'empty'
         while True:
             # we need to remember the previous line for patch tags
@@ -661,6 +664,10 @@ class SrcPackage(Base):
             if match:
                 name = match.group(1)
                 current_package = Package(self, match.group(1))
+                if early_summary:
+                    # if we had a summary before the name, then use it now
+                    current_package.set_summary(early_summary)
+                    early_summary = None
                 self.packages.append(current_package)
                 continue
 
@@ -695,7 +702,8 @@ class SrcPackage(Base):
             match = SrcPackage.re_spec_summary.match(line)
             if match:
                 if not current_package:
-                    print >> sys.stderr, '%s: summary line found in spec without a package name' % self.name
+                    # save the summary for later
+                    early_summary = match.group(1)
                     continue
                 current_package.set_summary(match.group(1))
                 continue
