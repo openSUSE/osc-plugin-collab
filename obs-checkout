@@ -40,16 +40,6 @@
 #    This implies that we handle an "update" operation, in case the package
 #    is already checked out.
 #
-#  + With the new handling of link packages, we don't have to download the
-#    "parent" package anymore. So stop doing it.
-#    Instead, provide a simple way with command line arguments to download
-#    all packages in GNOME:Factory from openSUSE:Factory.
-#    This means the usual use case will be:
-#      ./obs-checkout GNOME:Factory
-#      ./obs-checkout --packages-of GNOME:Factory openSUSE:Factory
-#    Note that this might imply that we move the "stable directory" handling
-#    out of this script.
-#
 #  + Add a feature to automatically detect collaboration branches.
 
 import os
@@ -74,6 +64,10 @@ from osc_extend import *
 
 # We will check out everything in CHECKOUT_DIR_PARENT/$some_dir where $some_dir
 # is based on CHECKOUT_DIR_PREFIX and some random data.
+#
+# Beware: if changing this, be really careful since the directories can get
+# removed by this script. So you don't want to touch directories that contain
+# precious data.
 CHECKOUT_DIR_PARENT = '/tmp/obs-dissector'
 CHECKOUT_DIR_PREFIX = 'obs-co-'
 
@@ -84,10 +78,6 @@ if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
 # when the checkout is complete. This means it will always contain complete &
 # consistent data.
 CHECKOUT_DIR_STABLE = os.path.join(CHECKOUT_DIR_PARENT, CHECKOUT_DIR_PREFIX + 'stable')
-
-# This is the project that is usually parent of everything else. It will be
-# used as a default value.
-DEFAULT_PARENT_PROJECT = 'openSUSE:Factory'
 
 
 #######################################################################
@@ -256,32 +246,31 @@ class ObsCheckout:
 #######################################################################
 
 
-def find_stable_directory():
+def get_stable_directory():
     if os.path.lexists(CHECKOUT_DIR_STABLE):
-        if not os.path.islink(CHECKOUT_DIR_STABLE):
-            print >>sys.stderr, 'Broken setup: ' + CHECKOUT_DIR_STABLE + 'is not a symbolic link'
-            sys.exit(1)
-        return os.readlink(CHECKOUT_DIR_STABLE)
+        if os.path.islink(CHECKOUT_DIR_STABLE):
+            return os.readlink(CHECKOUT_DIR_STABLE)
+        else:
+            return CHECKOUT_DIR_STABLE
     else:
         return None
 
 
-def make_stable_directory(directory, old_stable_directory):
+def make_directory_stable(directory):
     if os.path.lexists(CHECKOUT_DIR_STABLE):
-        if not os.path.islink(CHECKOUT_DIR_STABLE):
-            print >>sys.stderr, 'Broken setup: ' + CHECKOUT_DIR_STABLE + 'is not a symbolic link anymore'
-            sys.exit(1)
-        elif os.readlink(CHECKOUT_DIR_STABLE) != old_stable_directory:
-            print 'The stable directory has been updated while we were downloading data. Cancelling everything...'
-            shutil.rmtree(directory)
-            sys.exit(0)
-        os.unlink(CHECKOUT_DIR_STABLE)
+        if os.path.islink(CHECKOUT_DIR_STABLE):
+            old_stable_directory = os.readlink(CHECKOUT_DIR_STABLE)
+            os.unlink(CHECKOUT_DIR_STABLE)
+        else:
+            shutil.rmtree(CHECKOUT_DIR_STABLE)
+    else:
+        old_stable_directory = None
 
     os.symlink(directory, CHECKOUT_DIR_STABLE)
 
     # Do this after symlinking the new directory: doing it before would just
     # delay the access to the latest data
-    if old_stable_directory != None:
+    if old_stable_directory:
         shutil.rmtree(old_stable_directory)
 
 
@@ -291,25 +280,81 @@ def make_stable_directory(directory, old_stable_directory):
 def main(args):
     parser = optparse.OptionParser()
 
-    parser.add_option("-p", "--project", dest="project",
-                      default='GNOME:Factory', help="project to check out")
+    parser.add_option('--get-stable-directory', action='store_true',
+                      default=False, dest='get_stable_directory',
+                      help='output the path to the current stable directory')
+    parser.add_option('--get-new-directory', action='store_true',
+                      default=False, dest='get_new_directory',
+                      help='output the path of a new directory ready to be used')
+    parser.add_option('--make-directory-stable', dest='make_directory_stable',
+                      help='make the specified directory the stable directory')
+
+    parser.add_option('--cache-directory', dest='cache_dir',
+                      help='cache directory containing previous checkouts')
+    parser.add_option('--destination-directory', dest='dest_dir',
+                      help='directory where the project will be checked out')
+    parser.add_option('--packages-of', dest='packages_of',
+                      help='only check out packages also existing in specified project')
+    parser.add_option('--project', dest='project',
+                      help='project to check out')
 
     (options, args) = parser.parse_args()
 
-    # We check everything out in a temporary directory.
-    # At the end, we'll symlink this directory to the stable directory, and
-    # remove the old checkout. This way, we always have a valid & working
-    # stable checkout.
+    # Check options validity
 
-    checkout_dir_stable = find_stable_directory()
-    checkout_dir_current = tempfile.mkdtemp('', CHECKOUT_DIR_PREFIX, CHECKOUT_DIR_PARENT)
+    conflicting_options = 0
+    if options.get_stable_directory:
+        conflicting_options = conflicting_options + 1
+    if options.get_new_directory:
+        conflicting_options = conflicting_options + 1
+    if options.make_directory_stable:
+        conflicting_options = conflicting_options + 1
+    if options.cache_dir or options.dest_dir or options.packages_of or options.project:
+        conflicting_options = conflicting_options + 1
 
-    co = ObsCheckout(checkout_dir_current, checkout_dir_stable)
+    if conflicting_options == 0:
+        print >>sys.stderr, 'No option specified'
+        sys.exit(1)
+    elif conflicting_options > 1:
+        print >>sys.stderr, 'Conflicting options specified'
+        sys.exit(1)
 
-    co.checkout_project(options.project)
-    co.checkout_project_packages_existing_in_project('openSUSE:Factory', options.project)
+    if (options.cache_dir or options.dest_dir or options.packages_of) and not options.project:
+        print >>sys.stderr, 'No project specified'
+        sys.exit(1)
 
-    make_stable_directory(checkout_dir_current, checkout_dir_stable)
+    # Stable/New directory handling
+
+    if options.get_stable_directory:
+        stable_dir = get_stable_directory()
+        if stable_dir:
+            print stable_dir
+        sys.exit(0)
+
+    if options.get_new_directory:
+        new_dir = tempfile.mkdtemp('', CHECKOUT_DIR_PREFIX, CHECKOUT_DIR_PARENT)
+        safe_mkdir_p(new_dir)
+        print new_dir
+        sys.exit(0)
+
+    if options.make_directory_stable:
+        make_directory_stable(options.make_directory_stable)
+        sys.exit(0)
+
+    # Checking out
+
+    if not options.dest_dir:
+        dest_dir = CHECKOUT_DIR_STABLE
+        print 'No destination directory specified. Using ' + CHECKOUT_DIR_STABLE
+    else:
+        dest_dir = options.dest_dir
+
+    co = ObsCheckout(dest_dir, options.cache_dir)
+
+    if options.packages_of:
+        co.checkout_project_packages_existing_in_project(options.project, options.packages_of)
+    else:
+        co.checkout_project(options.project)
 
 
 if __name__ == '__main__':

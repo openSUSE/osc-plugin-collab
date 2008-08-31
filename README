@@ -22,11 +22,12 @@ gnome-opensuse-match.txt:
     source package names.
 
 obs-checkout:
-    Check out packages from specified projects. By default, this assumes
-    the project has a "parent" like openSUSE:Factory (eg: GNOME:Factory is
-    considered a "child" of openSUSE:Factory).
-    It will create a $OBS_DISSECTOR_DIR/obs-co-stable directory that
-    contains all the checked out files.
+    Check out packages from specified project.
+    By default, it just uses $OBS_DISSECTOR_DIR/obs-co-stable as
+    destination directory, but there are some options to use various
+    directories. See how it's being used in runme, for example.
+    There are various options to select what to check out, and how to
+    check out.
     This script should not be run too frequently because it does many
     requests on the Build Service servers.
     See also 'obs-checkout --help'.

@@ -43,5 +43,15 @@ fi
 mkdir -p $OBS_DISSECTOR_DIR
 cp --force gnome-opensuse-match.txt $OBS_DISSECTOR_DIR
 $basedir/download-gnome-versions
-$basedir/obs-checkout
+
+# We check everything out in a temporary directory.
+# At the end, we'll symlink this directory to the stable directory, and
+# remove the old checkout. This way, we always have a valid & working
+# stable checkout.
+CACHE_CO=`$basedir/obs-checkout --get-stable-directory`
+DEST_CO=`$basedir/obs-checkout --get-new-directory`
+$basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of GNOME:Factory --project openSUSE:Factory
+$basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --project GNOME:Factory
+$basedir/obs-checkout --make-directory-stable "$DEST_CO"
+
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
