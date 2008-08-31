@@ -102,7 +102,7 @@ def osc_conf_init():
 
 
 class ObsCheckout:
-    def __init__(self, dest_dir, cache_dir = None):
+    def __init__(self, dest_dir, cache_dir = None, no_update = False):
         osc_conf_init()
 
         self.dest_dir = dest_dir
@@ -110,6 +110,7 @@ class ObsCheckout:
             self.cache_dir = cache_dir
         else:
             print >>sys.stderr, 'Ignoring specified cache directory that is also the destination directory'
+        self.no_update = no_update
 
 
     def _get_file_metadata_from_cache(self, project, package, filename):
@@ -183,6 +184,11 @@ class ObsCheckout:
 
 
     def checkout_package(self, project, package):
+        # TODO: handle updates (if not self.no_update):
+        # if the directory already exists, list files in there so we can know
+        # what to remove afterwards.
+        # Also, we need to change _get_file to look at the current downloaded
+        # file.
         package_dir = os.path.join(self.dest_dir, project, package)
         safe_mkdir_p(package_dir)
 
@@ -293,6 +299,9 @@ def main(args):
                       help='cache directory containing previous checkouts')
     parser.add_option('--destination-directory', dest='dest_dir',
                       help='directory where the project will be checked out')
+    parser.add_option('--no-update', action='store_true',
+                      default=False, dest='no_update',
+                      help='when checking out something that already exists, just assume it is up-to-date instead of updating it')
     parser.add_option('--packages-of', dest='packages_of',
                       help='only check out packages also existing in specified project')
     parser.add_option('--project', dest='project',
@@ -349,7 +358,7 @@ def main(args):
     else:
         dest_dir = options.dest_dir
 
-    co = ObsCheckout(dest_dir, options.cache_dir)
+    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update)
 
     if options.packages_of:
         co.checkout_project_packages_existing_in_project(options.project, options.packages_of)
