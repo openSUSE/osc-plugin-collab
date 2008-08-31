@@ -253,10 +253,7 @@ class ObsCheckout:
         self._checkout_packages_from_project(project, packages)
 
 
-    def checkout_project_with_parent(self, project, parent_project = DEFAULT_PARENT_PROJECT):
-        if project != parent_project:
-            self.checkout_project_packages_existing_in_project(parent_project, project)
-        self.checkout_project(project)
+#######################################################################
 
 
 def find_stable_directory():
@@ -288,23 +285,16 @@ def make_stable_directory(directory, old_stable_directory):
         shutil.rmtree(old_stable_directory)
 
 
+#######################################################################
+
+
 def main(args):
     parser = optparse.OptionParser()
 
-    parser.add_option("-n", "--no-parent", action="store_true",
-                      dest="no_parent", default=False,
-                      help="download packages from the projects, with no download of packages from a parent project")
-    parser.add_option("-p", "--project", action="append", dest="projects",
-                      default=[],
-                      help="projects to check out")
+    parser.add_option("-p", "--project", dest="project",
+                      default='GNOME:Factory', help="project to check out")
 
     (options, args) = parser.parse_args()
-
-    if len(options.projects) == 0:
-        projects = [ 'GNOME:Factory' ]
-    else:
-        # use set to make sure we don't do something twice
-        projects = set(options.projects)
 
     # We check everything out in a temporary directory.
     # At the end, we'll symlink this directory to the stable directory, and
@@ -316,11 +306,8 @@ def main(args):
 
     co = ObsCheckout(checkout_dir_current, checkout_dir_stable)
 
-    for project in projects:
-        if options.no_parent:
-            co.checkout_project(project)
-        else:
-            co.checkout_project_with_parent(project)
+    co.checkout_project(options.project)
+    co.checkout_project_packages_existing_in_project('openSUSE:Factory', options.project)
 
     make_stable_directory(checkout_dir_current, checkout_dir_stable)
 
