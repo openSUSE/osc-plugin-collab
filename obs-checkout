@@ -39,6 +39,11 @@
 #  + Support checking out a project/package in a already existing checkout.
 #    This implies that we handle an "update" operation, in case the package
 #    is already checked out.
+#    For a project, it's hard since we can't know if a package should be
+#    removed or not (since it's possible to download only a subset of all
+#    packages in a project; so the fact that a package is in the directory but
+#    has not been checked out doesn't mean it doesn't exist in the project). So
+#    we might end up with cruft.
 #
 #  + Add a feature to automatically detect collaboration branches.
 
