@@ -32,7 +32,7 @@ def _gnome_parse_reservation(self, line):
 #######################################################################
 
 
-def _gnome_todo(self, need_factory_sync):
+def _gnome_todo(self, need_factory_sync, exclude_reserved):
     # helper functions
     def is_submitted (package, submitted_packages):
         for submitted in submitted_packages:
@@ -110,6 +110,8 @@ def _gnome_todo(self, need_factory_sync):
                     GF_version = GF_version + '*'
                     upstream_version = upstream_version + '*'
                 if package in reserved_packages:
+                    if exclude_reserved:
+                        continue
                     upstream_version = upstream_version + '*'
                 print_package(package, oF_version, GF_version, upstream_version)
 
@@ -220,6 +222,9 @@ def _gnome_unreserve(self, package, username):
 #######################################################################
 
 
+@cmdln.option('-x', '--exclude-reserved', action='store_true',
+              dest='exclude_reserved',
+              help='do not show reserved packages in the output')
 @cmdln.option('-f', '--need-factory-sync', action='store_true',
               dest='factory_sync',
               help='show packages needing to be merged in openSUSE:Factory')
@@ -238,7 +243,7 @@ def do_gnome(self, subcmd, opts, *args):
     "unreserve" (or "u") will remove the reservation you had on a package.
 
     usage:
-        osc gnome todo [--need-factory-sync|-f]
+        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x]
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG
@@ -254,10 +259,8 @@ def do_gnome(self, subcmd, opts, *args):
     cmd = args[0]
 
     # Check arguments validity
-    if cmd in ['listreserved', 'lr']:
+    if cmd in ['listreserved', 'lr', 'todo', 't']:
         min_args, max_args = 0, 0
-    elif cmd in ['todo', 't']:
-        min_args, max_args = 0, 1
     elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']:
         min_args, max_args = 1, 1
 
@@ -268,7 +271,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(opts.factory_sync)
+        self._gnome_todo(opts.factory_sync, opts.exclude_reserved)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
