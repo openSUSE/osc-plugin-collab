@@ -32,6 +32,10 @@ obs-checkout:
     requests on the Build Service servers.
     See also 'obs-checkout --help'.
 
+osc-gnome.py:
+    A osc plugin for collaboration with the openSUSE GNOME Team.
+    Copy in ~/.osc-plugins/ and check 'osc gnome --help' out.
+
 runme:
     Small helper to show how to use everything, and get some data from
     scratch.
