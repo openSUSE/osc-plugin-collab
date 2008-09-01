@@ -156,7 +156,7 @@ class ObsCheckout:
         try:
             core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project + ': ' +  + e.msg
+            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project + ': ' + e.msg
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None):
