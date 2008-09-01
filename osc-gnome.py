@@ -21,6 +21,9 @@ def _gnome_compare_versions_a_gt_b (self, a, b):
     return False
 
 
+#######################################################################
+
+
 def _gnome_todo(self, need_factory_sync):
     # helper functions
     def is_submitted (package, submitteds):
@@ -29,6 +32,8 @@ def _gnome_todo(self, need_factory_sync):
                 return True
 
     def print_package(package, oF_version, GF_version, upstream_version = None):
+        # FIXME 32 & 12 are arbitrary values. We should probably look at all
+        # package names/versions and find the longer name/version
         if upstream_version:
             print '%-32.32s | %-12.12s | %-12.12s | %-12.12s' % (package, oF_version, GF_version, upstream_version)
         else:
@@ -78,9 +83,15 @@ def _gnome_todo(self, need_factory_sync):
                 print_package(package, oF_version, GF_version, upstream_version)
 
 
+#######################################################################
+
+
 def _gnome_reserve(self, package, username):
     print >>sys.stderr, 'Not implemented yet.'
     pass
+
+
+#######################################################################
 
 
 @cmdln.option('-f', '--need-factory-sync', action='store_true',
