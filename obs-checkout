@@ -248,7 +248,7 @@ class ObsCheckout:
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], project)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Ignoring project' + project +': ' + e.msg
+            print >>sys.stderr, 'Ignoring project ' + project +': ' + e.msg
             return
 
         self._checkout_packages_from_project(project, packages)
