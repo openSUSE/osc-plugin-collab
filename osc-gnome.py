@@ -226,15 +226,16 @@ def _gnome_unreserve(self, package, username):
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
-    "todo" will list the packages that need some action.
+    "todo" (or "t") will list the packages that need some action.
 
-    "listreserved" will list the reserved packages.
+    "listreserved" (or "lr") will list the reserved packages.
 
-    "isreserved" will look if a package is reserved.
+    "isreserved" (or "ir") will look if a package is reserved.
 
-    "reserve" will reserve a package so other people know you're working on it.
+    "reserve" (or "r") will reserve a package so other people know you're
+    working on it.
 
-    "unreserve" will remove the reservation you had on a package.
+    "unreserve" (or "u") will remove the reservation you had on a package.
 
     usage:
         osc gnome todo [--need-factory-sync|-f]
@@ -245,7 +246,7 @@ def do_gnome(self, subcmd, opts, *args):
     ${cmd_option_list}
     """
 
-    cmds = ['todo', 'listreserved', 'isreserved', 'reserve', 'unreserve']
+    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -253,11 +254,11 @@ def do_gnome(self, subcmd, opts, *args):
     cmd = args[0]
 
     # Check arguments validity
-    if cmd in ['listreserved']:
+    if cmd in ['listreserved', 'lr']:
         min_args, max_args = 0, 0
-    elif cmd in ['todo']:
+    elif cmd in ['todo', 't']:
         min_args, max_args = 0, 1
-    elif cmd in ['isreserved', 'reserve', 'unreserve']:
+    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']:
         min_args, max_args = 1, 1
 
     if len(args) - 1 < min_args:
@@ -266,20 +267,20 @@ def do_gnome(self, subcmd, opts, *args):
         raise oscerr.WrongArgs('Too many arguments.')
 
     # Do the command
-    if cmd == 'todo':
+    if cmd in ['todo', 't']:
         self._gnome_todo(opts.factory_sync)
 
-    elif cmd == 'listreserved':
+    elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
 
-    elif cmd == 'isreserved':
+    elif cmd in ['isreserved', 'ir']:
         package = args[1]
         self._gnome_isreserved(package)
 
-    elif cmd == 'reserve':
+    elif cmd in ['reserve', 'r']:
         package = args[1]
         self._gnome_reserve(package, conf.config['user'])
 
-    elif cmd == 'unreserve':
+    elif cmd in ['unreserve', 'u']:
         package = args[1]
         self._gnome_unreserve(package, conf.config['user'])
