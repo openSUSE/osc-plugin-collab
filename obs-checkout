@@ -176,16 +176,23 @@ class ObsCheckout:
             metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
         except urllib2.HTTPError, e:
             if revision:
-                print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+                print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
             else:
-                print >>sys.stderr, 'Ignoring ' + package + ' from ' + project + ': ' + e.msg
+                print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ': ' + e.msg
             return None
 
         f = open(filename, 'w')
         f.write(''.join(metadata))
         f.close()
 
-        return ET.parse(filename).getroot()
+        try:
+            return ET.parse(filename).getroot()
+        except SyntaxError, e:
+            if revision:
+                print >>sys.stderr, 'Cannot parse metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+            else:
+                print >>sys.stderr, 'Cannot parse metadata of ' + package + ' from ' + project + ': ' + e.msg
+            return None
 
 
     def checkout_package(self, project, package):
