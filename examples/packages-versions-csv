@@ -66,7 +66,7 @@ def compare_versions_a_gt_b (a, b):
             int_b = int(split_b[i])
             if int_a > int_b:
                 return True
-        except ValueError: 
+        except ValueError:
             if split_a[i] > split_b[i]:
                 return True
 
