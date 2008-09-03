@@ -107,12 +107,12 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
 
             if self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version):
                 if is_submitted(package, submitted_packages):
-                    GF_version = GF_version + '*'
-                    upstream_version = upstream_version + '*'
+                    GF_version = GF_version + ' (s)'
+                    upstream_version = upstream_version + ' (s)'
                 if package in reserved_packages:
                     if exclude_reserved:
                         continue
-                    upstream_version = upstream_version + '*'
+                    upstream_version = upstream_version + ' (r)'
                 print_package(package, oF_version, GF_version, upstream_version)
 
 
