@@ -40,12 +40,13 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
                 return True
 
     def print_package(package, oF_version, GF_version, upstream_version = None):
-        # FIXME 32 & 12 are arbitrary values. We should probably look at all
-        # package names/versions and find the longer name/version
+        # FIXME 32 & 20 (no better than the old choices of 32 & 12) are arbitrary
+        # values. We should probably look at all package names/versions and find
+        # the longer name/version
         if upstream_version:
-            print '%-32.32s | %-12.12s | %-12.12s | %-12.12s' % (package, oF_version, GF_version, upstream_version)
+            print '%-32.32s | %-20.20s | %-20.20s | %-20.20s' % (package, oF_version, GF_version, upstream_version)
         else:
-            print '%-32.32s | %-12.12s | %-12.12s' % (package, oF_version, GF_version)
+            print '%-32.32s | %-20.20s | %-20.20s' % (package, oF_version, GF_version)
 
 
     # get the list of reserved package
