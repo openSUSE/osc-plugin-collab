@@ -1,5 +1,11 @@
 # TODO: put this in a common library -- it's used in the examples too
 def _gnome_compare_versions_a_gt_b (self, a, b):
+    if self._gnome_rpm_module:
+        # We're not really interested in the epoch or release parts of the
+        # complete version because they're not relevant when comparing to
+        # upstream version
+        return self._gnome_rpm_module.labelCompare((None, a, '1'), (None, b, '1')) > 0
+
     split_a = a.split('.')
     split_b = b.split('.')
 
@@ -33,6 +39,11 @@ def _gnome_parse_reservation(self, line):
 
 
 def _gnome_todo(self, need_factory_sync, exclude_reserved):
+    try:
+        self._gnome_rpm_module = __import__('rpm')
+    except ImportError:
+        self._gnome_rpm_module = None
+
     # helper functions
     def is_submitted (package, submitted_packages):
         for submitted in submitted_packages:

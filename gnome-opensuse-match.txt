@@ -79,7 +79,7 @@ gst-plugins-good:gstreamer-0_10-plugins-good
 gstreamer:gstreamer-0_10
 gtk-engines:gtk2-engines
 gtkhtml:gtkhtml2
-gtksourceview:gtksourceview18
+gtksourceview-1.0:gtksourceview18
 gtksourceview:gtksourceview
 gucharmap:gucharmap
 gvfs:gvfs
