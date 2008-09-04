@@ -1,3 +1,5 @@
+# TODO: add a class to cache files that we download from the web
+
 class OscGnomeWebError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -508,6 +510,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 #     complain if the file hasn't been removed from the directory.
 #     We can also complain if a file hasn't been added with osc add,
 #     while it's referenced.
+#   + complain if the lines in .changes are too long
 
 
 # TODO
