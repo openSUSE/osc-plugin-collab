@@ -439,6 +439,9 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # download the updated tarball and md5/sha1
 
     # TODO
+    # extract NEWS & ChangeLog from the new tarball
+
+    # TODO
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
 
     print 'Package ' + package + ' has been prepared for the update.'
