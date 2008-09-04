@@ -32,7 +32,7 @@ class OscGnomeWeb:
 
         try:
             fd = urllib2.urlopen(self._csv_url)
-        except urllib2.HTTPError:
+        except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of packages: ' + e.msg)
 
         lines = fd.readlines()
