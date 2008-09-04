@@ -341,23 +341,25 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # G:F... So be worth checking that in the plugin and not branch if that's
     # the case
 
+    try:
+        reserved_by = self._gnome_web.is_package_reserved(package)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
     if not reserve:
         # check that we already have reserved the package
-        try:
-            reserved_by = self._gnome_web.is_package_reserved(package)
-        except self.OscGnomeWebError, e:
-            print >>sys.stderr, e.msg
-            return
-
         if not reserved_by:
             print 'Please reserve the package ' + package + ' first.'
             return
         elif reserved_by != username:
             print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
             return
-    else:
+    elif reserved_by and reserved_by != username:
+        print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
+        return
+    elif not reserved_by:
         # reserve the package
-        # FIXME: if it's reserved by us, don't output an error
         try:
             self._gnome_web.reserve_package(package, username)
             print 'Package ' + package + ' has been reserved for 36 hours.'
