@@ -466,10 +466,10 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 #######################################################################
 
 
-@cmdln.option('-s', '--exclude-submitted', action='store_true',
+@cmdln.option('--xs', '--exclude-submitted', action='store_true',
               dest='exclude_submitted',
               help='do not show submitted packages in the output')
-@cmdln.option('-x', '--exclude-reserved', action='store_true',
+@cmdln.option('--xr', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
 @cmdln.option('-f', '--need-factory-sync', action='store_true',
@@ -497,7 +497,7 @@ def do_gnome(self, subcmd, opts, *args):
     directory.
 
     Usage:
-        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x] [--exclude-submitted|-s]
+        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|--xr] [--exclude-submitted|--xs]
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG
