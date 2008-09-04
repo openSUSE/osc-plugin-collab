@@ -337,6 +337,10 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
         print 'Package ' + package + ' is already up-to-date.'
         return
 
+    # FIXME Sometimes, a package is newer in o:F (and equal to upstream) than
+    # G:F... So be worth checking that in the plugin and not branch if that's
+    # the case
+
     if not reserve:
         # check that we already have reserved the package
         try:
@@ -353,6 +357,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             return
     else:
         # reserve the package
+        # FIXME: if it's reserved by us, don't output an error
         try:
             self._gnome_web.reserve_package(package, username)
             print 'Package ' + package + ' has been reserved for 36 hours.'
@@ -384,6 +389,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # check out the branched package
     #FIXME be clever, and detect that we're already in a project dir or package
     # dir
+    #FIXME: do an update and not a checkout when we can
     try:
         checkout_package(apiurl, branch_project, package, expand_link=True)
         print 'Package ' + package + ' has been checked out.'
@@ -395,7 +401,13 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # edit the version tag in the .spec files
 
     # TODO
+    # start adding an entry to .changes
+
+    # TODO
     # download the updated tarball and md5/sha1
+
+    # TODO
+    # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
 
     print 'Package ' + package + ' has been prepared for the update.'
 
