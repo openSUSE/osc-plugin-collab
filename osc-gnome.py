@@ -190,24 +190,26 @@ def _gnome_isreserved(self, package):
 #######################################################################
 
 
-def _gnome_reserve(self, package, username):
+def _gnome_reserve(self, packages, username):
     url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
-    try:
-        fd = urllib2.urlopen(url + '?mode=set&user=' + username + '&package=' + package)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + e.msg
-        return
 
-    line = fd.readline()
-    fd.close()
+    for package in packages:
+        try:
+            fd = urllib2.urlopen(url + '?mode=set&user=' + username + '&package=' + package)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + e.msg
+            return
 
-    if line[:3] != '200':
-        print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + line[4:-1]
-        return
+        line = fd.readline()
+        fd.close()
 
-    print 'Package ' + package + ' reserved for 36 hours.'
-    print 'Do not forget to unreserve the package when done with it:'
-    print '    osc gnome unreserve ' + package
+        if line[:3] != '200':
+            print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + line[4:-1]
+            return
+
+        print 'Package ' + package + ' reserved for 36 hours.'
+        print 'Do not forget to unreserve the package when done with it:'
+        print '    osc gnome unreserve ' + package
 
 
 #######################################################################
@@ -273,13 +275,16 @@ def do_gnome(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']:
+    elif cmd in ['isreserved', 'ir', 'unreserve', 'u']:
         min_args, max_args = 1, 1
+    elif cmd in ['reserve', 'r']:
+        min_args = 1
 
     if len(args) - 1 < min_args:
         raise oscerr.WrongArgs('Too few arguments.')
-    if len(args) - 1 > max_args:
-        raise oscerr.WrongArgs('Too many arguments.')
+    if not cmd in ['reserve', 'r']:
+        if len(args) - 1 > max_args:
+            raise oscerr.WrongArgs('Too many arguments.')
 
     # Do the command
     if cmd in ['todo', 't']:
@@ -293,8 +298,8 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_isreserved(package)
 
     elif cmd in ['reserve', 'r']:
-        package = args[1]
-        self._gnome_reserve(package, conf.config['user'])
+        packages = args[1:]
+        self._gnome_reserve(packages, conf.config['user'])
 
     elif cmd in ['unreserve', 'u']:
         package = args[1]
