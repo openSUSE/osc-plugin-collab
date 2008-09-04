@@ -1,3 +1,5 @@
+# TODO: add a class to cache files that we download from the web
+
 class OscGnomeWebError(Exception):
     def __init__(self, value):
         self.msg = value
