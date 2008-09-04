@@ -239,10 +239,10 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
     # print headers
     if need_factory_sync:
         print_package('Package', 'openSUSE:Factory', 'GNOME:Factory')
-        print '---------------------------------+--------------+-------------'
+        print '---------------------------------+----------------------+---------------------'
     else:
         print_package('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
-        print '---------------------------------+--------------+--------------+-------------'
+        print '---------------------------------+----------------------+----------------------+-------------'
 
     for (package, oF_version, GF_version, upstream_version) in packages_versions:
         if need_factory_sync:
