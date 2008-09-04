@@ -427,7 +427,8 @@ def do_gnome(self, subcmd, opts, *args):
     "unreserve" (or "u") will remove the reservation you had on a package.
 
     "update" (or "up") will prepare a package for update (possibly reservation,
-    branch, checking out, etc.)
+    branch, checking out, etc.). The package will be checked out in the current
+    directory.
 
     Usage:
         osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x]
