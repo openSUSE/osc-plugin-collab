@@ -441,8 +441,48 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
     # Maybe warn if there are other spec files? They might need an update too.
 
-    # TODO
     # start adding an entry to .changes
+    changes_file = os.path.join(package, package + '.changes')
+    if not os.path.exists(changes_file):
+        print >>sys.stderr, 'Cannot update ' + package + '.changes: no such file.'
+    elif not os.path.isfile(changes_file):
+        print >>sys.stderr, 'Cannot update ' + package + '.changes: not a regular file.'
+    else:
+        try:
+            tempfile = __import__('tempfile')
+            time = __import__('time')
+            locale = __import__('locale')
+
+            (fdout, tmp) = tempfile.mkstemp(dir = package)
+
+            old_lc_time = locale.setlocale(locale.LC_TIME)
+            locale.setlocale(locale.LC_TIME, 'C')
+
+            os.write(fdout, '-------------------------------------------------------------------\n')
+            # FIXME email address
+            os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - EMAIL@ADDRESS\n')
+            os.write(fdout, '\n')
+            os.write(fdout, '- Update to version ' + upstream_version + ':\n')
+            os.write(fdout, '  + \n')
+            os.write(fdout, '\n')
+
+            locale.setlocale(locale.LC_TIME, old_lc_time)
+
+            fin = open(changes_file, 'r')
+            while True:
+                bytes = fin.read(10 * 1024)
+                os.write(fdout, bytes)
+                if len(bytes) == 0:
+                    break
+            fin.close()
+            os.close(fdout)
+
+            os.rename(tmp, changes_file)
+
+            print changes_file + ' has been prepared.'
+        except ImportError:
+            print >>sys.stderr, 'Cannot update ' + package + '.changes: incomplete python installation.'
+
 
     # TODO
     # download the updated tarball and md5/sha1
