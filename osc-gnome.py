@@ -433,6 +433,8 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 
     # TODO
     # edit the version tag in the .spec files
+    # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
+    # Maybe warn if there are other spec files? They might need an update too.
 
     # TODO
     # start adding an entry to .changes
@@ -448,6 +450,18 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 
     print 'Package ' + package + ' has been prepared for the update.'
 
+    # TODO add a note about checking patches, buildrequires & requires
+
+
+# TODO
+# Add a commit method.
+# This will make some additional checks:
+#   + if we used update, we can initialize a list of patches/sources
+#     before any change. This way, on the commit, we can look if the
+#     remaining files are still referenced in the .spec, and if not
+#     complain if the file hasn't been removed from the directory.
+#     We can also complain if a file hasn't been added with osc add,
+#     while it's referenced.
 
 #######################################################################
 
