@@ -198,7 +198,7 @@ def _gnome_reserve(self, packages, username):
             fd = urllib2.urlopen(url + '?mode=set&user=' + username + '&package=' + package)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + e.msg
-            return
+            continue
 
         line = fd.readline()
         fd.close()
@@ -222,7 +222,7 @@ def _gnome_unreserve(self, packages, username):
             fd = urllib2.urlopen(url + '?mode=unset&user=' + username + '&package=' + package)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Cannot unreserve package ' + package + ': ' + e.msg
-            return
+            continue
         
         line = fd.readline()
         fd.close()
