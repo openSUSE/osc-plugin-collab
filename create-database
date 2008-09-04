@@ -240,7 +240,7 @@ class DataCache:
 
 #######################################################################
 
-class Base: 
+class Base:
     sql_table = 'undefined'
 
     @classmethod
