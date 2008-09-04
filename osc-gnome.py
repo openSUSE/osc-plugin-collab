@@ -196,7 +196,7 @@ def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
 #######################################################################
 
 
-def _gnome_todo(self, need_factory_sync, exclude_reserved):
+def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
     # helper functions
     def is_submitted(package, submitted_packages):
         for submitted in submitted_packages:
@@ -247,6 +247,8 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
 
             if self._gnome_needs_update(oF_version, GF_version, upstream_version):
                 if is_submitted(package, submitted_packages):
+                    if exclude_submitted:
+                        continue
                     GF_version = GF_version + '*'
                     upstream_version = upstream_version + '*'
                 if package in reserved_packages:
@@ -450,6 +452,9 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 #######################################################################
 
 
+@cmdln.option('-s', '--exclude-submitted', action='store_true',
+              dest='exclude_submitted',
+              help='do not show submitted packages in the output')
 @cmdln.option('-x', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
@@ -478,7 +483,7 @@ def do_gnome(self, subcmd, opts, *args):
     directory.
 
     Usage:
-        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x]
+        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x] [--exclude-submitted|-s]
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG
@@ -510,7 +515,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(opts.factory_sync, opts.exclude_reserved)
+        self._gnome_todo(opts.factory_sync, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
