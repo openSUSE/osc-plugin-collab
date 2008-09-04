@@ -249,7 +249,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     "unreserve" (or "u") will remove the reservation you had on a package.
 
-    usage:
+    Usage:
         osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x]
         osc gnome listreserved
         osc gnome isreserved PKG
