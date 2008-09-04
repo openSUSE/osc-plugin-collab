@@ -387,15 +387,43 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             return
 
     # check out the branched package
-    #FIXME be clever, and detect that we're already in a project dir or package
-    # dir
-    #FIXME: do an update and not a checkout when we can
-    try:
-        checkout_package(apiurl, branch_project, package, expand_link=True)
-        print 'Package ' + package + ' has been checked out.'
-    except:
-        print >>sys.stderr, 'Error while checking out package ' + package + ': ' + e.msg
-        return
+    if os.path.exists(package):
+        # maybe we already checked it out before?
+        if not os.path.isdir(package):
+            print >>sys.stderr, 'File ' + package + ' already exists but is not a directory.'
+            return
+        elif not is_package_dir(package):
+            print >>sys.stderr, 'Directory ' + package + ' already exists but is not a checkout of a Build Service package.'
+            return
+
+        obs_package = filedir_to_pac(package)
+        if obs_package.name != package or obs_package.prjname != branch_project:
+            print >>sys.stderr, 'Directory ' + package + ' already exists but is a checkout of package ' + obs_package.name + ' from project ' + obs_package.prjname +'.'
+            return
+
+        # update the package
+        try:
+            # we specify the revision so that it gets expanded
+            # the logic comes from do_update in commandline.py
+            rev = None
+            if obs_package.islink() and not obs_package.isexpanded():
+                rev = obs_package.linkinfo.xsrcmd5
+            elif obs_package.islink() and obs_package.isexpanded():
+                rev = show_upstream_xsrcmd5(apiurl, branch_project, package)
+
+            obs_package.update(rev)
+            print 'Package ' + package + ' has been updated.'
+        except:
+            print >>sys.stderr, 'Error while updating package ' + package + ': ' + e.msg
+            return
+    else:
+        # check out the branched package
+        try:
+            checkout_package(apiurl, branch_project, package, expand_link=True)
+            print 'Package ' + package + ' has been checked out.'
+        except:
+            print >>sys.stderr, 'Error while checking out package ' + package + ': ' + e.msg
+            return
 
     # TODO
     # edit the version tag in the .spec files
