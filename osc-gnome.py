@@ -228,7 +228,10 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
         print >>sys.stderr, e.msg
 
     # get the packages submitted to GNOME:Factory
-    submitted_packages = get_submit_request_list(conf.config['apiurl'], 'GNOME:Factory', None)
+    try:
+        submitted_packages = get_submit_request_list(conf.config['apiurl'], 'GNOME:Factory', None)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Cannot get list of submissions to GNOME:Factory: ' + e.msg
 
     # print headers
     if need_factory_sync:
