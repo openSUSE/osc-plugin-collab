@@ -148,7 +148,7 @@ def _gnome_listreserved(self):
 
     del lines[0]
 
-    print '%-32.32s | %-12.12s' % ('Package', 'Reserved by')
+    print '%-32.32s | %-20.20s' % ('Package', 'Reserved by')
     print '---------------------------------+-------------'
 
     for line in lines:
