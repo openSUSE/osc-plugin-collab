@@ -193,6 +193,8 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
 
 def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
     return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version)
+
+
 #######################################################################
 
 
