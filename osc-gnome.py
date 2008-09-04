@@ -49,6 +49,24 @@ class OscGnomeWeb:
         return packages_versions
 
 
+    def get_versions(self, package):
+        try:
+            fd = urllib2.urlopen(self._csv_url + '&package=' + package)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get versions of package ' + package + ': ' + e.msg)
+
+        line = fd.readline()
+        fd.close()
+
+        try:
+            (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
+        except ValueError:
+            print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+            return
+
+        return (oF_version, GF_version, upstream_version)
+
+
     def get_reserved_packages(self, return_package = True, return_username = True, return_comment = False):
         reserved_packages = []
 
@@ -139,6 +157,13 @@ class OscGnomeWeb:
 
 # TODO: put this in a common library -- it's used in the examples too
 def _gnome_compare_versions_a_gt_b(self, a, b):
+    if not self._gnome_rpm_tried:
+        self._gnome_rpm_tried = True
+        try:
+            self._gnome_rpm_module = __import__('rpm')
+        except ImportError:
+            self._gnome_rpm_module = None
+
     if self._gnome_rpm_module:
         # We're not really interested in the epoch or release parts of the
         # complete version because they're not relevant when comparing to
@@ -166,15 +191,12 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
     return False
 
 
+def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
+    return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version)
 #######################################################################
 
 
 def _gnome_todo(self, need_factory_sync, exclude_reserved):
-    try:
-        self._gnome_rpm_module = __import__('rpm')
-    except ImportError:
-        self._gnome_rpm_module = None
-
     # helper functions
     def is_submitted(package, submitted_packages):
         for submitted in submitted_packages:
@@ -223,7 +245,7 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
             if upstream_version == '':
                 continue
 
-            if self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version):
+            if self._gnome_needs_update(oF_version, GF_version, upstream_version):
                 if is_submitted(package, submitted_packages):
                     GF_version = GF_version + '*'
                     upstream_version = upstream_version + '*'
@@ -301,12 +323,95 @@ def _gnome_unreserve(self, package, username):
 #######################################################################
 
 
+def _gnome_update(self, package, apiurl, username, reserve = False):
+    # check that an update is really needed
+    try:
+        (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if upstream_version == '':
+        print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
+    elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
+        print 'Package ' + package + ' is already up-to-date.'
+        return
+
+    if not reserve:
+        # check that we already have reserved the package
+        try:
+            reserved_by = self._gnome_web.is_package_reserved(package)
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            return
+
+        if not reserved_by:
+            print 'Please reserve the package ' + package + ' first.'
+            return
+        elif reserved_by != username:
+            print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
+            return
+    else:
+        # reserve the package
+        try:
+            self._gnome_web.reserve_package(package, username)
+            print 'Package ' + package + ' has been reserved for 36 hours.'
+            print 'Do not forget to unreserve the package when done with it:'
+            print '    osc gnome unreserve ' + package
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            return
+
+    # look if we already have a branch, and if not branch the package
+    # Do a show_package_meta() and check for 404 (e.code)
+    try:
+        expected_branch_project = 'home:' + username + ':branches:GNOME:Factory'
+        show_package_meta(apiurl, expected_branch_project, package)
+        branch_project = expected_branch_project
+        # it worked, we already have the branch
+    except urllib2.HTTPError, e:
+        if e.code != 404:
+            print >>sys.stderr, 'Error while checking if package ' + package + ' was already branched: ' + e.msg
+            return
+        # We had a 404: it means the branched package doesn't exist yet
+        try:
+            branch_project = branch_pkg(apiurl, 'GNOME:Factory', package, nodevelproject = True)
+            print 'Package ' + package + ' has been branched in project ' + branch_project + '.'
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Error while branching package ' + package + ': ' + e.msg
+            return
+
+    # check out the branched package
+    #FIXME be clever, and detect that we're already in a project dir or package
+    # dir
+    try:
+        checkout_package(apiurl, branch_project, package, expand_link=True)
+        print 'Package ' + package + ' has been checked out.'
+    except:
+        print >>sys.stderr, 'Error while checking out package ' + package + ': ' + e.msg
+        return
+
+    # TODO
+    # edit the version tag in the .spec files
+
+    # TODO
+    # download the updated tarball and md5/sha1
+
+    print 'Package ' + package + ' has been prepared for the update.'
+
+
+#######################################################################
+
+
 @cmdln.option('-x', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
 @cmdln.option('-f', '--need-factory-sync', action='store_true',
               dest='factory_sync',
               help='show packages needing to be merged in openSUSE:Factory')
+@cmdln.option('-r', '--reserve', action='store_true',
+              dest='reserve',
+              help='also reserve the package')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -321,16 +426,20 @@ def do_gnome(self, subcmd, opts, *args):
 
     "unreserve" (or "u") will remove the reservation you had on a package.
 
+    "update" (or "up") will prepare a package for update (possibly reservation,
+    branch, checking out, etc.)
+
     Usage:
         osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|-x]
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG
         osc gnome unreserve PKG
+        osc gnome update [--reserve|-r] PKG
     ${cmd_option_list}
     """
 
-    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']
+    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'update', 'up']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -340,7 +449,7 @@ def do_gnome(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u']:
+    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'update', 'up']:
         min_args, max_args = 1, 1
 
     if len(args) - 1 < min_args:
@@ -349,6 +458,7 @@ def do_gnome(self, subcmd, opts, *args):
         raise oscerr.WrongArgs('Too many arguments.')
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError)
+    self._gnome_rpm_tried = False
 
     # Do the command
     if cmd in ['todo', 't']:
@@ -368,3 +478,7 @@ def do_gnome(self, subcmd, opts, *args):
     elif cmd in ['unreserve', 'u']:
         package = args[1]
         self._gnome_unreserve(package, conf.config['user'])
+
+    elif cmd in ['update', 'up']:
+        package = args[1]
+        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], reserve = opts.reserve)
