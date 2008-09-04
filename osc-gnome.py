@@ -324,23 +324,25 @@ def _gnome_unreserve(self, package, username):
 
 
 def _gnome_update(self, package, apiurl, username, reserve = False):
-    # check that an update is really needed
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
 
+    # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
+    if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
+        print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
+        return
+
+    # check that an update is really needed
     if upstream_version == '':
         print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
     elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
         print 'Package ' + package + ' is already up-to-date.'
         return
 
-    # FIXME Sometimes, a package is newer in o:F (and equal to upstream) than
-    # G:F... So be worth checking that in the plugin and not branch if that's
-    # the case
-
+    # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
     except self.OscGnomeWebError, e:
@@ -370,7 +372,6 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             return
 
     # look if we already have a branch, and if not branch the package
-    # Do a show_package_meta() and check for 404 (e.code)
     try:
         expected_branch_project = 'home:' + username + ':branches:GNOME:Factory'
         show_package_meta(apiurl, expected_branch_project, package)
@@ -418,6 +419,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
         except:
             print >>sys.stderr, 'Error while updating package ' + package + ': ' + e.msg
             return
+
     else:
         # check out the branched package
         try:
