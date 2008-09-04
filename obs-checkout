@@ -107,7 +107,7 @@ def osc_conf_init():
 
 
 class ObsCheckout:
-    def __init__(self, dest_dir, cache_dir = None, no_update = False):
+    def __init__(self, dest_dir, cache_dir = None, no_update = False, warn_non_links = False):
         osc_conf_init()
 
         self.dest_dir = dest_dir
@@ -116,6 +116,7 @@ class ObsCheckout:
         else:
             print >>sys.stderr, 'Ignoring specified cache directory that is also the destination directory'
         self.no_update = no_update
+        self.warn_non_links = warn_non_links
 
 
     def _get_file_metadata_from_cache(self, project, package, filename):
@@ -175,10 +176,13 @@ class ObsCheckout:
         try:
             metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
         except urllib2.HTTPError, e:
-            if revision:
-                print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+            if e.code == 404:
+                print >>sys.stderr, 'Package ' + package + ' doesn\'t exist in ' + project + '.'
             else:
-                print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ': ' + e.msg
+                if revision:
+                    print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+                else:
+                    print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ': ' + e.msg
             return None
 
         f = open(filename, 'w')
@@ -215,11 +219,18 @@ class ObsCheckout:
         if linkinfos_nb == 1:
             linkinfo.read(root.find('linkinfo'))
         elif linkinfos_nb > 1:
-            print >>sys.stderr, 'Ignoring link in' + package + ' from ' + project + ': more than one <linkinfo>'
+            print >>sys.stderr, 'Ignoring link in ' + package + ' from ' + project + ': more than one <linkinfo>'
 
         # this will be None if it's not a link that matters and else, this will
         # be the right value to expand the link
         revision = linkinfo.xsrcmd5
+
+        if linkinfo.haserror():
+            print >>sys.stderr, 'Link in ' + package + ' from ' + project + ' has an error: ' + linkinfo.error
+        elif self.warn_non_links and not linkinfo.islink():
+            print >>sys.stderr, 'Package ' + package + ' from ' + project + ' is not a link.'
+        elif self.warn_non_links and linkinfo.isexpanded():
+            print >>sys.stderr, 'Package ' + package + ' from ' + project + ' is an expanded link.'
 
         if linkinfo.needshandling():
             root = self._get_files_metadata(project, package, '_files-expanded', revision)
@@ -314,6 +325,9 @@ def main(args):
     parser.add_option('--no-update', action='store_true',
                       default=False, dest='no_update',
                       help='when checking out something that already exists, just assume it is up-to-date instead of updating it')
+    parser.add_option('--warn-if-not-unexpanded-link', action='store_true',
+                      default=False, dest='warn_non_links',
+                      help='print a warning for packages that are not unexpanded links')
     parser.add_option('--packages-of', dest='packages_of',
                       help='only check out packages also existing in specified project')
     parser.add_option('--project', dest='project',
@@ -370,7 +384,7 @@ def main(args):
     else:
         dest_dir = options.dest_dir
 
-    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update)
+    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.warn_non_links)
 
     if options.packages_of:
         co.checkout_project_packages_existing_in_project(options.project, options.packages_of)
