@@ -62,7 +62,7 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
     # get the list of reserved package
     reserved_packages = []
     try:
-        fd = urllib2.urlopen('http://tmp.vuntz.net/opensuse-packages/reserve.py?mode=getall')
+        fd = urllib2.urlopen(self._gnome_reserve_url + '?mode=getall')
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot get list of reserved packages: ' + e.msg
 
@@ -85,7 +85,7 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
 
     # get the current versions of packages
     try:
-        fd = urllib2.urlopen('http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv')
+        fd = urllib2.urlopen(self._gnome_csv_url)
     except urllib2.HTTPError:
         # FIXME: do we want a custom message?
         raise
@@ -131,9 +131,8 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved):
 
 
 def _gnome_listreserved(self):
-    url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     try:
-        fd = urllib2.urlopen(url + '?mode=getall')
+        fd = urllib2.urlopen(self._gnome_reserve_url + '?mode=getall')
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot list reserved packages: ' + e.msg
         return
@@ -162,9 +161,8 @@ def _gnome_listreserved(self):
 
 
 def _gnome_isreserved(self, package):
-    url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     try:
-        fd = urllib2.urlopen(url + '?mode=get&package=' + package)
+        fd = urllib2.urlopen(self._gnome_reserve_url + '?mode=get&package=' + package)
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot look if package ' + package + ' is reserved: ' + e.msg
         return
@@ -190,9 +188,8 @@ def _gnome_isreserved(self, package):
 
 
 def _gnome_reserve(self, package, username):
-    url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     try:
-        fd = urllib2.urlopen(url + '?mode=set&user=' + username + '&package=' + package)
+        fd = urllib2.urlopen(self._gnome_reserve_url + '?mode=set&user=' + username + '&package=' + package)
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot reserve package ' + package + ': ' + e.msg
         return
@@ -213,9 +210,8 @@ def _gnome_reserve(self, package, username):
 
 
 def _gnome_unreserve(self, package, username):
-    url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     try:
-        fd = urllib2.urlopen(url + '?mode=unset&user=' + username + '&package=' + package)
+        fd = urllib2.urlopen(self._gnome_reserve_url + '?mode=unset&user=' + username + '&package=' + package)
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot unreserve package ' + package + ': ' + e.msg
         return
@@ -279,6 +275,9 @@ def do_gnome(self, subcmd, opts, *args):
         raise oscerr.WrongArgs('Too few arguments.')
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
+
+    self._gnome_reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
+    self._gnome_csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
     # Do the command
     if cmd in ['todo', 't']:
