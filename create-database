@@ -47,6 +47,8 @@ import sqlite3
 # adapted for the build service, but a few features might still need to be
 # ported. TODO-BS or FIXME-BS might indicate them.
 
+# TODO: check if G:F needs to be submitted to o:F (look if there's a delta)
+
 if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
     OBS_DISSECTOR_DIR=os.getenv('OBS_DISSECTOR_DIR')
 else:

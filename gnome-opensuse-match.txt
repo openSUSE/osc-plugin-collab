@@ -168,6 +168,7 @@ NetworkManager:NetworkManager
 atomix:
 beagle:beagle
 beagle-xesam:beagle-xesam
+brasero:brasero
 conduit:conduit
 dia:dia
 dogtail:dogtail
@@ -237,4 +238,3 @@ rhythmbox:rhythmbox
 scrollkeeper:scrollkeeper
 tasque:tasque
 xdg-user-dirs-gtk:xdg-user-dirs-gtk
-
