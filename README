@@ -13,9 +13,20 @@ create-database:
     easy to analyze.
     See also 'create-database --help'.
 
+dissector_util.py:
+    Miscellaneous functions that make life easier.
+
 download-gnome-versions:
     Download information about the latest versions of various GNOME
     modules.
+
+download-upstream-versions:
+    Download information about the latest versions of various modules
+    that are not hosted on ftp.gnome.org.
+
+feedparser.py:
+    Universal feed parser: http://www.feedparser.org/
+    Put here for convenience, so you don't have to install it.
 
 gnome-opensuse-match.txt:
     Data file that matches upstream GNOME module names to openSUSE
@@ -32,6 +43,9 @@ obs-checkout:
     requests on the Build Service servers.
     See also 'obs-checkout --help'.
 
+osc_extend.py:
+    Mini-classes extending the OSC classes, to make life easier.
+
 osc-gnome.py:
     A osc plugin for collaboration within the openSUSE GNOME Team.
     Copy in ~/.osc-plugins/ and check 'osc gnome --help' out.
@@ -39,3 +53,6 @@ osc-gnome.py:
 runme:
     Small helper to show how to use everything, and get some data from
     scratch.
+
+upstream-tarballs.txt:
+    Information about where to find the latest upstream tarballs.

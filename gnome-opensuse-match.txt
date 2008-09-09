@@ -1,3 +1,6 @@
+# Format of this file:
+# upstreamname:packagename
+
 ## PLATFORM
 GConf:gconf2
 ORBit2:orbit2
@@ -168,6 +171,7 @@ NetworkManager:NetworkManager
 atomix:
 beagle:beagle
 beagle-xesam:beagle-xesam
+brasero:brasero
 conduit:conduit
 dia:dia
 dogtail:dogtail
@@ -238,3 +242,54 @@ scrollkeeper:scrollkeeper
 tasque:tasque
 xdg-user-dirs-gtk:xdg-user-dirs-gtk
 
+## Non ftp.gnome.org stuff
+PolicyKit-gnome:PolicyKit-gnome
+abiword:abiword
+avahi:avahi
+avahi:avahi-mono
+avahi:avahi-qt4
+bakefile:bakefile
+banshee-1:banshee
+#beagle-index:beagle-index
+bluez-gnome:bluez-gnome
+bombermaze:bombermaze
+#bundle-lang-gnome:bundle-lang-gnome
+cairo:cairo
+cairomm:cairomm
+check:check
+clutter-cairo:clutter-cairo
+clutter-gtk:clutter-gtk
+conglomerate:conglomerate
+contact-lookup-applet:contact-lookup-applet
+eds-feed:evolution-galago
+eiciel:eiciel
+enchant:enchant
+exempi:exempi
+farsight:farsight
+fyre:fyre
+g-wrap:g-wrap
+gaim-galago:gaim-galago
+galago-daemon:galago-daemon
+galago-gtk-sharp:galago-gtk-sharp
+galago-sharp:galago-sharp
+gbrainy:gbrainy
+#ggreeter:ggreeter
+ggz-client-libs:ggz-client-libs
+gimp:gimp
+gimp-help:gimp-help
+glitz:glitz
+gnome-keyring-sharp:gnome-keyring-sharp
+gnome-mount:gnome-mount
+gnome-presence-applet:gnome-presence-applet
+gnucash:gnucash
+gnucash-docs:gnucash-docs
+gobby:gobby
+gq:gq
+gqview:gqview
+gstreamer:gstreamer-0_10-doc
+gst-plugins-bad:gstreamer-0_10-plugins-bad
+gst-plugins-farsight:gstreamer-0_10-plugins-farsight
+gst-plugins-ugly:gstreamer-0_10-plugins-ugly
+gtk-vnc:gtk-vnc
+libggz:ggz
+obby:obby

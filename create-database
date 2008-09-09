@@ -47,6 +47,8 @@ import sqlite3
 # adapted for the build service, but a few features might still need to be
 # ported. TODO-BS or FIXME-BS might indicate them.
 
+# TODO: check if G:F needs to be submitted to o:F (look if there's a delta)
+
 if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
     OBS_DISSECTOR_DIR=os.getenv('OBS_DISSECTOR_DIR')
 else:
@@ -81,7 +83,7 @@ RPMLINT_ERRORS_PATH = ''
 DB_MAJOR = 2
 # Changing this means changing the db while keeping compatibility
 # Increase when changing the db. Reset to 0 when changing DB_MAJOR.
-DB_MINOR = 0
+DB_MINOR = 1
 
 
 #######################################################################
@@ -108,7 +110,8 @@ class DataCache:
         self.cursor.execute('''CREATE TABLE upstream_version (
             id INTEGER PRIMARY KEY,
             upstream TEXT,
-            version TEXT
+            version TEXT,
+            url TEXT
             );''')
         self.cursor.execute('''CREATE TABLE maintainer (
             id INTEGER PRIMARY KEY,
@@ -139,15 +142,28 @@ class DataCache:
 
     def _fill_upstream_version(self, upstream_version):
         file = open(upstream_version)
-        re_upstream_version = re.compile('^[^:]*:([^:]+):([^:]+)')
+        re_upstream_version = re.compile('^([^:]*):([^:]+):([^:]+):(.*)$')
         line = file.readline()
         while line != '':
             match = re_upstream_version.match(line)
             if match:
+                modulename = match.group(2)
+                version = match.group(3)
+
+                if match.group(1) == 'nonfgo':
+                    url = match.group(4)
+                else:
+                    versions = version.split('.')
+                    if len(versions) == 1:
+                        majmin = version
+                    else:
+                        majmin = versions[0] + '.' + versions[1]
+                    url = 'http://ftp.gnome.org/pub/GNOME/sources/' + modulename + '/' + majmin + '/' + modulename + '-' + version + '.tar.bz2'
+
                 self.cursor.execute('''INSERT INTO upstream_version VALUES (
-                    NULL, ?, ?
+                    NULL, ?, ?, ?
                     );''',
-                    (match.group(1), match.group(2)))
+                    (modulename, version, url))
             line = file.readline()
         file.close()
 
@@ -200,6 +216,15 @@ class DataCache:
 
     def get_upstream_version(self, upstream_name):
         self.cursor.execute('''SELECT version FROM upstream_version WHERE
+            upstream = ?;''', (upstream_name,))
+        row = self.cursor.fetchone()
+        if row:
+            return row[0]
+        else:
+            return ''
+
+    def get_upstream_url(self, upstream_name):
+        self.cursor.execute('''SELECT url FROM upstream_version WHERE
             upstream = ?;''', (upstream_name,))
         row = self.cursor.fetchone()
         if row:
@@ -551,7 +576,8 @@ class SrcPackage(Base):
             maintainer TEXT,
             version TEXT,
             submitted_version TEXT,
-            upstream_version TEXT
+            upstream_version TEXT,
+            upstream_url TEXT
             );''' % cls.sql_table)
 
     @classmethod
@@ -568,6 +594,7 @@ class SrcPackage(Base):
 #FIXME
         self.submitted_version = ''
         self.upstream_version = ''
+        self.upstream_url = ''
         self.packages = []
         self.sources = []
         self.patches = []
@@ -583,9 +610,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version))
+            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version, self.upstream_url))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -596,6 +623,7 @@ class SrcPackage(Base):
 #FIXME verbose
         #print >> sys.stderr, '%s: can\'t get upstream version because there\'s no upstream name' % self.name
             self.upstream_version = db_cache.get_upstream_version(self.upstream_name)
+            self.upstream_url = db_cache.get_upstream_url(self.upstream_name)
         self.maintainer = db_cache.get_maintainer(self.name)
         self.public = db_cache.get_public(self.name)
         for package in self.packages:
