@@ -183,7 +183,8 @@ gdk-pixbuf:gdk-pixbuf
 gedit-plugins:
 genius:
 ghex:ghex
-gimp:gimp
+glade:glade
+glib-1:glib
 glom:
 gnome-audio:gnome-audio
 gnome-blog:gnome-blog
@@ -214,6 +215,7 @@ goocanvas:goocanvas
 gossip:
 gtetrinet:gtetrinet
 gthumb:gthumb
+gtk+-1:gtk
 gtranslator:
 labyrinth:
 libbeagle:libbeagle
@@ -226,6 +228,7 @@ libgnomedb:libgnomedb
 libgsf:libgsf
 libgtkhtml:libgtkhtml
 libgtksourceviewmm:libgtksourceviewmm
+libxml:libxml
 loudmouth:loudmouth
 meld:
 memprof:memprof
