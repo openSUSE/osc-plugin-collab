@@ -3,7 +3,7 @@
 #
 # where:
 #   + name is the upstream module name found in tarball names
-#   + method is one of 'httpls', 'dualhttpls', 'subdirhttpls', 'sf'
+#   + method is one of 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google'
 #   + info depends on method
 #
 # httpls:
@@ -27,6 +27,9 @@
 #     packages. In this case, the ids should be separated by a pipe:
 #     project_id|package_id
 #
+# google:
+#   + use this when the upstream tarballs are hosted on code.google.com
+#   + the info field should be the project name on code.google.com
 #
 # Note that you need to add a line in gnome-opensuse-match.txt for each
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
@@ -63,10 +66,12 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
+gdata.py:google:gdata-python-client
 #ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:httpls:ftp://ftp.gimp.org/pub/gimp/stable
 gimp-help:httpls:ftp://ftp.gimp.org/pub/gimp/help/
+giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
@@ -91,12 +96,14 @@ libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 libiptcdata:sf:130582|143234
+libjingle:google:libjingle
 libnjb:sf:32528|24667
 libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
+libssui:google:libssui
 libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/

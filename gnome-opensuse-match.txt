@@ -276,10 +276,12 @@ galago-daemon:galago-daemon
 galago-gtk-sharp:galago-gtk-sharp
 galago-sharp:galago-sharp
 gbrainy:gbrainy
+gdata.py:python-gdata
 #ggreeter:ggreeter
 ggz-client-libs:ggz-client-libs
 gimp:gimp
 gimp-help:gimp-help
+giver:giver
 glitz:glitz
 gnome-keyring-sharp:gnome-keyring-sharp
 gnome-mount:gnome-mount
@@ -305,12 +307,14 @@ libgalago:libgalago
 libgalago-gtk:libgalago-gtk
 libggz:ggz
 libiptcdata:libiptcdata
+libjingle:libjingle
 libnjb:libnjb
 libnl:libnl
 libnotify:libnotify
 libofx:libofx
 liboil:liboil
 libsexy:libsexy
+libssui:libssui
 libsvg:libsvg
 libsvg-cairo:libsvg-cairo
 libtasn1:libtasn1
