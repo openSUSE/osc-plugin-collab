@@ -41,8 +41,13 @@ if test "x$OBS_DISSECTOR_DIR" = "x"; then
 fi
 
 mkdir -p $OBS_DISSECTOR_DIR
+
 cp --force gnome-opensuse-match.txt $OBS_DISSECTOR_DIR
+cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
+
 $basedir/download-gnome-versions
+$basedir/download-upstream-versions --upstream-file=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old
+cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 
 # We check everything out in a temporary directory.
 # At the end, we'll symlink this directory to the stable directory, and

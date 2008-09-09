@@ -1,0 +1,329 @@
+#!/usr/bin/python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2008, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Parts of this code comes from convert-to-tarball.py (in the releng GNOME
+# svn module), which has no license. Therefore, this script is not 100%
+# under the BSD license.
+#
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+import os
+import sys
+import time
+
+import optparse
+from posixpath import join as posixjoin # Handy for URLs
+import re
+from sgmllib import SGMLParser
+import urllib2
+import urlparse
+
+import feedparser
+
+from dissector_util import *
+
+
+DIR_PARENT = '/tmp/obs-dissector'
+
+if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
+    DIR_PARENT=os.getenv('OBS_DISSECTOR_DIR')
+
+
+#######################################################################
+
+
+# comes from convert-to-tarball.py
+class urllister(SGMLParser):
+    def reset(self):
+        SGMLParser.reset(self)
+        self.urls = []
+
+    def start_a(self, attrs):
+        href = [v for k, v in attrs if k=='href']
+        if href:
+            self.urls.extend(href)
+
+
+#######################################################################
+
+
+# based on code from convert-to-tarball.py
+def _get_files_from_http(url):
+    obj = urllib2.build_opener()
+
+    # Get the files
+    usock = obj.open(url)
+    parser = urllister()
+    parser.feed(usock.read())
+    usock.close()
+    parser.close()
+    files = parser.urls
+
+    return (url, files)
+
+
+#######################################################################
+
+
+# based on code from convert-to-tarball.py
+def _get_files_from_subdir_http(url):
+    obj = urllib2.build_opener()
+    good_dir = re.compile('^([0-9]+\.)*[0-9]+/?$')
+    def hasdirs(x): return good_dir.search(x)
+    def fixdirs(x): return re.sub(r'^((?:[0-9]+\.)*)([0-9]+)/?$', r'\1\2', x)
+    location = url
+    # Follow 302 codes when retrieving URLs, speeds up conversion by 60sec
+    redirect_location = location
+    while True:
+        # Get the files
+        usock = obj.open(redirect_location)
+        parser = urllister()
+        parser.feed(usock.read())
+        usock.close()
+        parser.close()
+        files = parser.urls
+
+        # Check to see if we need to descend to a subdirectory
+        newdirs = filter(hasdirs, files)
+        newdirs = map(fixdirs, newdirs)
+        if newdirs:
+            newdir = _get_latest_version(newdirs)
+            redirect_location = posixjoin(usock.url, newdir)
+            location = posixjoin(location, newdir)
+        else:
+            break
+    return (location, files)
+
+
+#######################################################################
+
+
+# comes from convert-to-tarball.py
+def _bigger_version(a, b):
+    a_nums = a.split('.')
+    b_nums = b.split('.')
+    num_fields = min(len(a_nums), len(b_nums))
+    for i in range(0,num_fields):
+        if   int(a_nums[i]) > int(b_nums[i]):
+            return a
+        elif int(a_nums[i]) < int(b_nums[i]):
+            return b
+    if len(a_nums) > len(b_nums):
+        return a
+    else:
+        return b
+
+def _get_latest_version(versions):
+    biggest = versions[0]
+    for version in versions[1:]:
+        if version == _bigger_version(biggest, version):
+            biggest = version
+    return biggest
+
+
+#######################################################################
+
+
+# based on code from convert-to-tarball.py
+def _get_version_from_files(modulename, location, files):
+    # Only include tarballs for the given module
+    good_files = [file for file in files if modulename in file]
+
+    tarballs = None
+    if not tarballs:
+        tarballs = [file for file in good_files if file.endswith('.tar.bz2')]
+    if not tarballs:
+        tarballs = [file for file in good_files if file.endswith('.tar.gz')]
+
+    re_tarball = r'^.*[_-](([0-9]+[\.\-])*[0-9]+)\.tar.*$'
+    # Don't include -beta -installer -stub-installer and all kinds of
+    # other weird-named tarballs
+    tarballs = filter(lambda t: re.search(re_tarball, t), tarballs)
+
+    versions = map(lambda t: re.sub(re_tarball, r'\1', t), tarballs)
+
+    if not len(versions):
+        raise IOError('No versions found')
+
+    version = _get_latest_version(versions)
+    index = versions.index(version)
+
+    location = posixjoin(location, tarballs[index])
+
+    return (location, version)
+
+
+#######################################################################
+
+
+def _get_version_from_sf_rss(id):
+    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=' + id
+
+    feed = feedparser.parse(url)
+
+    version_re = re.compile('.* ((?:[0-9]+\.)*)([0-9]+) released.*')
+    download_re = re.compile('<a href="([^"]*)">\[Download\]</a>')
+
+    biggest = '0'
+    location = None
+
+    for entry in feed['entries']:
+        version = version_re.sub(r'\1\2', entry.title)
+        if not version == _bigger_version(version, biggest):
+            continue
+
+        match = download_re.search(entry.summary)
+        if match:
+            download_url = match.group(1)
+        else:
+            download_url = 'http://sourceforge.net/project/showfiles.php?group_id=' + id
+        biggest = version
+        location = download_url
+
+    if biggest == '0' and location == None:
+        biggest = None
+
+    return (location, biggest)
+
+
+#######################################################################
+
+
+def get_upstream_version(modulename, method, additional_info):
+    if method not in [ 'httpls', 'dualhttpls', 'subdirhttpls', 'sf' ]:
+        print >>sys.stderr, 'Unsupported method ' + method
+        return (None, None)
+
+    if method == 'httpls':
+        (location, files) = _get_files_from_http(additional_info)
+        return _get_version_from_files(modulename, location, files)
+
+    elif method == 'dualhttpls':
+        (url1, url2) = additional_info.split('|')
+        (location1, files1) = _get_files_from_http(url1)
+        (location2, files2) = _get_files_from_http(url2)
+        (location1, version1) = _get_version_from_files(modulename, location1, files1)
+        (location2, version2) = _get_version_from_files(modulename, location2, files2)
+        if version1 == _bigger_version(version1, version2):
+            return (location1, version1)
+        else:
+            return (location2, version2)
+
+    elif method == 'subdirhttpls':
+        (location, files) = _get_files_from_subdir_http(additional_info)
+        return _get_version_from_files(modulename, location, files)
+
+    elif method == 'sf':
+        return _get_version_from_sf_rss(additional_info)
+
+
+#######################################################################
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option('--directory', dest='dir',
+                      help='directory where to find data and save data')
+    parser.add_option('--save-file', dest='save',
+                      help='path to the file where the results will be written')
+    parser.add_option('--upstream-file', dest='upstream',
+                      help='path to the upstream data file')
+    parser.add_option('--only-if-old', action='store_true',
+                      default=False, dest='only_if_old',
+                      help='executes only if the pre-existing result file is older than 10 hours')
+
+    (options, args) = parser.parse_args()
+
+    if options.dir:
+        directory = options.dir
+    else:
+        directory = DIR_PARENT
+
+    if options.upstream:
+        upstream_file = options.upstream
+    else:
+        upstream_file = os.path.join(directory, 'upstream-tarballs.txt')
+
+    if options.save:
+        save_file = options.save
+    else:
+        save_file = os.path.join(directory, 'versions-non-fgo')
+
+    if not os.path.exists(upstream_file):
+        print >>sys.stderr, 'Upstream data file ' + upstream_file + ' does not exist.'
+        sys.exit(1)
+    elif not os.path.isfile(upstream_file):
+        print >>sys.stderr, 'Upstream data file ' + upstream_file + ' is not a regular file.'
+        sys.exit(1)
+
+    if os.path.exists(save_file):
+        if not os.path.isfile(upstream_file):
+            print >>sys.stderr, 'Save file ' + upstream_file + ' is not a regular file.'
+            sys.exit(1)
+        if options.only_if_old:
+            stats = os.stat(save_file)
+            # Quit if it's less than 10-hours old
+            if time.time() - stats.st_mtime < 3600 * 10:
+                sys.exit(0)
+    else:
+        safe_mkdir_p(os.path.dirname(save_file))
+
+    file = open(upstream_file)
+    lines = file.readlines()
+    file.close()
+
+    out = open(save_file, 'w')
+
+    for line in lines:
+        if line[0] == '#' or line[0] == '\n':
+            continue
+
+        (modulename, method, additional_info) = line[:-1].split(':', 2)
+        (location, version) = get_upstream_version(modulename, method, additional_info)
+        if version:
+            out.write('nonfgo:' + modulename + ':' + version + '\n')
+        else:
+            out.write('nonfgo:' + modulename + ':\n')
+
+    out.close()
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass
