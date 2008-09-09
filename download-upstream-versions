@@ -215,7 +215,7 @@ def _get_version_from_files(modulename, location, files):
     version = _get_latest_version(versions)
     index = versions.index(version)
 
-    location = posixjoin(location, tarballs[index])
+    location = urlparse.urljoin(location, tarballs[index])
 
     return (location, version)
 
