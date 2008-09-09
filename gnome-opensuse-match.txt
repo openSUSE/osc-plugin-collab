@@ -228,6 +228,7 @@ libgnomedb:libgnomedb
 libgsf:libgsf
 libgtkhtml:libgtkhtml
 libgtksourceviewmm:libgtksourceviewmm
+libsigc++-1:libsigc++12
 libxml:libxml
 loudmouth:loudmouth
 meld:
@@ -286,6 +287,7 @@ glitz:glitz
 gnome-do:gnome-do
 gnome-keyring-sharp:gnome-keyring-sharp
 gnome-mount:gnome-mount
+#gnome-patch-translation:gnome-patch-translation
 gnome-presence-applet:gnome-presence-applet
 gnucash:gnucash
 gnucash-docs:gnucash-docs
@@ -298,7 +300,9 @@ gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gtk-vnc:gtk-vnc
+#gtk2-theme-openSUSE:gtk2-theme-openSUSE
 gtkglext:gtkglext
+gwenhywfar:gwenhywfar
 hicolor-icon-theme:hicolor-icon-theme
 icon-naming-utils:icon-naming-utils
 inkscape:inkscape
@@ -328,6 +332,7 @@ net6:net6
 njb-sharp:njb-sharp
 notification-daemon:notification-daemon
 obby:obby
+#opt_gnome-compat:opt_gnome-compat
 pidgin:pidgin
 pkg-config:pkg-config
 pycairo:python-cairo
@@ -344,7 +349,9 @@ telepathy-gabble:telepathy-gabble
 telepathy-glib:telepathy-glib
 telepathy-salut:telepathy-salut
 telepathy-stream-engine:telepathy-stream-engine
+#translation-update:translation-update
 transmission:transmission
 tsclient:tsclient
 webkit:WebKitGtk
 xchat:xchat
+#yast2-control-center-gnome:yast2-control-center-gnome

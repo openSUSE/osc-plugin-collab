@@ -88,6 +88,7 @@ glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/re
 gnome-do:lp:do
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
+#gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
@@ -99,7 +100,11 @@ gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gtk-vnc:sf:190580|223580
+#gtk2-theme-openSUSE:upstream:
 gtkglext:sf:54333|48997
+# note that we still use gwenhywfar 2.x. The 3.x version is available from
+# http://www.aquamaniac.de/sites/download/packages.php
+gwenhywfar:sf:88769|171330
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|99112
@@ -129,6 +134,7 @@ net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 obby:httpls:http://releases.0x539.de/obby/
+#opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
@@ -145,6 +151,8 @@ telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabb
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
+#translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
 xchat:subdirhttpls:http://www.xchat.org/files/source/
+#yast2-control-center-gnome:upstream:
