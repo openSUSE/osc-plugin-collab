@@ -13,6 +13,8 @@
 #
 # httpls:
 #   + use this when you only have a single web page listing all tarballs
+#     Note that we support real HTML pages (and not just 'listing' pages)
+#     and that a link to the last tarball on this page is generally enough.
 #   + the info field should be the URL of the web page
 #
 # dualhttpls:
