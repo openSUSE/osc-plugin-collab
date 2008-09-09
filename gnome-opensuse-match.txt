@@ -283,6 +283,7 @@ gimp:gimp
 gimp-help:gimp-help
 giver:giver
 glitz:glitz
+gnome-do:gnome-do
 gnome-keyring-sharp:gnome-keyring-sharp
 gnome-mount:gnome-mount
 gnome-presence-applet:gnome-presence-applet

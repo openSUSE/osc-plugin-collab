@@ -53,6 +53,11 @@ from sgmllib import SGMLParser
 import urllib2
 import urlparse
 
+try:
+    from xml.etree import cElementTree as ET
+except ImportError:
+    import cElementTree as ET
+
 import feedparser
 
 from dissector_util import *
@@ -286,7 +291,72 @@ def _get_version_from_google_atom(project):
         location = download_url
 
     if biggest == '0' and location == None:
-        biggest = None
+        raise UpstreamDownloadError('No versions found')
+
+    return (location, biggest)
+
+
+#######################################################################
+
+
+def _get_version_from_launchpad(project):
+    lp_ns = '{https://launchpad.net/rdf/launchpad#}'
+    rdf_ns = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
+
+    url = 'https://launchpad.net/' + project + '/+rdf'
+    series_re = re.compile('^/' + project + '/((?:[0-9]+\.)*[0-9]+)/\+rdf$')
+    series_biggest = '0'
+
+    fd = urllib2.urlopen(url)
+    root = ET.parse(fd).getroot().find(lp_ns + 'Product')
+    fd.close()
+
+    for node in root.findall(lp_ns + 'series'):
+        product = node.find(lp_ns + 'ProductSeries')
+        if not product:
+            continue
+        specified = product.find(lp_ns + 'specifiedAt')
+        series = specified.get(rdf_ns + 'resource')
+        match = series_re.match(series)
+        if not match:
+            continue
+        series_version = match.group(1)
+
+        if series_version == _bigger_version(series_version, series_biggest):
+            series_biggest = series_version
+
+    if series_biggest == '0':
+        raise UpstreamDownloadError('No versions found')
+
+
+    url = 'https://launchpad.net/' + project + '/' + series_biggest + '/+rdf'
+    release_re = re.compile('^/' + project + '/' + series_biggest + '/((?:[0-9]+\.)*[0-9]+)/\+rdf$')
+    biggest = '0'
+
+    fd = urllib2.urlopen(url)
+    root = ET.parse(fd).getroot().find(lp_ns + 'ProductSeries')
+    fd.close()
+
+    for node in root.findall(lp_ns + 'release'):
+        productrelease = node.find(lp_ns + 'ProductRelease')
+        if not product:
+            continue
+        specified = productrelease.find(lp_ns + 'specifiedAt')
+        release = specified.get(rdf_ns + 'resource')
+        match = release_re.match(release)
+        if not match:
+            continue
+        version = match.group(1)
+
+        if version == _bigger_version(version, biggest):
+            biggest = version
+
+
+    location = None
+    print biggest
+
+    if biggest == '0':
+        raise UpstreamDownloadError('No versions found')
 
     return (location, biggest)
 
@@ -295,7 +365,7 @@ def _get_version_from_google_atom(project):
 
 
 def get_upstream_version(modulename, method, additional_info):
-    if method not in [ 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google' ]:
+    if method not in [ 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
         print >>sys.stderr, 'Unsupported method ' + method
         return (None, None)
 
@@ -341,6 +411,9 @@ def get_upstream_version(modulename, method, additional_info):
 
     elif method == 'google':
         return _get_version_from_google_atom(additional_info)
+
+    elif method == 'lp':
+        return _get_version_from_launchpad(additional_info)
 
 
 #######################################################################
@@ -425,8 +498,10 @@ def main(args):
         except UpstreamDownloadError:
             print >>sys.stderr, 'No matching tarball found for ' + modulename
 
-        if version:
+        if version and location:
             out.write('nonfgo:' + modulename + ':' + version + ':' + location + '\n')
+        elif version:
+            out.write('nonfgo:' + modulename + ':' + version + ':\n')
         elif location:
             out.write('nonfgo:' + modulename + '::' + location + '\n')
         else:

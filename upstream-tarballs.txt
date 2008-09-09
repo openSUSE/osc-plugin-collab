@@ -4,7 +4,7 @@
 # where:
 #   + name is the upstream module name found in tarball names
 #   + method is one of 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls',
-#     'sf', 'google'
+#     'sf', 'google', 'lp'
 #   + info depends on method
 #
 # ftpls:
@@ -35,6 +35,10 @@
 # google:
 #   + use this when the upstream tarballs are hosted on code.google.com
 #   + the info field should be the project name on code.google.com
+#
+# lp:
+#   + use this when the upstream tarballs are hosted on launchpad
+#   + the info field should be the project name on launchpad
 #
 # Note that you need to add a line in gnome-opensuse-match.txt for each
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
@@ -81,6 +85,7 @@ gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+gnome-do:lp:do
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
