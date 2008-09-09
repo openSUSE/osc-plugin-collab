@@ -419,6 +419,39 @@ def get_upstream_version(modulename, method, additional_info):
 #######################################################################
 
 
+def parse_data(data_file):
+    retval = {}
+
+    if not os.path.exists(data_file) or not os.path.isfile(data_file):
+        return retval
+
+    file = open(data_file)
+    lines = file.readlines()
+    file.close()
+
+    for line in lines:
+        data = line[:-1].split(':', 3)
+        if data[0] != 'nonfgo':
+            continue
+
+        if data[2] != '':
+            version = data[2]
+        else:
+            version = None
+
+        if data[3] != '':
+            location = data[3]
+        else:
+            location = None
+
+        retval[data[1]] = (version, location)
+
+    return retval
+
+
+#######################################################################
+
+
 def main(args):
     parser = optparse.OptionParser()
 
@@ -430,11 +463,16 @@ def main(args):
                       help='path to the file where the results will be written')
     parser.add_option('--upstream-file', dest='upstream',
                       help='path to the upstream data file')
+    parser.add_option('--use-old-as-fallback', action='store_true',
+                      default=False, dest='fallback',
+                      help='use old saved data, if available, as a fallback for when we cannot find new data')
     parser.add_option('--only-if-old', action='store_true',
                       default=False, dest='only_if_old',
-                      help='executes only if the pre-existing result file is older than 10 hours')
+                      help='execute only if the pre-existing result file is older than 10 hours')
 
     (options, args) = parser.parse_args()
+
+    fallback_data = {}
 
     if options.debug:
         lines = [ options.debug + '\n' ]
@@ -464,14 +502,17 @@ def main(args):
             sys.exit(1)
 
         if os.path.exists(save_file):
-            if not os.path.isfile(upstream_file):
-                print >>sys.stderr, 'Save file ' + upstream_file + ' is not a regular file.'
+            if not os.path.isfile(save_file):
+                print >>sys.stderr, 'Save file ' + save_file + ' is not a regular file.'
                 sys.exit(1)
             if options.only_if_old:
                 stats = os.stat(save_file)
                 # Quit if it's less than 10-hours old
                 if time.time() - stats.st_mtime < 3600 * 10:
                     sys.exit(0)
+
+            if options.fallback:
+                fallback_data = parse_data(save_file)
         else:
             safe_mkdir_p(os.path.dirname(save_file))
 
@@ -497,6 +538,18 @@ def main(args):
             print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[0]
         except UpstreamDownloadError:
             print >>sys.stderr, 'No matching tarball found for ' + modulename
+
+        if fallback_data.has_key(modulename):
+            fallback_version = fallback_data[modulename][0]
+            fallback_location = fallback_data[modulename][1]
+
+            if not version and not location:
+                version = fallback_version
+                location = fallback_location
+            elif not version and location == fallback_location:
+                version = fallback_version
+            elif not location and version == fallback_version:
+                location = fallback_location
 
         if version and location:
             out.write('nonfgo:' + modulename + ':' + version + ':' + location + '\n')
