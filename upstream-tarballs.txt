@@ -79,6 +79,7 @@ galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/gala
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
 gdata.py:google:gdata-python-client
+gdesklets:httpls:http://www.gdesklets.de/
 #ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
@@ -98,6 +99,7 @@ gqview:sf:4050|4056
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
+gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gtk-vnc:sf:190580|223580
 #gtk2-theme-openSUSE:upstream:
@@ -110,6 +112,8 @@ icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|99112
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
+istanbul:httpls:http://live.gnome.org/Istanbul
+libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
@@ -132,11 +136,14 @@ mission-control:sf:190214|224579
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
+nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 obby:httpls:http://releases.0x539.de/obby/
 #opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
+psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
+pulseaudio:httpls:pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygtkglext:sf:54333|76105
 pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
