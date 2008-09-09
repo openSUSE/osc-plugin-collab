@@ -45,6 +45,7 @@ import socket
 import sys
 import time
 
+from ftplib import FTP
 import optparse
 from posixpath import join as posixjoin # Handy for URLs
 import re
@@ -103,6 +104,22 @@ def _get_files_from_http(url):
     usock.close()
     parser.close()
     files = parser.urls
+
+    return (url, files)
+
+
+#######################################################################
+
+
+# based on code from convert-to-tarball.py
+def _get_files_from_ftp(url):
+    parsed_url = urlparse.urlparse(url)
+
+    ftp = FTP(parsed_url.hostname)
+    ftp.login(parsed_url.username or 'anonymous', parsed_url.password or '')
+    ftp.cwd(parsed_url.path)
+    files = ftp.nlst()
+    ftp.quit()
 
     return (url, files)
 
@@ -278,11 +295,15 @@ def _get_version_from_google_atom(project):
 
 
 def get_upstream_version(modulename, method, additional_info):
-    if method not in [ 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google' ]:
+    if method not in [ 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google' ]:
         print >>sys.stderr, 'Unsupported method ' + method
         return (None, None)
 
-    if method == 'httpls':
+    if method == 'ftpls':
+        (location, files) = _get_files_from_ftp(additional_info)
+        return _get_version_from_files(modulename, location, files)
+
+    elif method == 'httpls':
         (location, files) = _get_files_from_http(additional_info)
         return _get_version_from_files(modulename, location, files)
 
@@ -328,6 +349,8 @@ def get_upstream_version(modulename, method, additional_info):
 def main(args):
     parser = optparse.OptionParser()
 
+    parser.add_option('--debug', dest='debug',
+                      help='only handle the argument as input and output the result')
     parser.add_option('--directory', dest='dir',
                       help='directory where to find data and save data')
     parser.add_option('--save-file', dest='save',
@@ -340,48 +363,53 @@ def main(args):
 
     (options, args) = parser.parse_args()
 
-    if options.dir:
-        directory = options.dir
+    if options.debug:
+        lines = [ options.debug + '\n' ]
+        out = sys.stdout
+
     else:
-        directory = DIR_PARENT
+        if options.dir:
+            directory = options.dir
+        else:
+            directory = DIR_PARENT
 
-    if options.upstream:
-        upstream_file = options.upstream
-    else:
-        upstream_file = os.path.join(directory, 'upstream-tarballs.txt')
+        if options.upstream:
+            upstream_file = options.upstream
+        else:
+            upstream_file = os.path.join(directory, 'upstream-tarballs.txt')
 
-    if options.save:
-        save_file = options.save
-    else:
-        save_file = os.path.join(directory, 'versions-non-fgo')
+        if options.save:
+            save_file = options.save
+        else:
+            save_file = os.path.join(directory, 'versions-non-fgo')
 
-    if not os.path.exists(upstream_file):
-        print >>sys.stderr, 'Upstream data file ' + upstream_file + ' does not exist.'
-        sys.exit(1)
-    elif not os.path.isfile(upstream_file):
-        print >>sys.stderr, 'Upstream data file ' + upstream_file + ' is not a regular file.'
-        sys.exit(1)
-
-    if os.path.exists(save_file):
-        if not os.path.isfile(upstream_file):
-            print >>sys.stderr, 'Save file ' + upstream_file + ' is not a regular file.'
+        if not os.path.exists(upstream_file):
+            print >>sys.stderr, 'Upstream data file ' + upstream_file + ' does not exist.'
             sys.exit(1)
-        if options.only_if_old:
-            stats = os.stat(save_file)
-            # Quit if it's less than 10-hours old
-            if time.time() - stats.st_mtime < 3600 * 10:
-                sys.exit(0)
-    else:
-        safe_mkdir_p(os.path.dirname(save_file))
+        elif not os.path.isfile(upstream_file):
+            print >>sys.stderr, 'Upstream data file ' + upstream_file + ' is not a regular file.'
+            sys.exit(1)
 
-    file = open(upstream_file)
-    lines = file.readlines()
-    file.close()
+        if os.path.exists(save_file):
+            if not os.path.isfile(upstream_file):
+                print >>sys.stderr, 'Save file ' + upstream_file + ' is not a regular file.'
+                sys.exit(1)
+            if options.only_if_old:
+                stats = os.stat(save_file)
+                # Quit if it's less than 10-hours old
+                if time.time() - stats.st_mtime < 3600 * 10:
+                    sys.exit(0)
+        else:
+            safe_mkdir_p(os.path.dirname(save_file))
+
+        file = open(upstream_file)
+        lines = file.readlines()
+        file.close()
+
+        out = open(save_file, 'w')
 
     # The default timeout is just too long. Use 10 seconds instead.
     socket.setdefaulttimeout(10)
-
-    out = open(save_file, 'w')
 
     for line in lines:
         if line[0] == '#' or line[0] == '\n':
@@ -404,7 +432,8 @@ def main(args):
         else:
             out.write('nonfgo:' + modulename + '::\n')
 
-    out.close()
+    if not options.debug:
+        out.close()
 
 
 if __name__ == '__main__':

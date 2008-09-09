@@ -3,8 +3,13 @@
 #
 # where:
 #   + name is the upstream module name found in tarball names
-#   + method is one of 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google'
+#   + method is one of 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls',
+#     'sf', 'google'
 #   + info depends on method
+#
+# ftpls:
+#   + use this when you only have a ftp directory listing all tarballs
+#   + the info field should be the URL of the ftp directory
 #
 # httpls:
 #   + use this when you only have a single web page listing all tarballs
@@ -72,8 +77,8 @@ gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
 gdata.py:google:gdata-python-client
 #ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
-gimp:httpls:ftp://ftp.gimp.org/pub/gimp/stable
-gimp-help:httpls:ftp://ftp.gimp.org/pub/gimp/help/
+gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
+gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
@@ -94,7 +99,7 @@ hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|99112
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
-iso-codes:httpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
+iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
