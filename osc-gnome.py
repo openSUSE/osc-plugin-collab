@@ -1,5 +1,10 @@
 # TODO: add a class to cache files that we download from the web
 
+# TODO:
+# Fixup the BuildRequires line (One requires per line, and sort them
+# alphabetically)
+# Actually, create a class that fixes a spec file
+
 class OscGnomeWebError(Exception):
     def __init__(self, value):
         self.msg = value
