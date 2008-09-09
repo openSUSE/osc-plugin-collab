@@ -229,7 +229,10 @@ def get_upstream_version(modulename, method, additional_info):
 
     if method == 'httpls':
         (location, files) = _get_files_from_http(additional_info)
-        return _get_version_from_files(modulename, location, files)
+        try:
+            return _get_version_from_files(modulename, location, files)
+        except IOError:
+            return (None, None)
 
     elif method == 'dualhttpls':
         (url1, url2) = additional_info.split('|')
@@ -258,7 +261,10 @@ def get_upstream_version(modulename, method, additional_info):
 
     elif method == 'subdirhttpls':
         (location, files) = _get_files_from_subdir_http(additional_info)
-        return _get_version_from_files(modulename, location, files)
+        try:
+            return _get_version_from_files(modulename, location, files)
+        except IOError:
+            return (None, None)
 
     elif method == 'sf':
         return _get_version_from_sf_rss(additional_info)
