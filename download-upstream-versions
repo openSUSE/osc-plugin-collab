@@ -315,9 +315,11 @@ def main(args):
         (modulename, method, additional_info) = line[:-1].split(':', 2)
         (location, version) = get_upstream_version(modulename, method, additional_info)
         if version:
-            out.write('nonfgo:' + modulename + ':' + version + '\n')
+            out.write('nonfgo:' + modulename + ':' + version + ':' + location + '\n')
+        elif location:
+            out.write('nonfgo:' + modulename + '::' + location + '\n')
         else:
-            out.write('nonfgo:' + modulename + ':\n')
+            out.write('nonfgo:' + modulename + '::\n')
 
     out.close()
 
