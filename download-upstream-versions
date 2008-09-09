@@ -351,9 +351,7 @@ def _get_version_from_launchpad(project):
         if version == _bigger_version(version, biggest):
             biggest = version
 
-
     location = None
-    print biggest
 
     if biggest == '0':
         raise UpstreamDownloadError('No versions found')
