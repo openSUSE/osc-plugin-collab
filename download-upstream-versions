@@ -235,12 +235,26 @@ def get_upstream_version(modulename, method, additional_info):
         (url1, url2) = additional_info.split('|')
         (location1, files1) = _get_files_from_http(url1)
         (location2, files2) = _get_files_from_http(url2)
-        (location1, version1) = _get_version_from_files(modulename, location1, files1)
-        (location2, version2) = _get_version_from_files(modulename, location2, files2)
-        if version1 == _bigger_version(version1, version2):
+        try:
+            (location1, version1) = _get_version_from_files(modulename, location1, files1)
+        except IOError:
+            (location1, version1) = (None, None)
+
+        try:
+            (location2, version2) = _get_version_from_files(modulename, location2, files2)
+        except IOError:
+            (location2, version2) = (None, None)
+
+        if version1 and version2 and version1 == _bigger_version(version1, version2):
             return (location1, version1)
-        else:
+        elif version1 and version2:
             return (location2, version2)
+        elif version1:
+            return (location1, version1)
+        elif version2:
+            return (location2, version2)
+        else:
+            return (None, None)
 
     elif method == 'subdirhttpls':
         (location, files) = _get_files_from_subdir_http(additional_info)
