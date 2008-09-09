@@ -38,6 +38,9 @@
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
+# note that we still use aqbanking 2.x. The 3.x version is available from
+# http://www.aquamaniac.de/sites/download/packages.php
+aqbanking:sf:115695|125492
 avahi:httpls:http://avahi.org/download/
 bakefile:sf:83016|85308
 banshee-1:httpls:http://download.banshee-project.org/banshee/
@@ -131,6 +134,7 @@ tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
+telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
 xchat:subdirhttpls:http://www.xchat.org/files/source/

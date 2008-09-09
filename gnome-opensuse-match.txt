@@ -342,6 +342,7 @@ tango-icon-theme:tango-icon-theme
 telepathy-gabble:telepathy-gabble
 telepathy-glib:telepathy-glib
 telepathy-salut:telepathy-salut
+telepathy-stream-engine:telepathy-stream-engine
 transmission:transmission
 tsclient:tsclient
 webkit:WebKitGtk
