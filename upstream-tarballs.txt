@@ -32,8 +32,6 @@
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 avahi:httpls:http://avahi.org/download/
-#avahi-mono:sameas:avahi
-#avahi-qt4:sameas:avahi
 bakefile:sf:83016
 banshee-1:httpls:http://download.banshee-project.org/banshee/
 #beagle-index:upstream:
@@ -69,4 +67,14 @@ glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/re
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
+gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gobby:httpls:http://releases.0x539.de/gobby/
+gq:sf:3805
+gqview:sf:4050
+gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
+gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
+gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
+gtk-vnc:sf:190580
+obby:httpls:http://releases.0x539.de/obby/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/

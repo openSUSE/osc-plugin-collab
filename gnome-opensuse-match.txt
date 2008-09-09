@@ -281,4 +281,15 @@ glitz:glitz
 gnome-keyring-sharp:gnome-keyring-sharp
 gnome-mount:gnome-mount
 gnome-presence-applet:gnome-presence-applet
+gnucash:gnucash
+gnucash-docs:gnucash-docs
+gobby:gobby
+gq:gq
+gqview:gqview
+gstreamer:gstreamer-0_10-doc
+gst-plugins-bad:gstreamer-0_10-plugins-bad
+gst-plugins-farsight:gstreamer-0_10-plugins-farsight
+gst-plugins-ugly:gstreamer-0_10-plugins-ugly
+gtk-vnc:gtk-vnc
 libggz:ggz
+obby:obby
