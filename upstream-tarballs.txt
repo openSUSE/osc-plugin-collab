@@ -76,5 +76,5 @@ gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gtk-vnc:sf:190580
-obby:httpls:http://releases.0x539.de/obby/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+obby:httpls:http://releases.0x539.de/obby/
