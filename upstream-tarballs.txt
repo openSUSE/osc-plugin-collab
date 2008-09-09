@@ -23,6 +23,9 @@
 # sf:
 #   + use this when the upstream tarballs are hosted on sourceforge
 #   + the info field should be the project id in sourceforge
+#     It can also contain the package id for sourceforge projects using
+#     packages. In this case, the ids should be separated by a pipe:
+#     project_id|package_id
 #
 #
 # Note that you need to add a line in gnome-opensuse-match.txt for each
@@ -30,22 +33,23 @@
 # section.
 
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
+webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 avahi:httpls:http://avahi.org/download/
-bakefile:sf:83016
+bakefile:sf:83016|85308
 banshee-1:httpls:http://download.banshee-project.org/banshee/
 #beagle-index:upstream:
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
-bombermaze:sf:8614
+bombermaze:sf:8614|8751
 #bundle-lang-gnome:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-check:sf:28255
+check:sf:28255|20116
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
-conglomerate:sf:82766
+conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
@@ -70,11 +74,56 @@ gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source
 gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby:httpls:http://releases.0x539.de/gobby/
-gq:sf:3805
-gqview:sf:4050
+gq:sf:3805|3771
+gqview:sf:4050|4056
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
-gtk-vnc:sf:190580
+gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
+gtk-vnc:sf:190580|223580
+gtkglext:sf:54333|48997
+hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
+icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
+inkscape:sf:93438|99112
+ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
+iso-codes:httpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
+libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
+libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+libiptcdata:sf:130582|143234
+libnjb:sf:32528|24667
+libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
+libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
+libofx:sf:61170|57485
+liboil:httpls:http://liboil.freedesktop.org/download/
+libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
+libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
+libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
+libxklavier:sf:319|49313
+liferea:sf:87005|90495
+mission-control:sf:190214|224579
+mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
+net6:httpls:http://releases.0x539.de/net6/
+njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
+notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 obby:httpls:http://releases.0x539.de/obby/
+pidgin:sf:235|230234
+pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
+pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+pygtkglext:sf:54333|76105
+pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
+python-xlib:sf:10350|10058
+rarian:httpls:http://rarian.freedesktop.org/Releases/
+shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
+sobby:httpls:http://releases.0x539.de/sobby/
+sofia-sip:sf:143636|157769
+startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
+tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
+telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
+telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
+telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
+transmission:httpls:http://download.m0k.org/transmission/files/
+tsclient:sf:192483|226432
+xchat:subdirhttpls:http://www.xchat.org/files/source/

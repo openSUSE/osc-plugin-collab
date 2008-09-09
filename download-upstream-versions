@@ -190,7 +190,10 @@ def _get_version_from_files(modulename, location, files):
 
 
 def _get_version_from_sf_rss(id):
-    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=' + id
+    ids = id.split('|')
+    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=' + ids[0]
+    if len(ids) > 1:
+        url = url + '&package_id=' + ids[1]
 
     feed = feedparser.parse(url)
 
@@ -202,6 +205,9 @@ def _get_version_from_sf_rss(id):
 
     for entry in feed['entries']:
         version = version_re.sub(r'\1\2', entry.title)
+        if version == entry.title:
+            # could not apply regexp
+            continue
         if not version == _bigger_version(version, biggest):
             continue
 
