@@ -105,6 +105,7 @@ gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gtk-vnc:sf:190580|223580
 #gtk2-theme-openSUSE:upstream:
+#gtk2-themes:upstream:
 gtkglext:sf:54333|48997
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
@@ -116,11 +117,14 @@ ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
+libesmtp:httpls:libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libiptcdata:sf:130582|143234
 libjingle:google:libjingle
+libmcs:httpls:http://distfiles.atheme.org/
 libnjb:sf:32528|24667
 libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
@@ -134,7 +138,9 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libxklavier:sf:319|49313
 liferea:sf:87005|90495
+#metacity-themes:upstream:
 mission-control:sf:190214|224579
+monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
@@ -147,6 +153,7 @@ pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 pulseaudio:httpls:pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
 pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 python-xlib:sf:10350|10058
@@ -163,5 +170,6 @@ telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-
 #translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
+vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 #yast2-control-center-gnome:upstream:

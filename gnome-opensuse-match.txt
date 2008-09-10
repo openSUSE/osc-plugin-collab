@@ -304,6 +304,7 @@ gst-pulse:gstreamer-0_10-pulse
 gst-python:python-gstreamer-0_10
 gtk-vnc:gtk-vnc
 #gtk2-theme-openSUSE:gtk2-theme-openSUSE
+#gtk2-themes:gtk2-themes
 gtkglext:gtkglext
 gwenhywfar:gwenhywfar
 hicolor-icon-theme:hicolor-icon-theme
@@ -311,13 +312,16 @@ icon-naming-utils:icon-naming-utils
 inkscape:inkscape
 ipod-sharp:ipod-sharp
 iso-codes:iso-codes
-istanbyl:istanbul
+istanbul:istanbul
 libao-pulse:libao-pulse
+libesmtp:libesmtp
 libgalago:libgalago
 libgalago-gtk:libgalago-gtk
 libggz:ggz
+libgnomesu:libgnomesu
 libiptcdata:libiptcdata
 libjingle:libjingle
+libmcs:libmcs
 libnjb:libnjb
 libnl:libnl
 libnotify:libnotify
@@ -331,7 +335,9 @@ libtasn1:libtasn1
 libtelepathy:libtelepathy
 libxklavier:libxklavier
 liferea:liferea
+#metacity-themes:metacity-themes
 mission-control:telepathy-mission-control
+monsoon:monsoon
 mozilla-bonobo:mozilla-bonobo
 net6:net6
 njb-sharp:njb-sharp
@@ -344,6 +350,7 @@ pkg-config:pkg-config
 psiconv:psiconv
 pulseaudio:pulseaudio
 pycairo:python-cairo
+pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
 pysqlite:python-sqlite2
 python-xlib:python-xlib
@@ -360,6 +367,7 @@ telepathy-stream-engine:telepathy-stream-engine
 #translation-update:translation-update
 transmission:transmission
 tsclient:tsclient
+vobject:vobject
 webkit:WebKitGtk
 xchat:xchat
 #yast2-control-center-gnome:yast2-control-center-gnome
