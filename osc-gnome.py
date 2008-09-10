@@ -253,8 +253,9 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
             if self._gnome_compare_versions_a_gt_b(GF_version, oF_version):
                 print_package(package, oF_version, GF_version)
         else:
-            # empty upstream version
-            if upstream_version == '':
+            # empty upstream version or upstream version meaning openSUSE is
+            # upstream
+            if upstream_version == '' or upstream_version == '--':
                 continue
 
             if self._gnome_needs_update(oF_version, GF_version, upstream_version):

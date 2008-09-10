@@ -255,10 +255,8 @@ avahi:avahi-mono
 avahi:avahi-qt4
 bakefile:bakefile
 banshee-1:banshee
-#beagle-index:beagle-index
 bluez-gnome:bluez-gnome
 bombermaze:bombermaze
-#bundle-lang-gnome:bundle-lang-gnome
 cairo:cairo
 cairomm:cairomm
 check:check
@@ -280,7 +278,6 @@ galago-sharp:galago-sharp
 gbrainy:gbrainy
 gdata.py:python-gdata
 gdesklets:gDesklets
-#ggreeter:ggreeter
 ggz-client-libs:ggz-client-libs
 gimp:gimp
 gimp-help:gimp-help
@@ -289,7 +286,6 @@ glitz:glitz
 gnome-do:gnome-do
 gnome-keyring-sharp:gnome-keyring-sharp
 gnome-mount:gnome-mount
-#gnome-patch-translation:gnome-patch-translation
 gnome-presence-applet:gnome-presence-applet
 gnucash:gnucash
 gnucash-docs:gnucash-docs
@@ -303,8 +299,6 @@ gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-pulse:gstreamer-0_10-pulse
 gst-python:python-gstreamer-0_10
 gtk-vnc:gtk-vnc
-#gtk2-theme-openSUSE:gtk2-theme-openSUSE
-#gtk2-themes:gtk2-themes
 gtkglext:gtkglext
 gwenhywfar:gwenhywfar
 hicolor-icon-theme:hicolor-icon-theme
@@ -335,7 +329,6 @@ libtasn1:libtasn1
 libtelepathy:libtelepathy
 libxklavier:libxklavier
 liferea:liferea
-#metacity-themes:metacity-themes
 mission-control:telepathy-mission-control
 monsoon:monsoon
 mozilla-bonobo:mozilla-bonobo
@@ -344,7 +337,6 @@ njb-sharp:njb-sharp
 notification-daemon:notification-daemon
 nss-mdns:nss-mdns
 obby:obby
-#opt_gnome-compat:opt_gnome-compat
 pidgin:pidgin
 pkg-config:pkg-config
 psiconv:psiconv
@@ -364,10 +356,25 @@ telepathy-gabble:telepathy-gabble
 telepathy-glib:telepathy-glib
 telepathy-salut:telepathy-salut
 telepathy-stream-engine:telepathy-stream-engine
-#translation-update:translation-update
 transmission:transmission
 tsclient:tsclient
 vobject:vobject
 webkit:WebKitGtk
 xchat:xchat
-#yast2-control-center-gnome:yast2-control-center-gnome
+
+## Packages where we are upstream
+beagle-index:beagle-index
+bundle-lang-gnome:bundle-lang-gnome
+epiphany-branding-openSUSE:epiphany-branding-openSUSE
+gconf2-branding-openSUSE:gconf2-branding-openSUSE
+gdm-branding-openSUSE:gdm-branding-openSUSE
+glib2-branding-openSUSE:glib2-branding-openSUSE
+ggreeter:ggreeter
+gnome-patch-translation:gnome-patch-translation
+gtk2-branding-openSUSE:gtk2-branding-openSUSE
+gtk2-theme-openSUSE:gtk2-theme-openSUSE
+gtk2-themes:gtk2-themes
+metacity-themes:metacity-themes
+opt_gnome-compat:opt_gnome-compat
+translation-update:translation-update
+yast2-control-center-gnome:yast2-control-center-gnome

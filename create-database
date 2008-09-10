@@ -152,6 +152,8 @@ class DataCache:
 
                 if match.group(1) == 'nonfgo':
                     url = match.group(4)
+                elif match.group(1) == 'upstream':
+                    url = ''
                 else:
                     versions = version.split('.')
                     if len(versions) == 1:

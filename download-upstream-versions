@@ -367,11 +367,14 @@ def _get_version_from_launchpad(project):
 
 
 def get_upstream_version(modulename, method, additional_info):
-    if method not in [ 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
+    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
         print >>sys.stderr, 'Unsupported method ' + method
         return (None, None)
 
-    if method == 'ftpls':
+    if method == 'upstream':
+        return (None, '--')
+
+    elif method == 'ftpls':
         (location, files) = _get_files_from_ftp(additional_info)
         return _get_version_from_files(modulename, location, files)
 
@@ -553,14 +556,19 @@ def main(args):
             elif not location and version == fallback_version:
                 location = fallback_location
 
-        if version and location:
-            out.write('nonfgo:' + modulename + ':' + version + ':' + location + '\n')
-        elif version:
-            out.write('nonfgo:' + modulename + ':' + version + ':\n')
-        elif location:
-            out.write('nonfgo:' + modulename + '::' + location + '\n')
+        if version == '--':
+            cat = 'upstream'
         else:
-            out.write('nonfgo:' + modulename + '::\n')
+            cat = 'nonfgo'
+
+        if version and location:
+            out.write(cat + ':' + modulename + ':' + version + ':' + location + '\n')
+        elif version:
+            out.write(cat + ':' + modulename + ':' + version + ':\n')
+        elif location:
+            out.write(cat + ':' + modulename + '::' + location + '\n')
+        else:
+            out.write(cat + ':' + modulename + '::\n')
 
     if not options.debug:
         out.close()

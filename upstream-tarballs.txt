@@ -3,9 +3,13 @@
 #
 # where:
 #   + name is the upstream module name found in tarball names
-#   + method is one of 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls',
-#     'sf', 'google', 'lp'
+#   + method is one of 'upstream', 'ftpls', 'httpls', 'dualhttpls',
+#     'subdirhttpls', 'sf', 'google', 'lp'
 #   + info depends on method
+#
+# upstream:
+#   + use this when openSUSE is upstream for the package
+#   + the info field is ignored
 #
 # ftpls:
 #   + use this when you only have a ftp directory listing all tarballs
@@ -55,12 +59,12 @@ aqbanking:sf:115695|125492
 avahi:httpls:http://avahi.org/download/
 bakefile:sf:83016|85308
 banshee-1:httpls:http://download.banshee-project.org/banshee/
-#beagle-index:upstream:
+beagle-index:upstream:
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
 bombermaze:sf:8614|8751
-#bundle-lang-gnome:upstream:
+bundle-lang-gnome:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 check:sf:28255|20116
@@ -68,9 +72,10 @@ clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
+eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
-eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
+epiphany-branding-openSUSE:upstream:
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/farsight/
 fyre:httpls:http://releases.navi.cx/fyre/
@@ -80,9 +85,12 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
+gconf2-branding-openSUSE:upstream:
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
-#ggreeter:upstream:
+gdm-branding-openSUSE:upstream:
+glib2-branding-openSUSE:upstream:
+ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
@@ -91,7 +99,7 @@ glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/re
 gnome-do:lp:do
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
-#gnome-patch-translation:upstream:
+gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
@@ -104,8 +112,9 @@ gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gtk-vnc:sf:190580|223580
-#gtk2-theme-openSUSE:upstream:
-#gtk2-themes:upstream:
+gtk2-branding-openSUSE:upstream:
+gtk2-theme-openSUSE:upstream:
+gtk2-themes:upstream:
 gtkglext:sf:54333|48997
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
@@ -138,7 +147,7 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libxklavier:sf:319|49313
 liferea:sf:87005|90495
-#metacity-themes:upstream:
+metacity-themes:upstream:
 mission-control:sf:190214|224579
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
@@ -147,7 +156,7 @@ njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 obby:httpls:http://releases.0x539.de/obby/
-#opt_gnome-compat:upstream:
+opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
@@ -167,9 +176,9 @@ telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabb
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
-#translation-update:upstream:
+translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
-#yast2-control-center-gnome:upstream:
+yast2-control-center-gnome:upstream:
