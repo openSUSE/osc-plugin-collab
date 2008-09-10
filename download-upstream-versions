@@ -468,9 +468,12 @@ def main(args):
                       help='path to the file where the results will be written')
     parser.add_option('--upstream-file', dest='upstream',
                       help='path to the upstream data file')
+    parser.add_option('--fast-update', action='store_true',
+                      default=False, dest='fast_update',
+                      help='when available, use old saved data instead of looking for new data')
     parser.add_option('--use-old-as-fallback', action='store_true',
                       default=False, dest='fallback',
-                      help='use old saved data, if available, as a fallback for when we cannot find new data')
+                      help='if available, use old saved data as a fallback for when we cannot find new data')
     parser.add_option('--only-if-old', action='store_true',
                       default=False, dest='only_if_old',
                       help='execute only if the pre-existing result file is older than 10 hours')
@@ -516,7 +519,7 @@ def main(args):
                 if time.time() - stats.st_mtime < 3600 * 10:
                     sys.exit(0)
 
-            if options.fallback:
+            if options.fallback or options.fast_update:
                 fallback_data = parse_data(save_file)
         else:
             safe_mkdir_p(os.path.dirname(save_file))
@@ -537,12 +540,17 @@ def main(args):
         (location, version) = (None, None)
 
         (modulename, method, additional_info) = line[:-1].split(':', 2)
-        try:
-            (location, version) = get_upstream_version(modulename, method, additional_info)
-        except urllib2.URLError, e:
-            print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[0]
-        except UpstreamDownloadError:
-            print >>sys.stderr, 'No matching tarball found for ' + modulename
+
+        if options.fast_update and fallback_data.has_key(modulename) and fallback_data[modulename][0]:
+            # fast update: we don't download data if we have something in cache
+            pass
+        else:
+            try:
+                (location, version) = get_upstream_version(modulename, method, additional_info)
+            except urllib2.URLError, e:
+                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[0]
+            except UpstreamDownloadError:
+                print >>sys.stderr, 'No matching tarball found for ' + modulename
 
         if fallback_data.has_key(modulename):
             fallback_version = fallback_data[modulename][0]
