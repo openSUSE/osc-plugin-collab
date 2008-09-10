@@ -126,7 +126,7 @@ ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
-libesmtp:httpls:libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
+libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
@@ -160,7 +160,7 @@ opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
-pulseaudio:httpls:pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
+pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
