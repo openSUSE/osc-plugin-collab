@@ -213,12 +213,13 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
                 return True
 
     def print_package(package, oF_version, GF_version, upstream_version = None):
-        # FIXME 32 & 12 are arbitrary values. We should probably look at all
-        # package names/versions and find the longer name/version
+        # FIXME 32 & 20 (no better than the old choices of 32 & 12) are arbitrary
+        # values. We should probably look at all package names/versions and find
+        # the longer name/version
         if upstream_version:
-            print '%-32.32s | %-12.12s | %-12.12s | %-12.12s' % (package, oF_version, GF_version, upstream_version)
+            print '%-32.32s | %-20.20s | %-20.20s | %-20.20s' % (package, oF_version, GF_version, upstream_version)
         else:
-            print '%-32.32s | %-12.12s | %-12.12s' % (package, oF_version, GF_version)
+            print '%-32.32s | %-20.20s | %-20.20s' % (package, oF_version, GF_version)
 
 
     # get all versions of packages
@@ -243,10 +244,10 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
     # print headers
     if need_factory_sync:
         print_package('Package', 'openSUSE:Factory', 'GNOME:Factory')
-        print '---------------------------------+--------------+-------------'
+        print '---------------------------------+----------------------+---------------------'
     else:
         print_package('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
-        print '---------------------------------+--------------+--------------+-------------'
+        print '---------------------------------+----------------------+----------------------+-------------'
 
     for (package, oF_version, GF_version, upstream_version) in packages_versions:
         if need_factory_sync:
@@ -264,12 +265,12 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
                 if is_submitted(package, submitted_packages):
                     if exclude_submitted:
                         continue
-                    GF_version = GF_version + '*'
-                    upstream_version = upstream_version + '*'
+                    GF_version = GF_version + ' (s)'
+                    upstream_version = upstream_version + ' (s)'
                 if package in reserved_packages:
                     if exclude_reserved:
                         continue
-                    upstream_version = upstream_version + '*'
+                    upstream_version = upstream_version + ' (r)'
                 print_package(package, oF_version, GF_version, upstream_version)
 
 
@@ -283,7 +284,7 @@ def _gnome_listreserved(self):
         print >>sys.stderr, e.msg
         return
 
-    print '%-32.32s | %-12.12s' % ('Package', 'Reserved by')
+    print '%-32.32s | %-20.20s' % ('Package', 'Reserved by')
     print '---------------------------------+-------------'
 
     for (package, username) in reserved_packages:
@@ -312,29 +313,31 @@ def _gnome_isreserved(self, package):
 #######################################################################
 
 
-def _gnome_reserve(self, package, username):
-    try:
-        self._gnome_web.reserve_package(package, username)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return
-
-    print 'Package ' + package + ' reserved for 36 hours.'
-    print 'Do not forget to unreserve the package when done with it:'
-    print '    osc gnome unreserve ' + package
+def _gnome_reserve(self, packages, username):
+    for package in packages:
+        try:
+            self._gnome_web.reserve_package(package, username)
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            continue        
+        
+        print 'Package ' + package + ' reserved for 36 hours.'
+        print 'Do not forget to unreserve the package when done with it:'
+        print '    osc gnome unreserve ' + package
 
 
 #######################################################################
 
 
-def _gnome_unreserve(self, package, username):
-    try:
-        self._gnome_web.unreserve_package(package, username)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return
-
-    print 'Package ' + package + ' unreserved.'
+def _gnome_unreserve(self, packages, username):
+    for package in packages:
+        try:
+            self._gnome_web.unreserve_package(package, username)
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            continue
+        
+        print 'Package ' + package + ' unreserved.'
 
 
 #######################################################################
@@ -526,7 +529,6 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 # We could also check that all packages maintained by gnome-maintainers
 # are in G:F.
 
-
 #######################################################################
 
 
@@ -580,13 +582,16 @@ def do_gnome(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'update', 'up']:
+    elif cmd in ['isreserved', 'ir', 'update', 'up']:
         min_args, max_args = 1, 1
+    elif cmd in ['reserve', 'r', 'unreserve', 'u']:
+        min_args = 1
 
     if len(args) - 1 < min_args:
         raise oscerr.WrongArgs('Too few arguments.')
-    if len(args) - 1 > max_args:
-        raise oscerr.WrongArgs('Too many arguments.')
+    if not cmd in ['reserve', 'r', 'unreserve', 'u']:
+        if len(args) - 1 > max_args:
+            raise oscerr.WrongArgs('Too many arguments.')
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError)
     self._gnome_rpm_tried = False
@@ -603,13 +608,14 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_isreserved(package)
 
     elif cmd in ['reserve', 'r']:
-        package = args[1]
-        self._gnome_reserve(package, conf.config['user'])
+        packages = args[1:]
+        self._gnome_reserve(packages, conf.config['user'])
 
     elif cmd in ['unreserve', 'u']:
-        package = args[1]
-        self._gnome_unreserve(package, conf.config['user'])
+        packages = args[1:]
+        self._gnome_unreserve(packages, conf.config['user'])
 
     elif cmd in ['update', 'up']:
         package = args[1]
         self._gnome_update(package, conf.config['apiurl'], conf.config['user'], reserve = opts.reserve)
+
