@@ -54,5 +54,9 @@ runme:
     Small helper to show how to use everything, and get some data from
     scratch.
 
+upstream-limits.txt:
+    Information about limits for upstream versions. We might not want
+    to look for unstable versions of a module, eg.
+
 upstream-tarballs.txt:
     Information about where to find the latest upstream tarballs.
