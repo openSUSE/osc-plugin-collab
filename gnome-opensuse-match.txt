@@ -308,6 +308,7 @@ inkscape:inkscape
 ipod-sharp:ipod-sharp
 iso-codes:iso-codes
 istanbul:istanbul
+ldtp:ldtp
 libao-pulse:libao-pulse
 libesmtp:libesmtp
 libgalago:libgalago

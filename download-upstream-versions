@@ -142,9 +142,10 @@ def _get_files_from_ftp(url):
 # based on code from convert-to-tarball.py
 def _get_files_from_subdir_http(url, limit):
     obj = urllib2.build_opener()
-    good_dir = re.compile('^([0-9]+\.)*[0-9]+/?$')
+    # Note that we accept directories called 1.x.X
+    good_dir = re.compile('^(([0-9]+|[xX])\.)*([0-9]+|[xX])/?$')
     def hasdirs(x): return good_dir.search(x)
-    def fixdirs(x): return re.sub(r'^((?:[0-9]+\.)*)([0-9]+)/?$', r'\1\2', x)
+    def fixdirs(x): return re.sub(r'^((?:(?:[0-9]+|[xX])\.)*)([0-9]+|[xX])/?$', r'\1\2', x)
     location = url
     # Follow 302 codes when retrieving URLs, speeds up conversion by 60sec
     redirect_location = location
