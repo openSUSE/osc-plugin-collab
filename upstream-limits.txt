@@ -13,6 +13,7 @@
 # this is needed for the current gnucash
 aqbanking:max|3
 gwenhywfar:max|3
+poppler:max|0.9
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable

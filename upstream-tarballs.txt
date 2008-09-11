@@ -163,6 +163,7 @@ obby:httpls:http://releases.0x539.de/obby/
 opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
+poppler:httpls:http://poppler.freedesktop.org/releases.html
 poppler-data:httpls:http://poppler.freedesktop.org/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio

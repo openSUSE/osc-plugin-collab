@@ -339,6 +339,7 @@ nss-mdns:nss-mdns
 obby:obby
 pidgin:pidgin
 pkg-config:pkg-config
+poppler:poppler
 poppler-data:poppler-data
 psiconv:psiconv
 pulseaudio:pulseaudio
