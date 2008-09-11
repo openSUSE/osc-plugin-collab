@@ -10,10 +10,11 @@
 #    Use the "max|x.y" instruction for this behavior.
 #
 
+# 0.9 is unstable
+poppler:max|0.9
 # this is needed for the current gnucash
 aqbanking:max|3
 gwenhywfar:max|3
-poppler:max|0.9
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable
