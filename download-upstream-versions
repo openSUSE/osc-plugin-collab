@@ -447,6 +447,7 @@ def _get_version_from_launchpad(project, limit):
         if version == _bigger_version(version, biggest):
             biggest = version
 
+    # TODO: this is blocked by https://bugs.launchpad.net/bugs/268359
     location = None
 
     if biggest == '0':
