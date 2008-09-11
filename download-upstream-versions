@@ -79,6 +79,22 @@ def _line_is_comment(line):
 #######################################################################
 
 
+# Fix some locations to point to what are really downloads.
+def _location_fix(location):
+    sf_jp = re.compile('^http://sourceforge.jp/projects/([^/]+)/downloads/([^/]+)/([^/]+)$')
+
+    match = sf_jp.match(location)
+    if match:
+        # Unfortunate, but there's no other solution than to use a specific
+        # mirror
+        return 'http://globalbase.dl.sourceforge.jp/' + match.group(1) + '/' + match.group(2) + '/' + match.group(3)
+
+    return location
+
+
+#######################################################################
+
+
 class UpstreamDownloadError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -332,10 +348,30 @@ def _get_version_from_sf_rss(modulename, id, limit):
         match = download_re.search(entry.summary)
         if match:
             download_url = match.group(1)
-        else:
-            download_url = 'http://sourceforge.net/project/showfiles.php?group_id=' + id
         biggest = version
         location = download_url
+
+    # if we have a link to the sf download page, look at this page
+    if location:
+        (location, files) = _get_files_from_http(location)
+
+        good_files = [file for file in files if 'http://downloads.sourceforge.net/' in file]
+
+        tarballs = None
+        if not tarballs:
+            tarballs = [file for file in good_files if '.tar.bz2' in file]
+        if not tarballs:
+            tarballs = [file for file in good_files if '.tar.gz' in file]
+
+        if tarballs:
+            # let's take the first tarball
+            url = urlparse.urlparse(tarballs[0])
+            if url.path[0] == '/':
+                path = url.path[1:]
+            else:
+                path = url.path
+            location = 'http://dl.sourceforge.net/sourceforge/' + path
+
 
     if biggest == '0' and location == None:
         biggest = None
@@ -701,6 +737,9 @@ def main(args):
             cat = 'upstream'
         else:
             cat = 'nonfgo'
+
+        if location:
+            location = _location_fix(location)
 
         if version and location:
             out.write(cat + ':' + modulename + ':' + version + ':' + location + '\n')
