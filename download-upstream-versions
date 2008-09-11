@@ -72,6 +72,13 @@ if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
 #######################################################################
 
 
+def _line_is_comment(line):
+    return line[0] == '#' or line.strip() == ''
+
+
+#######################################################################
+
+
 class UpstreamDownloadError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -133,7 +140,7 @@ def _get_files_from_ftp(url):
 
 
 # based on code from convert-to-tarball.py
-def _get_files_from_subdir_http(url):
+def _get_files_from_subdir_http(url, limit):
     obj = urllib2.build_opener()
     good_dir = re.compile('^([0-9]+\.)*[0-9]+/?$')
     def hasdirs(x): return good_dir.search(x)
@@ -154,7 +161,10 @@ def _get_files_from_subdir_http(url):
         newdirs = filter(hasdirs, files)
         newdirs = map(fixdirs, newdirs)
         if newdirs:
-            newdir = _get_latest_version(newdirs)
+            newdir = _get_latest_version(newdirs, limit)
+            if not newdir:
+                break
+
             redirect_location = posixjoin(usock.url, newdir)
             location = posixjoin(location, newdir)
         else:
@@ -180,11 +190,63 @@ def _bigger_version(a, b):
     else:
         return b
 
-def _get_latest_version(versions):
-    biggest = versions[0]
-    for version in versions[1:]:
-        if version == _bigger_version(biggest, version):
+
+def _setup_limit(limit):
+    limit_data = None
+
+    if not limit:
+        pass
+    elif limit == 'no-odd-unstable':
+        pass
+    elif limit[:4] == 'max|':
+        limit_data = limit[4:]
+        limit = 'max'
+    else:
+        print >>sys.stderr, 'Unsupported limit ' + limit
+        limit = None
+
+    return (limit, limit_data)
+
+def _respect_limit(version, limit, limit_data):
+    if not limit:
+        return True
+    elif limit == 'no-odd-unstable':
+        split_version = version.split('.')
+        if len(split_version) <= 1:
+            # not enough version data, so let's just say yes
+            return True
+
+        try:
+            return int(split_version[1]) % 2 == 0
+        except:
+            # second element is not an int. Let's just say yes
+            return True
+
+    elif limit == 'max':
+        # if the limit is exactly the same as the version we're looking at,
+        # _bigger_version will return what we want
+        return limit_data == _bigger_version(limit_data, version) and version != limit_data
+
+    else:
+        return False
+
+
+def _get_latest_version(versions, limit):
+    (limit, limit_data) = _setup_limit(limit)
+
+    biggest = None
+    for version in versions:
+        if _respect_limit(version, limit, limit_data):
             biggest = version
+            break
+
+    if not biggest:
+        return None
+
+    for version in versions[versions.index(biggest) + 1:]:
+        if _respect_limit(version, limit, limit_data) and version == _bigger_version(biggest, version):
+            biggest = version
+
     return biggest
 
 
@@ -192,7 +254,7 @@ def _get_latest_version(versions):
 
 
 # based on code from convert-to-tarball.py
-def _get_version_from_files(modulename, location, files):
+def _get_version_from_files(modulename, location, files, limit):
     # Only include tarballs for the given module
     good_files = [file for file in files if modulename in file]
 
@@ -216,7 +278,11 @@ def _get_version_from_files(modulename, location, files):
     if not len(versions):
         raise UpstreamDownloadError('No versions found')
 
-    version = _get_latest_version(versions)
+    version = _get_latest_version(versions, limit)
+
+    if not version:
+        raise UpstreamDownloadError('No version found respecting the limits')
+
     index = versions.index(version)
 
     if urlparse.urlparse(tarballs[index]).scheme != '':
@@ -231,7 +297,9 @@ def _get_version_from_files(modulename, location, files):
 #######################################################################
 
 
-def _get_version_from_sf_rss(id):
+def _get_version_from_sf_rss(modulename, id, limit):
+    (limit, limit_data) = _setup_limit(limit)
+
     ids = id.split('|')
     url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=' + ids[0]
     if len(ids) > 1:
@@ -252,6 +320,8 @@ def _get_version_from_sf_rss(id):
             continue
         if not version == _bigger_version(version, biggest):
             continue
+        if not _respect_limit(version, limit, limit_data):
+            continue
 
         match = download_re.search(entry.summary)
         if match:
@@ -270,7 +340,9 @@ def _get_version_from_sf_rss(id):
 #######################################################################
 
 
-def _get_version_from_google_atom(project):
+def _get_version_from_google_atom(project, limit):
+    (limit, limit_data) = _setup_limit(limit)
+
     url = 'http://code.google.com/feeds/p/' + project + '/downloads/basic'
 
     feed = feedparser.parse(url)
@@ -288,6 +360,8 @@ def _get_version_from_google_atom(project):
 
         version = match.group(1)
         if not version == _bigger_version(version, biggest):
+            continue
+        if not _respect_limit(version, limit, limit_data):
             continue
 
         match = download_re.search(entry.content[0]['value'])
@@ -307,7 +381,9 @@ def _get_version_from_google_atom(project):
 #######################################################################
 
 
-def _get_version_from_launchpad(project):
+def _get_version_from_launchpad(project, limit):
+    (limit, limit_data) = _setup_limit(limit)
+
     lp_ns = '{https://launchpad.net/rdf/launchpad#}'
     rdf_ns = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
 
@@ -329,6 +405,9 @@ def _get_version_from_launchpad(project):
         if not match:
             continue
         series_version = match.group(1)
+
+        if not _respect_limit(series_version, limit, limit_data):
+            continue
 
         if series_version == _bigger_version(series_version, series_biggest):
             series_biggest = series_version
@@ -356,6 +435,9 @@ def _get_version_from_launchpad(project):
             continue
         version = match.group(1)
 
+        if not _respect_limit(version, limit, limit_data):
+            continue
+
         if version == _bigger_version(version, biggest):
             biggest = version
 
@@ -370,7 +452,7 @@ def _get_version_from_launchpad(project):
 #######################################################################
 
 
-def get_upstream_version(modulename, method, additional_info):
+def get_upstream_version(modulename, method, additional_info, limit):
     if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
         print >>sys.stderr, 'Unsupported method ' + method
         return (None, None)
@@ -380,23 +462,23 @@ def get_upstream_version(modulename, method, additional_info):
 
     elif method == 'ftpls':
         (location, files) = _get_files_from_ftp(additional_info)
-        return _get_version_from_files(modulename, location, files)
+        return _get_version_from_files(modulename, location, files, limit)
 
     elif method == 'httpls':
         (location, files) = _get_files_from_http(additional_info)
-        return _get_version_from_files(modulename, location, files)
+        return _get_version_from_files(modulename, location, files, limit)
 
     elif method == 'dualhttpls':
         (url1, url2) = additional_info.split('|')
         (location1, files1) = _get_files_from_http(url1)
         (location2, files2) = _get_files_from_http(url2)
         try:
-            (location1, version1) = _get_version_from_files(modulename, location1, files1)
+            (location1, version1) = _get_version_from_files(modulename, location1, files1, limit)
         except UpstreamDownloadError:
             (location1, version1) = (None, None)
 
         try:
-            (location2, version2) = _get_version_from_files(modulename, location2, files2)
+            (location2, version2) = _get_version_from_files(modulename, location2, files2, limit)
         except UpstreamDownloadError:
             (location2, version2) = (None, None)
 
@@ -412,17 +494,40 @@ def get_upstream_version(modulename, method, additional_info):
             raise UpstreamDownloadError('No versions found')
 
     elif method == 'subdirhttpls':
-        (location, files) = _get_files_from_subdir_http(additional_info)
-        return _get_version_from_files(modulename, location, files)
+        (location, files) = _get_files_from_subdir_http(additional_info, limit)
+        return _get_version_from_files(modulename, location, files, limit)
 
     elif method == 'sf':
-        return _get_version_from_sf_rss(additional_info)
+        return _get_version_from_sf_rss(modulename, additional_info, limit)
 
     elif method == 'google':
-        return _get_version_from_google_atom(additional_info)
+        return _get_version_from_google_atom(additional_info, limit)
 
     elif method == 'lp':
-        return _get_version_from_launchpad(additional_info)
+        return _get_version_from_launchpad(additional_info, limit)
+
+
+#######################################################################
+
+
+def parse_limits(limits_file):
+    retval = {}
+
+    if not os.path.exists(limits_file) or not os.path.isfile(limits_file):
+        return retval
+
+    file = open(limits_file)
+    lines = file.readlines()
+    file.close()
+
+    for line in lines:
+        if _line_is_comment(line):
+            continue
+
+        data = line[:-1].split(':', 2)
+        retval[data[0]] = data[1]
+
+    return retval
 
 
 #######################################################################
@@ -439,6 +544,9 @@ def parse_data(data_file):
     file.close()
 
     for line in lines:
+        if _line_is_comment(line):
+            continue
+
         data = line[:-1].split(':', 3)
         if data[0] != 'nonfgo':
             continue
@@ -470,14 +578,16 @@ def main(args):
                       help='directory where to find data and save data')
     parser.add_option('--save-file', dest='save',
                       help='path to the file where the results will be written')
-    parser.add_option('--upstream-file', dest='upstream',
-                      help='path to the upstream data file')
+    parser.add_option('--upstream-limits', dest='upstream_limits',
+                      help='path to the upstream limits data file')
+    parser.add_option('--upstream-tarballs', dest='upstream_tarballs',
+                      help='path to the upstream tarballs data file')
     parser.add_option('--fast-update', action='store_true',
                       default=False, dest='fast_update',
-                      help='when available, use old saved data instead of looking for new data')
+                      help='when available, use old saved data instead of looking for new data (limits will be ignored)')
     parser.add_option('--use-old-as-fallback', action='store_true',
                       default=False, dest='fallback',
-                      help='if available, use old saved data as a fallback for when we cannot find new data')
+                      help='if available, use old saved data as a fallback for when we cannot find new data (limits will be ignored for the fallback case)')
     parser.add_option('--only-if-old', action='store_true',
                       default=False, dest='only_if_old',
                       help='execute only if the pre-existing result file is older than 10 hours')
@@ -486,18 +596,25 @@ def main(args):
 
     fallback_data = {}
 
+    if options.dir:
+        directory = options.dir
+    else:
+        directory = DIR_PARENT
+
+    if options.upstream_limits:
+        limit_file = options.upstream_limits
+    else:
+        limit_file = os.path.join(directory, 'upstream-limits.txt')
+
+    limits = parse_limits(limit_file)
+
     if options.debug:
         lines = [ options.debug + '\n' ]
         out = sys.stdout
 
     else:
-        if options.dir:
-            directory = options.dir
-        else:
-            directory = DIR_PARENT
-
-        if options.upstream:
-            upstream_file = options.upstream
+        if options.upstream_tarballs:
+            upstream_file = options.upstream_tarballs
         else:
             upstream_file = os.path.join(directory, 'upstream-tarballs.txt')
 
@@ -538,7 +655,7 @@ def main(args):
     socket.setdefaulttimeout(10)
 
     for line in lines:
-        if line[0] == '#' or line[0] == '\n':
+        if _line_is_comment(line):
             continue
 
         (location, version) = (None, None)
@@ -549,12 +666,17 @@ def main(args):
             # fast update: we don't download data if we have something in cache
             pass
         else:
+            if limits.has_key(modulename):
+                limit = limits[modulename]
+            else:
+                limit = None
+
             try:
-                (location, version) = get_upstream_version(modulename, method, additional_info)
+                (location, version) = get_upstream_version(modulename, method, additional_info, limit)
             except urllib2.URLError, e:
                 print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[0]
-            except UpstreamDownloadError:
-                print >>sys.stderr, 'No matching tarball found for ' + modulename
+            except UpstreamDownloadError, e:
+                print >>sys.stderr, 'No matching tarball found for ' + modulename + ': ' + e.msg
 
         if fallback_data.has_key(modulename):
             fallback_version = fallback_data[modulename][0]

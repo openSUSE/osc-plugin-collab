@@ -1,0 +1,19 @@
+# This file is used to express limits we want to have on new upstream tarballs.
+#
+# It's possible to decide to:
+#
+#  + not have unstable versions (for modules following the x.y.z release
+#    scheme, where it's unstable when y is odd)
+#    Use the no-odd-unstable instruction for this behavior.
+#
+#  + not have a version greater or equal than a specified version.
+#    Use the "max|x.y" instruction for this behavior.
+#
+
+# this is needed for the current gnucash
+aqbanking:max|3
+gwenhywfar:max|3
+
+# we don't want unstable versions of the following modules
+gq:no-odd-unstable
+liferea:no-odd-unstable
