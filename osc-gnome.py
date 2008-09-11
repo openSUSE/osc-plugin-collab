@@ -250,6 +250,8 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
 
     for (package, oF_version, GF_version, upstream_version) in packages_versions:
         if need_factory_sync:
+            # FIXME: we should actually not do it this way, but use the fact
+            # that we have a delta in the linked package.
             if self._gnome_compare_versions_a_gt_b(GF_version, oF_version):
                 print_package(package, oF_version, GF_version)
         else:
