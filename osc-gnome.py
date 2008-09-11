@@ -342,17 +342,7 @@ def _gnome_unreserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_setup_internal(self, package, apiurl, username, reserve = False, additional_check_before_reserve = None):
-    try:
-        (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return False
-
-    if additional_check_before_reserve:
-        if not additional_check_before_reserve(self, package, oF_version, GF_version, upstream_version):
-            return False
-
+def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
     # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
@@ -446,25 +436,35 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False, addi
 #######################################################################
 
 
+def _gnome_setup(self, package, apiurl, username, reserve = False):
+    if not self._gnome_setup_internal(package, apiurl, username, reserve):
+        return
+    print 'Package ' + package + ' has been prepared for work.'
+
+
+#######################################################################
+
+
 def _gnome_update(self, package, apiurl, username, reserve = False):
+    try:
+        (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return
 
-    def _setup_check(self, package, oF_version, GF_version, upstream_version):
-        # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
-        if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
-            print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
-            return False
+    # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
+    if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
+        print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
+        return
 
-        # check that an update is really needed
-        if upstream_version == '':
-            print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
-        elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
-            print 'Package ' + package + ' is already up-to-date.'
-            return False
+    # check that an update is really needed
+    if upstream_version == '':
+        print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
+    elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
+        print 'Package ' + package + ' is already up-to-date.'
+        return
 
-        return True
-
-
-    if not self._gnome_setup_internal(package, apiurl, username, reserve, _setup_check):
+    if not self._gnome_setup_internal(package, apiurl, username, reserve):
         return
 
     # TODO
@@ -577,21 +577,28 @@ def do_gnome(self, subcmd, opts, *args):
 
     "unreserve" (or "u") will remove the reservation you had on a package.
 
-    "update" (or "up") will prepare a package for update (possibly reservation,
+    "setup" (or "s") will prepare a package for work (possibly reservation,
     branch, checking out, etc.). The package will be checked out in the current
     directory.
 
+    "update" (or "up") will prepare a package for update (possibly reservation,
+    branch, checking out, download of the latest upstream tarball, .spec
+    edition, etc.). The package will be checked out in the current directory.
+
     Usage:
         osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|--xr] [--exclude-submitted|--xs]
+
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG
         osc gnome unreserve PKG
+
+        osc gnome setup [--reserve|-r] PKG
         osc gnome update [--reserve|-r] PKG
     ${cmd_option_list}
     """
 
-    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'update', 'up']
+    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -601,7 +608,7 @@ def do_gnome(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'update', 'up']:
+    elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up']:
         min_args, max_args = 1, 1
     elif cmd in ['reserve', 'r', 'unreserve', 'u']:
         min_args = 1
@@ -633,6 +640,10 @@ def do_gnome(self, subcmd, opts, *args):
     elif cmd in ['unreserve', 'u']:
         packages = args[1:]
         self._gnome_unreserve(packages, conf.config['user'])
+
+    elif cmd in ['setup', 's']:
+        package = args[1]
+        self._gnome_setup(package, conf.config['apiurl'], conf.config['user'], reserve = opts.reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
