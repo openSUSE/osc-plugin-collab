@@ -101,8 +101,12 @@ gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
-gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
-gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+# Sf seems to be more up-to-date
+# gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gnucash:sf:192|202
+# Sf seems to be more up-to-date
+# gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gnucash-docs:sf:192|93259
 gobby:httpls:http://releases.0x539.de/gobby/
 gq:sf:3805|3771
 gqview:sf:4050|4056
@@ -159,6 +163,7 @@ obby:httpls:http://releases.0x539.de/obby/
 opt_gnome-compat:upstream:
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
+poppler-data:httpls:http://poppler.freedesktop.org/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
