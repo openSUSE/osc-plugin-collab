@@ -594,12 +594,14 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 
     package_dir = package
 
-    # TODO
     # edit the version tag in the .spec files
+    # not fatal if fails
+    # TODO
     # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
     # Maybe warn if there are other spec files? They might need an update too.
 
     # start adding an entry to .changes
+    # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
     if not os.path.exists(changes_file):
         print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
@@ -643,6 +645,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 
 
     # download the upstream tarball
+    # fatal if fails
     try:
         upstream_url = self._gnome_web.get_upstream_url(package)
     except self.OscGnomeWebError, e:
@@ -666,14 +669,17 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     else:
         print os.path.basename(upstream_tarball) + ' has been downloaded.'
 
+    # check integrity of the downloaded file
+    # fatal if fails (only if md5 exists)
     # TODO
-    # download the md5/sha1
 
-    # TODO
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
+    # not fatal if fails
+    # TODO
 
 
     # recompress as bz2
+    # not fatal if fails
     if upstream_tarball.endswith('.gz'):
         try:
             upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
@@ -682,8 +688,13 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             print >>sys.stderr, e.msg
 
 
-    # TODO
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
+    # fatail if fails
+    # TODO
+
+    # try applying the patches with rpm quilt and start a build if it succeeds
+    # not fatal if fails
+    # TODO
 
     print 'Package ' + package + ' has been prepared for the update.'
 
