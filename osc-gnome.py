@@ -342,43 +342,35 @@ def _gnome_unreserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_update(self, package, apiurl, username, reserve = False):
+def _gnome_setup_internal(self, package, apiurl, username, reserve = False, additional_check_before_reserve = None):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return False
 
-    # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
-    if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
-        print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
-        return
-
-    # check that an update is really needed
-    if upstream_version == '':
-        print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
-    elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
-        print 'Package ' + package + ' is already up-to-date.'
-        return
+    if additional_check_before_reserve:
+        if not additional_check_before_reserve(self, package, oF_version, GF_version, upstream_version):
+            return False
 
     # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return False
 
     if not reserve:
         # check that we already have reserved the package
         if not reserved_by:
             print 'Please reserve the package ' + package + ' first.'
-            return
+            return False
         elif reserved_by != username:
             print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
-            return
+            return False
     elif reserved_by and reserved_by != username:
         print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
-        return
+        return False
     elif not reserved_by:
         # reserve the package
         try:
@@ -388,7 +380,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             print '    osc gnome unreserve ' + package
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
-            return
+            return False
 
     # look if we already have a branch, and if not branch the package
     try:
@@ -399,29 +391,29 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     except urllib2.HTTPError, e:
         if e.code != 404:
             print >>sys.stderr, 'Error while checking if package ' + package + ' was already branched: ' + e.msg
-            return
+            return False
         # We had a 404: it means the branched package doesn't exist yet
         try:
             branch_project = branch_pkg(apiurl, 'GNOME:Factory', package, nodevelproject = True)
             print 'Package ' + package + ' has been branched in project ' + branch_project + '.'
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Error while branching package ' + package + ': ' + e.msg
-            return
+            return False
 
     # check out the branched package
     if os.path.exists(package):
         # maybe we already checked it out before?
         if not os.path.isdir(package):
             print >>sys.stderr, 'File ' + package + ' already exists but is not a directory.'
-            return
+            return False
         elif not is_package_dir(package):
             print >>sys.stderr, 'Directory ' + package + ' already exists but is not a checkout of a Build Service package.'
-            return
+            return False
 
         obs_package = filedir_to_pac(package)
         if obs_package.name != package or obs_package.prjname != branch_project:
             print >>sys.stderr, 'Directory ' + package + ' already exists but is a checkout of package ' + obs_package.name + ' from project ' + obs_package.prjname +'.'
-            return
+            return False
 
         # update the package
         try:
@@ -437,7 +429,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             print 'Package ' + package + ' has been updated.'
         except:
             print >>sys.stderr, 'Error while updating package ' + package + ': ' + e.msg
-            return
+            return False
 
     else:
         # check out the branched package
@@ -446,7 +438,34 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             print 'Package ' + package + ' has been checked out.'
         except:
             print >>sys.stderr, 'Error while checking out package ' + package + ': ' + e.msg
-            return
+            return False
+
+    return True
+
+
+#######################################################################
+
+
+def _gnome_update(self, package, apiurl, username, reserve = False):
+
+    def _setup_check(self, package, oF_version, GF_version, upstream_version):
+        # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
+        if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
+            print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
+            return False
+
+        # check that an update is really needed
+        if upstream_version == '':
+            print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
+        elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
+            print 'Package ' + package + ' is already up-to-date.'
+            return False
+
+        return True
+
+
+    if not self._gnome_setup_internal(package, apiurl, username, reserve, _setup_check):
+        return
 
     # TODO
     # edit the version tag in the .spec files
