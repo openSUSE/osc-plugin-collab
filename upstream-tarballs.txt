@@ -115,6 +115,7 @@ gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
+gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk-vnc:sf:190580|223580
 gtk2-branding-openSUSE:upstream:
 gtk2-theme-openSUSE:upstream:

@@ -298,6 +298,7 @@ gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-pulse:gstreamer-0_10-pulse
 gst-python:python-gstreamer-0_10
+gsynaptics:gsynaptics
 gtk-vnc:gtk-vnc
 gtkglext:gtkglext
 gwenhywfar:gwenhywfar
