@@ -363,7 +363,7 @@ telepathy-stream-engine:telepathy-stream-engine
 transmission:transmission
 tsclient:tsclient
 vobject:vobject
-webkit:WebKitGtk
+webkit:libwebkit
 xchat:xchat
 
 ## Packages where we are upstream
