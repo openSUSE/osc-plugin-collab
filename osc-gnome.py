@@ -5,12 +5,40 @@
 # alphabetically)
 # Actually, create a class that fixes a spec file
 
-class OscGnomeWebError(Exception):
+class OscGnomeError(Exception):
     def __init__(self, value):
         self.msg = value
 
     def __str__(self):
         return repr(self.msg)
+
+
+class OscGnomeWebError(OscGnomeError):
+    pass
+
+class OscGnomeDownloadError(OscGnomeError):
+    pass
+
+class OscGnomeCompressError(OscGnomeError):
+    pass
+
+
+#######################################################################
+
+
+class OscGnomeImport:
+
+    _imported_modules = {}
+
+    @classmethod
+    def m_import(cls, module):
+        if not cls._imported_modules.has_key(module):
+            try:
+                cls._imported_modules[module] = __import__(module)
+            except ImportError:
+                cls._imported_modules[module] = None
+
+        return cls._imported_modules[module]
 
 
 #######################################################################
@@ -19,6 +47,7 @@ class OscGnomeWebError(Exception):
 class OscGnomeWeb:
 
     _reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
+    _upstream_url = 'http://tmp.vuntz.net/opensuse-packages/upstream.py'
     _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
     def __init__(self, exception):
@@ -69,9 +98,30 @@ class OscGnomeWeb:
             (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
         except ValueError:
             print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
-            return
+            return (None, None, None)
 
         return (oF_version, GF_version, upstream_version)
+
+
+    def get_upstream_url(self, package):
+        try:
+            fd = urllib2.urlopen(self._upstream_url + '?package=' + package)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get upstream URL of package ' + package + ': ' + e.msg)
+
+        line = fd.readline()
+        fd.close()
+
+        try:
+            (package, upstream_version, upstream_url, empty) = line.split(';')
+        except ValueError:
+            print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+            return None
+
+        if empty and empty.strip() != '':
+            raise self.Error('Upstream URL of package ' + package + ' probably contains a semi-colon. This is a bug in the server and the plugin.')
+
+        return upstream_url
 
 
     def get_reserved_packages(self, return_package = True, return_username = True, return_comment = False):
@@ -164,18 +214,12 @@ class OscGnomeWeb:
 
 # TODO: put this in a common library -- it's used in the examples too
 def _gnome_compare_versions_a_gt_b(self, a, b):
-    if not self._gnome_rpm_tried:
-        self._gnome_rpm_tried = True
-        try:
-            self._gnome_rpm_module = __import__('rpm')
-        except ImportError:
-            self._gnome_rpm_module = None
-
-    if self._gnome_rpm_module:
+    rpm = self.OscGnomeImport.m_import('rpm')
+    if rpm:
         # We're not really interested in the epoch or release parts of the
         # complete version because they're not relevant when comparing to
         # upstream version
-        return self._gnome_rpm_module.labelCompare((None, a, '1'), (None, b, '1')) > 0
+        return rpm.labelCompare((None, a, '1'), (None, b, '1')) > 0
 
     split_a = a.split('.')
     split_b = b.split('.')
@@ -445,6 +489,87 @@ def _gnome_setup(self, package, apiurl, username, reserve = False):
 #######################################################################
 
 
+def _gnome_download_internal(self, url, dest_dir):
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    urlparse = self.OscGnomeImport.m_import('urlparse')
+    if not urlparse:
+        raise self.OscGnomeDownloadError('Cannot download ' + url + ': incomplete python installation.')
+
+    parsed_url = urlparse.urlparse(url)
+    basename = os.path.basename(parsed_url.path)
+    if basename == '':
+        raise self.OscGnomeDownloadError('Cannot download ' + url + ': no basename in URL.')
+
+    dest_file = os.path.join(dest_dir, basename)
+    # we download the file again if it already exists. Maybe the upstream
+    # tarball changed, eg. We could add an option to avoid this, but I feel
+    # like it won't happen a lot anyway.
+    if os.path.exists(dest_file):
+        os.unlink(dest_file)
+
+    try:
+        fin = urllib2.urlopen(url)
+    except urllib2.HTTPError, e:
+        raise self.OscGnomeDownloadError('Cannot download ' + url + ': ' + e.msg)
+
+    fout = open(dest_file, 'wb')
+
+    while True:
+        try:
+            bytes = fin.read(500 * 1024)
+            if len(bytes) == 0:
+                break
+            fout.write(bytes)
+        except urllib2.HTTPError, e:
+            fin.close()
+            fout.close()
+            os.unlink(dest_file)
+            raise self.OscGnomeDownloadError('Error while downloading ' + url + ': ' + e.msg)
+
+    fin.close()
+    fout.close()
+
+    return dest_file
+
+
+#######################################################################
+
+
+def _gnome_gz_to_bz2_internal(self, file):
+    if not file.endswith('.gz'):
+        raise self.OscGnomeCompressError('Cannot recompress ' + os.path.basename(file) + ' as bz2: filename not ending with .gz.')
+    dest_file = file[:-3] + '.bz2'
+
+    gzip = self.OscGnomeImport.m_import('gzip')
+    bz2 = self.OscGnomeImport.m_import('bz2')
+
+    if not gzip or not bz2:
+        raise self.OscGnomeCompressError('Cannot recompress ' + os.path.basename(file) + ' as bz2: incomplete python installation.')
+
+    if os.path.exists(dest_file):
+        os.unlink(dest_file)
+
+    fin = gzip.open(file)
+    fout = bz2.BZ2File(dest_file, 'wb')
+
+    while True:
+        bytes = fin.read(500 * 1024)
+        if len(bytes) == 0:
+            break
+        fout.write(bytes)
+
+    fin.close()
+    fout.close()
+
+    os.unlink(file)
+    return dest_file
+
+
+#######################################################################
+
+
 def _gnome_update(self, package, apiurl, username, reserve = False):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
@@ -467,24 +592,28 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     if not self._gnome_setup_internal(package, apiurl, username, reserve):
         return
 
+    package_dir = package
+
     # TODO
     # edit the version tag in the .spec files
     # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
     # Maybe warn if there are other spec files? They might need an update too.
 
     # start adding an entry to .changes
-    changes_file = os.path.join(package, package + '.changes')
+    changes_file = os.path.join(package_dir, package + '.changes')
     if not os.path.exists(changes_file):
-        print >>sys.stderr, 'Cannot update ' + package + '.changes: no such file.'
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
     elif not os.path.isfile(changes_file):
-        print >>sys.stderr, 'Cannot update ' + package + '.changes: not a regular file.'
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
     else:
-        try:
-            tempfile = __import__('tempfile')
-            time = __import__('time')
-            locale = __import__('locale')
+        tempfile = self.OscGnomeImport.m_import('tempfile')
+        time = self.OscGnomeImport.m_import('time')
+        locale = self.OscGnomeImport.m_import('locale')
 
-            (fdout, tmp) = tempfile.mkstemp(dir = package)
+        if not tempfile or not time or not locale:
+            print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': incomplete python installation.'
+        else:
+            (fdout, tmp) = tempfile.mkstemp(dir = package_dir)
 
             old_lc_time = locale.setlocale(locale.LC_TIME)
             locale.setlocale(locale.LC_TIME, 'C')
@@ -502,24 +631,56 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             fin = open(changes_file, 'r')
             while True:
                 bytes = fin.read(10 * 1024)
-                os.write(fdout, bytes)
                 if len(bytes) == 0:
                     break
+                os.write(fdout, bytes)
             fin.close()
             os.close(fdout)
 
             os.rename(tmp, changes_file)
 
-            print changes_file + ' has been prepared.'
-        except ImportError:
-            print >>sys.stderr, 'Cannot update ' + package + '.changes: incomplete python installation.'
+            print os.path.basename(changes_file) + ' has been prepared.'
 
+
+    # download the upstream tarball
+    try:
+        upstream_url = self._gnome_web.get_upstream_url(package)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if not upstream_url:
+        print >>sys.stderr, 'Cannot download latest upstream tarball for ' + package + ': no URL defined.'
+        return
+
+    print 'Looking for the upstream tarball...'
+    try:
+        upstream_tarball = self._gnome_download_internal(upstream_url, package_dir)
+    except self.OscGnomeDownloadError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if not upstream_tarball:
+        print >>sys.stderr, 'No upstream tarball downloaded for ' + package + '.'
+        return
+    else:
+        print os.path.basename(upstream_tarball) + ' has been downloaded.'
 
     # TODO
-    # download the updated tarball and md5/sha1
+    # download the md5/sha1
 
     # TODO
-    # extract NEWS & ChangeLog from the new tarball
+    # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
+
+
+    # recompress as bz2
+    if upstream_tarball.endswith('.gz'):
+        try:
+            upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
+            print os.path.basename(upstream_tarball) + ' has been recompressed to bz2.'
+        except self.OscGnomeCompressError, e:
+            print >>sys.stderr, e.msg
+
 
     # TODO
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
@@ -620,7 +781,6 @@ def do_gnome(self, subcmd, opts, *args):
         raise oscerr.WrongArgs('Too many arguments.')
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError)
-    self._gnome_rpm_tried = False
 
     # Do the command
     if cmd in ['todo', 't']:
