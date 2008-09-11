@@ -323,6 +323,11 @@ def _get_version_from_sf_rss(modulename, id, limit):
         if not _respect_limit(version, limit, limit_data):
             continue
 
+        tarball_re = re.compile(modulename + '-' + version + '\.tar')
+        match = tarball_re.search(entry.summary)
+        if not match:
+            continue
+
         match = download_re.search(entry.summary)
         if match:
             download_url = match.group(1)
