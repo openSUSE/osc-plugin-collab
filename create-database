@@ -52,8 +52,6 @@ except ImportError:
 # adapted for the build service, but a few features might still need to be
 # ported. TODO-BS or FIXME-BS might indicate them.
 
-# TODO: check if G:F needs to be submitted to o:F (look if there's a delta)
-
 if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
     OBS_DISSECTOR_DIR=os.getenv('OBS_DISSECTOR_DIR')
 else:
@@ -85,10 +83,10 @@ MAINTAINER_FILE = ''
 RPMLINT_ERRORS_PATH = ''
 
 # Changing this means breaking compatibility with previous db
-DB_MAJOR = 2
+DB_MAJOR = 3
 # Changing this means changing the db while keeping compatibility
 # Increase when changing the db. Reset to 0 when changing DB_MAJOR.
-DB_MINOR = 2
+DB_MINOR = 0
 
 
 #######################################################################
@@ -582,7 +580,6 @@ class SrcPackage(Base):
             path TEXT,
             maintainer TEXT,
             version TEXT,
-            submitted_version TEXT,
             upstream_version TEXT,
             upstream_url TEXT,
             is_obs_link INTEGER,
@@ -600,8 +597,6 @@ class SrcPackage(Base):
         self.path = os.path.join(parent_directory, name)
         self.maintainer = ''
         self.version = ''
-#FIXME
-        self.submitted_version = ''
         self.upstream_version = ''
         self.upstream_url = ''
         self.packages = []
@@ -614,7 +609,7 @@ class SrcPackage(Base):
         self.is_obs_link = 0
         self.obs_link_has_delta = 0
 
-        self._list_files()
+        self._analyze_files()
         self._analyze_specs()
         for package in self.packages:
             package.get_rpmlint_errors()
@@ -622,9 +617,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta))
+            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -643,8 +638,7 @@ class SrcPackage(Base):
             if not self.public:
                 break
 
-    def _list_files(self):
-#TODO-BS: we should use _file, but for _link packages, this is weird
+    def _analyze_files(self):
         linkfile = os.path.join(self.path, '_link')
         if os.path.exists(linkfile):
             self.is_obs_link = 1
