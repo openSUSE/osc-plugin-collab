@@ -43,6 +43,11 @@ import re
 import shutil
 import sqlite3
 
+try:
+    from xml.etree import cElementTree as ET
+except ImportError:
+    import cElementTree as ET
+
 # This script was originally written for an usage with autobuild. It has been
 # adapted for the build service, but a few features might still need to be
 # ported. TODO-BS or FIXME-BS might indicate them.
@@ -83,7 +88,7 @@ RPMLINT_ERRORS_PATH = ''
 DB_MAJOR = 2
 # Changing this means changing the db while keeping compatibility
 # Increase when changing the db. Reset to 0 when changing DB_MAJOR.
-DB_MINOR = 1
+DB_MINOR = 2
 
 
 #######################################################################
@@ -432,7 +437,7 @@ class Patch(Base):
         if match:
             self.short_descr = match.group(1)
         else:
-            print >> sys.stderr, 'Weird error with patch tag analysis on %s:' % tag_line
+            print >> sys.stderr, 'Weird error with patch tag analysis on %s: ' % tag_line
             self.short_descr = buf
 
     def set_apply_order(self, order):
@@ -488,7 +493,7 @@ class RpmlintReport(Base):
     def _analyze_line(self, line):
         match = RpmlintReport.re_rpmlint.match(line)
         if not match:
-            print >> sys.stderr, 'Can\'t analyze rpmlint:' % line
+            print >> sys.stderr, 'Cannot analyze rpmlint: ' % line
 
         self.level = match.group(1)
         self.type = match.group(2)
@@ -579,7 +584,9 @@ class SrcPackage(Base):
             version TEXT,
             submitted_version TEXT,
             upstream_version TEXT,
-            upstream_url TEXT
+            upstream_url TEXT,
+            is_obs_link INTEGER,
+            obs_link_has_delta INTEGER
             );''' % cls.sql_table)
 
     @classmethod
@@ -603,6 +610,9 @@ class SrcPackage(Base):
         self.files = []
 
         self.public = True
+        # not booleans, since sqlite doesn't support this
+        self.is_obs_link = 0
+        self.obs_link_has_delta = 0
 
         self._list_files()
         self._analyze_specs()
@@ -612,9 +622,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version, self.upstream_url))
+            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.submitted_version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -623,7 +633,7 @@ class SrcPackage(Base):
         self.upstream_name = db_cache.get_upstream_name(self.name)
         if self.upstream_name:
 #FIXME verbose
-        #print >> sys.stderr, '%s: can\'t get upstream version because there\'s no upstream name' % self.name
+        #print >> sys.stderr, '%s: cannot get upstream version because there\'s no upstream name' % self.name
             self.upstream_version = db_cache.get_upstream_version(self.upstream_name)
             self.upstream_url = db_cache.get_upstream_url(self.upstream_name)
         self.maintainer = db_cache.get_maintainer(self.name)
@@ -635,15 +645,39 @@ class SrcPackage(Base):
 
     def _list_files(self):
 #TODO-BS: we should use _file, but for _link packages, this is weird
-        for file in os.listdir(self.path):
-            if file in IGNORE_FILES:
-                continue
-            self.files.append(File(self, file))
+        linkfile = os.path.join(self.path, '_link')
+        if os.path.exists(linkfile):
+            self.is_obs_link = 1
+
+            try:
+                root = ET.parse(linkfile).getroot()
+            except SyntaxError, e:
+                print >> sys.stderr, 'Cannot parse ' + linkfile + ': ' + e.msg
+            else:
+                node = root.find('patches')
+                if node:
+                    if node.find('delete') != None or node.find('apply') != None:
+                        self.obs_link_has_delta = 1
+
+        files = os.path.join(self.path, '_files-expanded')
+        if not os.path.exists(files):
+            files = os.path.join(self.path, '_files')
+        if os.path.exists(files):
+            try:
+                root = ET.parse(files).getroot()
+            except SyntaxError, e:
+                print >> sys.stderr, 'Cannot parse ' + files + ': ' + e.msg
+            else:
+                for node in root.findall('entry'):
+                    filename = node.get('name')
+                    if filename in IGNORE_FILES:
+                        continue
+                    self.files.append(File(self, filename))
 
     def _analyze_specs(self):
         if not self.path:
 #FIXME verbose
-            #print >> sys.stderr, '%s: can\'t analyze spec because there\'s no path' % self.name
+            #print >> sys.stderr, '%s: cannot analyze spec because there\'s no path' % self.name
             return
 
 #FIXME: maybe have SpecPackage between SrcPackage and Package? For libxml2, we have two times the upstream tarball as source because we have two spec files. This also means we write self.version twice
