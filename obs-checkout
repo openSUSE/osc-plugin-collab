@@ -233,6 +233,17 @@ class ObsCheckout:
             print >>sys.stderr, 'Package ' + package + ' from ' + project + ' is an expanded link.'
 
         if linkinfo.needshandling():
+            # download the _link file first. This makes it possible to know if
+            # the project has a delta compared to the target of the link
+            for node in root.findall('entry'):
+                filename = node.get('name')
+                md5 = node.get('md5')
+                mtime = node.get('mtime')
+                # download .spec files
+                if filename == '_link':
+                    self._get_file(project, package, filename, md5, mtime)
+
+            # download the metadata of the expanded package
             root = self._get_files_metadata(project, package, '_files-expanded', revision)
             if not root:
                 return
