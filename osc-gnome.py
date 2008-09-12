@@ -48,6 +48,7 @@ class OscGnomeWeb:
 
     _reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     _upstream_url = 'http://tmp.vuntz.net/opensuse-packages/upstream.py'
+    _delta_url = 'http://tmp.vuntz.net/opensuse-packages/delta.py'
     _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
     def __init__(self, exception):
@@ -83,6 +84,18 @@ class OscGnomeWeb:
                 continue
 
         return packages_versions
+
+
+    def get_packages_with_delta(self):
+        try:
+            fd = urllib2.urlopen(self._delta_url)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get list of packages with a delta: ' + e.msg)
+
+        lines = fd.readlines()
+        fd.close()
+
+        return [ line[:-1] for line in lines ]
 
 
     def get_versions(self, package):
@@ -246,23 +259,20 @@ def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
     return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version)
 
 
+def _gnome_is_submitted(self, package, submitted_packages):
+    for submitted in submitted_packages:
+        if package == submitted.dst_package:
+            return True
+
+
 #######################################################################
 
 
-def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
-    # helper functions
-    def is_submitted(package, submitted_packages):
-        for submitted in submitted_packages:
-            if package == submitted.dst_package:
-                return True
-
-    def print_package(package, oF_version, GF_version, upstream_version = None):
+def _gnome_todo(self, exclude_reserved, exclude_submitted):
+    def print_package(package, oF_version, GF_version, upstream_version):
         # FIXME 32 & 18 are arbitrary values. We should probably look at all
         # package names/versions and find the longer name/version
-        if upstream_version:
-            print '%-32.32s | %-18.18s | %-18.18s | %-18.18s' % (package, oF_version, GF_version, upstream_version)
-        else:
-            print '%-32.32s | %-18.18s | %-18.18s' % (package, oF_version, GF_version)
+        print '%-32.32s | %-18.18s | %-18.18s | %-18.18s' % (package, oF_version, GF_version, upstream_version)
 
 
     # get all versions of packages
@@ -285,37 +295,61 @@ def _gnome_todo(self, need_factory_sync, exclude_reserved, exclude_submitted):
         print >>sys.stderr, 'Cannot get list of submissions to GNOME:Factory: ' + e.msg
 
     # print headers
-    if need_factory_sync:
-        print_package('Package', 'openSUSE:Factory', 'GNOME:Factory')
-        print '---------------------------------+--------------------+-------------------'
-    else:
-        print_package('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
-        print '---------------------------------+--------------------+--------------------+-------------------'
+    print_package('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
+    print '---------------------------------+--------------------+--------------------+-------------------'
 
     for (package, oF_version, GF_version, upstream_version) in packages_versions:
-        if need_factory_sync:
-            # FIXME: we should actually not do it this way, but use the fact
-            # that we have a delta in the linked package.
-            if self._gnome_compare_versions_a_gt_b(GF_version, oF_version):
-                print_package(package, oF_version, GF_version)
-        else:
-            # empty upstream version or upstream version meaning openSUSE is
-            # upstream
-            if upstream_version == '' or upstream_version == '--':
+        # empty upstream version or upstream version meaning openSUSE is
+        # upstream
+        if upstream_version == '' or upstream_version == '--':
+            continue
+
+        if self._gnome_needs_update(oF_version, GF_version, upstream_version):
+            if self._gnome_is_submitted(package, submitted_packages):
+                if exclude_submitted:
+                    continue
+                GF_version = GF_version + ' (s)'
+                upstream_version = upstream_version + ' (s)'
+            if package in reserved_packages:
+                if exclude_reserved:
+                    continue
+                upstream_version = upstream_version + ' (r)'
+            print_package(package, oF_version, GF_version, upstream_version)
+
+
+#######################################################################
+
+
+def _gnome_todoadmin(self, exclude_submitted):
+    def print_package(package):
+        # FIXME 32 & 18 are arbitrary values. We should probably look at all
+        # package names/versions and find the longer name/version
+        print '%-32.32s' % package
+
+
+    # get packages with a delta
+    try:
+        packages_with_delta = self._gnome_web.get_packages_with_delta()
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    # get the packages submitted to GNOME:Factory
+    try:
+        submitted_packages = get_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory', None)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Cannot get list of submissions to openSUSE:Factory: ' + e.msg
+
+    # print headers
+    print_package('Package')
+    print '--------------------------------'
+
+    for package in packages_with_delta:
+        if self._gnome_is_submitted(package, submitted_packages):
+            if exclude_submitted:
                 continue
-
-            if self._gnome_needs_update(oF_version, GF_version, upstream_version):
-                if is_submitted(package, submitted_packages):
-                    if exclude_submitted:
-                        continue
-                    GF_version = GF_version + ' (s)'
-                    upstream_version = upstream_version + ' (s)'
-                if package in reserved_packages:
-                    if exclude_reserved:
-                        continue
-                    upstream_version = upstream_version + ' (r)'
-                print_package(package, oF_version, GF_version, upstream_version)
-
+            package = package + ' (s)'
+        print_package(package)
 
 #######################################################################
 
@@ -730,9 +764,6 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 @cmdln.option('--xr', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
-@cmdln.option('-f', '--need-factory-sync', action='store_true',
-              dest='factory_sync',
-              help='show packages needing to be merged in openSUSE:Factory')
 @cmdln.option('-r', '--reserve', action='store_true',
               dest='reserve',
               help='also reserve the package')
@@ -740,6 +771,9 @@ def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
     "todo" (or "t") will list the packages that need some action.
+
+    "todoadmin" (or "ta") will list the packages from GNOME:Factory that need
+    to be submitted to openSUSE:Factory.
 
     "listreserved" (or "lr") will list the reserved packages.
 
@@ -759,7 +793,8 @@ def do_gnome(self, subcmd, opts, *args):
     edition, etc.). The package will be checked out in the current directory.
 
     Usage:
-        osc gnome todo [--need-factory-sync|-f] [--exclude-reserved|--xr] [--exclude-submitted|--xs]
+        osc gnome todo [--exclude-reserved|--xr] [--exclude-submitted|--xs]
+        osc gnome todoadmin [--exclude-submitted|--xs]
 
         osc gnome listreserved
         osc gnome isreserved PKG
@@ -771,7 +806,7 @@ def do_gnome(self, subcmd, opts, *args):
     ${cmd_option_list}
     """
 
-    cmds = ['todo', 't', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up']
+    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -779,7 +814,7 @@ def do_gnome(self, subcmd, opts, *args):
     cmd = args[0]
 
     # Check arguments validity
-    if cmd in ['listreserved', 'lr', 'todo', 't']:
+    if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta']:
         min_args, max_args = 0, 0
     elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up']:
         min_args, max_args = 1, 1
@@ -796,7 +831,10 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(opts.factory_sync, opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(opts.exclude_reserved, opts.exclude_submitted)
+
+    elif cmd in ['todoadmin', 'ta']:
+        self._gnome_todoadmin(opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
