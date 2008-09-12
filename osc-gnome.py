@@ -674,6 +674,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
     # TODO
 
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
+    # see difflib python module
     # not fatal if fails
     # TODO
 
