@@ -48,7 +48,7 @@ class OscGnomeWeb:
 
     _reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     _upstream_url = 'http://tmp.vuntz.net/opensuse-packages/upstream.py'
-    _delta_url = 'http://tmp.vuntz.net/opensuse-packages/delta.py'
+    _admin_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py'
     _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
     def __init__(self, exception):
@@ -88,7 +88,7 @@ class OscGnomeWeb:
 
     def get_packages_with_delta(self):
         try:
-            fd = urllib2.urlopen(self._delta_url)
+            fd = urllib2.urlopen(self._admin_url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with a delta: ' + e.msg)
 
