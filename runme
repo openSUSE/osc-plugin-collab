@@ -47,7 +47,7 @@ cp --force upstream-limits.txt $OBS_DISSECTOR_DIR
 cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
 
 $basedir/download-gnome-versions
-$basedir/download-upstream-versions --upstream-tarballs=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old --use-old-as-fallback
+$basedir/download-upstream-versions --upstream-tarballs=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --upstream-limits=$OBS_DISSECTOR_DIR/upstream-limits.txt  --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old --use-old-as-fallback
 cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 
 # We check everything out in a temporary directory.
