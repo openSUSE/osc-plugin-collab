@@ -717,7 +717,9 @@ def main(args):
             try:
                 (location, version) = get_upstream_version(modulename, method, additional_info, limit)
             except urllib2.URLError, e:
-                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[0]
+                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[1]
+            except urllib2.HTTPError, e:
+                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': server sent ' + e.code
             except UpstreamDownloadError, e:
                 print >>sys.stderr, 'No matching tarball found for ' + modulename + ': ' + e.msg
 
