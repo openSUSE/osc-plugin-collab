@@ -816,7 +816,7 @@ def _gnome_add_config_option(self, section, key, value):
 
 def _gnome_ensure_email(self):
     if not conf.config.has_key('gnome_email'):
-        conf.config['gnome_email'] = raw_input('E-mail address to use for .changes entry: ')
+        conf.config['gnome_email'] = raw_input('E-mail address to use for .changes entries: ')
         if conf.config['gnome_email'] == '':
             return 'EMAIL@DOMAIN'
 
