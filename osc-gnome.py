@@ -921,6 +921,10 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 # preserve a config file: it removes comments and reorders stuff.
 # This is a dumb function to append a value to a section in a config file.
 def _gnome_add_config_option(self, section, key, value):
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    if not tempfile:
+        print >>sys.stderr, 'Cannot update your configuration: incomplete python installation.'
+
     # See get_config() in osc/conf.py and postoptparse() in
     # osc/commandline.py
     conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
@@ -933,7 +937,6 @@ def _gnome_add_config_option(self, section, key, value):
         lines = fin.readlines()
         fin.close()
 
-    tempfile = self.OscGnomeImport.m_import('tempfile')
     (fdout, tmp) = tempfile.mkstemp(prefix = os.path.basename(conffile), dir = os.path.dirname(conffile))
 
     in_section = False
