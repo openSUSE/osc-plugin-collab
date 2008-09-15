@@ -868,8 +868,8 @@ def do_gnome(self, subcmd, opts, *args):
 
         osc gnome listreserved
         osc gnome isreserved PKG
-        osc gnome reserve PKG
-        osc gnome unreserve PKG
+        osc gnome reserve PKG [...]
+        osc gnome unreserve PKG [...]
 
         osc gnome setup [--reserve|-r] PKG
         osc gnome update [--reserve|-r] PKG
