@@ -23,6 +23,18 @@ class OscGnomeCompressError(OscGnomeError):
     pass
 
 
+def _gnome_exception_print(self, e, message = ''):
+    if message == None:
+        message = ''
+
+    if hasattr(e, 'msg'):
+        print >>sys.stderr, message + e.msg
+    elif str(e) != '':
+        print >>sys.stderr, message + str(e)
+    else:
+        print >>sys.stderr, message + e.__class__.__name__
+
+
 #######################################################################
 
 
@@ -623,8 +635,9 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
 
             obs_package.update(rev)
             print 'Package ' + package + ' has been updated.'
-        except:
-            print >>sys.stderr, 'Error while updating package ' + package + ': ' + e.msg
+        except Exception, e:
+            message = 'Error while updating package ' + package + ': '
+            self._gnome_exception_print(e, message)
             return False
 
     else:
@@ -632,8 +645,9 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
         try:
             checkout_package(apiurl, branch_project, package, expand_link=True)
             print 'Package ' + package + ' has been checked out.'
-        except:
-            print >>sys.stderr, 'Error while checking out package ' + package + ': ' + e.msg
+        except Exception, e:
+            message = 'Error while checking out package ' + package + ': '
+            self._gnome_exception_print(e, message)
             return False
 
     return True
