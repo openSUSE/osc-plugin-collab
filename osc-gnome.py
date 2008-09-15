@@ -924,6 +924,7 @@ def _gnome_add_config_option(self, section, key, value):
     tempfile = self.OscGnomeImport.m_import('tempfile')
     if not tempfile:
         print >>sys.stderr, 'Cannot update your configuration: incomplete python installation.'
+        return
 
     # See get_config() in osc/conf.py and postoptparse() in
     # osc/commandline.py
