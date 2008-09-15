@@ -604,7 +604,7 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
-def _gnome_update(self, package, apiurl, username, reserve = False):
+def _gnome_update(self, package, apiurl, username, email, reserve = False):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
@@ -655,8 +655,7 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
             locale.setlocale(locale.LC_TIME, 'C')
 
             os.write(fdout, '-------------------------------------------------------------------\n')
-            # FIXME email address
-            os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - EMAIL@ADDRESS\n')
+            os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - ' + email + '\n')
             os.write(fdout, '\n')
             os.write(fdout, '- Update to version ' + upstream_version + ':\n')
             os.write(fdout, '  + \n')
@@ -758,6 +757,77 @@ def _gnome_update(self, package, apiurl, username, reserve = False):
 #######################################################################
 
 
+# Unfortunately, as of Python 2.5, ConfigParser does not know how to
+# preserve a config file: it removes comments and reorders stuff.
+# This is a dumb function to append a value to a section in a config file.
+def _gnome_add_config_option(self, section, key, value):
+    # See get_config() in osc/conf.py and postoptparse() in
+    # osc/commandline.py
+    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
+    conffile = os.path.expanduser(conffile)
+
+    if not os.path.exists(conffile):
+        lines = [ ]
+    else:
+        fin = open(conffile, 'r')
+        lines = fin.readlines()
+        fin.close()
+
+    shutil = self.OscGnomeImport.m_import('shutil')
+    backup = conffile + '.oscgnomebak'
+    shutil.copyfile(conffile, backup)
+
+    in_section = False
+    added = False
+    empty_line = False
+    fout = open(conffile, 'w')
+
+    for line in lines:
+        if line.rstrip() == '[' + section + ']':
+            in_section = True
+        # key was not in the section: let's add it
+        elif line[0] == '[' and in_section and not added:
+            if not empty_line:
+                fout.write('\n')
+            fout.write(key + ' = ' + str(value) + '\n\n')
+            added = True
+        # the section/key already exists: we replace
+        # 'not added': in case there are multiple sections with the same name
+        elif in_section and not added and line.startswith(key):
+            index = line.find('=')
+            line = line[:index] + '= ' + str(value) + '\n'
+            added = True
+
+        fout.write(line)
+
+        empty_line = line.strip() == ''
+
+    if not added:
+        if not empty_line:
+            fout.write('\n')
+        fout.write('[' + section + ']' + '\n' + key + ' = ' + str(value) + '\n')
+
+    fout.close()
+    os.unlink(backup)
+
+
+#######################################################################
+
+
+def _gnome_ensure_email(self):
+    if not conf.config.has_key('gnome_email'):
+        conf.config['gnome_email'] = raw_input('E-mail address to use for .changes entry: ')
+        if conf.config['gnome_email'] == '':
+            return 'EMAIL@DOMAIN'
+
+        self._gnome_add_config_option('general', 'gnome_email', conf.config['gnome_email'])
+
+    return conf.config['gnome_email']
+
+
+#######################################################################
+
+
 @cmdln.option('--xs', '--exclude-submitted', action='store_true',
               dest='exclude_submitted',
               help='do not show submitted packages in the output')
@@ -829,6 +899,8 @@ def do_gnome(self, subcmd, opts, *args):
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError)
 
+    email = self._gnome_ensure_email()
+
     # Do the command
     if cmd in ['todo', 't']:
         self._gnome_todo(opts.exclude_reserved, opts.exclude_submitted)
@@ -857,4 +929,4 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], reserve = opts.reserve)
+        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], email, reserve = opts.reserve)
