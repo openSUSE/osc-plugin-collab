@@ -57,7 +57,15 @@ cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 CACHE_CO=`$basedir/obs-checkout --get-stable-directory`
 DEST_CO=`$basedir/obs-checkout --get-new-directory`
 $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of GNOME:Factory --project openSUSE:Factory
+if test $? -ne 0;
+	echo "Error while checking out openSUSE:Factory"
+	return 1
+fi
 $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --warn-if-not-unexpanded-link --project GNOME:Factory
+if test $? -ne 0;
+	echo "Error while checking out GNOME:Factory"
+	return 1
+fi
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
