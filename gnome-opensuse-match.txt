@@ -254,7 +254,6 @@ avahi:avahi
 avahi:avahi-mono
 avahi:avahi-qt4
 bakefile:bakefile
-banshee-1:banshee
 bluez-gnome:bluez-gnome
 bombermaze:bombermaze
 cairo:cairo
@@ -324,7 +323,6 @@ libnotify:libnotify
 libofx:libofx
 liboil:liboil
 libsexy:libsexy
-libssui:libssui
 libsvg:libsvg
 libsvg-cairo:libsvg-cairo
 libtasn1:libtasn1
@@ -339,6 +337,8 @@ njb-sharp:njb-sharp
 notification-daemon:notification-daemon
 nss-mdns:nss-mdns
 obby:obby
+paprefs:paprefs
+pavucontrol:pavucontrol
 pidgin:pidgin
 pkg-config:pkg-config
 poppler:poppler
@@ -382,3 +382,7 @@ metacity-themes:metacity-themes
 opt_gnome-compat:opt_gnome-compat
 translation-update:translation-update
 yast2-control-center-gnome:yast2-control-center-gnome
+
+## Packages that we removed
+# banshee-1:banshee
+# libssui:libssui
