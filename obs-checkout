@@ -63,6 +63,7 @@ except ImportError:
 
 from osc import conf
 from osc import core
+from osc import oscerr
 
 from dissector_util import *
 from osc_extend import *
