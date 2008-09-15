@@ -52,7 +52,6 @@ import sys
 
 import optparse
 import shutil
-import subprocess
 import tempfile
 import urllib2
 
