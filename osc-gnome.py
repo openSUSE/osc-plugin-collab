@@ -291,13 +291,55 @@ def _gnome_is_submitted(self, package, submitted_packages):
 #######################################################################
 
 
+def _gnome_table_get_maxs(self, init, list):
+    if len(list) == 0:
+        return ()
+
+    nb_maxs = len(init)
+    maxs = []
+    for i in range(nb_maxs):
+        maxs.append(len(init[i]))
+
+    for item in list:
+        for i in range(nb_maxs):
+            maxs[i] = max(maxs[i], len(item[i]))
+
+    return tuple(maxs)
+
+
+def _gnome_table_get_template(self, *args):
+    if len(args) == 0:
+        return ''
+
+    template = '%%-%d.%ds' % (args[0], args[0])
+    index = 1
+
+    while index < len(args):
+        template = template + (' | %%-%d.%ds' % (args[index], args[index]))
+        index = index + 1
+
+    return template
+
+
+def _gnome_table_print_header(self, template, title):
+    if len(title) == 0:
+        return
+
+    dash_template = template.replace(' | ', '-+-')
+
+    very_long_dash = ('-------------------------------------------------',)
+    dashes = ()
+    for i in range(len(title)):
+        dashes = dashes + very_long_dash
+
+    print template % title
+    print dash_template % dashes
+
+
+#######################################################################
+
+
 def _gnome_todo(self, exclude_reserved, exclude_submitted):
-    def print_package(package, oF_version, GF_version, upstream_version):
-        # FIXME 32 & 18 are arbitrary values. We should probably look at all
-        # package names/versions and find the longer name/version
-        print '%-32.32s | %-18.18s | %-18.18s | %-18.18s' % (package, oF_version, GF_version, upstream_version)
-
-
     # get all versions of packages
     try:
         packages_versions = self._gnome_web.get_packages_versions()
@@ -317,9 +359,7 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot get list of submissions to GNOME:Factory: ' + e.msg
 
-    # print headers
-    print_package('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
-    print '---------------------------------+--------------------+--------------------+-------------------'
+    lines = []
 
     for (package, oF_version, GF_version, upstream_version) in packages_versions:
         # empty upstream version or upstream version meaning openSUSE is
@@ -337,19 +377,29 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
                 if exclude_reserved:
                     continue
                 upstream_version = upstream_version + ' (r)'
-            print_package(package, oF_version, GF_version, upstream_version)
+            lines.append((package, oF_version, GF_version, upstream_version))
+
+    if len(lines) == 0:
+        print 'Nothing to do.'
+        return
+
+    # print headers
+    title = ('Package', 'openSUSE:Factory', 'GNOME:Factory', 'Upstream')
+    (max_package, max_oF, max_GF, max_upstream) = self._gnome_table_get_maxs(title, lines)
+    # trim to a reasonable max
+    max_package = min(max_package, 48)
+    max_version = min(max(max(max_oF, max_GF), max_upstream), 20)
+
+    print_line = self._gnome_table_get_template(max_package, max_version, max_version, max_version)
+    self._gnome_table_print_header(print_line, title)
+    for line in lines:
+        print print_line % line
 
 
 #######################################################################
 
 
 def _gnome_todoadmin(self, exclude_submitted):
-    def print_package(package, message):
-        # FIXME 32 & 45 are arbitrary values. We should probably look at all
-        # package names/messages and find the longer name/message
-        print '%-32.32s | %-45.45s' % (package, message)
-
-
     # get packages with a delta
     try:
         packages_with_delta = self._gnome_web.get_packages_with_delta()
@@ -364,10 +414,7 @@ def _gnome_todoadmin(self, exclude_submitted):
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot get list of submissions to openSUSE:Factory: ' + e.msg
 
-    # print headers
-    print_package('Package', 'Details')
-    print '---------------------------------+----------------------------------------------'
-
+    lines = []
     delta_index = 0
     delta_max = len(packages_with_delta)
 
@@ -404,7 +451,24 @@ def _gnome_todoadmin(self, exclude_submitted):
             message = 'Unknown error'
             if details:
                 message = message + ': ' + details
-        print_package(package, message)
+        lines.append((package, message))
+
+    if len(lines) == 0:
+        print 'Nothing to do.'
+        return
+
+    # print headers
+    title = ('Package', 'Details')
+    (max_package, max_details) = self._gnome_table_get_maxs(title, lines)
+    # trim to a reasonable max
+    max_package = min(max_package, 48)
+    max_details = min(max_details, 50)
+
+    print_line = self._gnome_table_get_template(max_package, max_details)
+    self._gnome_table_print_header(print_line, title)
+    for line in lines:
+        print print_line % line
+
 
 #######################################################################
 
@@ -416,14 +480,23 @@ def _gnome_listreserved(self):
         print >>sys.stderr, e.msg
         return
 
-    print '%-32.32s | %-12.12s' % ('Package', 'Reserved by')
-    print '---------------------------------+-------------'
+    if len(reserved_packages) == 0:
+        print 'No package reserved.'
+        return
+
+    # print headers
+    title = ('Package', 'Reserved by')
+    (max_package, max_username) = self._gnome_table_get_maxs(title, reserved_packages)
+    # trim to a reasonable max (less than 80 characters wide)
+    max_package = min(max_package, 48)
+    max_username = min(max_username, 28)
+
+    print_line = self._gnome_table_get_template(max_package, max_username)
+    self._gnome_table_print_header(print_line, title)
 
     for (package, username) in reserved_packages:
-        # FIXME 32 & 12 are arbitrary values. We should probably look at all
-        # package names/versions and find the longer name/version
         if (package and username):
-            print '%-32.32s | %-12.12s' % (package, username)
+            print print_line % (package, username)
 
 
 #######################################################################
