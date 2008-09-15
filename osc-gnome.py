@@ -412,6 +412,16 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
 
 
 def _gnome_todoadmin(self, exclude_submitted):
+    def _insert_delta_package(lines, delta_package, submitted_packages):
+        if self._gnome_is_submitted(delta_package, submitted_packages):
+            if exclude_submitted:
+                return
+            message = 'Waits for approval in openSUSE:Factory queue'
+        else:
+            message = 'Needs to be submitted to openSUSE:Factory'
+        lines.append((delta_package, message))
+
+
     # get packages with a delta
     try:
         packages_with_delta = self._gnome_web.get_packages_with_delta()
@@ -430,6 +440,11 @@ def _gnome_todoadmin(self, exclude_submitted):
     delta_index = 0
     delta_max = len(packages_with_delta)
 
+    # we won't enter in the for loop if there's no error
+    if len(packages_with_errors) == 0:
+        for delta_package in packages_with_delta:
+            _insert_delta_package(lines, delta_package, submitted_packages)
+
     for (package, error, details) in packages_with_errors:
         # insert the packages with delta in the alphabetical order
         while delta_index < delta_max:
@@ -445,13 +460,7 @@ def _gnome_todoadmin(self, exclude_submitted):
                 # we have an error and a delta: error is more important
                 break
 
-            if self._gnome_is_submitted(delta_package, submitted_packages):
-                if exclude_submitted:
-                    continue
-                message = 'Waits for approval in openSUSE:Factory queue'
-            else:
-                message = 'Needs to be submitted to openSUSE:Factory'
-            print_package(delta_package, message)
+            _insert_delta_package(lines, delta_package, submitted_packages)
 
         if error == 'not-link':
             message = 'Is not a link to openSUSE:Factory'
