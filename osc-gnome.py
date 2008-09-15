@@ -803,8 +803,6 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
 
 # TODO
-# Add a sanitycheck command that checks that all packages in G:F
-# are valid links to o:F stuff.
 # We could also check that all packages maintained by gnome-maintainers
 # are in G:F.
 
