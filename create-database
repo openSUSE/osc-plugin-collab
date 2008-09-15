@@ -86,7 +86,7 @@ RPMLINT_ERRORS_PATH = ''
 DB_MAJOR = 3
 # Changing this means changing the db while keeping compatibility
 # Increase when changing the db. Reset to 0 when changing DB_MAJOR.
-DB_MINOR = 0
+DB_MINOR = 1
 
 
 #######################################################################
@@ -583,7 +583,9 @@ class SrcPackage(Base):
             upstream_version TEXT,
             upstream_url TEXT,
             is_obs_link INTEGER,
-            obs_link_has_delta INTEGER
+            obs_link_has_delta INTEGER,
+            obs_error TEXT,
+            obs_error_details TEXT
             );''' % cls.sql_table)
 
     @classmethod
@@ -608,6 +610,8 @@ class SrcPackage(Base):
         # not booleans, since sqlite doesn't support this
         self.is_obs_link = 0
         self.obs_link_has_delta = 0
+        self.obs_error = ''
+        self.obs_error_details = ''
 
         self._analyze_files()
         self._analyze_specs()
@@ -617,9 +621,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta))
+            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -662,6 +666,16 @@ class SrcPackage(Base):
             except SyntaxError, e:
                 print >> sys.stderr, 'Cannot parse ' + files + ': ' + e.msg
             else:
+                linkinfo = root.find('linkinfo')
+                if linkinfo != None:
+                    error = linkinfo.get('error')
+                    if error:
+                        if error.find('does not exist in project') != -1:
+                            self.obs_error = 'not-in-parent'
+                        elif error.find('could not apply patch') != -1:
+                            self.obs_error = 'need-merge-with-parent'
+                        self.obs_error_details = error
+
                 for node in root.findall('entry'):
                     filename = node.get('name')
                     if filename in IGNORE_FILES:
@@ -865,9 +879,16 @@ class Project(Base):
         project_dir = os.path.join(self.parent_directory, self.name)
         if not os.path.exists(project_dir):
             return
+
+        is_devel_project = os.path.exists(os.path.join(project_dir, '.is-devel-project'))
+
         for file in os.listdir(project_dir):
+            if file == '.is-devel-project':
+                continue
             srcpackage = SrcPackage(file, project_dir)
             srcpackage.read_data(db_cache)
+            if is_devel_project and not srcpackage.is_obs_link and not srcpackage.obs_error:
+                srcpackage.obs_error = 'not-link'
             self.srcpackages.append(srcpackage)
 
 #######################################################################

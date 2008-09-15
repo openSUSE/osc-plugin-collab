@@ -48,7 +48,8 @@ class OscGnomeWeb:
 
     _reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
     _upstream_url = 'http://tmp.vuntz.net/opensuse-packages/upstream.py'
-    _admin_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py'
+    _admin_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py?mode=delta'
+    _error_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py?mode=error'
     _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
     def __init__(self, exception):
@@ -96,6 +97,28 @@ class OscGnomeWeb:
         fd.close()
 
         return [ line[:-1] for line in lines ]
+
+
+    def get_packages_with_error(self):
+        errors = []
+
+        try:
+            fd = urllib2.urlopen(self._error_url)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get list of packages with an error: ' + e.msg)
+
+        lines = fd.readlines()
+        fd.close()
+
+        for line in lines:
+            try:
+                (package, error, details) = line.split(';', 3)
+                errors.append((package, error, details))
+            except ValueError:
+                print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+                continue
+
+        return errors
 
 
     def get_versions(self, package):
@@ -321,15 +344,16 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
 
 
 def _gnome_todoadmin(self, exclude_submitted):
-    def print_package(package):
-        # FIXME 32 & 18 are arbitrary values. We should probably look at all
-        # package names/versions and find the longer name/version
-        print '%-32.32s' % package
+    def print_package(package, message):
+        # FIXME 32 & 45 are arbitrary values. We should probably look at all
+        # package names/messages and find the longer name/message
+        print '%-32.32s | %-45.45s' % (package, message)
 
 
     # get packages with a delta
     try:
         packages_with_delta = self._gnome_web.get_packages_with_delta()
+        packages_with_errors = self._gnome_web.get_packages_with_error()
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -341,15 +365,46 @@ def _gnome_todoadmin(self, exclude_submitted):
         print >>sys.stderr, 'Cannot get list of submissions to openSUSE:Factory: ' + e.msg
 
     # print headers
-    print_package('Package')
-    print '--------------------------------'
+    print_package('Package', 'Details')
+    print '---------------------------------+----------------------------------------------'
 
-    for package in packages_with_delta:
-        if self._gnome_is_submitted(package, submitted_packages):
-            if exclude_submitted:
-                continue
-            package = package + ' (s)'
-        print_package(package)
+    delta_index = 0
+    delta_max = len(packages_with_delta)
+
+    for (package, error, details) in packages_with_errors:
+        # insert the packages with delta in the alphabetical order
+        while delta_index < delta_max:
+            delta_package = packages_with_delta[delta_index]
+            if not delta_package:
+                break
+            if delta_package > package:
+                break
+
+            delta_index = delta_index + 1
+
+            if delta_package == package:
+                # we have an error and a delta: error is more important
+                break
+
+            if self._gnome_is_submitted(delta_package, submitted_packages):
+                if exclude_submitted:
+                    continue
+                message = 'Waits for approval in openSUSE:Factory queue'
+            else:
+                message = 'Needs to be submitted to openSUSE:Factory'
+            print_package(delta_package, message)
+
+        if error == 'not-link':
+            message = 'Is not a link to openSUSE:Factory'
+        elif error == 'not-in-parent':
+            message = 'Does not exist in openSUSE:Factory'
+        elif error == 'need-merge-with-parent':
+            message = 'Requires a manual merge with openSUSE:Factory'
+        else:
+            message = 'Unknown error'
+            if details:
+                message = message + ': ' + details
+        print_package(package, message)
 
 #######################################################################
 

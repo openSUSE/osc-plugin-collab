@@ -66,6 +66,7 @@ if test $? -ne 0;
 	echo "Error while checking out GNOME:Factory"
 	return 1
 fi
+echo "Development project" > $DEST_CO/GNOME:Factory/.is-devel-project
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
