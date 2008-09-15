@@ -781,9 +781,15 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
     # edit the version tag in the .spec files
     # not fatal if fails
+    spec_file = os.path.join(package_dir, package + '.spec')
     # TODO
     # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
-    # Maybe warn if there are other spec files? They might need an update too.
+
+    # warn if there are other spec files which might need an update
+    for file in os.listdir(package_dir):
+        if file.endswith('.spec') and file != os.path.basename(spec_file):
+            print 'WARNING: ' + file + ' might need a manual update.'
+
 
     # start adding an entry to .changes
     # not fatal if fails
@@ -826,6 +832,11 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
             os.rename(tmp, changes_file)
 
             print os.path.basename(changes_file) + ' has been prepared.'
+
+    # warn if there are other spec files which might need an update
+    for file in os.listdir(package_dir):
+        if file.endswith('.changes') and file != os.path.basename(changes_file):
+            print 'WARNING: ' + file + ' might need a manual update.'
 
 
     # download the upstream tarball
@@ -922,14 +933,12 @@ def _gnome_add_config_option(self, section, key, value):
         lines = fin.readlines()
         fin.close()
 
-    shutil = self.OscGnomeImport.m_import('shutil')
-    backup = conffile + '.oscgnomebak'
-    shutil.copyfile(conffile, backup)
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    (fdout, tmp) = tempfile.mkstemp(prefix = os.path.basename(conffile), dir = os.path.dirname(conffile))
 
     in_section = False
     added = False
     empty_line = False
-    fout = open(conffile, 'w')
 
     for line in lines:
         if line.rstrip() == '[' + section + ']':
@@ -937,8 +946,8 @@ def _gnome_add_config_option(self, section, key, value):
         # key was not in the section: let's add it
         elif line[0] == '[' and in_section and not added:
             if not empty_line:
-                fout.write('\n')
-            fout.write(key + ' = ' + str(value) + '\n\n')
+                os.write(fdout, '\n')
+            os.write(fdout, key + ' = ' + str(value) + '\n\n')
             added = True
         # the section/key already exists: we replace
         # 'not added': in case there are multiple sections with the same name
@@ -947,17 +956,17 @@ def _gnome_add_config_option(self, section, key, value):
             line = line[:index] + '= ' + str(value) + '\n'
             added = True
 
-        fout.write(line)
+        os.write(fdout, line)
 
         empty_line = line.strip() == ''
 
     if not added:
         if not empty_line:
-            fout.write('\n')
-        fout.write('[' + section + ']' + '\n' + key + ' = ' + str(value) + '\n')
+            os.write(fdout, '\n')
+        os.write(fdout, '[' + section + ']' + '\n' + key + ' = ' + str(value) + '\n')
 
-    fout.close()
-    os.unlink(backup)
+    os.close(fdout)
+    os.rename(tmp, conffile)
 
 
 #######################################################################
