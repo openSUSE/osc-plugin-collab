@@ -1010,11 +1010,14 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     else:
         print os.path.basename(upstream_tarball) + ' has been downloaded.'
 
+
     # check integrity of the downloaded file
     # fatal if fails (only if md5 exists)
     # TODO
 
+
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
+    # We want to look at %setup: the directory name might be known with -n
     # see difflib python module
     # not fatal if fails
     # TODO
@@ -1030,12 +1033,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
             print >>sys.stderr, e.msg
 
 
-    # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
-    # fatal if fails
-    # TODO
-
-
-    # try applying the patches with rpm quilt and start a build if it succeeds
+    # try applying the patches with rpm quilt
     # not fatal if fails
     if self._gnome_is_program_in_path('quilt'):
         print 'Running quilt...'
@@ -1048,10 +1046,16 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         print 'WARNING: make sure that all patches apply before submitting.'
 
 
+    # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
+    # fatal if fails
+    # TODO
+
+
     print 'Package ' + package + ' has been prepared for the update.'
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
+    # automatically start a build?
 
 
 # TODO
