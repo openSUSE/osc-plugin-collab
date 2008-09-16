@@ -1,5 +1,3 @@
-# TODO: add a class to cache files that we download from the web
-
 class OscGnomeError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -255,6 +253,160 @@ class OscGnomeWeb:
 #######################################################################
 
 
+# TODO add --no-cache
+class GnomeCache:
+
+    _cache_dir = None
+    _format_str = '# osc-gnome-format: '
+
+    @classmethod
+    def _get_xdg_cache_dir(cls):
+        if not cls._cache_dir:
+            dir = None
+            if os.environ.has_key('XDG_CACHE_HOME'):
+                dir = os.environ['XDG_CACHE_HOME']
+                if dir == '':
+                    dir = None
+
+            if not dir:
+                dir = '~/.cache'
+
+            cls._cache_dir = os.path.join(os.path.expanduser(dir), 'osc', 'gnome')
+
+        return cls._cache_dir
+
+
+    @classmethod
+    def _need_update(cls, caller, filename, maxage):
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        if not os.path.exists(cache):
+            return True
+
+        if not os.path.isfile(cache):
+            return True
+
+        stats = os.stat(cache)
+        time = caller.OscGnomeImport.m_import('time')
+
+        if time:
+            now = time.time()
+            if now - stats.st_mtime > maxage:
+                return True
+            # Back to the future?
+            elif now < stats.st_mtime:
+                return True
+        else:
+            return True
+
+        return False
+
+
+    @classmethod
+    def get_obs_submit_request_list(cls, caller, apiurl, project):
+        current_format = 1
+        filename = 'submitted-' + project
+
+        # Only download if it's more than 10-minutes old
+        if not cls._need_update(caller, filename, 60 * 10):
+            fcache = open(os.path.join(cls._get_xdg_cache_dir(), filename))
+            format_line = fcache.readline()
+
+            if cls._is_same_format(format_line, current_format):
+                # we can use the cache
+                retval = []
+                while True:
+                    line = fcache.readline()
+                    if len(line) == 0:
+                        break
+                    (package, revision, empty) = line.split(';', 3)
+                    retval.append(package)
+
+                fcache.close()
+                return retval
+            else:
+                fcache.close()
+                # don't return: we'll download again
+
+        # no cache available
+        print 'Downloading data in a cache. It might take a few seconds...'
+
+        # download the data
+        try:
+            submitted_packages = get_submit_request_list(apiurl, project, None)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get list of submissions to ' + project + ': ' + e.msg
+            return []
+
+        lines = []
+        retval = []
+        for submitted in submitted_packages:
+            retval.append(submitted.dst_package)
+            lines.append(submitted.dst_package + ';' + submitted.src_md5 + ';')
+
+        # save the data in the cache
+        cls._write(filename, format_nb = current_format, lines_no_cr = lines)
+
+        return retval
+
+
+    @classmethod
+    def _is_same_format(cls, format_line, format_nb):
+        return format_line == cls._format_str + str(format_nb) + '\n'
+
+
+    @classmethod
+    def _write(cls, filename, format_nb = None, fin = None, lines = None, lines_no_cr = None):
+        cachedir = cls._get_xdg_cache_dir()
+        if not os.path.exists(cachedir):
+            os.makedirs(cachedir)
+
+        if not os.path.isdir(cachedir):
+            print >>sys.stderr, 'Cache directory ' + cachedir + ' is not a directory.'
+            return False
+
+        cache = os.path.join(cachedir, filename)
+        if os.path.exists(cache):
+            os.unlink(cache)
+        fout = open(cache, 'w')
+
+        if not fin and not lines and not lines_no_cr:
+            print >>sys.stderr, 'Internal error when saving a cache: no data.'
+            return False
+
+        if format_nb:
+            fout.write(cls._format_str + str(format_nb) + '\n')
+
+        if fin:
+            while True:
+                try:
+                    bytes = fin.read(500 * 1024)
+                    if len(bytes) == 0:
+                        break
+                    fout.write(bytes)
+                except urllib2.HTTPError, e:
+                    fout.close()
+                    os.unlink(cache)
+                    raise e
+            fout.close()
+            return True
+
+        if lines:
+            for line in lines:
+                fout.write(line)
+            fout.close()
+            return True
+
+        if lines_no_cr:
+            for line in lines_no_cr:
+                fout.write(line + '\n')
+            fout.close()
+            return True
+
+
+#######################################################################
+
+
 def _gnome_is_program_in_path(self, program):
     if not os.environ.has_key('PATH'):
         return False
@@ -304,9 +456,7 @@ def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
 
 
 def _gnome_is_submitted(self, package, submitted_packages):
-    for submitted in submitted_packages:
-        if package == submitted.dst_package:
-            return True
+    return package in submitted_packages
 
 
 #######################################################################
@@ -375,10 +525,7 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
         print >>sys.stderr, e.msg
 
     # get the packages submitted to GNOME:Factory
-    try:
-        submitted_packages = get_submit_request_list(conf.config['apiurl'], 'GNOME:Factory', None)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get list of submissions to GNOME:Factory: ' + e.msg
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(self, conf.config['apiurl'], 'GNOME:Factory')
 
     lines = []
 
@@ -440,10 +587,7 @@ def _gnome_todoadmin(self, exclude_submitted):
         return
 
     # get the packages submitted to GNOME:Factory
-    try:
-        submitted_packages = get_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory', None)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get list of submissions to openSUSE:Factory: ' + e.msg
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(self, conf.config['apiurl'], 'openSUSE:Factory')
 
     lines = []
     delta_index = 0
