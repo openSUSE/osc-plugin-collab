@@ -781,6 +781,9 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
     # replace version and reset release
     while True:
         line = fin.readline()
+        if len(line) == 0:
+            break
+
         match = re_spec_prep.match(line)
         if match:
             os.write(fdout, line)
