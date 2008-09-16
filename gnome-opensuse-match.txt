@@ -251,6 +251,7 @@ PolicyKit-gnome:PolicyKit-gnome
 abiword:abiword
 aqbanking:aqbanking
 avahi:avahi
+avahi:avahi-glib2
 avahi:avahi-mono
 avahi:avahi-qt4
 bakefile:bakefile
@@ -260,6 +261,7 @@ cairo:cairo
 cairomm:cairomm
 check:check
 clutter-cairo:clutter-cairo
+clutter-gst:clutter-gst
 clutter-gtk:clutter-gtk
 conglomerate:conglomerate
 contact-lookup-applet:contact-lookup-applet
@@ -335,10 +337,12 @@ mozilla-bonobo:mozilla-bonobo
 net6:net6
 njb-sharp:njb-sharp
 notification-daemon:notification-daemon
+notify-python:python-notify
 nss-mdns:nss-mdns
 obby:obby
 paprefs:paprefs
 pavucontrol:pavucontrol
+pavumeter:pavumeter
 pidgin:pidgin
 pkg-config:pkg-config
 poppler:poppler
@@ -358,6 +362,8 @@ startup-notification:startup-notification
 tango-icon-theme:tango-icon-theme
 telepathy-gabble:telepathy-gabble
 telepathy-glib:telepathy-glib
+telepathy-haze:telepathy-haze
+telepathy-idle:telepathy-idle
 telepathy-salut:telepathy-salut
 telepathy-stream-engine:telepathy-stream-engine
 transmission:transmission
@@ -367,15 +373,11 @@ webkit:libwebkit
 xchat:xchat
 
 ## Packages where we are upstream
+## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:beagle-index
 bundle-lang-gnome:bundle-lang-gnome
-epiphany-branding-openSUSE:epiphany-branding-openSUSE
-gconf2-branding-openSUSE:gconf2-branding-openSUSE
-gdm-branding-openSUSE:gdm-branding-openSUSE
-glib2-branding-openSUSE:glib2-branding-openSUSE
 ggreeter:ggreeter
 gnome-patch-translation:gnome-patch-translation
-gtk2-branding-openSUSE:gtk2-branding-openSUSE
 gtk2-theme-openSUSE:gtk2-theme-openSUSE
 gtk2-themes:gtk2-themes
 metacity-themes:metacity-themes

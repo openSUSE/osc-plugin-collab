@@ -48,7 +48,7 @@
 #
 # Note that you need to add a line in gnome-opensuse-match.txt for each
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
-# section.
+# section or in the "Packages where we are upstream" section.
 
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
@@ -69,13 +69,13 @@ cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/re
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 check:sf:28255|20116
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
+clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
-epiphany-branding-openSUSE:upstream:
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/farsight/
 fyre:httpls:http://releases.navi.cx/fyre/
@@ -85,11 +85,8 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
-gconf2-branding-openSUSE:upstream:
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
-gdm-branding-openSUSE:upstream:
-glib2-branding-openSUSE:upstream:
 ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
@@ -120,7 +117,6 @@ gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk-vnc:sf:190580|223580
-gtk2-branding-openSUSE:upstream:
 gtk2-theme-openSUSE:upstream:
 gtk2-themes:upstream:
 gtkglext:sf:54333|48997
@@ -164,10 +160,12 @@ net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
+notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 obby:httpls:http://releases.0x539.de/obby/
 opt_gnome-compat:upstream:
 paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
+pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|230234
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
@@ -187,6 +185,8 @@ startup-notification:httpls:http://www.freedesktop.org/software/startup-notifica
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
+telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
+telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 translation-update:upstream:
