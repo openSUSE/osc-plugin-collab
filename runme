@@ -54,6 +54,15 @@ sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g
 sed -i "s/^\(mobile:.*\)$/# \1/g" $OBS_DISSECTOR_DIR/versions
 cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 
+# Check that we have everything in the match database.
+for i in `grep -v '^#' $OBS_DISSECTOR_DIR/versions | grep ':' | cut -d ':' -f 2`; do
+    re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
+    grep -q -E "^(# ?)?$re_i:" $OBS_DISSECTOR_DIR/gnome-opensuse-match.txt
+    if test $? -ne 0; then
+        echo $i not in $OBS_DISSECTOR_DIR/gnome-opensuse-match.txt
+    fi
+done
+
 # We check everything out in a temporary directory.
 # At the end, we'll symlink this directory to the stable directory, and
 # remove the old checkout. This way, we always have a valid & working
