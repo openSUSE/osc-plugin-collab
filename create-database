@@ -131,15 +131,20 @@ class DataCache:
 
     def _fill_upstream_name(self, upstream_name):
         file = open(upstream_name)
-        re_upstream_name = re.compile('^(.+):(.+)$')
+        re_upstream_name = re.compile('^(.+):(.*)$')
         line = file.readline()
         while line != '':
             match = re_upstream_name.match(line)
             if match:
+                upstream = match.group(1)
+                if match.group(2) != '':
+                    srcpackage = match.group(2)
+                else:
+                    srcpackage = upstream
                 self.cursor.execute('''INSERT INTO upstream_name VALUES (
                     NULL, ?, ?
                     );''',
-                    (match.group(2), match.group(1)))
+                    (srcpackage, upstream))
             line = file.readline()
         file.close()
 
