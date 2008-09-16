@@ -1214,6 +1214,10 @@ def _gnome_quilt_package(self, package, spec_file):
         if not os.path.isdir(dir):
             continue
 
+        # there's no patch, so just continue
+        if not os.path.exists(os.path.join(dir, 'patches')):
+            continue
+
         popen = subprocess.Popen(['quilt', 'push', '-a', '-q'], cwd = dir, stdout = null, stderr = null)
         retval = popen.wait()
 
