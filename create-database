@@ -554,10 +554,20 @@ class Package(Base):
              self.summary, self.description))
 
     def set_summary(self, summary):
-        self.summary = summary
+        # make sure we have utf-8 for sqlite3, else we get
+        # sqlite3.ProgrammingError
+        try:
+            self.summary = summary.encode('utf8')
+        except UnicodeDecodeError:
+            # we couldn't convert to utf-8: it's likely because we had latin1
+            self.summary = summary.decode('latin1')
 
     def set_description(self, description):
-        self.description = description
+        # see comments in set_summary()
+        try:
+            self.description = description.encode('utf8')
+        except UnicodeDecodeError:
+            self.description = description.decode('latin1')
 
     def get_rpmlint_errors(self):
         # FIXME: autobuild specific
