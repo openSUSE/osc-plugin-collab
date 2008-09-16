@@ -310,7 +310,7 @@ def make_directory_stable(directory):
 
     # Do this after symlinking the new directory: doing it before would just
     # delay the access to the latest data
-    if old_stable_directory:
+    if old_stable_directory and os.path.exists(old_stable_directory):
         shutil.rmtree(old_stable_directory)
 
 
