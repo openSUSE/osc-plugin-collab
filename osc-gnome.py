@@ -255,6 +255,20 @@ class OscGnomeWeb:
 #######################################################################
 
 
+def _gnome_is_program_in_path(self, program):
+    if not os.environ.has_key('PATH'):
+        return False
+
+    for path in os.environ['PATH'].split(':'):
+        if os.path.exists(os.path.join(path, program)):
+            return True
+
+    return False
+
+
+#######################################################################
+
+
 # TODO: put this in a common library -- it's used in the examples too
 def _gnome_compare_versions_a_gt_b(self, a, b):
     rpm = self.OscGnomeImport.m_import('rpm')
@@ -871,6 +885,58 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
 #######################################################################
 
 
+def _gnome_quilt_package(self, package, spec_file):
+    def _cleanup(null, tmpdir):
+        null.close()
+        shutil.rmtree(tmpdir)
+
+    subprocess = self.OscGnomeImport.m_import('subprocess')
+    shutil = self.OscGnomeImport.m_import('shutil')
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+
+    if not subprocess or not shutil or not tempfile:
+        print >>sys.stderr, 'Cannot try to apply patches: incomplete python installation.'
+        return False
+
+    null = open('/dev/null', 'w')
+    tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
+
+
+    # setup with quilt
+    sourcedir = os.path.dirname(os.path.realpath(spec_file))
+    popen = subprocess.Popen(['quilt', 'setup', '-d', tmpdir, '--sourcedir', sourcedir, spec_file], stdout = null, stderr = null)
+    retval = popen.wait()
+
+    if retval != 0:
+        _cleanup(null, tmpdir)
+        print >>sys.stderr, 'Cannot apply patches: \'quilt setup\' failed.'
+        return False
+
+
+    # apply patches for all subdirectories
+    for directory in os.listdir(tmpdir):
+        dir = os.path.join(tmpdir, directory)
+
+        if not os.path.isdir(dir):
+            continue
+
+        popen = subprocess.Popen(['quilt', 'push', '-a', '-q'], cwd = dir, stdout = null, stderr = null)
+        retval = popen.wait()
+
+        if retval != 0:
+            _cleanup(null, tmpdir)
+            print >>sys.stderr, 'Cannot apply patches: \'quilt push -a\' failed.'
+            return False
+
+
+    _cleanup(null, tmpdir)
+
+    return True
+
+
+#######################################################################
+
+
 def _gnome_update(self, package, apiurl, username, email, reserve = False):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
@@ -968,13 +1034,24 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     # fatail if fails
     # TODO
 
+
     # try applying the patches with rpm quilt and start a build if it succeeds
     # not fatal if fails
-    # TODO
+    if self._gnome_is_program_in_path('quilt'):
+        print 'Running quilt...'
+        if self._gnome_quilt_package(package, spec_file):
+            print 'Patches still apply.'
+        else:
+            print 'WARNING: make sure that all patches apply before submitting.'
+    else:
+        print 'quilt is not available.'
+        print 'WARNING: make sure that all patches apply before submitting.'
+
 
     print 'Package ' + package + ' has been prepared for the update.'
 
-    # TODO add a note about checking patches, buildrequires & requires
+    # TODO add a note about checking if patches are still needed, buildrequires
+    # & requires
 
 
 # TODO
