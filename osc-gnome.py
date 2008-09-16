@@ -755,6 +755,53 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
+def _gnome_update_changes(self, changes_file, upstream_version, email):
+    if not os.path.exists(changes_file):
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
+        return False
+    elif not os.path.isfile(changes_file):
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
+        return False
+
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    time = self.OscGnomeImport.m_import('time')
+    locale = self.OscGnomeImport.m_import('locale')
+
+    if not tempfile or not time or not locale:
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': incomplete python installation.'
+        return False
+
+    (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(changes_file))
+
+    old_lc_time = locale.setlocale(locale.LC_TIME)
+    locale.setlocale(locale.LC_TIME, 'C')
+
+    os.write(fdout, '-------------------------------------------------------------------\n')
+    os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - ' + email + '\n')
+    os.write(fdout, '\n')
+    os.write(fdout, '- Update to version ' + upstream_version + ':\n')
+    os.write(fdout, '  + \n')
+    os.write(fdout, '\n')
+
+    locale.setlocale(locale.LC_TIME, old_lc_time)
+
+    fin = open(changes_file, 'r')
+    while True:
+        bytes = fin.read(10 * 1024)
+        if len(bytes) == 0:
+            break
+        os.write(fdout, bytes)
+    fin.close()
+    os.close(fdout)
+
+    os.rename(tmp, changes_file)
+
+    return True
+
+
+#######################################################################
+
+
 def _gnome_update(self, package, apiurl, username, email, reserve = False):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
@@ -794,44 +841,8 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     # start adding an entry to .changes
     # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
-    if not os.path.exists(changes_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
-    elif not os.path.isfile(changes_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
-    else:
-        tempfile = self.OscGnomeImport.m_import('tempfile')
-        time = self.OscGnomeImport.m_import('time')
-        locale = self.OscGnomeImport.m_import('locale')
-
-        if not tempfile or not time or not locale:
-            print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': incomplete python installation.'
-        else:
-            (fdout, tmp) = tempfile.mkstemp(dir = package_dir)
-
-            old_lc_time = locale.setlocale(locale.LC_TIME)
-            locale.setlocale(locale.LC_TIME, 'C')
-
-            os.write(fdout, '-------------------------------------------------------------------\n')
-            os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - ' + email + '\n')
-            os.write(fdout, '\n')
-            os.write(fdout, '- Update to version ' + upstream_version + ':\n')
-            os.write(fdout, '  + \n')
-            os.write(fdout, '\n')
-
-            locale.setlocale(locale.LC_TIME, old_lc_time)
-
-            fin = open(changes_file, 'r')
-            while True:
-                bytes = fin.read(10 * 1024)
-                if len(bytes) == 0:
-                    break
-                os.write(fdout, bytes)
-            fin.close()
-            os.close(fdout)
-
-            os.rename(tmp, changes_file)
-
-            print os.path.basename(changes_file) + ' has been prepared.'
+    if self._gnome_update_changes(changes_file, upstream_version, email):
+        print os.path.basename(changes_file) + ' has been prepared.'
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
