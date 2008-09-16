@@ -303,6 +303,52 @@ class GnomeCache:
 
 
     @classmethod
+    def get_obs_meta(cls, caller, apiurl, project):
+        filename = 'meta-' + project
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        # Only download if it's more than 2-days old
+        if not cls._need_update(caller, filename, 3600 * 24 * 2):
+            return cache
+
+        urllib = caller.OscGnomeImport.m_import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get metadata of packages in ' + proect + ': incomplete python installation.'
+            return None
+
+        # no cache available
+        print 'Downloading data in a cache. It might take a few seconds...'
+
+        # download the data
+        try:
+            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'openSUSE:Factory\'')])
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get list of submissions to ' + project + ': ' + e.msg
+            return None
+
+        fout = open(cache, 'w')
+
+        while True:
+            try:
+                bytes = fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                fout.write(bytes)
+            except urllib2.HTTPError, e:
+                fin.close()
+                fout.close()
+                os.unlink(cache)
+                print >>sys.stderr, 'Error while downloading metadata: ' + e.msg
+                return None
+
+        fin.close()
+        fout.close()
+
+        return cache
+
+
+    @classmethod
     def get_obs_submit_request_list(cls, caller, apiurl, project):
         current_format = 1
         filename = 'submitted-' + project
@@ -498,7 +544,7 @@ def _gnome_table_print_header(self, template, title):
 
     dash_template = template.replace(' | ', '-+-')
 
-    very_long_dash = ('-------------------------------------------------',)
+    very_long_dash = ('--------------------------------------------------------------------------------',)
     dashes = ()
     for i in range(len(title)):
         dashes = dashes + very_long_dash
@@ -567,6 +613,74 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
+def _gnome_get_packages_with_bad_meta(self):
+    metafile = self.GnomeCache.get_obs_meta(self, conf.config['apiurl'], 'openSUSE:Factory')
+    if not metafile:
+        return (None, None)
+
+    try:
+        collection = ET.parse(metafile).getroot()
+    except SyntaxError:
+        print >>sys.stderr, 'Cannot parse ' + metafile + ': ' + e.msg
+        return (None, None)
+
+    devel_dict = {}
+    # list of packages that should exist in G:F but that don't
+    bad_GF_packages = []
+    # list of packages that exist in G:F but that shouldn't
+    should_GF_packages = []
+
+    # save all packages that should be in G:F and also create a db of
+    # package->develproject
+    for package in collection.findall('package'):
+        name = package.get('name')
+        devel = package.find('devel')
+        if devel != None:
+            devel_project = devel.get('project')
+        else:
+            devel_project = ''
+
+        devel_dict[name] = devel_project
+        if devel_project == 'GNOME:Factory':
+            should_GF_packages.append(name)
+
+    # get the list of packages that are actually in G:F
+    try:
+        packages_versions = self._gnome_web.get_packages_versions()
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return (None, None)
+
+    # now really create the list of packages that should be in G:F and
+    # create the list of packages that shouldn't stay in G:F
+    for (package, oF_version, GF_version, upstream_version) in packages_versions:
+        if package in should_GF_packages:
+            should_GF_packages.remove(package)
+        devel_project = devel_dict[package]
+        if devel_project != 'GNOME:Factory':
+            bad_GF_packages.append((package, devel_project))
+
+    bad_GF_packages.sort()
+    should_GF_packages.sort()
+
+    return (bad_GF_packages, should_GF_packages)
+
+
+#######################################################################
+
+
+def _gnome_min_package(self, *args):
+    min_package = None
+    for i in range(len(args)):
+        if args[i]:
+            if min_package:
+                min_package = min(args[i], min_package)
+            else:
+                min_package = args[i]
+
+    return min_package
+
+
 def _gnome_todoadmin(self, exclude_submitted):
     def _insert_delta_package(lines, delta_package, submitted_packages):
         if self._gnome_is_submitted(delta_package, submitted_packages):
@@ -576,6 +690,20 @@ def _gnome_todoadmin(self, exclude_submitted):
         else:
             message = 'Needs to be submitted to openSUSE:Factory'
         lines.append((delta_package, message))
+
+    def _insert_error_package(lines, error_package_tuple):
+        (error_package, error, details) = error_package_tuple
+        if error == 'not-link':
+            message = 'Is not a link to openSUSE:Factory'
+        elif error == 'not-in-parent':
+            message = 'Does not exist in openSUSE:Factory'
+        elif error == 'need-merge-with-parent':
+            message = 'Requires a manual merge with openSUSE:Factory'
+        else:
+            message = 'Unknown error'
+            if details:
+                message = message + ': ' + details
+        lines.append((error_package, message))
 
 
     # get packages with a delta
@@ -588,44 +716,66 @@ def _gnome_todoadmin(self, exclude_submitted):
 
     # get the packages submitted to GNOME:Factory
     submitted_packages = self.GnomeCache.get_obs_submit_request_list(self, conf.config['apiurl'], 'openSUSE:Factory')
+    (bad_GF_packages, should_GF_packages) = self._gnome_get_packages_with_bad_meta()
 
     lines = []
     delta_index = 0
     delta_max = len(packages_with_delta)
+    error_index = 0
+    error_max = len(packages_with_errors)
+    bad_GF_index = 0
+    bad_GF_max = len(bad_GF_packages)
+    should_GF_index = 0
+    should_GF_max = len(should_GF_packages)
 
-    # we won't enter in the for loop if there's no error
-    if len(packages_with_errors) == 0:
-        for delta_package in packages_with_delta:
-            _insert_delta_package(lines, delta_package, submitted_packages)
 
-    for (package, error, details) in packages_with_errors:
-        # insert the packages with delta in the alphabetical order
-        while delta_index < delta_max:
+    # This is an ugly loop to merge all the lists we have to get an output
+    # in alphabetical order.
+    while True:
+        if delta_index < delta_max:
             delta_package = packages_with_delta[delta_index]
-            if not delta_package:
-                break
-            if delta_package > package:
-                break
+        else:
+            delta_package = None
+        if error_index < error_max:
+            error_package_tuple = packages_with_errors[error_index]
+            error_package = error_package_tuple[0]
+        else:
+            error_package = None
+        if bad_GF_index < bad_GF_max:
+            bad_GF_package_tuple = bad_GF_packages[bad_GF_index]
+            bad_GF_package = bad_GF_package_tuple[0]
+        else:
+            bad_GF_package = None
+        if should_GF_index < should_GF_max:
+            should_GF_package = should_GF_packages[should_GF_index]
+        else:
+            should_GF_package = None
 
+        package = self._gnome_min_package(delta_package, error_package, bad_GF_package, should_GF_package)
+
+        if not package:
+            break
+        elif package == should_GF_package:
+            lines.append((should_GF_package, 'Does not exist in GNOME:Factory while it should'))
+            should_GF_index = should_GF_index + 1
+            # this package cannot appear in other lists since it's unknown to
+            # our scripts
+        elif package == bad_GF_package:
+            lines.append((bad_GF_package, 'Development project is not GNOME:Factory (' + bad_GF_package_tuple[1] + ')'))
+            bad_GF_index = bad_GF_index + 1
+            if package == error_package:
+                error_index = error_index + 1
+            if package == delta_package:
+                delta_index = delta_index + 1
+        elif package == error_package:
+            _insert_error_package(lines, error_package_tuple)
+            error_index = error_index + 1
+            if package == delta_package:
+                delta_index = delta_index + 1
+        elif package == delta_package:
+            _insert_delta_package(lines, delta_package, submitted_packages)
             delta_index = delta_index + 1
 
-            if delta_package == package:
-                # we have an error and a delta: error is more important
-                break
-
-            _insert_delta_package(lines, delta_package, submitted_packages)
-
-        if error == 'not-link':
-            message = 'Is not a link to openSUSE:Factory'
-        elif error == 'not-in-parent':
-            message = 'Does not exist in openSUSE:Factory'
-        elif error == 'need-merge-with-parent':
-            message = 'Requires a manual merge with openSUSE:Factory'
-        else:
-            message = 'Unknown error'
-            if details:
-                message = message + ': ' + details
-        lines.append((package, message))
 
     if len(lines) == 0:
         print 'Nothing to do.'
@@ -636,7 +786,7 @@ def _gnome_todoadmin(self, exclude_submitted):
     (max_package, max_details) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_package = min(max_package, 48)
-    max_details = min(max_details, 50)
+    max_details = min(max_details, 65)
 
     print_line = self._gnome_table_get_template(max_package, max_details)
     self._gnome_table_print_header(print_line, title)
