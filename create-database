@@ -134,6 +134,11 @@ class DataCache:
         re_upstream_name = re.compile('^(.+):(.*)$')
         line = file.readline()
         while line != '':
+            line = line.lstrip()
+            if len(line) == 0 or line[0] == '#' or line[0] == '\n':
+                line = file.readline()
+                continue
+
             match = re_upstream_name.match(line)
             if match:
                 upstream = match.group(1)
