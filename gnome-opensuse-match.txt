@@ -43,7 +43,6 @@ evolution:
 evolution-data-server:
 evolution-exchange:
 evolution-webcal:
-fast-user-switch-applet:
 file-roller:
 gcalctool:
 gconf-editor:
@@ -90,6 +89,8 @@ gtksourceview-1.0:gtksourceview18
 gtksourceview:
 gucharmap:
 gvfs:
+# No package in openSUSE
+#hamster-applet:
 libgail-gnome:
 libgnomekbd:
 libgnomeprint:
@@ -107,6 +108,8 @@ nautilus:
 nautilus-cd-burner:
 orca:
 pygtksourceview:python-gtksourceview
+# No package in openSUSE
+#seahorse-plugins:
 seahorse:
 sound-juicer:
 swfdec-gnome:
@@ -146,6 +149,8 @@ libgnomemm:
 libgnomeuimm:
 libsigc++:libsigc++2
 libxml++:
+# No package in openSUSE
+#pangomm:
 
 # Java
 # No package in openSUSE
@@ -417,4 +422,5 @@ yast2-control-center-gnome:
 
 ## Packages that we removed
 # banshee-1:banshee
-# libssui:libssui
+# fast-user-switch-applet:
+# libssui:
