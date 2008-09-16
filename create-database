@@ -129,14 +129,19 @@ class DataCache:
             );''')
 
 
+    def _is_line_comment(self, line):
+        return line[0] == '#' or line.strip() == ''
+
+
     def _fill_upstream_name(self, upstream_name):
         file = open(upstream_name)
         re_upstream_name = re.compile('^(.+):(.*)$')
-        line = file.readline()
-        while line != '':
-            line = line.lstrip()
-            if len(line) == 0 or line[0] == '#' or line[0] == '\n':
-                line = file.readline()
+        while True:
+            line = file.readline()
+
+            if len(line) == 0:
+                break
+            if self._is_line_comment(line):
                 continue
 
             match = re_upstream_name.match(line)
@@ -150,17 +155,18 @@ class DataCache:
                     NULL, ?, ?
                     );''',
                     (srcpackage, upstream))
-            line = file.readline()
+
         file.close()
 
     def _fill_upstream_version(self, upstream_version):
         file = open(upstream_version)
         re_upstream_version = re.compile('^([^:]*):([^:]+):([^:]+):(.*)$')
-        line = file.readline()
-        while line != '':
-            line = line.lstrip()
-            if len(line) == 0 or line[0] == '#' or line[0] == '\n':
-                line = file.readline()
+        while True:
+            line = file.readline()
+
+            if len(line) == 0:
+                break
+            if self._is_line_comment(line):
                 continue
 
             match = re_upstream_version.match(line)
@@ -184,7 +190,7 @@ class DataCache:
                     NULL, ?, ?, ?
                     );''',
                     (modulename, version, url))
-            line = file.readline()
+
         file.close()
 
     def _fill_autobuild_data(self, maintainer, pdb_cache):
