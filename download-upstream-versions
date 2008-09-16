@@ -285,7 +285,7 @@ def _get_version_from_files(modulename, location, files, limit):
     if not tarballs:
         tarballs = [file for file in good_files if file.endswith('.tgz')]
 
-    re_tarball = r'^.*[_-](([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
+    re_tarball = r'^.*'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
     # Don't include -beta -installer -stub-installer and all kinds of
     # other weird-named tarballs
     tarballs = filter(lambda t: re.search(re_tarball, t), tarballs)
