@@ -48,6 +48,10 @@ cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
 
 $basedir/download-gnome-versions
 $basedir/download-upstream-versions --upstream-tarballs=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --upstream-limits=$OBS_DISSECTOR_DIR/upstream-limits.txt  --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old --use-old-as-fallback
+# Don't use gstreamer from ftp.gnome.org -- it can be outdated
+sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g" $OBS_DISSECTOR_DIR/versions
+# We don't care about mobile stuff
+sed -i "s/^\(mobile:.*\)$/# \1/g" $OBS_DISSECTOR_DIR/versions
 cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 
 # We check everything out in a temporary directory.
