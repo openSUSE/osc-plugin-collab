@@ -148,6 +148,11 @@ class DataCache:
         re_upstream_version = re.compile('^([^:]*):([^:]+):([^:]+):(.*)$')
         line = file.readline()
         while line != '':
+            line = line.lstrip()
+            if len(line) == 0 or line[0] == '#' or line[0] == '\n':
+                line = file.readline()
+                continue
+
             match = re_upstream_version.match(line)
             if match:
                 modulename = match.group(2)
