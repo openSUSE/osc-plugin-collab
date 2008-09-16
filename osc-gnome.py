@@ -1031,7 +1031,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
 
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
-    # fatail if fails
+    # fatal if fails
     # TODO
 
 
