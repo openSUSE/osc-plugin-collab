@@ -1,10 +1,5 @@
 # TODO: add a class to cache files that we download from the web
 
-# TODO:
-# Fixup the BuildRequires line (One requires per line, and sort them
-# alphabetically)
-# Actually, create a class that fixes a spec file
-
 class OscGnomeError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -755,6 +750,77 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
+# TODO:
+# Fixup the BuildRequires line (One requires per line, and sort them
+# alphabetically)
+# Also put Name/License/Group/BuildRequires/etc. in the right order
+# Actually, create a class that fixes a spec file
+def _gnome_update_spec(self, spec_file, package, upstream_version):
+    if not os.path.exists(spec_file):
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
+        return False
+    elif not os.path.isfile(spec_file):
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
+        return False
+
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    re = self.OscGnomeImport.m_import('re')
+
+    if not tempfile or not re:
+        print >>sys.stderr, 'Cannot update ' + os.path.basename(spec_file) + ': incomplete python installation.'
+        return False
+
+    re_spec_header = re.compile('^(# spec file for package ' + package + ' \(Version )\S*(\).*)', re.IGNORECASE)
+    re_spec_version = re.compile('^(Version:\s*)\S*', re.IGNORECASE)
+    re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
+    re_spec_prep = re.compile('^%prep', re.IGNORECASE)
+
+    fin = open(spec_file, 'r')
+    (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(spec_file))
+
+    # replace version and reset release
+    while True:
+        line = fin.readline()
+        match = re_spec_prep.match(line)
+        if match:
+            os.write(fdout, line)
+            break
+
+        match = re_spec_header.match(line)
+        if match:
+            os.write(fdout, match.group(1) + upstream_version + match.group(2) + '\n')
+            continue
+
+        match = re_spec_version.match(line)
+        if match:
+            os.write(fdout, match.group(1) + upstream_version + '\n')
+            continue
+
+        match = re_spec_release.match(line)
+        if match:
+            os.write(fdout, match.group(1) + '1\n')
+            continue
+
+        os.write(fdout, line)
+
+    # wild read/write to finish quickly
+    while True:
+        bytes = fin.read(10 * 1024)
+        if len(bytes) == 0:
+            break
+        os.write(fdout, bytes)
+
+    fin.close()
+    os.close(fdout)
+
+    os.rename(tmp, spec_file)
+
+    return True
+
+
+#######################################################################
+
+
 def _gnome_update_changes(self, changes_file, upstream_version, email):
     if not os.path.exists(changes_file):
         print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
@@ -829,8 +895,8 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    # TODO
-    # sed -i "s/^\(Version: *\)[^ ]*/\1$VERSION/" $PACKAGE.spec
+    if self._gnome_update_spec(spec_file, package, upstream_version):
+        print os.path.basename(spec_file) + ' has been prepared.'
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
