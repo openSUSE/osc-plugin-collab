@@ -1066,22 +1066,26 @@ def _gnome_gz_to_bz2_internal(self, file):
 def _gnome_update_spec(self, spec_file, package, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
-        return False
+        return (False, None)
     elif not os.path.isfile(spec_file):
         print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
-        return False
+        return (False, None)
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
     re = self.OscGnomeImport.m_import('re')
 
     if not tempfile or not re:
         print >>sys.stderr, 'Cannot update ' + os.path.basename(spec_file) + ': incomplete python installation.'
-        return False
+        return (False, None)
 
     re_spec_header = re.compile('^(# spec file for package ' + package + ' \(Version )\S*(\).*)', re.IGNORECASE)
-    re_spec_version = re.compile('^(Version:\s*)\S*', re.IGNORECASE)
+    re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
     re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
+    re_spec_source = re.compile('^(Source0?:\s*)(\S*)', re.IGNORECASE)
     re_spec_prep = re.compile('^%prep', re.IGNORECASE)
+
+    old_version = None
+    old_source = None
 
     fin = open(spec_file, 'r')
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(spec_file))
@@ -1104,6 +1108,7 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
         match = re_spec_version.match(line)
         if match:
+            old_version = match.group(2)
             os.write(fdout, match.group(1) + upstream_version + '\n')
             continue
 
@@ -1111,6 +1116,11 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
         if match:
             os.write(fdout, match.group(1) + '1\n')
             continue
+
+        match = re_spec_source.match(line)
+        if match:
+            old_source = os.path.basename(match.group(2))
+            # continue in the loop to have the standard write
 
         os.write(fdout, line)
 
@@ -1126,7 +1136,13 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
     os.rename(tmp, spec_file)
 
-    return True
+    if old_source and old_version and old_version != upstream_version:
+        old_source = old_source.replace('%{name}', package)
+        old_source = old_source.replace('%{version}', old_version)
+    else:
+        old_source = None
+
+    return (True, old_source)
 
 
 #######################################################################
@@ -1262,7 +1278,8 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    if self._gnome_update_spec(spec_file, package, upstream_version):
+    (updated, old_tarball) = self._gnome_update_spec(spec_file, package, upstream_version)
+    if updated:
         print os.path.basename(spec_file) + ' has been prepared.'
 
     # warn if there are other spec files which might need an update
@@ -1306,7 +1323,8 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         print >>sys.stderr, 'No upstream tarball downloaded for ' + package + '.'
         return
     else:
-        print os.path.basename(upstream_tarball) + ' has been downloaded.'
+        upstream_tarball_basename = os.path.basename(upstream_tarball)
+        print upstream_tarball_basename + ' has been downloaded.'
 
 
     # check integrity of the downloaded file
@@ -1326,6 +1344,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     if upstream_tarball.endswith('.gz'):
         try:
             upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
+            upstream_tarball_basename = os.path.basename(upstream_tarball)
             print os.path.basename(upstream_tarball) + ' has been recompressed to bz2.'
         except self.OscGnomeCompressError, e:
             print >>sys.stderr, e.msg
@@ -1345,8 +1364,23 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
 
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
-    # fatal if fails
-    # TODO
+    # not fatal if fails
+    osc_package = filedir_to_pac(package_dir)
+
+    if old_tarball:
+        old_tarball_with_dir = os.path.join(package_dir, old_tarball)
+        if os.path.exists(old_tarball_with_dir):
+            osc_package.put_on_deletelist(old_tarball)
+            osc_package.write_deletelist()
+            osc_package.delete_source_file(old_tarball)
+            print old_tarball + ' has been removed from the package.'
+        else:
+            print 'WARNING: the previous tarball could not be found. Please manually remove it.'
+    else:
+        print 'WARNING: the previous tarball could not be found. Please manually remove it.'
+
+    osc_package.addfile(upstream_tarball_basename)
+    print upstream_tarball_basename + ' has been added to the package.'
 
 
     print 'Package ' + package + ' has been prepared for the update.'
