@@ -57,8 +57,9 @@ class OscGnomeWeb:
     _error_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py?mode=error'
     _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
 
-    def __init__(self, exception):
+    def __init__(self, exception, cache):
         self.Error = exception
+        self.Cache = cache
 
 
     def _parse_reservation(self, line):
@@ -74,7 +75,7 @@ class OscGnomeWeb:
         packages_versions = []
 
         try:
-            fd = urllib2.urlopen(self._csv_url)
+            fd = self.Cache.get_url_fd_with_cache(self._csv_url, 'db-obs-csv', 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of packages: ' + e.msg)
 
@@ -94,7 +95,7 @@ class OscGnomeWeb:
 
     def get_packages_with_delta(self):
         try:
-            fd = urllib2.urlopen(self._admin_url)
+            fd = self.Cache.get_url_fd_with_cache(self._admin_url, 'db-obs-admin', 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with a delta: ' + e.msg)
 
@@ -108,7 +109,7 @@ class OscGnomeWeb:
         errors = []
 
         try:
-            fd = urllib2.urlopen(self._error_url)
+            fd = self.Cache.get_url_fd_with_cache(self._error_url, 'db-obs-error', 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with an error: ' + e.msg)
 
@@ -258,6 +259,18 @@ class GnomeCache:
 
     _cache_dir = None
     _format_str = '# osc-gnome-format: '
+    _import = None
+    _printed = False
+
+    @classmethod
+    def init(cls, import_function):
+        cls._import = import_function
+
+    @classmethod
+    def _print_message(cls):
+        if not cls._printed:
+            cls._printed = True
+            print 'Downloading data in a cache. It might take a few seconds...'
 
     @classmethod
     def _get_xdg_cache_dir(cls):
@@ -277,7 +290,7 @@ class GnomeCache:
 
 
     @classmethod
-    def _need_update(cls, caller, filename, maxage):
+    def _need_update(cls, filename, maxage):
         cache = os.path.join(cls._get_xdg_cache_dir(), filename)
 
         if not os.path.exists(cache):
@@ -287,7 +300,7 @@ class GnomeCache:
             return True
 
         stats = os.stat(cache)
-        time = caller.OscGnomeImport.m_import('time')
+        time = cls._import('time')
 
         if time:
             now = time.time()
@@ -303,21 +316,31 @@ class GnomeCache:
 
 
     @classmethod
-    def get_obs_meta(cls, caller, apiurl, project):
+    def get_url_fd_with_cache(cls, url, filename, max_age_minutes):
+        if cls._need_update(filename, max_age_minutes * 60):
+            # no cache available
+            cls._print_message()
+            fd = urllib2.urlopen(url)
+            cls._write(filename, fin = fd)
+
+        return open(os.path.join(cls._get_xdg_cache_dir(), filename))
+
+    @classmethod
+    def get_obs_meta(cls, apiurl, project):
         filename = 'meta-' + project
         cache = os.path.join(cls._get_xdg_cache_dir(), filename)
 
         # Only download if it's more than 2-days old
-        if not cls._need_update(caller, filename, 3600 * 24 * 2):
+        if not cls._need_update(filename, 3600 * 24 * 2):
             return cache
 
-        urllib = caller.OscGnomeImport.m_import('urllib')
+        urllib = cls._import('urllib')
         if not urllib:
             print >>sys.stderr, 'Cannot get metadata of packages in ' + proect + ': incomplete python installation.'
             return None
 
         # no cache available
-        print 'Downloading data in a cache. It might take a few seconds...'
+        cls._print_message()
 
         # download the data
         try:
@@ -349,12 +372,12 @@ class GnomeCache:
 
 
     @classmethod
-    def get_obs_submit_request_list(cls, caller, apiurl, project):
+    def get_obs_submit_request_list(cls, apiurl, project):
         current_format = 1
         filename = 'submitted-' + project
 
         # Only download if it's more than 10-minutes old
-        if not cls._need_update(caller, filename, 60 * 10):
+        if not cls._need_update(filename, 60 * 10):
             fcache = open(os.path.join(cls._get_xdg_cache_dir(), filename))
             format_line = fcache.readline()
 
@@ -375,7 +398,7 @@ class GnomeCache:
                 # don't return: we'll download again
 
         # no cache available
-        print 'Downloading data in a cache. It might take a few seconds...'
+        cls._print_message()
 
         # download the data
         try:
@@ -571,7 +594,7 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
         print >>sys.stderr, e.msg
 
     # get the packages submitted to GNOME:Factory
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(self, conf.config['apiurl'], 'GNOME:Factory')
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], 'GNOME:Factory')
 
     lines = []
 
@@ -614,7 +637,7 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
 
 
 def _gnome_get_packages_with_bad_meta(self):
-    metafile = self.GnomeCache.get_obs_meta(self, conf.config['apiurl'], 'openSUSE:Factory')
+    metafile = self.GnomeCache.get_obs_meta(conf.config['apiurl'], 'openSUSE:Factory')
     if not metafile:
         return (None, None)
 
@@ -715,7 +738,7 @@ def _gnome_todoadmin(self, exclude_submitted):
         return
 
     # get the packages submitted to GNOME:Factory
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(self, conf.config['apiurl'], 'openSUSE:Factory')
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory')
     (bad_GF_packages, should_GF_packages) = self._gnome_get_packages_with_bad_meta()
 
     lines = []
@@ -1531,6 +1554,11 @@ def do_gnome(self, subcmd, opts, *args):
     ${cmd_option_list}
     """
 
+    # uncomment this when profiling is needed
+    #self.gtime = self.OscGnomeImport.m_import('time')
+    #self.gref = self.gtime.time()
+    #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
+
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
@@ -1552,7 +1580,8 @@ def do_gnome(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
-    self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError)
+    self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
+    self.GnomeCache.init(self.OscGnomeImport.m_import)
 
     email = self._gnome_ensure_email()
 
