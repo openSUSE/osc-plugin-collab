@@ -416,7 +416,7 @@ class GnomeCache:
             os.unlink(cache)
         fout = open(cache, 'w')
 
-        if not fin and not lines and not lines_no_cr:
+        if not fin and lines == None and lines_no_cr == None:
             print >>sys.stderr, 'Internal error when saving a cache: no data.'
             return False
 
