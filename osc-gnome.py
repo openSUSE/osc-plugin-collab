@@ -896,7 +896,7 @@ def _gnome_unreserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
+def _gnome_setup_internal(self, package, apiurl, username, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
@@ -904,19 +904,15 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
         print >>sys.stderr, e.msg
         return False
 
-    if not reserve:
-        # check that we already have reserved the package
-        if not reserved_by:
-            print 'Please reserve the package %s first.' % package
-            return False
-        elif reserved_by != username:
+    # package already reserved, but not by us
+    if reserved_by and reserved_by != username:
+        if not ignore_reserved:
             print 'Package %s is already reserved by %s.' % (package, reserved_by)
             return False
-    elif reserved_by and reserved_by != username:
-        print 'Package %s is already reserved by %s.' % (package, reserved_by)
-        return False
-    elif not reserved_by:
-        # reserve the package
+        else:
+            print 'WARNING: package %s is already reserved by %s.' % (package, reserved_by)
+    # package not reserved
+    elif not reserved_by and not no_reserve:
         try:
             self._gnome_web.reserve_package(package, username)
             print 'Package %s has been reserved for 36 hours.' % package
@@ -924,7 +920,8 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
             print '    osc gnome unreserve %s' % package
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
-            return False
+            if not ignore_reserved:
+                return False
 
     # look if we already have a branch, and if not branch the package
     try:
@@ -992,8 +989,8 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
 #######################################################################
 
 
-def _gnome_setup(self, package, apiurl, username, reserve = False):
-    if not self._gnome_setup_internal(package, apiurl, username, reserve):
+def _gnome_setup(self, package, apiurl, username, ignore_reserved = False, no_reserve = False):
+    if not self._gnome_setup_internal(package, apiurl, username, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
 
@@ -1275,7 +1272,7 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, package, apiurl, username, email, reserve = False):
+def _gnome_update(self, package, apiurl, username, email, ignore_reserved = False, no_reserve = False):
     try:
         (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
@@ -1295,7 +1292,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         print 'Package %s is already up-to-date.' % package
         return
 
-    if not self._gnome_setup_internal(package, apiurl, username, reserve):
+    if not self._gnome_setup_internal(package, apiurl, username, ignore_reserved, no_reserve):
         return
 
     package_dir = package
@@ -1518,9 +1515,12 @@ def _gnome_ensure_email(self):
 @cmdln.option('--xr', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
-@cmdln.option('-r', '--reserve', action='store_true',
-              dest='reserve',
-              help='also reserve the package')
+@cmdln.option('--ir', '--ignore-reserved', action='store_true',
+              dest='ignore_reserved',
+              help='ignore the reservation state of the package if necessary')
+@cmdln.option('--nr', '--no-reserve', action='store_true',
+              dest='no_reserve',
+              help='do not reserve the package')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -1547,7 +1547,7 @@ def do_gnome(self, subcmd, opts, *args):
     edition, etc.). The package will be checked out in the current directory.
 
     Usage:
-        osc gnome todo [--exclude-reserved|--xr] [--exclude-submitted|--xs]
+        osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr]
         osc gnome todoadmin [--exclude-submitted|--xs]
 
         osc gnome listreserved
@@ -1555,8 +1555,8 @@ def do_gnome(self, subcmd, opts, *args):
         osc gnome reserve PKG [...]
         osc gnome unreserve PKG [...]
 
-        osc gnome setup [--reserve|-r] PKG
-        osc gnome update [--reserve|-r] PKG
+        osc gnome setup [--ignore-reserved|--ir] [--no-reserve|--nr] PKG
+        osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] PKG
     ${cmd_option_list}
     """
 
@@ -1615,8 +1615,8 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(package, conf.config['apiurl'], conf.config['user'], reserve = opts.reserve)
+        self._gnome_setup(package, conf.config['apiurl'], conf.config['user'], ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], email, reserve = opts.reserve)
+        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], email, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
