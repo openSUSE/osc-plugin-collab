@@ -1284,6 +1284,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
     # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
     if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
+        # TODO, actually we can do a better check than that with the delta API
         print 'Package %s is more recent in openSUSE:Factory (%s) than in GNOME:Factory (%s). Please synchronize GNOME:Factory first.' % (package, oF_version, GF_version)
         return
 
@@ -1470,9 +1471,12 @@ def _gnome_add_config_option(self, section, key, value):
                 os.write(fdout, '\n')
             os.write(fdout, '%s = %s\n\n' % (key, value))
             added = True
+            in_section = False
+        elif line[0] == '[' and in_section:
+            in_section = False
         # the section/key already exists: we replace
         # 'not added': in case there are multiple sections with the same name
-        elif in_section and not added and line.startswith(key):
+        elif in_section and not added and line.startswith(key + '='):
             index = line.find('=')
             line = '%s= %s\n' % (line[:index], value)
             added = True
