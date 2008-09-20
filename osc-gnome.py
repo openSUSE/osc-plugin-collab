@@ -1476,10 +1476,11 @@ def _gnome_add_config_option(self, section, key, value):
             in_section = False
         # the section/key already exists: we replace
         # 'not added': in case there are multiple sections with the same name
-        elif in_section and not added and line.startswith(key + '='):
+        elif in_section and not added and line.startswith(key):
             index = line.find('=')
-            line = '%s= %s\n' % (line[:index], value)
-            added = True
+            if line[:index].rstrip() == key:
+                line = '%s= %s\n' % (line[:index], value)
+                added = True
 
         os.write(fdout, line)
 
