@@ -157,7 +157,7 @@ class ObsCheckout:
         try:
             core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Could not get file ' + filename + ' for ' + package + ' from ' + project + ': ' + e.msg
+            print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e.msg)
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None):
@@ -177,12 +177,12 @@ class ObsCheckout:
             metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
         except urllib2.HTTPError, e:
             if e.code == 404:
-                print >>sys.stderr, 'Package ' + package + ' doesn\'t exist in ' + project + '.'
+                print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
             else:
                 if revision:
-                    print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+                    print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, e.msg)
                 else:
-                    print >>sys.stderr, 'Cannot download metadata of ' + package + ' from ' + project + ': ' + e.msg
+                    print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e.msg)
             return None
 
         f = open(filename, 'w')
@@ -193,9 +193,9 @@ class ObsCheckout:
             return ET.parse(filename).getroot()
         except SyntaxError, e:
             if revision:
-                print >>sys.stderr, 'Cannot parse metadata of ' + package + ' from ' + project + ' with specified revision: ' + e.msg
+                print >>sys.stderr, 'Cannot parse metadata of %s from %s with specified revision: %s' % (package, project, e.msg)
             else:
-                print >>sys.stderr, 'Cannot parse metadata of ' + package + ' from ' + project + ': ' + e.msg
+                print >>sys.stderr, 'Cannot parse metadata of %s from %s: %s' % (package, project, e.msg)
             return None
 
 
@@ -219,18 +219,18 @@ class ObsCheckout:
         if linkinfos_nb == 1:
             linkinfo.read(root.find('linkinfo'))
         elif linkinfos_nb > 1:
-            print >>sys.stderr, 'Ignoring link in ' + package + ' from ' + project + ': more than one <linkinfo>'
+            print >>sys.stderr, 'Ignoring link in %s from %s: more than one <linkinfo>' % (package, project)
 
         # this will be None if it's not a link that matters and else, this will
         # be the right value to expand the link
         revision = linkinfo.xsrcmd5
 
         if linkinfo.haserror():
-            print >>sys.stderr, 'Link in ' + package + ' from ' + project + ' has an error: ' + linkinfo.error
+            print >>sys.stderr, 'Link in %s from %s has an error: %s' % (package, project, linkinfo.error)
         elif self.warn_non_links and not linkinfo.islink():
-            print >>sys.stderr, 'Package ' + package + ' from ' + project + ' is not a link.'
+            print >>sys.stderr, 'Package %s from %s is not a link.' % (package, project)
         elif self.warn_non_links and linkinfo.isexpanded():
-            print >>sys.stderr, 'Package ' + package + ' from ' + project + ' is an expanded link.'
+            print >>sys.stderr, 'Package %s from %s is an expanded link.' % (package, project)
 
         if linkinfo.needshandling():
             # download the _link file first. This makes it possible to know if
@@ -267,7 +267,7 @@ class ObsCheckout:
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Ignoring packages from ' + existing_in_project + ' for project ' + project +': ' + e.msg
+            print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, e.msg)
             return
 
         self._checkout_packages_from_project(project, packages)
@@ -277,7 +277,7 @@ class ObsCheckout:
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], project)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Ignoring project ' + project +': ' + e.msg
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
             return
 
         self._checkout_packages_from_project(project, packages)
@@ -391,7 +391,7 @@ def main(args):
 
     if not options.dest_dir:
         dest_dir = CHECKOUT_DIR_STABLE
-        print 'No destination directory specified. Using ' + CHECKOUT_DIR_STABLE
+        print 'No destination directory specified. Using %s' % CHECKOUT_DIR_STABLE
     else:
         dest_dir = options.dest_dir
 

@@ -184,7 +184,7 @@ class DataCache:
                         majmin = version
                     else:
                         majmin = versions[0] + '.' + versions[1]
-                    url = 'http://ftp.gnome.org/pub/GNOME/sources/' + modulename + '/' + majmin + '/' + modulename + '-' + version + '.tar.bz2'
+                    url = 'http://ftp.gnome.org/pub/GNOME/sources/%s/%s/%s-%s.tar.bz2' % (modulename, majmin, modulename, version)
 
                 self.cursor.execute('''INSERT INTO upstream_version VALUES (
                     NULL, ?, ?, ?
@@ -685,7 +685,7 @@ class SrcPackage(Base):
             try:
                 root = ET.parse(linkfile).getroot()
             except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse ' + linkfile + ': ' + e.msg
+                print >> sys.stderr, 'Cannot parse %s: %s' % (linkfile, e.msg)
             else:
                 node = root.find('patches')
                 if node:
@@ -699,7 +699,7 @@ class SrcPackage(Base):
             try:
                 root = ET.parse(files).getroot()
             except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse ' + files + ': ' + e.msg
+                print >> sys.stderr, 'Cannot parse %s' % (files, e.msg)
             else:
                 linkinfo = root.find('linkinfo')
                 if linkinfo != None:

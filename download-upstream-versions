@@ -87,7 +87,7 @@ def _location_fix(location):
     if match:
         # Unfortunate, but there's no other solution than to use a specific
         # mirror
-        return 'http://globalbase.dl.sourceforge.jp/' + match.group(1) + '/' + match.group(2) + '/' + match.group(3)
+        return 'http://globalbase.dl.sourceforge.jp/%s/%s/%s' % (match.group(1), match.group(2), match.group(3))
 
     return location
 
@@ -219,7 +219,7 @@ def _setup_limit(limit):
         limit_data = limit[4:]
         limit = 'max'
     else:
-        print >>sys.stderr, 'Unsupported limit ' + limit
+        print >>sys.stderr, 'Unsupported limit: %s' % limit
         limit = None
 
     return (limit, limit_data)
@@ -318,9 +318,9 @@ def _get_version_from_sf_rss(modulename, id, limit):
     (limit, limit_data) = _setup_limit(limit)
 
     ids = id.split('|')
-    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=' + ids[0]
+    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=%s' % ids[0]
     if len(ids) > 1:
-        url = url + '&package_id=' + ids[1]
+        url += '&package_id=%s' % ids[1]
 
     feed = feedparser.parse(url)
 
@@ -340,7 +340,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
         if not _respect_limit(version, limit, limit_data):
             continue
 
-        tarball_re = re.compile(modulename + '-' + version + '\.tar')
+        tarball_re = re.compile('%s-%s\.tar' % (modulename, version))
         match = tarball_re.search(entry.summary)
         if not match:
             continue
@@ -370,7 +370,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
                 path = url.path[1:]
             else:
                 path = url.path
-            location = 'http://dl.sourceforge.net/sourceforge/' + path
+            location = 'http://dl.sourceforge.net/sourceforge/%s' % path
 
 
     if biggest == '0' and location == None:
@@ -385,7 +385,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
 def _get_version_from_google_atom(project, limit):
     (limit, limit_data) = _setup_limit(limit)
 
-    url = 'http://code.google.com/feeds/p/' + project + '/downloads/basic'
+    url = 'http://code.google.com/feeds/p/%s/downloads/basic' % project
 
     feed = feedparser.parse(url)
 
@@ -410,7 +410,7 @@ def _get_version_from_google_atom(project, limit):
         if match:
             download_url = match.group(1)
         else:
-            download_url = 'http://code.google.com/p/' + project + '/downloads/list'
+            download_url = 'http://code.google.com/p/%s/downloads/list' % project
         biggest = version
         location = download_url
 
@@ -429,8 +429,8 @@ def _get_version_from_launchpad(project, limit):
     lp_ns = '{https://launchpad.net/rdf/launchpad#}'
     rdf_ns = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
 
-    url = 'https://launchpad.net/' + project + '/+rdf'
-    series_re = re.compile('^/' + project + '/((?:[0-9]+\.)*[0-9]+)/\+rdf$')
+    url = 'https://launchpad.net/%s/+rdf' % project
+    series_re = re.compile('^/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % project)
     series_biggest = '0'
 
     fd = urllib2.urlopen(url)
@@ -458,8 +458,8 @@ def _get_version_from_launchpad(project, limit):
         raise UpstreamDownloadError('No versions found')
 
 
-    url = 'https://launchpad.net/' + project + '/' + series_biggest + '/+rdf'
-    release_re = re.compile('^/' + project + '/' + series_biggest + '/((?:[0-9]+\.)*[0-9]+)/\+rdf$')
+    url = 'https://launchpad.net/%s/%s/+rdf' % (project, series_biggest)
+    release_re = re.compile('^/%s/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % (project, series_biggest)
     biggest = '0'
 
     fd = urllib2.urlopen(url)
@@ -497,7 +497,7 @@ def _get_version_from_launchpad(project, limit):
 
 def get_upstream_version(modulename, method, additional_info, limit):
     if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
-        print >>sys.stderr, 'Unsupported method ' + method
+        print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
 
     if method == 'upstream':
@@ -667,15 +667,15 @@ def main(args):
             save_file = os.path.join(directory, 'versions-non-fgo')
 
         if not os.path.exists(upstream_file):
-            print >>sys.stderr, 'Upstream data file ' + upstream_file + ' does not exist.'
+            print >>sys.stderr, 'Upstream data file %s does not exist.' % upstream_file
             sys.exit(1)
         elif not os.path.isfile(upstream_file):
-            print >>sys.stderr, 'Upstream data file ' + upstream_file + ' is not a regular file.'
+            print >>sys.stderr, 'Upstream data file %s is not a regular file.' % upstream_file
             sys.exit(1)
 
         if os.path.exists(save_file):
             if not os.path.isfile(save_file):
-                print >>sys.stderr, 'Save file ' + save_file + ' is not a regular file.'
+                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
                 sys.exit(1)
             if options.only_if_old:
                 stats = os.stat(save_file)
@@ -717,11 +717,11 @@ def main(args):
             try:
                 (location, version) = get_upstream_version(modulename, method, additional_info, limit)
             except urllib2.URLError, e:
-                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': ' + e.reason[1]
+                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e.reason)
             except urllib2.HTTPError, e:
-                print >>sys.stderr, 'Error when downloading information about ' + modulename + ': server sent ' + e.code
+                print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
             except UpstreamDownloadError, e:
-                print >>sys.stderr, 'No matching tarball found for ' + modulename + ': ' + e.msg
+                print >>sys.stderr, 'No matching tarball found for %s: %s' % (modulename, e.msg)
 
         if fallback_data.has_key(modulename):
             fallback_version = fallback_data[modulename][0]
@@ -744,13 +744,13 @@ def main(args):
             location = _location_fix(location)
 
         if version and location:
-            out.write(cat + ':' + modulename + ':' + version + ':' + location + '\n')
+            out.write('%s:%s:%s:%s\n' % (cat, modulename, version, location))
         elif version:
-            out.write(cat + ':' + modulename + ':' + version + ':\n')
+            out.write('%s:%s:%s:\n' % (cat, modulename, version))
         elif location:
-            out.write(cat + ':' + modulename + '::' + location + '\n')
+            out.write('%s:%s::%s\n' % (cat, modulename, location))
         else:
-            out.write(cat + ':' + modulename + '::\n')
+            out.write('%s:%s::\n' % (cat, modulename))
 
     if not options.debug:
         out.close()

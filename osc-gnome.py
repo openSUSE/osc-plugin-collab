@@ -67,7 +67,7 @@ class OscGnomeWeb:
             (package, username, comment) = line[:-1].split(';')
             return (package, username, comment)
         except ValueError:
-            print >>sys.stderr, 'Cannot parse reservation information: ' + line[:-1]
+            print >>sys.stderr, 'Cannot parse reservation information: %s' % line[:-1]
             return (None, None, None)
 
 
@@ -77,7 +77,7 @@ class OscGnomeWeb:
         try:
             fd = self.Cache.get_url_fd_with_cache(self._csv_url, 'db-obs-csv', 10)
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get versions of packages: ' + e.msg)
+            raise self.Error('Cannot get versions of packages: %s' % e.msg)
 
         lines = fd.readlines()
         fd.close()
@@ -87,7 +87,7 @@ class OscGnomeWeb:
                 (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
                 packages_versions.append((package, oF_version, GF_version, upstream_version))
             except ValueError:
-                print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+                print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
 
         return packages_versions
@@ -97,7 +97,7 @@ class OscGnomeWeb:
         try:
             fd = self.Cache.get_url_fd_with_cache(self._admin_url, 'db-obs-admin', 10)
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of packages with a delta: ' + e.msg)
+            raise self.Error('Cannot get list of packages with a delta: %s' % e.msg)
 
         lines = fd.readlines()
         fd.close()
@@ -111,7 +111,7 @@ class OscGnomeWeb:
         try:
             fd = self.Cache.get_url_fd_with_cache(self._error_url, 'db-obs-error', 10)
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of packages with an error: ' + e.msg)
+            raise self.Error('Cannot get list of packages with an error: %s' % e.msg)
 
         lines = fd.readlines()
         fd.close()
@@ -121,7 +121,7 @@ class OscGnomeWeb:
                 (package, error, details) = line.split(';', 3)
                 errors.append((package, error, details))
             except ValueError:
-                print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+                print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
 
         return errors
@@ -129,9 +129,9 @@ class OscGnomeWeb:
 
     def get_versions(self, package):
         try:
-            fd = urllib2.urlopen(self._csv_url + '&package=' + package)
+            fd = urllib2.urlopen("%s&package=%s" % (self._csv_url, package))
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get versions of package ' + package + ': ' + e.msg)
+            raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
 
         line = fd.readline()
         fd.close()
@@ -139,7 +139,7 @@ class OscGnomeWeb:
         try:
             (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
         except ValueError:
-            print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+            print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
             return (None, None, None)
 
         return (oF_version, GF_version, upstream_version)
@@ -147,9 +147,9 @@ class OscGnomeWeb:
 
     def get_upstream_url(self, package):
         try:
-            fd = urllib2.urlopen(self._upstream_url + '?package=' + package)
+            fd = urllib2.urlopen('%s?package=%s' % (self._upstream_url, package))
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get upstream URL of package ' + package + ': ' + e.msg)
+            raise self.Error('Cannot get upstream URL of package %s: %s' % (package, e.msg))
 
         line = fd.readline()
         fd.close()
@@ -157,11 +157,11 @@ class OscGnomeWeb:
         try:
             (package, upstream_version, upstream_url, empty) = line.split(';')
         except ValueError:
-            print >>sys.stderr, 'Cannot parse line: ' + line[:-1]
+            print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
             return None
 
         if empty and empty.strip() != '':
-            raise self.Error('Upstream URL of package ' + package + ' probably contains a semi-colon. This is a bug in the server and the plugin.')
+            raise self.Error('Upstream URL of package %s probably contains a semi-colon. This is a bug in the server and the plugin.' % package)
 
         return upstream_url
 
@@ -170,9 +170,9 @@ class OscGnomeWeb:
         reserved_packages = []
 
         try:
-            fd = urllib2.urlopen(self._reserve_url + '?mode=getall')
+            fd = urllib2.urlopen('%s?mode=getall' % self._reserve_url)
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of reserved packages: ' + e.msg)
+            raise self.Error('Cannot get list of reserved packages: %s' % e.msg)
 
         lines = fd.readlines()
         fd.close()
@@ -181,7 +181,7 @@ class OscGnomeWeb:
         # line
         # if the status code is 200, then everything is good
         if lines[0][:3] != '200':
-            raise self.Error('Error while getting list of reserved packages: ' + lines[0][4:-1])
+            raise self.Error('Error while getting list of reserved packages: %s' % lines[0][4:-1])
         else:
             del lines[0]
             for line in lines:
@@ -207,15 +207,15 @@ class OscGnomeWeb:
 
     def is_package_reserved(self, package):
         try:
-            fd = urllib2.urlopen(self._reserve_url + '?mode=get&package=' + package)
+            fd = urllib2.urlopen('%s?mode=get&package=%s' % (self._reserve_url, package))
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot look if package ' + package + ' is reserved: ' + e.msg)
+            raise self.Error('Cannot look if package %s is reserved: %s' % (package, e.msg))
 
         line = fd.readline()
         fd.close()
 
         if line[:3] != '200':
-            raise self.Error('Cannot look if package ' + package + ' is reserved: ' + line[4:-1])
+            raise self.Error('Cannot look if package %s is reserved: %s' % (package, line[4:-1]))
 
         (package, username, comment) = self._parse_reservation(line[4:])
 
@@ -227,28 +227,28 @@ class OscGnomeWeb:
 
     def reserve_package(self, package, username):
         try:
-            fd = urllib2.urlopen(self._reserve_url + '?mode=set&user=' + username + '&package=' + package)
+            fd = urllib2.urlopen('%s?mode=set&user=%s&package=%s' % (self._reserve_url, username, package))
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot reserve package ' + package + ': ' + e.msg)
+            raise self.Error('Cannot reserve package %s: %s' % (package, e.msg))
 
         line = fd.readline()
         fd.close()
 
         if line[:3] != '200':
-            raise self.Error('Cannot reserve package ' + package + ': ' + line[4:-1])
+            raise self.Error('Cannot reserve package %s: %s' % (package, line[4:-1]))
 
 
     def unreserve_package(self, package, username):
         try:
-            fd = urllib2.urlopen(self._reserve_url + '?mode=unset&user=' + username + '&package=' + package)
+            fd = urllib2.urlopen('%s?mode=unset&user=%s&package=%s' % (self._reserve_url, username, package))
         except urllib2.HTTPError, e:
-            raise self.Error('Cannot unreserve package ' + package + ': ' + e.msg)
+            raise self.Error('Cannot unreserve package %s: %s' % (package, e.msg))
 
         line = fd.readline()
         fd.close()
 
         if line[:3] != '200':
-            raise self.Error('Cannot unreserve package ' + package + ': ' + line[4:-1])
+            raise self.Error('Cannot unreserve package %s: %s' % (package, line[4:-1]))
 
 
 #######################################################################
@@ -336,7 +336,7 @@ class GnomeCache:
 
         urllib = cls._import('urllib')
         if not urllib:
-            print >>sys.stderr, 'Cannot get metadata of packages in ' + proect + ': incomplete python installation.'
+            print >>sys.stderr, 'Cannot get metadata of packages in %s: incomplete python installation.' % project
             return None
 
         # no cache available
@@ -347,7 +347,7 @@ class GnomeCache:
             url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'openSUSE:Factory\'')])
             fin = http_GET(url)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get list of submissions to ' + project + ': ' + e.msg
+            print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
             return None
 
         fout = open(cache, 'w')
@@ -362,7 +362,7 @@ class GnomeCache:
                 fin.close()
                 fout.close()
                 os.unlink(cache)
-                print >>sys.stderr, 'Error while downloading metadata: ' + e.msg
+                print >>sys.stderr, 'Error while downloading metadata: %s' % e.msg
                 return None
 
         fin.close()
@@ -404,14 +404,14 @@ class GnomeCache:
         try:
             submitted_packages = get_submit_request_list(apiurl, project, None)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get list of submissions to ' + project + ': ' + e.msg
+            print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
             return []
 
         lines = []
         retval = []
         for submitted in submitted_packages:
             retval.append(submitted.dst_package)
-            lines.append(submitted.dst_package + ';' + submitted.src_md5 + ';')
+            lines.append('%s;%s;' % (submitted.dst_package, submitted.src_md5))
 
         # save the data in the cache
         cls._write(filename, format_nb = current_format, lines_no_cr = lines)
@@ -431,7 +431,7 @@ class GnomeCache:
             os.makedirs(cachedir)
 
         if not os.path.isdir(cachedir):
-            print >>sys.stderr, 'Cache directory ' + cachedir + ' is not a directory.'
+            print >>sys.stderr, 'Cache directory %s is not a directory.' % cachedir
             return False
 
         cache = os.path.join(cachedir, filename)
@@ -444,7 +444,7 @@ class GnomeCache:
             return False
 
         if format_nb:
-            fout.write(cls._format_str + str(format_nb) + '\n')
+            fout.write('%s%s\n' % (cls._format_str, format_nb))
 
         if fin:
             while True:
@@ -468,7 +468,7 @@ class GnomeCache:
 
         if lines_no_cr:
             for line in lines_no_cr:
-                fout.write(line + '\n')
+                fout.write('%s\n' % line)
             fout.close()
             return True
 
@@ -608,12 +608,12 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted):
             if self._gnome_is_submitted(package, submitted_packages):
                 if exclude_submitted:
                     continue
-                GF_version = GF_version + ' (s)'
-                upstream_version = upstream_version + ' (s)'
+                GF_version += ' (s)'
+                upstream_version += ' (s)'
             if package in reserved_packages:
                 if exclude_reserved:
                     continue
-                upstream_version = upstream_version + ' (r)'
+                upstream_version += ' (r)'
             lines.append((package, oF_version, GF_version, upstream_version))
 
     if len(lines) == 0:
@@ -644,7 +644,7 @@ def _gnome_get_packages_with_bad_meta(self):
     try:
         collection = ET.parse(metafile).getroot()
     except SyntaxError:
-        print >>sys.stderr, 'Cannot parse ' + metafile + ': ' + e.msg
+        print >>sys.stderr, 'Cannot parse %s: %s' % (metafile, e.msg)
         return (None, None)
 
     devel_dict = {}
@@ -723,9 +723,10 @@ def _gnome_todoadmin(self, exclude_submitted):
         elif error == 'need-merge-with-parent':
             message = 'Requires a manual merge with openSUSE:Factory'
         else:
-            message = 'Unknown error'
             if details:
-                message = message + ': ' + details
+                message = 'Unknown error: %s' % details
+            else:
+                message = 'Unknown error'
         lines.append((error_package, message))
 
 
@@ -784,7 +785,7 @@ def _gnome_todoadmin(self, exclude_submitted):
             # this package cannot appear in other lists since it's unknown to
             # our scripts
         elif package == bad_GF_package:
-            lines.append((bad_GF_package, 'Development project is not GNOME:Factory (' + bad_GF_package_tuple[1] + ')'))
+            lines.append((bad_GF_package, 'Development project is not GNOME:Factory (%s)' % bad_GF_package_tuple[1]))
             bad_GF_index = bad_GF_index + 1
             if package == error_package:
                 error_index = error_index + 1
@@ -859,7 +860,7 @@ def _gnome_isreserved(self, package):
     if not username:
         print 'Package is not reserved.'
     else:
-        print 'Package ' + package + ' is reserved by ' + username + '.'
+        print 'Package %s is reserved by %s.' % (package, username)
 
 
 #######################################################################
@@ -873,9 +874,9 @@ def _gnome_reserve(self, packages, username):
             print >>sys.stderr, e.msg
             continue
 
-        print 'Package ' + package + ' reserved for 36 hours.'
+        print 'Package %s reserved for 36 hours.' % package
         print 'Do not forget to unreserve the package when done with it:'
-        print '    osc gnome unreserve ' + package
+        print '    osc gnome unreserve %s' % package
 
 
 #######################################################################
@@ -889,7 +890,7 @@ def _gnome_unreserve(self, packages, username):
             print >>sys.stderr, e.msg
             continue
 
-        print 'Package ' + package + ' unreserved.'
+        print 'Package %s unreserved.' % package
 
 
 #######################################################################
@@ -906,56 +907,56 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
     if not reserve:
         # check that we already have reserved the package
         if not reserved_by:
-            print 'Please reserve the package ' + package + ' first.'
+            print 'Please reserve the package %s first.' % package
             return False
         elif reserved_by != username:
-            print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
+            print 'Package %s is already reserved by %s.' % (package, reserved_by)
             return False
     elif reserved_by and reserved_by != username:
-        print 'Package ' + package + ' is already reserved by ' + reserved_by + '.'
+        print 'Package %s is already reserved by %s.' % (package, reserved_by)
         return False
     elif not reserved_by:
         # reserve the package
         try:
             self._gnome_web.reserve_package(package, username)
-            print 'Package ' + package + ' has been reserved for 36 hours.'
+            print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
-            print '    osc gnome unreserve ' + package
+            print '    osc gnome unreserve %s' % package
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             return False
 
     # look if we already have a branch, and if not branch the package
     try:
-        expected_branch_project = 'home:' + username + ':branches:GNOME:Factory'
+        expected_branch_project = 'home:%s:branches:GNOME:Factory' % username
         show_package_meta(apiurl, expected_branch_project, package)
         branch_project = expected_branch_project
         # it worked, we already have the branch
     except urllib2.HTTPError, e:
         if e.code != 404:
-            print >>sys.stderr, 'Error while checking if package ' + package + ' was already branched: ' + e.msg
+            print >>sys.stderr, 'Error while checking if package %s was already branched: %s' % (package, e.msg)
             return False
         # We had a 404: it means the branched package doesn't exist yet
         try:
             branch_project = branch_pkg(apiurl, 'GNOME:Factory', package, nodevelproject = True)
-            print 'Package ' + package + ' has been branched in project ' + branch_project + '.'
+            print 'Package %s has been branched in project %s.' % (package, branch_project)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Error while branching package ' + package + ': ' + e.msg
+            print >>sys.stderr, 'Error while branching package %s: %s' % (package, e.msg)
             return False
 
     # check out the branched package
     if os.path.exists(package):
         # maybe we already checked it out before?
         if not os.path.isdir(package):
-            print >>sys.stderr, 'File ' + package + ' already exists but is not a directory.'
+            print >>sys.stderr, 'File %s already exists but is not a directory.' % package
             return False
         elif not is_package_dir(package):
-            print >>sys.stderr, 'Directory ' + package + ' already exists but is not a checkout of a Build Service package.'
+            print >>sys.stderr, 'Directory %s already exists but is not a checkout of a Build Service package.' % package
             return False
 
         obs_package = filedir_to_pac(package)
         if obs_package.name != package or obs_package.prjname != branch_project:
-            print >>sys.stderr, 'Directory ' + package + ' already exists but is a checkout of package ' + obs_package.name + ' from project ' + obs_package.prjname +'.'
+            print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (package, obs_package.name, obs_package.prjname)
             return False
 
         # update the package
@@ -969,9 +970,9 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
                 rev = show_upstream_xsrcmd5(apiurl, branch_project, package)
 
             obs_package.update(rev)
-            print 'Package ' + package + ' has been updated.'
+            print 'Package %s has been updated.' % package
         except Exception, e:
-            message = 'Error while updating package ' + package + ': '
+            message = 'Error while updating package %s: ' % package
             self._gnome_exception_print(e, message)
             return False
 
@@ -979,9 +980,9 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
         # check out the branched package
         try:
             checkout_package(apiurl, branch_project, package, expand_link=True)
-            print 'Package ' + package + ' has been checked out.'
+            print 'Package %s has been checked out.' % package
         except Exception, e:
-            message = 'Error while checking out package ' + package + ': '
+            message = 'Error while checking out package %s: ' % package
             self._gnome_exception_print(e, message)
             return False
 
@@ -994,7 +995,7 @@ def _gnome_setup_internal(self, package, apiurl, username, reserve = False):
 def _gnome_setup(self, package, apiurl, username, reserve = False):
     if not self._gnome_setup_internal(package, apiurl, username, reserve):
         return
-    print 'Package ' + package + ' has been prepared for work.'
+    print 'Package %s has been prepared for work.' % package
 
 
 #######################################################################
@@ -1006,12 +1007,12 @@ def _gnome_download_internal(self, url, dest_dir):
 
     urlparse = self.OscGnomeImport.m_import('urlparse')
     if not urlparse:
-        raise self.OscGnomeDownloadError('Cannot download ' + url + ': incomplete python installation.')
+        raise self.OscGnomeDownloadError('Cannot download %s: incomplete python installation.' % url)
 
     parsed_url = urlparse.urlparse(url)
     basename = os.path.basename(parsed_url.path)
     if basename == '':
-        raise self.OscGnomeDownloadError('Cannot download ' + url + ': no basename in URL.')
+        raise self.OscGnomeDownloadError('Cannot download %s: no basename in URL.' % url)
 
     dest_file = os.path.join(dest_dir, basename)
     # we download the file again if it already exists. Maybe the upstream
@@ -1023,7 +1024,7 @@ def _gnome_download_internal(self, url, dest_dir):
     try:
         fin = urllib2.urlopen(url)
     except urllib2.HTTPError, e:
-        raise self.OscGnomeDownloadError('Cannot download ' + url + ': ' + e.msg)
+        raise self.OscGnomeDownloadError('Cannot download %s: %s' % (url, e.msg))
 
     fout = open(dest_file, 'wb')
 
@@ -1037,7 +1038,7 @@ def _gnome_download_internal(self, url, dest_dir):
             fin.close()
             fout.close()
             os.unlink(dest_file)
-            raise self.OscGnomeDownloadError('Error while downloading ' + url + ': ' + e.msg)
+            raise self.OscGnomeDownloadError('Error while downloading %s: %s' % (url, e.msg))
 
     fin.close()
     fout.close()
@@ -1050,14 +1051,14 @@ def _gnome_download_internal(self, url, dest_dir):
 
 def _gnome_gz_to_bz2_internal(self, file):
     if not file.endswith('.gz'):
-        raise self.OscGnomeCompressError('Cannot recompress ' + os.path.basename(file) + ' as bz2: filename not ending with .gz.')
+        raise self.OscGnomeCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
     dest_file = file[:-3] + '.bz2'
 
     gzip = self.OscGnomeImport.m_import('gzip')
     bz2 = self.OscGnomeImport.m_import('bz2')
 
     if not gzip or not bz2:
-        raise self.OscGnomeCompressError('Cannot recompress ' + os.path.basename(file) + ' as bz2: incomplete python installation.')
+        raise self.OscGnomeCompressError('Cannot recompress %s as bz2: incomplete python installation.' % os.path.basename(file))
 
     if os.path.exists(dest_file):
         os.unlink(dest_file)
@@ -1088,20 +1089,20 @@ def _gnome_gz_to_bz2_internal(self, file):
 # Actually, create a class that fixes a spec file
 def _gnome_update_spec(self, spec_file, package, upstream_version):
     if not os.path.exists(spec_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
+        print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
         return (False, None)
     elif not os.path.isfile(spec_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
+        print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
         return (False, None)
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
     re = self.OscGnomeImport.m_import('re')
 
     if not tempfile or not re:
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(spec_file) + ': incomplete python installation.'
+        print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
         return (False, None)
 
-    re_spec_header = re.compile('^(# spec file for package ' + package + ' \(Version )\S*(\).*)', re.IGNORECASE)
+    re_spec_header = re.compile('^(# spec file for package %s \(Version )\S*(\).*)' % package, re.IGNORECASE)
     re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
     re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
     re_spec_source = re.compile('^(Source0?:\s*)(\S*)', re.IGNORECASE)
@@ -1126,18 +1127,18 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
         match = re_spec_header.match(line)
         if match:
-            os.write(fdout, match.group(1) + upstream_version + match.group(2) + '\n')
+            os.write(fdout, '%s%s%s\n' % (match.group(1), upstream_version, match.group(2)))
             continue
 
         match = re_spec_version.match(line)
         if match:
             old_version = match.group(2)
-            os.write(fdout, match.group(1) + upstream_version + '\n')
+            os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
         match = re_spec_release.match(line)
         if match:
-            os.write(fdout, match.group(1) + '1\n')
+            os.write(fdout, '%s1\n' % match.group(1))
             continue
 
         match = re_spec_source.match(line)
@@ -1173,10 +1174,10 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
 def _gnome_update_changes(self, changes_file, upstream_version, email):
     if not os.path.exists(changes_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': no such file.'
+        print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(changes_file)
         return False
     elif not os.path.isfile(changes_file):
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': not a regular file.'
+        print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(changes_file)
         return False
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
@@ -1184,7 +1185,7 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
     locale = self.OscGnomeImport.m_import('locale')
 
     if not tempfile or not time or not locale:
-        print >>sys.stderr, 'Cannot update ' + os.path.basename(changes_file) + ': incomplete python installation.'
+        print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(changes_file)
         return False
 
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(changes_file))
@@ -1193,9 +1194,9 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
     locale.setlocale(locale.LC_TIME, 'C')
 
     os.write(fdout, '-------------------------------------------------------------------\n')
-    os.write(fdout, time.strftime("%a %b %e %H:%M:%S %Z %Y") + ' - ' + email + '\n')
+    os.write(fdout, '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email))
     os.write(fdout, '\n')
-    os.write(fdout, '- Update to version ' + upstream_version + ':\n')
+    os.write(fdout, '- Update to version %s:\n' % upstream_version)
     os.write(fdout, '  + \n')
     os.write(fdout, '\n')
 
@@ -1283,14 +1284,14 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
 
     # check that GNOME:Factory is up-to-date wrt openSUSE:Factory
     if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
-        print 'Package ' + package + ' is more recent in openSUSE:Factory (' + oF_version + ') than in GNOME:Factory (' + GF_version + '). Please synchronize GNOME:Factory first.'
+        print 'Package %s is more recent in openSUSE:Factory (%s) than in GNOME:Factory (%s). Please synchronize GNOME:Factory first.' % (package, oF_version, GF_version)
         return
 
     # check that an update is really needed
     if upstream_version == '':
-        print 'No information about upstream version of package ' + package + ' is available. Assuming it is not up-to-date.'
+        print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
     elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
-        print 'Package ' + package + ' is already up-to-date.'
+        print 'Package %s is already up-to-date.' % package
         return
 
     if not self._gnome_setup_internal(package, apiurl, username, reserve):
@@ -1303,24 +1304,24 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
     spec_file = os.path.join(package_dir, package + '.spec')
     (updated, old_tarball) = self._gnome_update_spec(spec_file, package, upstream_version)
     if updated:
-        print os.path.basename(spec_file) + ' has been prepared.'
+        print '%s has been prepared.' % os.path.basename(spec_file)
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
         if file.endswith('.spec') and file != os.path.basename(spec_file):
-            print 'WARNING: ' + file + ' might need a manual update.'
+            print 'WARNING: %s might need a manual update.' % file
 
 
     # start adding an entry to .changes
     # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
     if self._gnome_update_changes(changes_file, upstream_version, email):
-        print os.path.basename(changes_file) + ' has been prepared.'
+        print '%s has been prepared.' % os.path.basename(changes_file)
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
         if file.endswith('.changes') and file != os.path.basename(changes_file):
-            print 'WARNING: ' + file + ' might need a manual update.'
+            print 'WARNING: %s might need a manual update.' % file
 
 
     # download the upstream tarball
@@ -1332,7 +1333,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         return
 
     if not upstream_url:
-        print >>sys.stderr, 'Cannot download latest upstream tarball for ' + package + ': no URL defined.'
+        print >>sys.stderr, 'Cannot download latest upstream tarball for %s: no URL defined.' % package
         return
 
     print 'Looking for the upstream tarball...'
@@ -1343,11 +1344,11 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         return
 
     if not upstream_tarball:
-        print >>sys.stderr, 'No upstream tarball downloaded for ' + package + '.'
+        print >>sys.stderr, 'No upstream tarball downloaded for %s.' % package
         return
     else:
         upstream_tarball_basename = os.path.basename(upstream_tarball)
-        print upstream_tarball_basename + ' has been downloaded.'
+        print '%s has been downloaded.' % upstream_tarball_basename
 
 
     # check integrity of the downloaded file
@@ -1368,7 +1369,7 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
         try:
             upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
             upstream_tarball_basename = os.path.basename(upstream_tarball)
-            print os.path.basename(upstream_tarball) + ' has been recompressed to bz2.'
+            print '%s has been recompressed to bz2.' % upstream_tarball_basename
         except self.OscGnomeCompressError, e:
             print >>sys.stderr, e.msg
 
@@ -1396,17 +1397,17 @@ def _gnome_update(self, package, apiurl, username, email, reserve = False):
             osc_package.put_on_deletelist(old_tarball)
             osc_package.write_deletelist()
             osc_package.delete_source_file(old_tarball)
-            print old_tarball + ' has been removed from the package.'
+            print '%s has been removed from the package.' % old_tarball
         else:
             print 'WARNING: the previous tarball could not be found. Please manually remove it.'
     else:
         print 'WARNING: the previous tarball could not be found. Please manually remove it.'
 
     osc_package.addfile(upstream_tarball_basename)
-    print upstream_tarball_basename + ' has been added to the package.'
+    print '%s has been added to the package.' % upstream_tarball_basename
 
 
-    print 'Package ' + package + ' has been prepared for the update.'
+    print 'Package %s has been prepared for the update.' % package
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
@@ -1467,13 +1468,13 @@ def _gnome_add_config_option(self, section, key, value):
         elif line[0] == '[' and in_section and not added:
             if not empty_line:
                 os.write(fdout, '\n')
-            os.write(fdout, key + ' = ' + str(value) + '\n\n')
+            os.write(fdout, '%s = %s\n\n' % (key, value))
             added = True
         # the section/key already exists: we replace
         # 'not added': in case there are multiple sections with the same name
         elif in_section and not added and line.startswith(key):
             index = line.find('=')
-            line = line[:index] + '= ' + str(value) + '\n'
+            line = '%s= %s\n' % (line[:index], value)
             added = True
 
         os.write(fdout, line)
@@ -1483,7 +1484,7 @@ def _gnome_add_config_option(self, section, key, value):
     if not added:
         if not empty_line:
             os.write(fdout, '\n')
-        os.write(fdout, '[' + section + ']' + '\n' + key + ' = ' + str(value) + '\n')
+        os.write(fdout, '[%s]\n%s = %s\n' % (section, key, value))
 
     os.close(fdout)
     os.rename(tmp, conffile)
