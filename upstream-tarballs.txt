@@ -118,6 +118,7 @@ gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk-vnc:sf:190580|223580
 gtk2-theme-openSUSE:upstream:
+gtk2-theme-SLED:upstream:
 gtk2-themes:upstream:
 gtkglext:sf:54333|48997
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
