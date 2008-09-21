@@ -12,6 +12,9 @@ class OscGnomeWebError(OscGnomeError):
 class OscGnomeDownloadError(OscGnomeError):
     pass
 
+class OscGnomeNewsError(OscGnomeError):
+    pass
+
 class OscGnomeCompressError(OscGnomeError):
     pass
 
@@ -1047,9 +1050,6 @@ def _gnome_download_internal(self, url, dest_dir):
 
 
 def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
-    # TODO
-    return
-
     def _cleanup(old, new, tmpdir):
         if old:
             old.close()
@@ -1087,6 +1087,33 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
                 continue
             tar.extract(tarinfo, path)
 
+    def _diff_files(old, new, dest):
+        difflib = self.OscGnomeImport.m_import('difflib')
+        shutil = self.OscGnomeImport.m_import('shutil')
+
+        if not new:
+            return (False, False)
+        if not old:
+            shutil.copyfile(new, dest)
+            return (True, False)
+
+        old_f = open(old)
+        old_lines = old_f.readlines()
+        old_f.close()
+        new_f = open(new)
+        new_lines = new_f.readlines()
+        new_f.close()
+
+        diff = difflib.unified_diff(old_lines, new_lines)
+
+        # TODO make the diff more readable (like we do on GNOME FTP)
+        dest_f = open(dest, 'w')
+        for line in diff:
+            dest_f.write(line)
+        dest_f.close()
+
+        return (True, True)
+
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
     shutil = self.OscGnomeImport.m_import('shutil')
@@ -1094,26 +1121,99 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     difflib = self.OscGnomeImport.m_import('difflib')
 
     if not tempfile or not shutil or not tarfile or not difflib:
-        raise self.OscGnomeCompressError('Cannot extract NEWS information: incomplete python installation.')
-
-    if old_tarball and os.path.exists(old_tarball):
-        old = tarfile.open(old_tarball)
-    else:
-        old = None
-
-    if new_tarball and os.path.exists(new_tarball):
-        new = tarfile.open(new_tarball)
-    else:
-        new = None
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: incomplete python installation.')
 
     tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
 
+    if old_tarball and os.path.exists(old_tarball):
+        try:
+            old = tarfile.open(old_tarball)
+        except tarfile.TarError:
+            old = None
+    else:
+        # this is not fatal: we can provide the NEWS/ChangeLog from the new
+        # tarball without a diff
+        old = None
+
+    if new_tarball and os.path.exists(new_tarball):
+        new_tarball_basename = os.path.basename(new_tarball)
+        try:
+            new = tarfile.open(new_tarball)
+        except tarfile.TarError, e:
+            _cleanup(old, new, tmpdir)
+            raise self.OscGnomeNewsError('Error when opening %s: %s' % (new_tarball_basename, e))
+    else:
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: no new tarball.')
+
     # make sure we have at least a subdirectory in tmpdir, since we'll extract
     # files from two tarballs that might conflict
-    _extract_files (old, os.path.join(tmpdir, 'old'), ['NEWS', 'ChangeLog'])
-    _extract_files (new, os.path.join(tmpdir, 'new'), ['NEWS', 'ChangeLog'])
+    old_dir = os.path.join(tmpdir, 'old')
+    new_dir = os.path.join(tmpdir, 'new')
+    _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
+    _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
+    old.close()
+    old = None
+    new.close()
+    new = None
+
+    # find toplevel NEWS & ChangeLog in the new tarball
+    if not os.path.exists(new_dir):
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+
+    new_dir_files = os.listdir(new_dir)
+    if len(new_dir_files) != 1:
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+
+    new_subdir = os.path.join(new_dir, new_dir_files[0])
+    if not os.path.isdir(new_subdir):
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+
+    new_news = os.path.join(new_subdir, 'NEWS')
+    if not os.path.exists(new_news) or not os.path.isfile(new_news):
+        new_news = None
+    new_changelog = os.path.join(new_subdir, 'ChangeLog')
+    if not os.path.exists(new_changelog) or not os.path.isfile(new_changelog):
+        new_changelog = None
+
+    if not new_news and not new_changelog:
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+
+    # find toplevel NEWS & ChangeLog in the old tarball
+    # not fatal
+    old_news = None
+    old_changelog = None
+
+    if os.path.exists(old_dir):
+        old_dir_files = os.listdir(old_dir)
+    else:
+        old_dir_files = []
+
+    if len(old_dir_files) == 1:
+        old_subdir = os.path.join(old_dir, old_dir_files[0])
+        if os.path.isdir(old_subdir):
+            old_news = os.path.join(old_subdir, 'NEWS')
+            if not os.path.exists(old_news) or not os.path.isfile(old_news):
+                old_news = None
+            old_changelog = os.path.join(old_subdir, 'ChangeLog')
+            if not os.path.exists(old_changelog) or not os.path.isfile(old_changelog):
+                old_changelog = None
+
+    # do the diff
+    news = os.path.join(directory, 'osc-gnome.NEWS')
+    (news_created, news_is_diff) = _diff_files(old_news, new_news, news)
+    changelog = os.path.join(directory, 'osc-gnome.ChangeLog')
+    (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
+
+    # TODO find a way to have osc ignore those new files
 
     _cleanup(old, new, tmpdir)
+
+    return (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff)
 
 
 #######################################################################
@@ -1458,11 +1558,29 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
 
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
     # not fatal if fails
-    # TODO: output message
+    print 'Finding NEWS and ChangeLog information...'
     try:
-        self._gnome_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
-    except self.OscGnomeCompressError, e:
+        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff) = self._gnome_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+    except self.OscGnomeNewsError, e:
         print >>sys.stderr, e.msg
+    else:
+        if news_created:
+            news_basename = os.path.basename(news)
+            if news_is_diff:
+                print 'NEWS between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, news_basename)
+            else:
+                print 'Complete NEWS of %s is available in %s' % (upstream_tarball_basename, news_basename)
+        else:
+            print 'No NEWS information found.'
+
+        if changelog_created:
+            changelog_basename = os.path.basename(changelog)
+            if changelog_is_diff:
+                print 'ChangeLog between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, changelog_basename)
+            else:
+                print 'Complete ChangeLog of %s is available in %s' % (upstream_tarball_basename, changelog_basename)
+        else:
+            print 'No ChangeLog information found.'
 
 
     # recompress as bz2
