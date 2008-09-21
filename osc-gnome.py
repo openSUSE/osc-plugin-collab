@@ -1084,7 +1084,7 @@ def _gnome_gz_to_bz2_internal(self, file):
 # alphabetically)
 # Also put Name/License/Group/BuildRequires/etc. in the right order
 # Actually, create a class that fixes a spec file
-def _gnome_update_spec(self, spec_file, package, upstream_version):
+def _gnome_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
         return (False, None)
@@ -1099,12 +1099,16 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
         return (False, None)
 
-    re_spec_header = re.compile('^(# spec file for package %s \(Version )\S*(\).*)' % package, re.IGNORECASE)
+    re_spec_header = re.compile('^(# spec file for package \S* \(Version )\S*(\).*)', re.IGNORECASE)
+    re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
+    re_spec__name = re.compile('^%define\s+_name\s+(\S*)', re.IGNORECASE)
     re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
     re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
-    re_spec_source = re.compile('^(Source0?:\s*)(\S*)', re.IGNORECASE)
+    re_spec_source = re.compile('^Source0?:\s*(\S*)', re.IGNORECASE)
     re_spec_prep = re.compile('^%prep', re.IGNORECASE)
 
+    name = None
+    _name = None
     old_version = None
     old_source = None
 
@@ -1127,6 +1131,18 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
             os.write(fdout, '%s%s%s\n' % (match.group(1), upstream_version, match.group(2)))
             continue
 
+        match = re_spec_name.match(line)
+        if match:
+            name = os.path.basename(match.group(1))
+            os.write(fdout, line)
+            continue
+
+        match = re_spec__name.match(line)
+        if match:
+            _name = os.path.basename(match.group(1))
+            os.write(fdout, line)
+            continue
+
         match = re_spec_version.match(line)
         if match:
             old_version = match.group(2)
@@ -1140,8 +1156,9 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
         match = re_spec_source.match(line)
         if match:
-            old_source = os.path.basename(match.group(2))
-            # continue in the loop to have the standard write
+            old_source = os.path.basename(match.group(1))
+            os.write(fdout, line)
+            continue
 
         os.write(fdout, line)
 
@@ -1157,11 +1174,18 @@ def _gnome_update_spec(self, spec_file, package, upstream_version):
 
     os.rename(tmp, spec_file)
 
-    if old_source and old_version and old_version != upstream_version:
-        old_source = old_source.replace('%{name}', package)
-        old_source = old_source.replace('%{version}', old_version)
-    else:
+    if old_version == upstream_version:
         old_source = None
+    elif old_source:
+        if name:
+            old_source = old_source.replace('%{name}', name)
+            old_source = old_source.replace('%name', name)
+        if _name:
+            old_source = old_source.replace('%{_name}', _name)
+            old_source = old_source.replace('%_name', _name)
+        if old_version:
+            old_source = old_source.replace('%{version}', old_version)
+            old_source = old_source.replace('%version', old_version)
 
     return (True, old_source)
 
@@ -1300,7 +1324,7 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    (updated, old_tarball) = self._gnome_update_spec(spec_file, package, upstream_version)
+    (updated, old_tarball) = self._gnome_update_spec(spec_file, upstream_version)
     if updated:
         print '%s has been prepared.' % os.path.basename(spec_file)
 
