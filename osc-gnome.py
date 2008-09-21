@@ -1684,11 +1684,6 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
 #   + complain if the lines in .changes are too long
 
 
-# TODO
-# We could also check that all packages maintained by gnome-maintainers
-# are in G:F.
-
-
 #######################################################################
 
 
