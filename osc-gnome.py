@@ -1046,6 +1046,80 @@ def _gnome_download_internal(self, url, dest_dir):
 #######################################################################
 
 
+def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
+    # TODO
+    return
+
+    def _cleanup(old, new, tmpdir):
+        if old:
+            old.close()
+        if new:
+            new.close()
+        shutil.rmtree(tmpdir)
+
+    # we need to make sure it's safe to extract the file
+    # see the warning in http://www.python.org/doc/lib/tarfile-objects.html
+    def _can_extract_with_trust(name):
+        if not name:
+            return False
+        if name[0] == '/':
+            return False
+        if name[0] == '.':
+            # only accept ./ if the first character is a dot
+            if len(name) == 1 or name[1] != '/':
+                return False
+
+        return True
+
+    def _extract_files(tar, path, whitelist):
+        if not tar or not path or not whitelist:
+            return
+
+        for tarinfo in tar:
+            if not _can_extract_with_trust(tarinfo.name):
+                continue
+            # we won't accept symlinks or hard links. It sounds weird to have
+            # this for the files we're interested in.
+            if not tarinfo.isfile():
+                continue
+            # we're only interested in NEWS/ChangeLog
+            basename = os.path.basename(tarinfo.name)
+            if not basename in whitelist:
+                continue
+            tar.extract(tarinfo, path)
+
+
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    shutil = self.OscGnomeImport.m_import('shutil')
+    tarfile = self.OscGnomeImport.m_import('tarfile')
+    difflib = self.OscGnomeImport.m_import('difflib')
+
+    if not tempfile or not shutil or not tarfile or not difflib:
+        raise self.OscGnomeCompressError('Cannot extract NEWS information: incomplete python installation.')
+
+    if old_tarball and os.path.exists(old_tarball):
+        old = tarfile.open(old_tarball)
+    else:
+        old = None
+
+    if new_tarball and os.path.exists(new_tarball):
+        new = tarfile.open(new_tarball)
+    else:
+        new = None
+
+    tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
+
+    # make sure we have at least a subdirectory in tmpdir, since we'll extract
+    # files from two tarballs that might conflict
+    _extract_files (old, os.path.join(tmpdir, 'old'), ['NEWS', 'ChangeLog'])
+    _extract_files (new, os.path.join(tmpdir, 'new'), ['NEWS', 'ChangeLog'])
+
+    _cleanup(old, new, tmpdir)
+
+
+#######################################################################
+
+
 def _gnome_gz_to_bz2_internal(self, file):
     if not file.endswith('.gz'):
         raise self.OscGnomeCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
@@ -1325,6 +1399,11 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
     (updated, old_tarball) = self._gnome_update_spec(spec_file, upstream_version)
+    if old_tarball:
+        old_tarball_with_dir = os.path.join(package_dir, old_tarball)
+    else:
+        old_tarball_with_dir = None
+
     if updated:
         print '%s has been prepared.' % os.path.basename(spec_file)
 
@@ -1379,10 +1458,12 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
 
 
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
-    # We want to look at %setup: the directory name might be known with -n
-    # see difflib python module
     # not fatal if fails
-    # TODO
+    # TODO: output message
+    try:
+        self._gnome_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+    except self.OscGnomeCompressError, e:
+        print >>sys.stderr, e.msg
 
 
     # recompress as bz2
@@ -1413,8 +1494,7 @@ def _gnome_update(self, package, apiurl, username, email, ignore_reserved = Fals
     # not fatal if fails
     osc_package = filedir_to_pac(package_dir)
 
-    if old_tarball:
-        old_tarball_with_dir = os.path.join(package_dir, old_tarball)
+    if old_tarball_with_dir:
         if os.path.exists(old_tarball_with_dir):
             osc_package.put_on_deletelist(old_tarball)
             osc_package.write_deletelist()
