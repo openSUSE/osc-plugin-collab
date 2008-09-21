@@ -1082,7 +1082,6 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
             # this for the files we're interested in.
             if not tarinfo.isfile():
                 continue
-            # we're only interested in NEWS/ChangeLog
             basename = os.path.basename(tarinfo.name)
             if not basename in whitelist:
                 continue
