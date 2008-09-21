@@ -1,3 +1,6 @@
+# This is a hack to have osc ignore the file we create in a package directory.
+exclude_stuff.append('osc-gnome.*')
+
 class OscGnomeError(Exception):
     def __init__(self, value):
         self.msg = value
@@ -1248,7 +1251,8 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     changelog = os.path.join(directory, 'osc-gnome.ChangeLog')
     (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
 
-    # TODO find a way to have osc ignore those new files
+    # Note: we make osc ignore those osc-gnome.* file we created by modifying
+    # the exclude list of osc.core. See the top of this file.
 
     _cleanup(old, new, tmpdir)
 
