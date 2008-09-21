@@ -1106,10 +1106,49 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
 
         diff = difflib.unified_diff(old_lines, new_lines)
 
-        # TODO make the diff more readable (like we do on GNOME FTP)
         dest_f = open(dest, 'w')
+
+        # We first write what we consider useful and then write the complete
+        # diff for reference.
+        # This works because a well-formed NEWS/ChangeLog will only have new
+        # items added at the top, and therefore the useful diff is the addition
+        # at the top.
+        # We need to cache the first lines, though, since diff is a generator
+        # and we don't have direct access to lines.
+
+        i = 0
+        pass_one_done = False
+        cached = []
+
         for line in diff:
-            dest_f.write(line)
+            # we skip the first three lines of the diff
+            if not pass_one_done and i == 0 and line[:3] == '---':
+                cached.append(line)
+                i = 1
+            elif not pass_one_done and i == 1 and line[:3] == '+++':
+                cached.append(line)
+                i = 2
+            elif not pass_one_done and i == 2 and line[:2] == '@@':
+                cached.append(line)
+                i = 3
+            elif not pass_one_done and i == 3 and line[0] == '+':
+                cached.append(line)
+                dest_f.write(line[1:])
+            elif not pass_one_done:
+                # end of pass one: we write a note to help the user, and then
+                # write the cache
+                pass_one_done = True
+                dest_f.write('\n')
+                dest_f.write('#############################################################\n')
+                dest_f.write('# Note by osc gnome: here is the complete diff for reference.\n')
+                dest_f.write('#############################################################\n')
+                dest_f.write('\n')
+                for cached_line in cached:
+                    dest_f.write(cached_line)
+                dest_f.write(line)
+            else:
+                dest_f.write(line)
+
         dest_f.close()
 
         return (True, True)
