@@ -1,0 +1,5 @@
++ Put server code in git.
++ Make the code work with all development repos, and not just GNOME:Factory.
++ Make 'osc gnome ta' tell you about packages with no upstream info?
++ Make --xs the default for 'osc gnome t/ta'
++ Prefill the .changes with "Updated translations"?
