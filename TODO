@@ -3,3 +3,4 @@
 + Make 'osc gnome ta' tell you about packages with no upstream info?
 + Make --xs the default for 'osc gnome t/ta'
 + Prefill the .changes with "Updated translations"?
++ Have a "commit, wait for build success on OBS, submit to G:F" command
