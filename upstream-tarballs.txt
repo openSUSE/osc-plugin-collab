@@ -56,6 +56,7 @@
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
 # section or in the "Packages where we are upstream" section.
 
+QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/

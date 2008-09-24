@@ -282,6 +282,7 @@ tasque:
 xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
+QtCurve-Gtk2:qtcurve-gtk2
 PolicyKit-gnome:
 abiword:
 aqbanking:
