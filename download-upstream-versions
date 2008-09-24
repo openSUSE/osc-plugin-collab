@@ -121,6 +121,20 @@ class urllister(SGMLParser):
 #######################################################################
 
 
+class svnurllister(SGMLParser):
+    def reset(self):
+        SGMLParser.reset(self)
+        self.urls = []
+
+    def start_file(self, attrs):
+        href = [v for k, v in attrs if k=='href']
+        if href:
+            self.urls.extend(href)
+
+
+#######################################################################
+
+
 # based on code from convert-to-tarball.py
 def _get_files_from_http(url):
     obj = urllib2.build_opener()
@@ -187,6 +201,23 @@ def _get_files_from_subdir_http(url, limit):
         else:
             break
     return (location, files)
+
+
+#######################################################################
+
+
+def _get_files_from_svn(url):
+    obj = urllib2.build_opener()
+
+    # Get the files
+    usock = obj.open(url)
+    parser = svnurllister()
+    parser.feed(usock.read())
+    usock.close()
+    parser.close()
+    files = parser.urls
+
+    return (url, files)
 
 
 #######################################################################
@@ -496,7 +527,7 @@ def _get_version_from_launchpad(project, limit):
 
 
 def get_upstream_version(modulename, method, additional_info, limit):
-    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'sf', 'google', 'lp' ]:
+    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'google', 'lp' ]:
         print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
 
@@ -538,6 +569,10 @@ def get_upstream_version(modulename, method, additional_info, limit):
 
     elif method == 'subdirhttpls':
         (location, files) = _get_files_from_subdir_http(additional_info, limit)
+        return _get_version_from_files(modulename, location, files, limit)
+
+    elif method == 'svnls':
+        (location, files) = _get_files_from_svn(additional_info)
         return _get_version_from_files(modulename, location, files, limit)
 
     elif method == 'sf':

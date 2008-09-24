@@ -31,6 +31,12 @@
 #     The subdirectories should always be made of version numbers only
 #   + the info field should be the root URL containing all those subdirectories
 #
+# svnls:
+#   + use this when you only have a svn server listening on port 80 listing all
+#     tarballs. An example is:
+#     https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
+#   + the info field should be the URL of the svn directory
+#
 # sf:
 #   + use this when the upstream tarballs are hosted on sourceforge
 #   + the info field should be the project id in sourceforge
@@ -134,6 +140,7 @@ istanbul:httpls:http://live.gnome.org/Istanbul
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
+libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/

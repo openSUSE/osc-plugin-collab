@@ -348,6 +348,7 @@ istanbul:
 ldtp:
 libao-pulse:
 libesmtp:
+libflashsupport:
 libgalago:
 libgalago-gtk:
 libggz:ggz
