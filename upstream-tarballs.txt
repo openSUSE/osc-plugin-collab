@@ -96,6 +96,7 @@ glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/re
 gnome-do:lp:do
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
+gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 # Sf seems to be more up-to-date
@@ -163,6 +164,7 @@ nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 obby:httpls:http://releases.0x539.de/obby/
+#FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
 opt_gnome-compat:upstream:
 paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
@@ -172,6 +174,7 @@ pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 poppler-data:httpls:http://poppler.freedesktop.org/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
+#FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
@@ -183,6 +186,7 @@ shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|157769
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
+system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
@@ -195,4 +199,5 @@ transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
+xchat-gnome:httpls:http://xchat-gnome.navi.cx/?page_id=15
 yast2-control-center-gnome:upstream:

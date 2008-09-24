@@ -322,6 +322,7 @@ glitz:
 gnome-do:
 gnome-keyring-sharp:
 gnome-mount:
+gnome-packagekit:
 gnome-presence-applet:
 gnucash:
 gnucash-docs:
@@ -394,6 +395,7 @@ shared-mime-info:
 sobby:
 sofia-sip:
 startup-notification:
+system-config-printer:
 tango-icon-theme:
 telepathy-gabble:
 telepathy-glib:
@@ -406,6 +408,7 @@ tsclient:
 vobject:
 webkit:libwebkit
 xchat:
+xchat-gnome:
 
 ## Packages where we are upstream
 ## It's not required to list -branding-{openSUSE,SLED} packages.
