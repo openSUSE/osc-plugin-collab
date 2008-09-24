@@ -46,7 +46,7 @@ mkdir -p $TMPPATH
 
 cd $TMPPATH
 
-#wget -q -nc http://www.gnome.org/~vuntz/tmp/versions/versions-unstable
-wget -q -nc http://www.gnome.org/~vuntz/tmp/versions/versions-stable
+GNOME_VERSION=stable
+wget -q -nc http://www.gnome.org/~vuntz/tmp/versions/versions-$GNOME_VERSION
 wget -q -nc http://www.gnome.org/~vuntz/tmp/versions/versions-extras
-cat versions-unstable versions-extras > $VERSIONSFILE
+cat versions-$GNOME_VERSION versions-extras > $VERSIONSFILE
