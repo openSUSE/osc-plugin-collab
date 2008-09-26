@@ -149,6 +149,7 @@ libgnomemm:
 libgnomeuimm:
 libsigc++:libsigc++2
 libxml++:
+pangomm:
 # No package in openSUSE
 #pangomm:
 
