@@ -705,7 +705,7 @@ class SrcPackage(Base):
             try:
                 root = ET.parse(files).getroot()
             except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse %s' % (files, e.msg)
+                print >> sys.stderr, 'Cannot parse %s: %s' % (files, e.msg)
             else:
                 linkinfo = root.find('linkinfo')
                 if linkinfo != None:
