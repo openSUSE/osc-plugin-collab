@@ -90,8 +90,8 @@ class OscGnomeWeb:
 
         for line in lines:
             try:
-                (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
-                packages_versions.append((package, oF_version, GF_version, upstream_version))
+                (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
+                packages_versions.append((package, oF_version, devel_version, upstream_version))
             except ValueError:
                 print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
@@ -143,12 +143,12 @@ class OscGnomeWeb:
         fd.close()
 
         try:
-            (package, oF_version, GF_version, upstream_version, empty) = line.split(';')
+            (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
         except ValueError:
             print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
             return (None, None, None)
 
-        return (oF_version, GF_version, upstream_version)
+        return (oF_version, devel_version, upstream_version)
 
 
     def get_upstream_url(self, package):
@@ -526,8 +526,8 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
     return False
 
 
-def _gnome_needs_update(self, oF_version, GF_version, upstream_version):
-    return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, GF_version)
+def _gnome_needs_update(self, oF_version, devel_version, upstream_version):
+    return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
 
 
 def _gnome_is_submitted(self, package, submitted_packages):
@@ -585,7 +585,7 @@ def _gnome_table_print_header(self, template, title):
 #######################################################################
 
 
-def _gnome_todo(self, exclude_reserved, exclude_submitted, project_name):
+def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
         packages_versions = self._gnome_web.get_packages_versions()
@@ -600,38 +600,38 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted, project_name):
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], project_name)
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], project)
 
     lines = []
 
-    for (package, oF_version, GF_version, upstream_version) in packages_versions:
+    for (package, oF_version, devel_version, upstream_version) in packages_versions:
         # empty upstream version or upstream version meaning openSUSE is
         # upstream
         if upstream_version == '' or upstream_version == '--':
             continue
 
-        if self._gnome_needs_update(oF_version, GF_version, upstream_version):
+        if self._gnome_needs_update(oF_version, devel_version, upstream_version):
             if self._gnome_is_submitted(package, submitted_packages):
                 if exclude_submitted:
                     continue
-                GF_version += ' (s)'
+                devel_version += ' (s)'
                 upstream_version += ' (s)'
             if package in reserved_packages:
                 if exclude_reserved:
                     continue
                 upstream_version += ' (r)'
-            lines.append((package, oF_version, GF_version, upstream_version))
+            lines.append((package, oF_version, devel_version, upstream_version))
 
     if len(lines) == 0:
         print 'Nothing to do.'
         return
 
     # print headers
-    title = ('Package', 'openSUSE:Factory', project_name, 'Upstream')
-    (max_package, max_oF, max_GF, max_upstream) = self._gnome_table_get_maxs(title, lines)
+    title = ('Package', 'openSUSE:Factory', project, 'Upstream')
+    (max_package, max_oF, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_package = min(max_package, 48)
-    max_version = min(max(max(max_oF, max_GF), max_upstream), 20)
+    max_version = min(max(max(max_oF, max_devel), max_upstream), 20)
 
     print_line = self._gnome_table_get_template(max_package, max_version, max_version, max_version)
     self._gnome_table_print_header(print_line, title)
@@ -642,7 +642,7 @@ def _gnome_todo(self, exclude_reserved, exclude_submitted, project_name):
 #######################################################################
 
 
-def _gnome_get_packages_with_bad_meta(self, project_name):
+def _gnome_get_packages_with_bad_meta(self, project):
     metafile = self.GnomeCache.get_obs_meta(conf.config['apiurl'], 'openSUSE:Factory')
     if not metafile:
         return (None, None)
@@ -655,9 +655,9 @@ def _gnome_get_packages_with_bad_meta(self, project_name):
 
     devel_dict = {}
     # list of packages that should exist in G:F but that don't
-    bad_GF_packages = []
+    bad_devel_packages = []
     # list of packages that exist in G:F but that shouldn't
-    should_GF_packages = []
+    should_devel_packages = []
 
     # save all packages that should be in G:F and also create a db of
     # package->develproject
@@ -670,8 +670,8 @@ def _gnome_get_packages_with_bad_meta(self, project_name):
             devel_project = ''
 
         devel_dict[name] = devel_project
-        if devel_project == project_name:
-            should_GF_packages.append(name)
+        if devel_project == project:
+            should_devel_packages.append(name)
 
     # get the list of packages that are actually in G:F
     try:
@@ -682,17 +682,17 @@ def _gnome_get_packages_with_bad_meta(self, project_name):
 
     # now really create the list of packages that should be in G:F and
     # create the list of packages that shouldn't stay in G:F
-    for (package, oF_version, GF_version, upstream_version) in packages_versions:
-        if package in should_GF_packages:
-            should_GF_packages.remove(package)
+    for (package, oF_version, devel_version, upstream_version) in packages_versions:
+        if package in should_devel_packages:
+            should_devel_packages.remove(package)
         devel_project = devel_dict[package]
-        if devel_project != project_name:
-            bad_GF_packages.append((package, devel_project))
+        if devel_project != project:
+            bad_devel_packages.append((package, devel_project))
 
-    bad_GF_packages.sort()
-    should_GF_packages.sort()
+    bad_devel_packages.sort()
+    should_devel_packages.sort()
 
-    return (bad_GF_packages, should_GF_packages)
+    return (bad_devel_packages, should_devel_packages)
 
 
 #######################################################################
@@ -710,7 +710,7 @@ def _gnome_min_package(self, *args):
     return min_package
 
 
-def _gnome_todoadmin(self, exclude_submitted, project_name):
+def _gnome_todoadmin(self, project, exclude_submitted):
     def _insert_delta_package(lines, delta_package, submitted_packages):
         if self._gnome_is_submitted(delta_package, submitted_packages):
             if exclude_submitted:
@@ -746,17 +746,17 @@ def _gnome_todoadmin(self, exclude_submitted, project_name):
 
     # get the packages submitted
     submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory')
-    (bad_GF_packages, should_GF_packages) = self._gnome_get_packages_with_bad_meta(project_name)
+    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(project)
 
     lines = []
     delta_index = 0
     delta_max = len(packages_with_delta)
     error_index = 0
     error_max = len(packages_with_errors)
-    bad_GF_index = 0
-    bad_GF_max = len(bad_GF_packages)
-    should_GF_index = 0
-    should_GF_max = len(should_GF_packages)
+    bad_devel_index = 0
+    bad_devel_max = len(bad_devel_packages)
+    should_devel_index = 0
+    should_devel_max = len(should_devel_packages)
 
 
     # This is an ugly loop to merge all the lists we have to get an output
@@ -771,28 +771,28 @@ def _gnome_todoadmin(self, exclude_submitted, project_name):
             error_package = error_package_tuple[0]
         else:
             error_package = None
-        if bad_GF_index < bad_GF_max:
-            bad_GF_package_tuple = bad_GF_packages[bad_GF_index]
-            bad_GF_package = bad_GF_package_tuple[0]
+        if bad_devel_index < bad_devel_max:
+            bad_devel_package_tuple = bad_devel_packages[bad_devel_index]
+            bad_devel_package = bad_devel_package_tuple[0]
         else:
-            bad_GF_package = None
-        if should_GF_index < should_GF_max:
-            should_GF_package = should_GF_packages[should_GF_index]
+            bad_devel_package = None
+        if should_devel_index < should_devel_max:
+            should_devel_package = should_devel_packages[should_devel_index]
         else:
-            should_GF_package = None
+            should_devel_package = None
 
-        package = self._gnome_min_package(delta_package, error_package, bad_GF_package, should_GF_package)
+        package = self._gnome_min_package(delta_package, error_package, bad_devel_package, should_devel_package)
 
         if not package:
             break
-        elif package == should_GF_package:
-            lines.append((should_GF_package, 'Does not exist in %s while it should' % project_name))
-            should_GF_index = should_GF_index + 1
+        elif package == should_devel_package:
+            lines.append((should_devel_package, 'Does not exist in %s while it should' % project))
+            should_devel_index = should_devel_index + 1
             # this package cannot appear in other lists since it's unknown to
             # our scripts
-        elif package == bad_GF_package:
-            lines.append((bad_GF_package, 'Development project is not %s (%s)' % (project_name, bad_GF_package_tuple[1])))
-            bad_GF_index = bad_GF_index + 1
+        elif package == bad_devel_package:
+            lines.append((bad_devel_package, 'Development project is not %s (%s)' % (project, bad_devel_package_tuple[1])))
+            bad_devel_index = bad_devel_index + 1
             if package == error_package:
                 error_index = error_index + 1
             if package == delta_package:
@@ -902,7 +902,7 @@ def _gnome_unreserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_setup_internal(self, package, apiurl, username, project_name, ignore_reserved = False, no_reserve = False):
+def _gnome_setup_internal(self, project, package, apiurl, username, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
@@ -931,7 +931,7 @@ def _gnome_setup_internal(self, package, apiurl, username, project_name, ignore_
 
     # look if we already have a branch, and if not branch the package
     try:
-        expected_branch_project = 'home:%s:branches:%s' % (username, project_name)
+        expected_branch_project = 'home:%s:branches:%s' % (username, project)
         show_package_meta(apiurl, expected_branch_project, package)
         branch_project = expected_branch_project
         # it worked, we already have the branch
@@ -941,7 +941,7 @@ def _gnome_setup_internal(self, package, apiurl, username, project_name, ignore_
             return False
         # We had a 404: it means the branched package doesn't exist yet
         try:
-            branch_project = branch_pkg(apiurl, project_name, package, nodevelproject = True)
+            branch_project = branch_pkg(apiurl, project, package, nodevelproject = True)
             print 'Package %s has been branched in project %s.' % (package, branch_project)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Error while branching package %s: %s' % (package, e.msg)
@@ -995,8 +995,8 @@ def _gnome_setup_internal(self, package, apiurl, username, project_name, ignore_
 #######################################################################
 
 
-def _gnome_setup(self, package, apiurl, username, project_name, ignore_reserved = False, no_reserve = False):
-    if not self._gnome_setup_internal(package, apiurl, username, project_name, ignore_reserved, no_reserve):
+def _gnome_setup(self, project, package, apiurl, username, ignore_reserved = False, no_reserve = False):
+    if not self._gnome_setup_internal(project, package, apiurl, username, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
 
@@ -1512,27 +1512,27 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, package, apiurl, username, email, project_name, ignore_reserved = False, no_reserve = False):
+def _gnome_update(self, project, package, apiurl, username, email, ignore_reserved = False, no_reserve = False):
     try:
-        (oF_version, GF_version, upstream_version) = self._gnome_web.get_versions(package)
+        (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
 
     # check that the project is up-to-date wrt openSUSE:Factory
-    if self._gnome_compare_versions_a_gt_b(oF_version, GF_version):
+    if self._gnome_compare_versions_a_gt_b(oF_version, devel_version):
         # TODO, actually we can do a better check than that with the delta API
-        print 'Package %s is more recent in openSUSE:Factory (%s) than in %s (%s). Please synchronize GNOME:Factory first.' % (package, oF_version, project_name, GF_version)
+        print 'Package %s is more recent in openSUSE:Factory (%s) than in %s (%s). Please synchronize %s first.' % (package, oF_version, project, devel_version, project)
         return
 
     # check that an update is really needed
     if upstream_version == '':
         print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
-    elif not self._gnome_needs_update(oF_version, GF_version, upstream_version):
+    elif not self._gnome_needs_update(oF_version, devel_version, upstream_version):
         print 'Package %s is already up-to-date.' % package
         return
 
-    if not self._gnome_setup_internal(package, apiurl, username, ignore_reserved, no_reserve):
+    if not self._gnome_setup_internal(project, package, apiurl, username, ignore_reserved, no_reserve):
         return
 
     package_dir = package
@@ -1781,7 +1781,7 @@ def _gnome_ensure_email(self):
               dest='no_reserve',
               help='do not reserve the package')
 @cmdln.option('--project', metavar='PROJECT',
-              help='project to work on (GNOME:Factory by default')
+              help='project to work on (default: GNOME:Factory')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -1808,16 +1808,16 @@ def do_gnome(self, subcmd, opts, *args):
     edition, etc.). The package will be checked out in the current directory.
 
     Usage:
-        osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=project]
-        osc gnome todoadmin [--exclude-submitted|--xs]
+        osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
+        osc gnome todoadmin [--exclude-submitted|--xs] [--project=PROJECT]
 
         osc gnome listreserved
         osc gnome isreserved PKG
         osc gnome reserve PKG [...]
         osc gnome unreserve PKG [...]
 
-        osc gnome setup [--ignore-reserved|--ir] [--no-reserve|--nr] PKG
-        osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] PKG
+        osc gnome setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
+        osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
     ${cmd_option_list}
     """
 
@@ -1832,9 +1832,6 @@ def do_gnome(self, subcmd, opts, *args):
                                            % ', '.join(cmds))
 
     cmd = args[0]
-
-    if not opts.project:
-        opts.project = 'GNOME:Factory'
 
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta']:
@@ -1853,14 +1850,21 @@ def do_gnome(self, subcmd, opts, *args):
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
     self.GnomeCache.init(self.OscGnomeImport.m_import)
 
+    if opts.project:
+        project = opts.project
+    elif conf.config.has_key('gnome_project'):
+        project = conf.config['gnome_project']
+    else:
+        project = 'GNOME:Factory'
+
     email = self._gnome_ensure_email()
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(opts.exclude_reserved, opts.exclude_submitted, opts.project)
+        self._gnome_todo(project, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(opts.exclude_submitted, opts.project)
+        self._gnome_todoadmin(project, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
@@ -1879,8 +1883,8 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(package, conf.config['apiurl'], conf.config['user'], ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(project, package, conf.config['apiurl'], conf.config['user'], ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(package, conf.config['apiurl'], conf.config['user'], opts.project, email, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(project, package, conf.config['apiurl'], conf.config['user'], email, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
