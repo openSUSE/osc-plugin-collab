@@ -686,7 +686,8 @@ def _gnome_get_packages_with_bad_meta(self, project):
         if package in should_devel_packages:
             should_devel_packages.remove(package)
         if not devel_dict.has_key(package):
-            # FIXME: maybe this should be an error?
+            # FIXME: this should be not-in-parent error, in create-database
+            # test-case right now: compiz-fusion-plugins-unsupported
             continue
         devel_project = devel_dict[package]
         if devel_project != project:
