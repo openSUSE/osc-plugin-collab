@@ -301,20 +301,22 @@ def _get_latest_version(versions, limit):
 #######################################################################
 
 
+def _all_indexes(list, item, shift = 0):
+    try:
+        i = list.index(item)
+        i += shift
+    except ValueError:
+        return []
+
+    subresult = _all_indexes(list[i+1:], item, i + 1)
+    subresult.append(i)
+    return subresult
+
+
 # based on code from convert-to-tarball.py
 def _get_version_from_files(modulename, location, files, limit):
     # Only include tarballs for the given module
-    good_files = [file for file in files if modulename in file]
-
-    tarballs = None
-    if not tarballs:
-        tarballs = [file for file in good_files if file.endswith('.tar.bz2')]
-    if not tarballs:
-        tarballs = [file for file in good_files if file.endswith('.tar.gz')]
-    if not tarballs:
-        tarballs = [file for file in good_files if file.endswith('.tbz2')]
-    if not tarballs:
-        tarballs = [file for file in good_files if file.endswith('.tgz')]
+    tarballs = [file for file in files if modulename in file]
 
     re_tarball = r'^.*'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
     # Don't include -beta -installer -stub-installer and all kinds of
@@ -331,13 +333,36 @@ def _get_version_from_files(modulename, location, files, limit):
     if not version:
         raise UpstreamDownloadError('No version found respecting the limits')
 
-    index = versions.index(version)
+    indexes = _all_indexes(versions, version)
+    # the list is not in the right order, because of the way we build the list
+    indexes.reverse()
 
-    if urlparse.urlparse(tarballs[index]).scheme != '':
+    latest = []
+    for index in indexes:
+        latest.append(tarballs[index])
+
+    tarballs = None
+    if not tarballs:
+        tarballs = [file for file in latest if file.endswith('.tar.bz2')]
+    if not tarballs:
+        tarballs = [file for file in latest if file.endswith('.tar.gz')]
+    if not tarballs:
+        tarballs = [file for file in latest if file.endswith('.tbz2')]
+    if not tarballs:
+        tarballs = [file for file in latest if file.endswith('.tgz')]
+
+    if not tarballs:
+        raise UpstreamDownloadError('No tarballs found for version %s' % version)
+
+    # at this point, all the tarballs we have are relevant, so just take the
+    # first one
+    tarball = tarballs[0]
+
+    if urlparse.urlparse(tarball).scheme != '':
         # full URI
-        location = tarballs[index]
+        location = tarball
     else:
-        location = urlparse.urljoin(location, tarballs[index])
+        location = urlparse.urljoin(location, tarball)
 
     return (location, version)
 
@@ -752,7 +777,7 @@ def main(args):
             try:
                 (location, version) = get_upstream_version(modulename, method, additional_info, limit)
             except urllib2.URLError, e:
-                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e.reason)
+                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
             except urllib2.HTTPError, e:
                 print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
             except UpstreamDownloadError, e:
