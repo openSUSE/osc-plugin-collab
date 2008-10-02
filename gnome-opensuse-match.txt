@@ -2,6 +2,9 @@
 # upstreamname:packagename
 # If packagename is the same as upstreamname, then you can leave it empty
 
+
+#### GNOME:Factory
+
 ## PLATFORM
 GConf:gconf2
 ORBit2:orbit2
@@ -431,3 +434,33 @@ yast2-control-center-gnome:
 # banshee-1:banshee
 # fast-user-switch-applet:
 # libssui:
+
+
+#### X11:Compiz
+
+ccsm:compizconfig-settings-manager
+compiz:
+compiz-bcop:
+compiz-fusion-plugins-extra:
+compiz-fusion-plugins-main:
+compiz-fusion-plugins-unsupported:
+compizconfig-backend-gconf:libcompizconfig-backend-gconf
+compizconfig-backend-kconfig:libcompizconfig-backend-kconfig
+compizconfig-python:python-compizconfig
+emerald:compiz-emerald
+libcompizconfig:
+simple-ccsm:
+
+
+#### X11:common:Factory
+
+chmlib:
+desktop-data-openSUSE:
+exiv2
+libspectre:
+raptor:
+rasqal:
+redland:
+xdg-user-dirs:
+xdg-utils:
+xesam-tools:

@@ -56,6 +56,8 @@
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
 # section or in the "Packages where we are upstream" section.
 
+## GNOME:Factory
+
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
@@ -209,3 +211,31 @@ vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 xchat-gnome:httpls:http://xchat-gnome.navi.cx/?page_id=15
 yast2-control-center-gnome:upstream:
+
+
+## X11:Compiz
+ccsm:subdirhttpls:http://releases.compiz-fusion.org/
+compiz:httpls:http://xorg.freedesktop.org/archive/individual/app/
+compiz-bcop:subdirhttpls:http://releases.compiz-fusion.org/
+compiz-fusion-plugins-extra:subdirhttpls:http://releases.compiz-fusion.org/
+compiz-fusion-plugins-main:subdirhttpls:http://releases.compiz-fusion.org/
+compiz-fusion-plugins-unsupported:subdirhttpls:http://releases.compiz-fusion.org/
+compizconfig-backend-gconf:subdirhttpls:http://releases.compiz-fusion.org/
+compizconfig-backend-kconfig:subdirhttpls:http://releases.compiz-fusion.org/
+compizconfig-python:subdirhttpls:http://releases.compiz-fusion.org/
+emerald:subdirhttpls:http://releases.compiz-fusion.org/
+libcompizconfig:subdirhttpls:http://releases.compiz-fusion.org/
+simple-ccsm:subdirhttpls:http://releases.compiz-fusion.org/
+
+
+## X11:common:Factory
+chmlib:httpls:http://www.jedrea.com/chmlib/
+desktop-data-openSUSE:upstream:
+exiv2:httpls:http://www.exiv2.org/download.html
+libspectre:httpls:http://libspectre.freedesktop.org/releases/
+raptor:httpls:http://download.librdf.org/source/
+rasqal:httpls:http://download.librdf.org/source/
+redland:httpls:http://download.librdf.org/source/
+xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
+xdg-utils:httpls:http://portland.freedesktop.org/wiki/
+xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/

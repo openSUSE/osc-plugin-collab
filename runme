@@ -96,6 +96,7 @@ checkout_project () {
 }
 
 checkout_project GNOME:Factory
+checkout_project X11:common:Factory
 checkout_project X11:Compiz
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
