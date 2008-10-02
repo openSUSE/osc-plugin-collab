@@ -193,6 +193,11 @@ def _get_files_from_subdir_http(url, limit):
         newdirs = map(fixdirs, newdirs)
         if newdirs:
             newdir = _get_latest_version(newdirs, limit)
+            # This is a weird case, that we handled for compiz-fusion:
+            # if the dir contains a subdir with the same name, then we stop
+            # FIXME: make this an option in the metadata?
+            if newdir == os.path.basename(redirect_location):
+                break
             if not newdir:
                 break
 
@@ -200,6 +205,7 @@ def _get_files_from_subdir_http(url, limit):
             location = posixjoin(location, newdir)
         else:
             break
+
     return (location, files)
 
 
