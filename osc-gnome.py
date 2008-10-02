@@ -902,7 +902,7 @@ def _gnome_unreserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_setup_internal(self, project, package, apiurl, username, ignore_reserved = False, no_reserve = False):
+def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
         reserved_by = self._gnome_web.is_package_reserved(package)
@@ -995,8 +995,8 @@ def _gnome_setup_internal(self, project, package, apiurl, username, ignore_reser
 #######################################################################
 
 
-def _gnome_setup(self, project, package, apiurl, username, ignore_reserved = False, no_reserve = False):
-    if not self._gnome_setup_internal(project, package, apiurl, username, ignore_reserved, no_reserve):
+def _gnome_setup(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+    if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
 
@@ -1512,7 +1512,7 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, project, package, apiurl, username, email, ignore_reserved = False, no_reserve = False):
+def _gnome_update(self, apiurl, username, email, project, package, ignore_reserved = False, no_reserve = False):
     try:
         (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(package)
     except self.OscGnomeWebError, e:
@@ -1532,7 +1532,7 @@ def _gnome_update(self, project, package, apiurl, username, email, ignore_reserv
         print 'Package %s is already up-to-date.' % package
         return
 
-    if not self._gnome_setup_internal(project, package, apiurl, username, ignore_reserved, no_reserve):
+    if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
 
     package_dir = package
@@ -1679,7 +1679,7 @@ def _gnome_update(self, project, package, apiurl, username, email, ignore_reserv
 #######################################################################
 
 
-def _gnome_forward(self, project, apiurl, request_id):
+def _gnome_forward(self, apiurl, project, request_id):
     request = get_submit_request(conf.config['apiurl'], request_id)
 
     if request.dst_project != project:
@@ -1927,12 +1927,12 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(project, package, conf.config['apiurl'], conf.config['user'], ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(conf.config['apiurl'], conf.config['user'], project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(project, package, conf.config['apiurl'], conf.config['user'], email, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(conf.config['apiurl'], conf.config['user'], email, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(project, conf.config['apiurl'], request_id)
+        self._gnome_forward(conf.config['apiurl'], project, request_id)
