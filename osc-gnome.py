@@ -1676,6 +1676,45 @@ def _gnome_update(self, project, package, apiurl, username, email, ignore_reserv
     # automatically start a build?
 
 
+#######################################################################
+
+
+def _gnome_forward(self, project, apiurl, request_id):
+    request = get_submit_request(conf.config['apiurl'], request_id)
+
+    if request.dst_project != project:
+        print >>sys.stderr, 'Submission request %d is for %s and not %s.' % (request_id, request.dst_project, project)
+        return
+
+    if request.state.name != 'new':
+        print >>sys.stderr, 'Submission request %d is not new.' % request_id
+        return
+
+    try:
+        devel_project = show_develproject(apiurl, 'openSUSE:Factory', request.dst_package)
+    except urllib2.HTTPError:
+#FIXME
+        return
+
+    if devel_project != project:
+#FIXME
+        return
+
+    result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to openSUSE:Factory')
+    root = ET.fromstring(result)
+    if not 'code' in root.keys() or root.get('code') != 'ok':
+        print >>sys.stderr, 'Cannot accept submission request %d: %s' % (request_id, result)
+        return
+
+    # TODO: cancel old requests from project to oS:F
+    # TODO: create_submit_request
+
+    print 'Submission request %d has been forwarded to openSUSE:Factory.' % request_id
+
+
+#######################################################################
+
+
 # TODO
 # Add a commit method.
 # This will make some additional checks:
@@ -1787,7 +1826,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     "todo" (or "t") will list the packages that need some action.
 
-    "todoadmin" (or "ta") will list the packages from GNOME:Factory that need
+    "todoadmin" (or "ta") will list the packages from the project that need
     to be submitted to openSUSE:Factory.
 
     "listreserved" (or "lr") will list the reserved packages.
@@ -1807,6 +1846,9 @@ def do_gnome(self, subcmd, opts, *args):
     branch, checking out, download of the latest upstream tarball, .spec
     edition, etc.). The package will be checked out in the current directory.
 
+    "forward" (or "f") will forward a submission request to the project to
+    openSUSE:Factory. This includes the step of accepting the request first.
+
     Usage:
         osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
         osc gnome todoadmin [--exclude-submitted|--xs] [--project=PROJECT]
@@ -1818,6 +1860,8 @@ def do_gnome(self, subcmd, opts, *args):
 
         osc gnome setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
         osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
+
+        osc gnome forward [--project=PROJECT] ID
     ${cmd_option_list}
     """
 
@@ -1826,7 +1870,7 @@ def do_gnome(self, subcmd, opts, *args):
     #self.gref = self.gtime.time()
     #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
 
-    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up']
+    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -1836,7 +1880,7 @@ def do_gnome(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up']:
+    elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up', 'forward', 'f']:
         min_args, max_args = 1, 1
     elif cmd in ['reserve', 'r', 'unreserve', 'u']:
         min_args = 1
@@ -1888,3 +1932,7 @@ def do_gnome(self, subcmd, opts, *args):
     elif cmd in ['update', 'up']:
         package = args[1]
         self._gnome_update(project, package, conf.config['apiurl'], conf.config['user'], email, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+
+    elif cmd in ['forward', 'f']:
+        request_id = args[1]
+        self._gnome_forward(project, conf.config['apiurl'], request_id)
