@@ -7,3 +7,4 @@
 + Finish osc gnome forward.
 + Support a list of projects instead of just --project or gnome_project.
   This would be useful for people working on more than one project.
++ Output an error if the project passed with --project does not exist.
