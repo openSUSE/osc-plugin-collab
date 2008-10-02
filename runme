@@ -1,4 +1,5 @@
 #!/bin/sh
+# vim: set ts=4 sw=4 et:
 
 #
 # Copyright (c) 2008, Novell, Inc.
@@ -74,17 +75,29 @@ done
 # stable checkout.
 CACHE_CO=`$basedir/obs-checkout --get-stable-directory`
 DEST_CO=`$basedir/obs-checkout --get-new-directory`
-$basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of GNOME:Factory --project openSUSE:Factory
-if test $? -ne 0; then
-	echo "Error while checking out openSUSE:Factory"
-	exit 1
-fi
-$basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --warn-if-not-unexpanded-link --project GNOME:Factory
-if test $? -ne 0; then
-	echo "Error while checking out GNOME:Factory"
-	exit 1
-fi
-echo "Development project" > $DEST_CO/GNOME:Factory/.is-devel-project
+
+checkout_project () {
+    PROJECT=$1
+    if test "x$1" = "x"; then
+        return
+    fi
+
+    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of $PROJECT --project openSUSE:Factory
+    if test $? -ne 0; then
+        echo "Error while checking out openSUSE:Factory"
+        exit 1
+    fi
+    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --warn-if-not-unexpanded-link --project $PROJECT
+    if test $? -ne 0; then
+        echo "Error while checking out $PROJECT"
+        exit 1
+    fi
+    echo "Development project" > $DEST_CO/$PROJECT/.is-devel-project
+}
+
+checkout_project GNOME:Factory
+checkout_project X11:Compiz
+
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
