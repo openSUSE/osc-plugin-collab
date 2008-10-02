@@ -5,3 +5,5 @@
 + Prefill the .changes with "Updated translations"?
 + Have a "commit, wait for build success on OBS, submit to G:F" command
 + Finish osc gnome forward.
++ Support a list of projects instead of just --project or gnome_project.
+  This would be useful for people working on more than one project.

@@ -77,11 +77,11 @@ class OscGnomeWeb:
             return (None, None, None)
 
 
-    def get_packages_versions(self):
+    def get_packages_versions(self, project):
         packages_versions = []
 
         try:
-            fd = self.Cache.get_url_fd_with_cache(self._csv_url, 'db-obs-csv', 10)
+            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._csv_url, project), 'db-obs-csv-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of packages: %s' % e.msg)
 
@@ -99,9 +99,9 @@ class OscGnomeWeb:
         return packages_versions
 
 
-    def get_packages_with_delta(self):
+    def get_packages_with_delta(self, project):
         try:
-            fd = self.Cache.get_url_fd_with_cache(self._admin_url, 'db-obs-admin', 10)
+            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._admin_url, project), 'db-obs-admin-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with a delta: %s' % e.msg)
 
@@ -111,11 +111,11 @@ class OscGnomeWeb:
         return [ line[:-1] for line in lines ]
 
 
-    def get_packages_with_error(self):
+    def get_packages_with_error(self, project):
         errors = []
 
         try:
-            fd = self.Cache.get_url_fd_with_cache(self._error_url, 'db-obs-error', 10)
+            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._error_url, project), 'db-obs-error-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with an error: %s' % e.msg)
 
@@ -133,9 +133,9 @@ class OscGnomeWeb:
         return errors
 
 
-    def get_versions(self, package):
+    def get_versions(self, project, package):
         try:
-            fd = urllib2.urlopen("%s&package=%s" % (self._csv_url, package))
+            fd = urllib2.urlopen("%s&project=%s&package=%s" % (self._csv_url, project, package))
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
 
@@ -151,9 +151,9 @@ class OscGnomeWeb:
         return (oF_version, devel_version, upstream_version)
 
 
-    def get_upstream_url(self, package):
+    def get_upstream_url(self, project, package):
         try:
-            fd = urllib2.urlopen('%s?package=%s' % (self._upstream_url, package))
+            fd = urllib2.urlopen('%s?project=%s&package=%s' % (self._upstream_url, project, package))
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get upstream URL of package %s: %s' % (package, e.msg))
 
@@ -588,7 +588,7 @@ def _gnome_table_print_header(self, template, title):
 def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
-        packages_versions = self._gnome_web.get_packages_versions()
+        packages_versions = self._gnome_web.get_packages_versions(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -675,7 +675,7 @@ def _gnome_get_packages_with_bad_meta(self, project):
 
     # get the list of packages that are actually in G:F
     try:
-        packages_versions = self._gnome_web.get_packages_versions()
+        packages_versions = self._gnome_web.get_packages_versions(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
@@ -685,6 +685,9 @@ def _gnome_get_packages_with_bad_meta(self, project):
     for (package, oF_version, devel_version, upstream_version) in packages_versions:
         if package in should_devel_packages:
             should_devel_packages.remove(package)
+        if not devel_dict.has_key(package):
+            # FIXME: maybe this should be an error?
+            continue
         devel_project = devel_dict[package]
         if devel_project != project:
             bad_devel_packages.append((package, devel_project))
@@ -738,8 +741,8 @@ def _gnome_todoadmin(self, project, exclude_submitted):
 
     # get packages with a delta
     try:
-        packages_with_delta = self._gnome_web.get_packages_with_delta()
-        packages_with_errors = self._gnome_web.get_packages_with_error()
+        packages_with_delta = self._gnome_web.get_packages_with_delta(project)
+        packages_with_errors = self._gnome_web.get_packages_with_error(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1514,7 +1517,7 @@ def _gnome_quilt_package(self, package, spec_file):
 
 def _gnome_update(self, apiurl, username, email, project, package, ignore_reserved = False, no_reserve = False):
     try:
-        (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(package)
+        (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1570,7 +1573,7 @@ def _gnome_update(self, apiurl, username, email, project, package, ignore_reserv
     # download the upstream tarball
     # fatal if fails
     try:
-        upstream_url = self._gnome_web.get_upstream_url(package)
+        upstream_url = self._gnome_web.get_upstream_url(project, package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1891,9 +1894,6 @@ def do_gnome(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
-    self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
-    self.GnomeCache.init(self.OscGnomeImport.m_import)
-
     if opts.project:
         project = opts.project
     elif conf.config.has_key('gnome_project'):
@@ -1902,6 +1902,9 @@ def do_gnome(self, subcmd, opts, *args):
         project = 'GNOME:Factory'
 
     email = self._gnome_ensure_email()
+
+    self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
+    self.GnomeCache.init(self.OscGnomeImport.m_import)
 
     # Do the command
     if cmd in ['todo', 't']:
