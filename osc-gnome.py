@@ -1232,10 +1232,12 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     new_dir = os.path.join(tmpdir, 'new')
     _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
     _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
-    old.close()
-    old = None
-    new.close()
-    new = None
+    if old:
+        old.close()
+        old = None
+    if new:
+        new.close()
+        new = None
 
     # find toplevel NEWS & ChangeLog in the new tarball
     if not os.path.exists(new_dir):
