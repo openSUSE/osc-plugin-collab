@@ -456,7 +456,7 @@ simple-ccsm:
 
 chmlib:
 desktop-data-openSUSE:
-exiv2
+exiv2:
 libspectre:
 raptor:
 rasqal:
