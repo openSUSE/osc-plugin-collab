@@ -343,9 +343,7 @@ def _get_version_from_files(modulename, location, files, limit):
     # the list is not in the right order, because of the way we build the list
     indexes.reverse()
 
-    latest = []
-    for index in indexes:
-        latest.append(tarballs[index])
+    latest = [tarballs[index] for index in indexes]
 
     tarballs = None
     if not tarballs:
