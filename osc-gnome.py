@@ -384,10 +384,10 @@ class GnomeCache:
 
         # download the data
         try:
-            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'openSUSE:Factory\'')])
+            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
             fin = http_GET(url)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
+            print >>sys.stderr, 'Cannot get metadata of packages in %s: %s' % (project, e.msg)
             return None
 
         fout = open(cache, 'w')
@@ -403,6 +403,52 @@ class GnomeCache:
                 fout.close()
                 os.unlink(cache)
                 print >>sys.stderr, 'Error while downloading metadata: %s' % e.msg
+                return None
+
+        fin.close()
+        fout.close()
+
+        return cache
+
+
+    @classmethod
+    def get_obs_build_results(cls, apiurl, project):
+        filename = 'build-results-' + project
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        # Only download if it's more than 2-hours old
+        if not cls._need_update(filename, 3600 * 2):
+            return cache
+
+        urllib = cls._import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get build results of packages in %s: incomplete python installation.' % project
+            return None
+
+        # no cache available
+        cls._print_message()
+
+        # download the data
+        try:
+            url = makeurl(apiurl, ['build', project, '_result'])
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get build results of packages in  %s: %s' % (project, e.msg)
+            return None
+
+        fout = open(cache, 'w')
+
+        while True:
+            try:
+                bytes = fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                fout.write(bytes)
+            except urllib2.HTTPError, e:
+                fin.close()
+                fout.close()
+                os.unlink(cache)
+                print >>sys.stderr, 'Error while downloading build results: %s' % e.msg
                 return None
 
         fin.close()
