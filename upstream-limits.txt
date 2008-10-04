@@ -17,6 +17,9 @@ aqbanking:max|3
 gwenhywfar:max|3
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
+# 3.9 is unstable
+libgda:max|3.9
+libgnomedb:max|3.9
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable
