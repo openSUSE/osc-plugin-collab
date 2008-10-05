@@ -2026,3 +2026,6 @@ def do_gnome(self, subcmd, opts, *args):
     elif cmd in ['forward', 'f']:
         request_id = args[1]
         self._gnome_forward(apiurl, project, request_id)
+
+    else:
+        raise RuntimeError('Unknown command: %s' % cmd)
