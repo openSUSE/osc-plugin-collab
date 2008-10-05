@@ -665,7 +665,7 @@ def _gnome_table_print_header(self, template, title):
 #######################################################################
 
 
-def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
+def _gnome_todo(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
         packages_versions = self._gnome_web.get_packages_versions(project)
@@ -680,7 +680,7 @@ def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], project)
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project)
 
     lines = []
 
@@ -722,8 +722,8 @@ def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
-def _gnome_get_packages_with_bad_meta(self, project):
-    metafile = self.GnomeCache.get_obs_meta(conf.config['apiurl'], 'openSUSE:Factory')
+def _gnome_get_packages_with_bad_meta(self, apiurl, project):
+    metafile = self.GnomeCache.get_obs_meta(apiurl, 'openSUSE:Factory')
     if not metafile:
         return (None, None)
 
@@ -794,7 +794,7 @@ def _gnome_min_package(self, *args):
     return min_package
 
 
-def _gnome_todoadmin(self, project, exclude_submitted):
+def _gnome_todoadmin(self, apiurl, project, exclude_submitted):
     def _insert_delta_package(lines, delta_package, submitted_packages):
         if self._gnome_is_submitted(delta_package, submitted_packages):
             if exclude_submitted:
@@ -829,8 +829,8 @@ def _gnome_todoadmin(self, project, exclude_submitted):
         return
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory')
-    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(project)
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
     delta_index = 0
@@ -1766,7 +1766,7 @@ def _gnome_update(self, apiurl, username, email, project, package, ignore_reserv
 
 
 def _gnome_forward(self, apiurl, project, request_id):
-    request = get_submit_request(conf.config['apiurl'], request_id)
+    request = get_submit_request(apiurl, request_id)
 
     if request.dst_project != project:
         print >>sys.stderr, 'Submission request %d is for %s and not %s.' % (request_id, request.dst_project, project)
@@ -1991,10 +1991,10 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(project, opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(conf.config['apiurl'], project, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(project, opts.exclude_submitted)
+        self._gnome_todoadmin(conf.config['apiurl'], project, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
