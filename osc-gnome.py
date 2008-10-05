@@ -1971,6 +1971,8 @@ def do_gnome(self, subcmd, opts, *args):
     elif cmd in ['reserve', 'r', 'unreserve', 'u']:
         min_args = 1
         max_args = sys.maxint
+    else:
+        raise RuntimeError('Unknown command: %s' % cmd)
 
     if len(args) - 1 < min_args:
         raise oscerr.WrongArgs('Too few arguments.')
