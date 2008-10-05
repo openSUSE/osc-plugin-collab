@@ -1984,6 +1984,8 @@ def do_gnome(self, subcmd, opts, *args):
     else:
         project = 'GNOME:Factory'
 
+    apiurl = conf.config['apiurl']
+    user = conf.config['user']
     email = self._gnome_ensure_email()
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
@@ -1991,10 +1993,10 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(conf.config['apiurl'], project, opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(apiurl, project, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(conf.config['apiurl'], project, opts.exclude_submitted)
+        self._gnome_todoadmin(apiurl, project, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
@@ -2005,20 +2007,20 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['reserve', 'r']:
         packages = args[1:]
-        self._gnome_reserve(packages, conf.config['user'])
+        self._gnome_reserve(packages, user)
 
     elif cmd in ['unreserve', 'u']:
         packages = args[1:]
-        self._gnome_unreserve(packages, conf.config['user'])
+        self._gnome_unreserve(packages, user)
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(conf.config['apiurl'], conf.config['user'], project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(apiurl, user, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(conf.config['apiurl'], conf.config['user'], email, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(apiurl, user, email, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(conf.config['apiurl'], project, request_id)
+        self._gnome_forward(apiurl, project, request_id)
