@@ -736,6 +736,10 @@ class SrcPackage(Base):
 
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
+        if not os.path.exists(filename):
+            # FIXME: print warning?
+            return
+
         spec = open(filename)
 
         current_package = None

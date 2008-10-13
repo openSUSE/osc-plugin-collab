@@ -158,6 +158,8 @@ class ObsCheckout:
             core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e.msg)
+        except urllib2.URLError, e:
+            print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e)
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None):
@@ -183,6 +185,12 @@ class ObsCheckout:
                     print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, e.msg)
                 else:
                     print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e.msg)
+            return None
+        except urllib2.URLError, e:
+            if revision:
+                print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, e)
+            else:
+                print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e)
             return None
 
         f = open(filename, 'w')
@@ -269,6 +277,9 @@ class ObsCheckout:
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, e.msg)
             return
+        except urllib2.URLError, e:
+            print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, e)
+            return
 
         self._checkout_packages_from_project(project, packages)
 
@@ -278,6 +289,9 @@ class ObsCheckout:
             packages = core.meta_get_packagelist(conf.config['apiurl'], project)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
+            return
+        except urllib2.URLError, e:
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, e)
             return
 
         self._checkout_packages_from_project(project, packages)
