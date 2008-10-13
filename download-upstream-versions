@@ -45,7 +45,7 @@ import socket
 import sys
 import time
 
-from ftplib import FTP
+import ftplib
 import optparse
 from posixpath import join as posixjoin # Handy for URLs
 import re
@@ -157,7 +157,7 @@ def _get_files_from_http(url):
 def _get_files_from_ftp(url):
     parsed_url = urlparse.urlparse(url)
 
-    ftp = FTP(parsed_url.hostname)
+    ftp = ftplib.FTP(parsed_url.hostname)
     ftp.login(parsed_url.username or 'anonymous', parsed_url.password or '')
     ftp.cwd(parsed_url.path)
     files = ftp.nlst()
@@ -784,6 +784,8 @@ def main(args):
                 print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
             except urllib2.HTTPError, e:
                 print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
+            except ftplib.all_errors, e:
+                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
             except UpstreamDownloadError, e:
                 print >>sys.stderr, 'No matching tarball found for %s: %s' % (modulename, e.msg)
 
