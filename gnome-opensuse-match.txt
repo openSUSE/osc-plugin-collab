@@ -111,8 +111,7 @@ nautilus:
 nautilus-cd-burner:
 orca:
 pygtksourceview:python-gtksourceview
-# No package in openSUSE
-#seahorse-plugins:
+seahorse-plugins:
 seahorse:
 sound-juicer:
 swfdec-gnome:
@@ -292,6 +291,7 @@ avahi:
 avahi:avahi-glib2
 avahi:avahi-mono
 avahi:avahi-qt4
+babl:
 bakefile:
 bluez-gnome:
 bombermaze:
@@ -317,6 +317,7 @@ galago-sharp:
 gbrainy:
 gdata.py:python-gdata
 gdesklets:gDesklets
+gegl:
 ggz-client-libs:
 gimp:
 gimp-help:
