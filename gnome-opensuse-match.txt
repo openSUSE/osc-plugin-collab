@@ -337,7 +337,6 @@ gstreamer:gstreamer-0_10-doc
 gst-plugins-bad:gstreamer-0_10-plugins-bad
 gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
-gst-pulse:gstreamer-0_10-pulse
 gst-python:python-gstreamer-0_10
 gsynaptics:
 gtk-vnc:
@@ -432,6 +431,7 @@ yast2-control-center-gnome:
 ## Packages that we removed
 # banshee-1:banshee
 # fast-user-switch-applet:
+# gst-pulse:gstreamer-0_10-pulse
 # libssui:
 
 

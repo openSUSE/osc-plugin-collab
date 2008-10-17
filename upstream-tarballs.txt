@@ -124,7 +124,6 @@ gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
 gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
-gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
@@ -214,6 +213,8 @@ xchat:subdirhttpls:http://www.xchat.org/files/source/
 xchat-gnome:httpls:http://xchat-gnome.navi.cx/?page_id=15
 yast2-control-center-gnome:upstream:
 
+## Packages that we removed
+# gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz-fusion.org/
