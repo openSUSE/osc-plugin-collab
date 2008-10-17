@@ -366,7 +366,7 @@ def _get_version_from_files(modulename, location, files, limit):
         # full URI
         location = tarball
     else:
-        location = urlparse.urljoin(location, tarball)
+        location = urlparse.urljoin(location + '/', tarball)
 
     return (location, version)
 
