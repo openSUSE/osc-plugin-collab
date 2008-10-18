@@ -104,6 +104,9 @@ class OscGnomeWeb:
         self.Cache = cache
 
 
+    def _line_is_comment(self, line):
+        return line.strip() == '' or line[0] == '#'
+
     def _append_data_to_url(self, url, data):
         if url.find('?') != -1:
             return '%s&%s' % (url, data)
@@ -135,6 +138,8 @@ class OscGnomeWeb:
         fd.close()
 
         for line in lines:
+            if self._line_is_comment(line):
+                continue
             try:
                 (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
                 packages_versions.append((package, oF_version, devel_version, upstream_version))
@@ -157,7 +162,7 @@ class OscGnomeWeb:
         lines = fd.readlines()
         fd.close()
 
-        return [ line[:-1] for line in lines ]
+        return [ line.strip() for line in lines if not self._line_is_comment(line) ]
 
 
     def get_packages_with_error(self, project):
@@ -175,6 +180,8 @@ class OscGnomeWeb:
         fd.close()
 
         for line in lines:
+            if self._line_is_comment(line):
+                continue
             try:
                 (package, error, details) = line.split(';', 3)
                 errors.append((package, error, details))
@@ -197,6 +204,9 @@ class OscGnomeWeb:
         line = fd.readline()
         fd.close()
 
+        if self._line_is_comment(line):
+            return (None, None, None)
+
         try:
             (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
         except ValueError:
@@ -217,6 +227,9 @@ class OscGnomeWeb:
 
         line = fd.readline()
         fd.close()
+
+        if self._line_is_comment(line):
+            return None
 
         try:
             (package, upstream_version, upstream_url, empty) = line.split(';')
@@ -252,6 +265,8 @@ class OscGnomeWeb:
         else:
             del lines[0]
             for line in lines:
+                if self._line_is_comment(line):
+                    continue
                 (package, username, comment) = self._parse_reservation(line)
                 if package:
                     reserved_packages.append((package, username, comment))
@@ -749,7 +764,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted):
+        project_lines = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -960,7 +975,7 @@ def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todoadmin_internal(apiurl, project, exclude_submitted):
+        project_lines = self._gnome_todoadmin_internal(apiurl, project, exclude_submitted)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -2034,8 +2049,8 @@ def _gnome_ensure_email(self):
               dest='no_reserve',
               help='do not reserve the package')
 @cmdln.option('--project', metavar='PROJECT', action='append',
-              dest='projects', default=[]
-              help='project to work on (default: GNOME:Factory')
+              dest='projects', default=[],
+              help='project to work on (default: GNOME:Factory)')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
