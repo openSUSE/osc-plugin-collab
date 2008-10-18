@@ -701,7 +701,7 @@ def _gnome_table_print_header(self, template, title):
 #######################################################################
 
 
-def _gnome_todo(self, apiurl, project, exclude_reserved, exclude_submitted):
+def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
         packages_versions = self._gnome_web.get_packages_versions(project)
@@ -738,12 +738,31 @@ def _gnome_todo(self, apiurl, project, exclude_reserved, exclude_submitted):
                 upstream_version += ' (r)'
             lines.append((package, oF_version, devel_version, upstream_version))
 
+
+#######################################################################
+
+
+def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
+    lines = []
+
+    for project in projects:
+        project_lines = self._gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
+        lines.extend(project_lines)
+
     if len(lines) == 0:
         print 'Nothing to do.'
         return
 
+    # the first element in the tuples is the package name, so it will sort
+    # the lines the right way for what we want
+    lines.sort()
+
+    if len(projects) == 1:
+        project_header = projects[0]
+    else:
+        project_header = "Devel Project"
     # print headers
-    title = ('Package', 'openSUSE:Factory', project, 'Upstream')
+    title = ('Package', 'openSUSE:Factory', project_header, 'Upstream')
     (max_package, max_oF, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_package = min(max_package, 48)
@@ -2031,7 +2050,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(apiurl, project, opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(apiurl, [project], opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
         self._gnome_todoadmin(apiurl, project, opts.exclude_submitted)
