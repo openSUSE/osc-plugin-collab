@@ -1155,7 +1155,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_get_project_for_package(self, apiurl, projects, package):
+def _gnome_get_project_for_package(self, apiurl, projects, package, return_versions = False):
     # first check the database: this check should be faster than checking
     # via the build service
     for project in projects:
@@ -1163,9 +1163,14 @@ def _gnome_get_project_for_package(self, apiurl, projects, package):
             (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
             # if we get a result, then package exists in project
             if oF_version != None:
-                return project
+                if return_versions:
+                    return (project, oF_version, devel_version, upstream_version)
         except self.OscGnomeWebError, e:
             continue
+
+    # if we need versions, the build service can't help us, so we can fail now
+    if return_versions:
+        return None
 
     # no result via the database, so go directly to the build service
     for project in projects:
@@ -1183,10 +1188,13 @@ def _gnome_get_project_for_package(self, apiurl, projects, package):
 
 
 def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
-    project = self._gnome_get_project_for_package(apiurl, projects, package)
-    if project == None:
-        print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
-        return
+    if len(projects) == 1:
+        project = projects[0]
+    else:
+        project = self._gnome_get_project_for_package(apiurl, projects, package)
+        if project == None:
+            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+            return
 
     if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
@@ -1706,12 +1714,21 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, apiurl, username, email, project, package, ignore_reserved = False, no_reserve = False):
-    try:
-        (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return
+def _gnome_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False):
+    if len(projects) == 1:
+        project = projects[0]
+
+        try:
+            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            return
+    else:
+        (project, oF_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_versions = True)
+        if project == None:
+            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+            return
+
 
     # check that the project is up-to-date wrt openSUSE:Factory
     if self._gnome_compare_versions_a_gt_b(oF_version, devel_version):
@@ -2132,7 +2149,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(apiurl, user, email, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(apiurl, user, email, [project], package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
