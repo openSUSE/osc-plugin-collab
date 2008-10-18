@@ -1906,39 +1906,52 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
 
 
 def _gnome_forward(self, apiurl, projects, request_id):
-    request = get_submit_request(apiurl, request_id)
+    try:
+        int_request_id = int(request_id)
+    except ValueError:
+        print >>sys.stderr, '%s is not a valid submission request id.' % (request_id)
+        return
+
+    try:
+        request = get_submit_request(apiurl, request_id)
+    except urllib2.HTTPError:
+        print >>sys.stderr, 'Cannot get submission request %s: %s' % (request_id, e.msg)
 
     if request.dst_project not in projects:
         if len(projects) == 1:
-            print >>sys.stderr, 'Submission request %d is for %s and not %s. You can use --project to override your project settings.' % (request_id, request.dst_project, projects[0])
+            print >>sys.stderr, 'Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, request.dst_project, projects[0])
         else:
-            print >>sys.stderr, 'Submission request %d is for %s. You can use --project to override your project settings.' % (request_id, request.dst_project)
+            print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, request.dst_project)
         return
 
     if request.state.name != 'new':
-        print >>sys.stderr, 'Submission request %d is not new.' % request_id
+        print >>sys.stderr, 'Submission request %s is not new.' % request_id
         return
 
     try:
         devel_project = show_develproject(apiurl, 'openSUSE:Factory', request.dst_package)
     except urllib2.HTTPError:
-#FIXME
+        print >>sys.stderr, 'Cannot get development project for %s: %s' % (request_id, e.msg)
         return
 
     if devel_project != request.dst_project:
-#FIXME
+        print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (request.dst_package, request.dst_project, devel_project)
         return
 
     result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to openSUSE:Factory')
     root = ET.fromstring(result)
     if not 'code' in root.keys() or root.get('code') != 'ok':
-        print >>sys.stderr, 'Cannot accept submission request %d: %s' % (request_id, result)
+        print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
         return
 
     # TODO: cancel old requests from request.dst_project to oS:F
-    # TODO: create_submit_request
 
-    print 'Submission request %d has been forwarded to openSUSE:Factory.' % request_id
+    result = create_submit_request(apiurl, 
+                                   request.dst_project, request.dst_package,
+                                   'openSUSE:Factory', request.dst_package,
+                                   request.descr)
+
+    print 'Submission request %s has been forwarded to openSUSE:Factory (request id: %s).' % (request_id, result)
 
 
 #######################################################################

@@ -15,6 +15,6 @@
   when it's "building".
   If the user presses enter, print the last known status, with the last check
   time.
-+ Finish osc gnome forward.
++ 'osc gnome forward': cancel old requests (automatically? ask?)
 + Output an error if the project passed with --project does not exist.
 + Document --project.
