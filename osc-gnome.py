@@ -2033,7 +2033,8 @@ def _gnome_ensure_email(self):
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
-@cmdln.option('--project', metavar='PROJECT',
+@cmdln.option('--project', metavar='PROJECT', action='append',
+              dest='projects', default=[]
               help='project to work on (default: GNOME:Factory')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
@@ -2107,12 +2108,19 @@ def do_gnome(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
-    if opts.project:
-        project = opts.project
-    elif conf.config.has_key('gnome_project'):
-        project = conf.config['gnome_project']
+    if len(opts.projects) != 0:
+        projects = opts.projects
+    elif conf.config.has_key('gnome_projects'):
+        projects_line = conf.config['gnome_projects']
+        projects = projects_line.split(';')
+        # remove all empty projects
+        while True:
+            try:
+                projects.remove('')
+            except ValueError:
+                break
     else:
-        project = 'GNOME:Factory'
+        projects = ['GNOME:Factory']
 
     apiurl = conf.config['apiurl']
     user = conf.config['user']
@@ -2123,10 +2131,10 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(apiurl, [project], opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(apiurl, [project], opts.exclude_submitted)
+        self._gnome_todoadmin(apiurl, projects, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
@@ -2145,15 +2153,15 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(apiurl, user, [project], package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(apiurl, user, email, [project], package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(apiurl, [project], request_id)
+        self._gnome_forward(apiurl, projects, request_id)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
