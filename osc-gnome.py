@@ -749,7 +749,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
+        project_lines = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted):
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -960,7 +960,7 @@ def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
+        project_lines = self._gnome_todoadmin_internal(apiurl, project, exclude_submitted):
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -1155,7 +1155,39 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_setup(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+def _gnome_get_project_for_package(self, apiurl, projects, package):
+    # first check the database: this check should be faster than checking
+    # via the build service
+    for project in projects:
+        try:
+            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            # if we get a result, then package exists in project
+            if oF_version != None:
+                return project
+        except self.OscGnomeWebError, e:
+            continue
+
+    # no result via the database, so go directly to the build service
+    for project in projects:
+        try:
+            show_package_meta(apiurl, project, package)
+            # no exception means no 404, and therefore "okay"
+            return project
+        except urllib2.HTTPError, e:
+            continue
+
+    return None
+
+
+#######################################################################
+
+
+def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
+    project = self._gnome_get_project_for_package(apiurl, projects, package)
+    if project == None:
+        print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+        return
+
     if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
@@ -2096,7 +2128,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(apiurl, user, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(apiurl, user, [project], package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
