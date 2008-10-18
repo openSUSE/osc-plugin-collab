@@ -849,7 +849,7 @@ def _gnome_min_package(self, *args):
     return min_package
 
 
-def _gnome_todoadmin(self, apiurl, project, exclude_submitted):
+def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     def _insert_delta_package(lines, delta_package, submitted_packages):
         if self._gnome_is_submitted(delta_package, submitted_packages):
             if exclude_submitted:
@@ -946,9 +946,23 @@ def _gnome_todoadmin(self, apiurl, project, exclude_submitted):
             delta_index = delta_index + 1
 
 
+#######################################################################
+
+
+def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
+    lines = []
+
+    for project in projects:
+        project_lines = self._gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
+        lines.extend(project_lines)
+
     if len(lines) == 0:
         print 'Nothing to do.'
         return
+
+    # the first element in the tuples is the package name, so it will sort
+    # the lines the right way for what we want
+    lines.sort()
 
     # print headers
     title = ('Package', 'Details')
@@ -2053,7 +2067,7 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_todo(apiurl, [project], opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(apiurl, project, opts.exclude_submitted)
+        self._gnome_todoadmin(apiurl, [project], opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
