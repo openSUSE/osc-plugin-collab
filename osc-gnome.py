@@ -902,7 +902,8 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 
 
     # This is an ugly loop to merge all the lists we have to get an output
-    # in alphabetical order.
+    # in alphabetical order AND also to not have more than one error for
+    # one given package.
     while True:
         if delta_index < delta_max:
             delta_package = packages_with_delta[delta_index]
