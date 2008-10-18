@@ -1,9 +1,20 @@
 + Put server code in git.
 + Make the code work with all development repos, and not just GNOME:Factory.
 + Make 'osc gnome ta' tell you about packages with no upstream info?
++ Use get_obs_build_results for 'osc gnome ta'
 + Make --xs the default for 'osc gnome t/ta'
+  For ta: it makes sense if the submitted revision is the current revision
+  in G:F.
+  For t: maybe check the version in the home project?
 + Prefill the .changes with "Updated translations"?
 + Have a "commit, wait for build success on OBS, submit to G:F" command
+  'osc gnome buildsubmit'/'osc gnome bs'
+  With a --forward option that makes it possible to automatically forward
+  the submission to oS:F if the user has the permission to do so.
+  Check the build status every 2 minutes when it's "scheduled" and every minute
+  when it's "building".
+  If the user presses enter, print the last known status, with the last check
+  time.
 + Finish osc gnome forward.
 + Support a list of projects instead of just --project or gnome_project.
   This would be useful for people working on more than one project.
