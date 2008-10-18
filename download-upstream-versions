@@ -73,7 +73,7 @@ if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
 
 
 def _line_is_comment(line):
-    return line[0] == '#' or line.strip() == ''
+    return line.strip() == '' or line[0] == '#'
 
 
 #######################################################################
