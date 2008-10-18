@@ -707,7 +707,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
         packages_versions = self._gnome_web.get_packages_versions(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return []
 
     # get the list of reserved package
     try:
@@ -737,6 +737,9 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
                     continue
                 upstream_version += ' (r)'
             lines.append((package, oF_version, devel_version, upstream_version))
+
+
+    return lines
 
 
 #######################################################################
@@ -881,7 +884,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         packages_with_errors = self._gnome_web.get_packages_with_error(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return []
 
     # get the packages submitted
     submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
@@ -944,6 +947,9 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         elif package == delta_package:
             _insert_delta_package(lines, delta_package, submitted_packages)
             delta_index = delta_index + 1
+
+
+    return lines
 
 
 #######################################################################
