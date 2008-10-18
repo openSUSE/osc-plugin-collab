@@ -1841,11 +1841,14 @@ def _gnome_update(self, apiurl, username, email, project, package, ignore_reserv
 #######################################################################
 
 
-def _gnome_forward(self, apiurl, project, request_id):
+def _gnome_forward(self, apiurl, projects, request_id):
     request = get_submit_request(apiurl, request_id)
 
-    if request.dst_project != project:
-        print >>sys.stderr, 'Submission request %d is for %s and not %s.' % (request_id, request.dst_project, project)
+    if request.dst_project not in projects:
+        if len(projects) == 1:
+            print >>sys.stderr, 'Submission request %d is for %s and not %s. You can use --project to override your project settings.' % (request_id, request.dst_project, projects[0])
+        else:
+            print >>sys.stderr, 'Submission request %d is for %s. You can use --project to override your project settings.' % (request_id, request.dst_project)
         return
 
     if request.state.name != 'new':
@@ -1858,7 +1861,7 @@ def _gnome_forward(self, apiurl, project, request_id):
 #FIXME
         return
 
-    if devel_project != project:
+    if devel_project != request.dst_project:
 #FIXME
         return
 
@@ -1868,7 +1871,7 @@ def _gnome_forward(self, apiurl, project, request_id):
         print >>sys.stderr, 'Cannot accept submission request %d: %s' % (request_id, result)
         return
 
-    # TODO: cancel old requests from project to oS:F
+    # TODO: cancel old requests from request.dst_project to oS:F
     # TODO: create_submit_request
 
     print 'Submission request %d has been forwarded to openSUSE:Factory.' % request_id
@@ -2101,7 +2104,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(apiurl, project, request_id)
+        self._gnome_forward(apiurl, [project], request_id)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
