@@ -2075,8 +2075,17 @@ def _gnome_print_build_status(self, build_details, header, error_line):
     keys = build_details.keys()
     if keys and len(keys) > 0:
         keys.sort()
+
+        max_len = 0
         for key in keys:
-            print '  %s: %s' % (key, build_details[key])
+            if len(key) > max_len:
+                max_len = len(key)
+
+        # 4: because we also have a few other characters (see left variable)
+        format = '%-' + str(max_len + 4) + 's%s'
+        for key in keys:
+            left = '  %s: ' % key
+            print format % (left, build_details[key])
     else:
         print '  %s' % error_line
 
@@ -2121,6 +2130,10 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         arch = key
         value = results_per_arch[key]
 
+        # build is done, but not successful
+        if value not in ['succeeded', 'excluded']:
+            build_successful = False
+
         # build is happening or will happen soon
         if value in ['blocked', 'scheduled', 'building', 'dispatching', 'finished']:
             bs_not_ready = True
@@ -2133,10 +2146,6 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             # special case (see long comment in the caller of this function)
             if trigger_rebuild_for_disabled:
                 arch_need_rebuild = True
-
-        # build is done, but not successful
-        elif value not in ['succeeded', 'excluded']:
-            build_successful = False
 
         # build is done, but is it for the latest version?
         elif value in ['succeeded']:
