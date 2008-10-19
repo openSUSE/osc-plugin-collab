@@ -1,20 +1,29 @@
 + Put server code in git.
-+ Make the code work with all development repos, and not just GNOME:Factory.
-+ Make 'osc gnome ta' tell you about packages with no upstream info?
-+ Use get_obs_build_results for 'osc gnome ta'
 + Make --xs the default for 'osc gnome t/ta'
   For ta: it makes sense if the submitted revision is the current revision
   in G:F.
   For t: maybe check the version in the home project?
-+ Prefill the .changes with "Updated translations"?
-+ Have a "commit, wait for build success on OBS, submit to G:F" command
-  'osc gnome buildsubmit'/'osc gnome bs'
-  With a --forward option that makes it possible to automatically forward
-  the submission to oS:F if the user has the permission to do so.
-  Check the build status every 2 minutes when it's "scheduled" and every minute
-  when it's "building".
-  If the user presses enter, print the last known status, with the last check
-  time.
-+ 'osc gnome forward': cancel old requests (automatically? ask?)
-+ Output an error if the project passed with --project does not exist.
-+ Document --project.
++ add 'osc gnome validate/check': make sure that committing is fine
++ 'osc gnome update':
+  - prefill the .changes with "Updated translations"?
+    (Magnus has a patch)
+  - check integrity with md5sum/sha1sum
+  - clean the spec file (?):
+    . one BuildRequires/Requires per line and alphabetically sorted
+    . correctly order Name, License, Group, BuildRequires, etc.
++ 'osc gnome todoadmin':
+  - tell about packages with no upstream info
+  - use get_obs_build_results
++ 'osc gnome forward':
+  - cancel old requests (automatically? ask?)
++ 'osc gnome buildsubmit':
+  - add a --forward option that makes it possible to automatically forward
+    the submission to oS:F if the user has the permission to do so.
+    Use 'osc meta prj GNOME:Factory' to see how to check for permissions.
+  - automatically unreserve (if it was reserved), with a --no-unreserve option.
++ Kill usage of http_GET, http_PUT (?)
++ Add --no-cache option to force the plugin to not use caches.
++ Output an error if the project passed with --project does not exist (?)
++ Document:
+  - usage with --project, or multiple projects.
+  - 'osc gnome build', 'osc gnome buildsubmit'
