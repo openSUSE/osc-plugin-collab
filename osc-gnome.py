@@ -2215,58 +2215,60 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
     # It's important to start the loop by downloading results since we might
     # already have successful builds, and we don't want to wait to know that.
 
-    while True:
-        # get build status if we don't have a recent status
-        now = time.time()
-        if now - last_check >= 58:
-            # 58s since sleep() is not 100% precise and we don't want to miss
-            # one turn
-            last_check = now
+    try:
 
-            (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, print_status)
-            # make sure we start triggering rebuilds for 'disabled' now
-            trigger_rebuild_for_disabled = True
+        while True:
+            # get build status if we don't have a recent status
+            now = time.time()
+            if now - last_check >= 58:
+                # 58s since sleep() is not 100% precise and we don't want to miss
+                # one turn
+                last_check = now
 
-            # just stop if there are too many errors
-            if error_counter > max_errors:
-                print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, print_status)
+                # make sure we start triggering rebuilds for 'disabled' now
+                trigger_rebuild_for_disabled = True
+
+                # just stop if there are too many errors
+                if error_counter > max_errors:
+                    print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                    break
+
+            else:
+                # we didn't download the results, so we want to continue anyway
+                need_to_continue = True
+
+            if print_status:
+                header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
+                self._gnome_print_build_status(cached_results, header, 'no results returned by the build service')
+
+            if not need_to_continue:
                 break
 
-        else:
-            # we didn't download the results, so we want to continue anyway
-            need_to_continue = True
 
-        if print_status:
-            header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-            self._gnome_print_build_status(cached_results, header, 'no results returned by the build service')
+            # and now wait for input/timeout
+            print_status = False
 
-        if not need_to_continue:
-            break
+            # wait check_frequency seconds or for user input
+            now = time.time()
+            if now - last_check < check_frequency:
+                wait = check_frequency - (now - last_check)
+            else:
+                wait = check_frequency
 
-
-        # and now wait for input/timeout
-        print_status = False
-
-        # wait check_frequency seconds or for user input
-        now = time.time()
-        if now - last_check < check_frequency:
-            wait = check_frequency - (now - last_check)
-        else:
-            wait = check_frequency
-
-        try:
             res = select.select([sys.stdin], [], [], wait)
-        except KeyboardInterrupt:
-            print ''
-            print 'Interrupted: not waiting for the build to finish. Cleaning up...'
-            break
 
-        # we have user input
-        if len(res[0]) > 0:
-            print_status = True
-            # empty sys.stdin
-            sys.stdin.readline()
+            # we have user input
+            if len(res[0]) > 0:
+                print_status = True
+                # empty sys.stdin
+                sys.stdin.readline()
 
+
+    # we catch this exception here since we might need to revert some metadata
+    except KeyboardInterrupt:
+        print ''
+        print 'Interrupted: not waiting for the build to finish. Cleaning up...'
 
     return (build_successful, cached_results)
 
