@@ -43,7 +43,7 @@ fi
 
 mkdir -p $OBS_DISSECTOR_DIR
 
-cp --force gnome-opensuse-match.txt $OBS_DISSECTOR_DIR
+cp --force upstream-packages-match.txt $OBS_DISSECTOR_DIR
 cp --force upstream-limits.txt $OBS_DISSECTOR_DIR
 cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
 
@@ -63,9 +63,9 @@ cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
 # Check that we have everything in the match database.
 for i in `grep -v '^#' $OBS_DISSECTOR_DIR/versions | grep ':' | cut -d ':' -f 2`; do
     re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
-    grep -q -E "^(# ?)?$re_i:" $OBS_DISSECTOR_DIR/gnome-opensuse-match.txt
+    grep -q -E "^(# ?)?$re_i:" $OBS_DISSECTOR_DIR/upstream-packages-match.txt
     if test $? -ne 0; then
-        echo $i not in $OBS_DISSECTOR_DIR/gnome-opensuse-match.txt
+        echo $i not in $OBS_DISSECTOR_DIR/upstream-packages-match.txt
     fi
 done
 

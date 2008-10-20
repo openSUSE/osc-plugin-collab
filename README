@@ -28,10 +28,6 @@ feedparser.py:
     Universal feed parser: http://www.feedparser.org/
     Put here for convenience, so you don't have to install it.
 
-gnome-opensuse-match.txt:
-    Data file that matches upstream GNOME module names to openSUSE
-    source package names.
-
 obs-checkout:
     Check out packages from specified project.
     By default, it just uses $OBS_DISSECTOR_DIR/obs-co-stable as
@@ -57,6 +53,10 @@ runme:
 upstream-limits.txt:
     Information about limits for upstream versions. We might not want
     to look for unstable versions of a module, eg.
+
+upstream-packages-match.txt:
+    Data file that matches upstream GNOME module names to openSUSE
+    source package names.
 
 upstream-tarballs.txt:
     Information about where to find the latest upstream tarballs.

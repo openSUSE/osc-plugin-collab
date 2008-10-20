@@ -1952,12 +1952,20 @@ def _gnome_forward(self, apiurl, projects, request_id):
 
 
 def _gnome_osc_package_pending_commit(self, osc_package):
-    for filename in osc_package.todo:
-        status = self.status(filename)
+    # ideally, we could use osc_package.todo, but it's not set by default.
+    # So we just look at all files.
+    for filename in osc_package.filenamelist + osc_package.filenamelist_unvers:
+        status = osc_package.status(filename)
         if status in ['A', 'M', 'D']:
             return True
 
     return False
+
+
+def _gnome_osc_package_commit(self, osc_package, msg):
+    osc_package.commit(msg)
+    # See bug #436932: Package.commit() leads to outdated internal data.
+    osc_package.update_datastructs()
 
 
 #######################################################################
@@ -2069,28 +2077,38 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
     return (True, srcmd5, rev)
 
 
-def _gnome_print_build_status(self, build_details, header, error_line):
+def _gnome_print_build_status(self, repo, build_details, header, error_line, hint = False):
     print '%s:' % header
 
     keys = build_details.keys()
-    if keys and len(keys) > 0:
-        keys.sort()
-
-        max_len = 0
-        for key in keys:
-            if len(key) > max_len:
-                max_len = len(key)
-
-        # 4: because we also have a few other characters (see left variable)
-        format = '%-' + str(max_len + 4) + 's%s'
-        for key in keys:
-            left = '  %s: ' % key
-            print format % (left, build_details[key])
-    else:
+    if not keys or len(keys) == 0:
         print '  %s' % error_line
+        return
+
+    show_hint = False
+    keys.sort()
+
+    max_len = 0
+    for key in keys:
+        if len(key) > max_len:
+            max_len = len(key)
+
+    # 4: because we also have a few other characters (see left variable)
+    format = '%-' + str(max_len + 4) + 's%s'
+    for key in keys:
+        if build_details[key] in ['failed']:
+            show_hint = True
+
+        left = '  %s: ' % key
+        print format % (left, build_details[key])
+
+    if show_hint and hint:
+        for key in keys:
+            if build_details[key] == 'failed':
+                print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
-def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, verbose_error):
+def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, verbose_error):
     try:
         results = show_results_meta(apiurl, project, package=package)
         # reset the error counter
@@ -2123,6 +2141,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     # evaluate the status: do we need to give more time to the build service?
     # Was the build successful?
     bs_not_ready = False
+    do_not_wait_for_bs = False
     build_successful = True
 
     for key in results_per_arch.keys():
@@ -2138,13 +2157,22 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         if value in ['blocked', 'scheduled', 'building', 'dispatching', 'finished']:
             bs_not_ready = True
 
+        # build has failed for an architecture: no need to wait for other
+        # architectures to know that there's a problem
+        elif value in ['failed', 'expansion error', 'broken']:
+            # special case (see long comment in the caller of this function)
+            if not ignore_initial_errors:
+                do_not_wait_for_bs = True
+            else:
+                results_per_arch[key] = 'rebuild needed'
+
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
-        elif value in ['disabled']:
+        elif value in ['unknown', 'disabled']:
             bs_not_ready = True
 
             # special case (see long comment in the caller of this function)
-            if trigger_rebuild_for_disabled:
+            if not ignore_initial_trigger_rebuild:
                 arch_need_rebuild = True
 
         # build is done, but is it for the latest version?
@@ -2182,10 +2210,13 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
 
+    if do_not_wait_for_bs:
+        bs_not_ready = False
+
     return (bs_not_ready, build_successful, results_per_arch, error_counter)
 
 
-def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev):
+def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
@@ -2207,7 +2238,11 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
     # 'disabled' since the state might have changed very recently (if we
     # updated the metadata ourselves), and the build service might have
     # an old build that it can re-use instead of building again.
-    trigger_rebuild_for_disabled = False
+    ignore_initial_trigger_rebuild = True
+
+    # if we just committed a change, we want to ignore the first error to let
+    # the build service reevaluate the situation
+    ignore_initial_errors = recently_changed
 
     print "Waiting for the build to finish..."
     print "You can press enter to get the current status of the build."
@@ -2215,58 +2250,62 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
     # It's important to start the loop by downloading results since we might
     # already have successful builds, and we don't want to wait to know that.
 
-    while True:
-        # get build status if we don't have a recent status
-        now = time.time()
-        if now - last_check >= 58:
-            # 58s since sleep() is not 100% precise and we don't want to miss
-            # one turn
-            last_check = now
+    try:
 
-            (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, print_status)
-            # make sure we start triggering rebuilds for 'disabled' now
-            trigger_rebuild_for_disabled = True
+        while True:
+            # get build status if we don't have a recent status
+            now = time.time()
+            if now - last_check >= 58:
+                # 58s since sleep() is not 100% precise and we don't want to miss
+                # one turn
+                last_check = now
 
-            # just stop if there are too many errors
-            if error_counter > max_errors:
-                print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, print_status)
+                # make sure we start triggering rebuilds for 'disabled' now
+                ignore_initial_trigger_rebuild = False
+                # make sure we don't ignore errors anymore
+                ignore_initial_errors = False
+
+                # just stop if there are too many errors
+                if error_counter > max_errors:
+                    print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                    break
+
+            else:
+                # we didn't download the results, so we want to continue anyway
+                need_to_continue = True
+
+            if print_status:
+                header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
+                self._gnome_print_build_status(repo, cached_results, header, 'no results returned by the build service')
+
+            if not need_to_continue:
                 break
 
-        else:
-            # we didn't download the results, so we want to continue anyway
-            need_to_continue = True
 
-        if print_status:
-            header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-            self._gnome_print_build_status(cached_results, header, 'no results returned by the build service')
+            # and now wait for input/timeout
+            print_status = False
 
-        if not need_to_continue:
-            break
+            # wait check_frequency seconds or for user input
+            now = time.time()
+            if now - last_check < check_frequency:
+                wait = check_frequency - (now - last_check)
+            else:
+                wait = check_frequency
 
-
-        # and now wait for input/timeout
-        print_status = False
-
-        # wait check_frequency seconds or for user input
-        now = time.time()
-        if now - last_check < check_frequency:
-            wait = check_frequency - (now - last_check)
-        else:
-            wait = check_frequency
-
-        try:
             res = select.select([sys.stdin], [], [], wait)
-        except KeyboardInterrupt:
-            print ''
-            print 'Interrupted: not waiting for the build to finish. Cleaning up...'
-            break
 
-        # we have user input
-        if len(res[0]) > 0:
-            print_status = True
-            # empty sys.stdin
-            sys.stdin.readline()
+            # we have user input
+            if len(res[0]) > 0:
+                print_status = True
+                # empty sys.stdin
+                sys.stdin.readline()
 
+
+    # we catch this exception here since we might need to revert some metadata
+    except KeyboardInterrupt:
+        print ''
+        print 'Interrupted: not waiting for the build to finish. Cleaning up...'
 
     return (build_successful, cached_results)
 
@@ -2274,7 +2313,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 #######################################################################
 
 
-def _gnome_build_internal(self, apiurl, osc_package):
+def _gnome_build_internal(self, apiurl, osc_package, recently_changed):
     repo = 'openSUSE_Factory'
     archs = ['i586', 'x86_64']
 
@@ -2296,10 +2335,10 @@ def _gnome_build_internal(self, apiurl, osc_package):
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev)
+    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
 
     if not build_success:
-        self._gnome_print_build_status(build_details, 'Status', 'no status known: osc got interrupted?')
+        self._gnome_print_build_status(repo, build_details, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
@@ -2322,13 +2361,19 @@ def _gnome_build(self, apiurl, user, projects, msg):
     project = osc_package.prjname
     package = osc_package.name
 
+    committed = False
+
     # commit if there are local changes
     if self._gnome_osc_package_pending_commit(osc_package):
         if not msg:
             msg = edit_message()
-        osc_package.commit(msg)
+        self._gnome_osc_package_commit(osc_package, msg)
+        committed = True
 
-    self._gnome_build_internal(apiurl, osc_package)
+    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
+
+    if build_success:
+        print 'Package successfully built on the build service.'
 
 
 #######################################################################
@@ -2371,11 +2416,14 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
     if not msg:
         msg = edit_message()
 
+    committed = False
+
     # commit if there are local changes
     if self._gnome_osc_package_pending_commit(osc_package):
-        osc_package.commit(msg)
+        self._gnome_osc_package_commit(osc_package, msg)
+        committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package)
+    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
 
     # if build successful, submit
     if build_success:
