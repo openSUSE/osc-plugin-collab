@@ -2100,7 +2100,7 @@ def _gnome_print_build_status(self, repo, build_details, header, error_line, hin
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
-def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, verbose_error):
+def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, error_counter, verbose_error):
     try:
         results = show_results_meta(apiurl, project, package=package)
         # reset the error counter
@@ -2156,11 +2156,11 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
-        elif value in ['disabled']:
+        elif value in ['unknown', 'disabled']:
             bs_not_ready = True
 
             # special case (see long comment in the caller of this function)
-            if trigger_rebuild_for_disabled:
+            if ignore_initial_trigger_rebuild:
                 arch_need_rebuild = True
 
         # build is done, but is it for the latest version?
@@ -2226,7 +2226,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
     # 'disabled' since the state might have changed very recently (if we
     # updated the metadata ourselves), and the build service might have
     # an old build that it can re-use instead of building again.
-    trigger_rebuild_for_disabled = False
+    ignore_initial_trigger_rebuild = False
 
     print "Waiting for the build to finish..."
     print "You can press enter to get the current status of the build."
@@ -2244,9 +2244,9 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, print_status)
+                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, error_counter, print_status)
                 # make sure we start triggering rebuilds for 'disabled' now
-                trigger_rebuild_for_disabled = True
+                ignore_initial_trigger_rebuild = True
 
                 # just stop if there are too many errors
                 if error_counter > max_errors:
