@@ -2123,6 +2123,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     # evaluate the status: do we need to give more time to the build service?
     # Was the build successful?
     bs_not_ready = False
+    do_not_wait_for_bs = False
     build_successful = True
 
     for key in results_per_arch.keys():
@@ -2137,6 +2138,11 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         # build is happening or will happen soon
         if value in ['blocked', 'scheduled', 'building', 'dispatching', 'finished']:
             bs_not_ready = True
+
+        # build has failed for an architecture: no need to wait for other
+        # architectures to know that there's a problem
+        elif value in ['failed', 'expansion error', 'broken']:
+            do_not_wait_for_bs = True
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
@@ -2181,6 +2187,9 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                 if verbose_error:
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
+
+    if do_not_wait_for_bs:
+        bs_not_ready = False
 
     return (bs_not_ready, build_successful, results_per_arch, error_counter)
 
