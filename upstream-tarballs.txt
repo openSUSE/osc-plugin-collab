@@ -52,7 +52,7 @@
 #   + use this when the upstream tarballs are hosted on launchpad
 #   + the info field should be the project name on launchpad
 #
-# Note that you need to add a line in gnome-opensuse-match.txt for each
+# Note that you need to add a line in upstream-packages-match.txt for each
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
 # section or in the "Packages where we are upstream" section.
 

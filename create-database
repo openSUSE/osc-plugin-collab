@@ -63,7 +63,7 @@ else:
 # Use the obs-checkout script to populate such a directory.
 PACKAGE_LOOKUP_PATH = os.path.join(OBS_DISSECTOR_DIR, 'obs-co-stable')
 
-MODULE_SRCPACKAGE_MATCH_FILE = os.path.join(OBS_DISSECTOR_DIR, 'gnome-opensuse-match.txt')
+MODULE_SRCPACKAGE_MATCH_FILE = os.path.join(OBS_DISSECTOR_DIR, 'upstream-packages-match.txt')
 UPSTREAMVERSIONS_FILE = os.path.join(OBS_DISSECTOR_DIR, 'versions')
 
 # Files to just ignore in the file list of a package.
