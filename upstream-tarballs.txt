@@ -66,6 +66,7 @@ abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 # http://www.aquamaniac.de/sites/download/packages.php
 aqbanking:sf:115695|125492
 avahi:httpls:http://avahi.org/download/
+babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|85308
 banshee-1:httpls:http://download.banshee-project.org/banshee/
 beagle-index:upstream:
@@ -96,6 +97,7 @@ galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-s
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
+gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
@@ -122,7 +124,6 @@ gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
 gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
-gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
@@ -212,6 +213,8 @@ xchat:subdirhttpls:http://www.xchat.org/files/source/
 xchat-gnome:httpls:http://xchat-gnome.navi.cx/?page_id=15
 yast2-control-center-gnome:upstream:
 
+## Packages that we removed
+# gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz-fusion.org/

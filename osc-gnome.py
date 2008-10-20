@@ -1,3 +1,39 @@
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2008, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
 # This is a hack to have osc ignore the file we create in a package directory.
 exclude_stuff.append('osc-gnome.*')
 
@@ -68,6 +104,9 @@ class OscGnomeWeb:
         self.Cache = cache
 
 
+    def _line_is_comment(self, line):
+        return line.strip() == '' or line[0] == '#'
+
     def _append_data_to_url(self, url, data):
         if url.find('?') != -1:
             return '%s&%s' % (url, data)
@@ -99,6 +138,8 @@ class OscGnomeWeb:
         fd.close()
 
         for line in lines:
+            if self._line_is_comment(line):
+                continue
             try:
                 (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
                 packages_versions.append((package, oF_version, devel_version, upstream_version))
@@ -121,7 +162,7 @@ class OscGnomeWeb:
         lines = fd.readlines()
         fd.close()
 
-        return [ line[:-1] for line in lines ]
+        return [ line.strip() for line in lines if not self._line_is_comment(line) ]
 
 
     def get_packages_with_error(self, project):
@@ -139,6 +180,8 @@ class OscGnomeWeb:
         fd.close()
 
         for line in lines:
+            if self._line_is_comment(line):
+                continue
             try:
                 (package, error, details) = line.split(';', 3)
                 errors.append((package, error, details))
@@ -161,6 +204,9 @@ class OscGnomeWeb:
         line = fd.readline()
         fd.close()
 
+        if self._line_is_comment(line):
+            return (None, None, None)
+
         try:
             (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
         except ValueError:
@@ -181,6 +227,9 @@ class OscGnomeWeb:
 
         line = fd.readline()
         fd.close()
+
+        if self._line_is_comment(line):
+            return None
 
         try:
             (package, upstream_version, upstream_url, empty) = line.split(';')
@@ -216,6 +265,8 @@ class OscGnomeWeb:
         else:
             del lines[0]
             for line in lines:
+                if self._line_is_comment(line):
+                    continue
                 (package, username, comment) = self._parse_reservation(line)
                 if package:
                     reserved_packages.append((package, username, comment))
@@ -294,7 +345,6 @@ class OscGnomeWeb:
 #######################################################################
 
 
-# TODO add --no-cache
 class GnomeCache:
 
     _cache_dir = None
@@ -665,13 +715,13 @@ def _gnome_table_print_header(self, template, title):
 #######################################################################
 
 
-def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
+def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
         packages_versions = self._gnome_web.get_packages_versions(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return []
 
     # get the list of reserved package
     try:
@@ -680,7 +730,7 @@ def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], project)
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project)
 
     lines = []
 
@@ -702,12 +752,34 @@ def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
                 upstream_version += ' (r)'
             lines.append((package, oF_version, devel_version, upstream_version))
 
+
+    return lines
+
+
+#######################################################################
+
+
+def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
+    lines = []
+
+    for project in projects:
+        project_lines = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
+        lines.extend(project_lines)
+
     if len(lines) == 0:
         print 'Nothing to do.'
         return
 
+    # the first element in the tuples is the package name, so it will sort
+    # the lines the right way for what we want
+    lines.sort()
+
+    if len(projects) == 1:
+        project_header = projects[0]
+    else:
+        project_header = "Devel Project"
     # print headers
-    title = ('Package', 'openSUSE:Factory', project, 'Upstream')
+    title = ('Package', 'openSUSE:Factory', project_header, 'Upstream')
     (max_package, max_oF, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_package = min(max_package, 48)
@@ -722,8 +794,8 @@ def _gnome_todo(self, project, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
-def _gnome_get_packages_with_bad_meta(self, project):
-    metafile = self.GnomeCache.get_obs_meta(conf.config['apiurl'], 'openSUSE:Factory')
+def _gnome_get_packages_with_bad_meta(self, apiurl, project):
+    metafile = self.GnomeCache.get_obs_meta(apiurl, 'openSUSE:Factory')
     if not metafile:
         return (None, None)
 
@@ -794,7 +866,7 @@ def _gnome_min_package(self, *args):
     return min_package
 
 
-def _gnome_todoadmin(self, project, exclude_submitted):
+def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     def _insert_delta_package(lines, delta_package, submitted_packages):
         if self._gnome_is_submitted(delta_package, submitted_packages):
             if exclude_submitted:
@@ -826,11 +898,11 @@ def _gnome_todoadmin(self, project, exclude_submitted):
         packages_with_errors = self._gnome_web.get_packages_with_error(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return
+        return []
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(conf.config['apiurl'], 'openSUSE:Factory')
-    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(project)
+    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
     delta_index = 0
@@ -844,7 +916,8 @@ def _gnome_todoadmin(self, project, exclude_submitted):
 
 
     # This is an ugly loop to merge all the lists we have to get an output
-    # in alphabetical order.
+    # in alphabetical order AND also to not have more than one error for
+    # one given package.
     while True:
         if delta_index < delta_max:
             delta_package = packages_with_delta[delta_index]
@@ -891,9 +964,26 @@ def _gnome_todoadmin(self, project, exclude_submitted):
             delta_index = delta_index + 1
 
 
+    return lines
+
+
+#######################################################################
+
+
+def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
+    lines = []
+
+    for project in projects:
+        project_lines = self._gnome_todoadmin_internal(apiurl, project, exclude_submitted)
+        lines.extend(project_lines)
+
     if len(lines) == 0:
         print 'Nothing to do.'
         return
+
+    # the first element in the tuples is the package name, so it will sort
+    # the lines the right way for what we want
+    lines.sort()
 
     # print headers
     title = ('Package', 'Details')
@@ -1079,7 +1169,47 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_setup(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+def _gnome_get_project_for_package(self, apiurl, projects, package, return_versions = False):
+    # first check the database: this check should be faster than checking
+    # via the build service
+    for project in projects:
+        try:
+            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            # if we get a result, then package exists in project
+            if oF_version != None:
+                if return_versions:
+                    return (project, oF_version, devel_version, upstream_version)
+        except self.OscGnomeWebError, e:
+            continue
+
+    # if we need versions, the build service can't help us, so we can fail now
+    if return_versions:
+        return None
+
+    # no result via the database, so go directly to the build service
+    for project in projects:
+        try:
+            show_package_meta(apiurl, project, package)
+            # no exception means no 404, and therefore "okay"
+            return project
+        except urllib2.HTTPError, e:
+            continue
+
+    return None
+
+
+#######################################################################
+
+
+def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
+    if len(projects) == 1:
+        project = projects[0]
+    else:
+        project = self._gnome_get_project_for_package(apiurl, projects, package)
+        if project == None:
+            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+            return
+
     if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
@@ -1381,11 +1511,6 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
-# TODO:
-# Fixup the BuildRequires line (One requires per line, and sort them
-# alphabetically)
-# Also put Name/License/Group/BuildRequires/etc. in the right order
-# Actually, create a class that fixes a spec file
 def _gnome_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
@@ -1598,12 +1723,21 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, apiurl, username, email, project, package, ignore_reserved = False, no_reserve = False):
-    try:
-        (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return
+def _gnome_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False):
+    if len(projects) == 1:
+        project = projects[0]
+
+        try:
+            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+            return
+    else:
+        (project, oF_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_versions = True)
+        if project == None:
+            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+            return
+
 
     # check that the project is up-to-date wrt openSUSE:Factory
     if self._gnome_compare_versions_a_gt_b(oF_version, devel_version):
@@ -1756,46 +1890,503 @@ def _gnome_update(self, apiurl, username, email, project, package, ignore_reserv
 
 
     print 'Package %s has been prepared for the update.' % package
+    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc gnome build\' to start a build on the build service.' % os.path.basename(changes_file)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
-    # automatically start a build?
 
 
 #######################################################################
 
 
-def _gnome_forward(self, apiurl, project, request_id):
-    request = get_submit_request(conf.config['apiurl'], request_id)
+def _gnome_forward(self, apiurl, projects, request_id):
+    try:
+        int_request_id = int(request_id)
+    except ValueError:
+        print >>sys.stderr, '%s is not a valid submission request id.' % (request_id)
+        return
 
-    if request.dst_project != project:
-        print >>sys.stderr, 'Submission request %d is for %s and not %s.' % (request_id, request.dst_project, project)
+    try:
+        request = get_submit_request(apiurl, request_id)
+    except urllib2.HTTPError:
+        print >>sys.stderr, 'Cannot get submission request %s: %s' % (request_id, e.msg)
+
+    if request.dst_project not in projects:
+        if len(projects) == 1:
+            print >>sys.stderr, 'Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, request.dst_project, projects[0])
+        else:
+            print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, request.dst_project)
         return
 
     if request.state.name != 'new':
-        print >>sys.stderr, 'Submission request %d is not new.' % request_id
+        print >>sys.stderr, 'Submission request %s is not new.' % request_id
         return
 
     try:
         devel_project = show_develproject(apiurl, 'openSUSE:Factory', request.dst_package)
     except urllib2.HTTPError:
-#FIXME
+        print >>sys.stderr, 'Cannot get development project for %s: %s' % (request_id, e.msg)
         return
 
-    if devel_project != project:
-#FIXME
+    if devel_project != request.dst_project:
+        print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (request.dst_package, request.dst_project, devel_project)
         return
 
     result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to openSUSE:Factory')
     root = ET.fromstring(result)
     if not 'code' in root.keys() or root.get('code') != 'ok':
-        print >>sys.stderr, 'Cannot accept submission request %d: %s' % (request_id, result)
+        print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
         return
 
-    # TODO: cancel old requests from project to oS:F
-    # TODO: create_submit_request
+    # TODO: cancel old requests from request.dst_project to oS:F
 
-    print 'Submission request %d has been forwarded to openSUSE:Factory.' % request_id
+    result = create_submit_request(apiurl,
+                                   request.dst_project, request.dst_package,
+                                   'openSUSE:Factory', request.dst_package,
+                                   request.descr)
+
+    print 'Submission request %s has been forwarded to openSUSE:Factory (request id: %s).' % (request_id, result)
+
+
+#######################################################################
+
+
+def _gnome_osc_package_pending_commit(self, osc_package):
+    for filename in osc_package.todo:
+        status = self.status(filename)
+        if status in ['A', 'M', 'D']:
+            return True
+
+    return False
+
+
+#######################################################################
+
+
+def _gnome_package_set_meta(self, apiurl, project, package, meta, error_msg_prefix = ''):
+    if error_msg_prefix:
+        error_str = error_msg_prefix + ': %s'
+    else:
+        error_str = 'Cannot set metadata for %s in %s: %%s' % (package, project)
+
+    tempfile = self.OscGnomeImport.m_import('tempfile')
+    if not tempfile:
+        print >>sys.stderr, error_str % 'incomplete python installation.'
+        return False
+
+    (fdout, tmp) = tempfile.mkstemp()
+    os.write(fdout, meta)
+    os.close(fdout)
+
+    meta_url = make_meta_url('pkg', (quote_plus(project), quote_plus(package)), apiurl)
+
+    failed = False
+    try:
+        http_PUT(meta_url, file=tmp)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, error_str % e.msg
+        failed = True
+
+    os.unlink(tmp)
+    return not failed
+
+
+def _gnome_enable_build(self, apiurl, project, package, meta, repo, archs):
+    if len(archs) == 0:
+        return (True, False)
+
+    package_node = ET.XML(meta)
+    meta_xml = ET.ElementTree(package_node)
+
+    build_node = package_node.find('build')
+    if not build_node:
+        build_node = ET.Element('build')
+        package_node.append(build_node)
+
+    enable_found = {}
+    for arch in archs:
+        enable_found[arch] = False
+
+    # remove disable before adding enable
+    for node in build_node.findall('disable'):
+        arch = node.get('arch')
+        if arch in archs:
+            build_node.remove(node)
+
+    for node in build_node.findall('enable'):
+        arch = node.get('arch')
+        if enable_found.has_key(arch):
+            enable_found[arch] = True
+
+    for arch in archs:
+        if not enable_found[arch]:
+            node = ET.Element('enable', { 'repository': repo, 'arch': arch})
+            build_node.append(node)
+
+    all_true = True
+    for value in enable_found.values():
+        if not value:
+            all_true = False
+            break
+
+    if all_true:
+        return (True, False)
+
+    buf = StringIO()
+    meta_xml.write(buf)
+    meta = buf.getvalue()
+
+    if self._gnome_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
+        return (True, True)
+    else:
+        return (False, False)
+
+
+def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, package, verbose_error = True):
+    url = makeurl(apiurl, ['build', project, repo, arch, package, '_history'])
+
+    try:
+        history = http_GET(url)
+    except urllib2.HTTPError, e:
+        if verbose_error:
+            print >>sys.stderr, 'Cannot get build history: %s' % e.msg
+        return (False, None, None)
+
+    root = ET.parse(history).getroot()
+
+    max_time = 0
+    rev = None
+    srcmd5 = None
+
+    for node in root.findall('entry'):
+        t = int(node.get('time'))
+        if t <= max_time:
+            continue
+
+        srcmd5 = node.get('srcmd5')
+        rev = node.get('rev')
+
+    return (True, srcmd5, rev)
+
+
+def _gnome_print_build_status(self, build_details, header, error_line):
+    print '%s:' % header
+
+    keys = build_details.keys()
+    if keys and len(keys) > 0:
+        keys.sort()
+
+        max_len = 0
+        for key in keys:
+            if len(key) > max_len:
+                max_len = len(key)
+
+        # 4: because we also have a few other characters (see left variable)
+        format = '%-' + str(max_len + 4) + 's%s'
+        for key in keys:
+            left = '  %s: ' % key
+            print format % (left, build_details[key])
+    else:
+        print '  %s' % error_line
+
+
+def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, verbose_error):
+    try:
+        results = show_results_meta(apiurl, project, package=package)
+        # reset the error counter
+        error_counter = 0
+    except urllib2.HTTPError, e:
+        if verbose_error:
+            print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e.msg
+        error_counter += 1
+        return (True, False, {}, error_counter)
+
+    res_root = ET.XML(''.join(results))
+    results_per_arch = {}
+
+    for node in res_root.findall('result'):
+        arch = node.get('arch')
+        # ignore the archs we didn't explicitly enabled: this ensures we care
+        # only about what is really important to us
+        if not arch in archs:
+            continue
+
+        status_node = node.find('status')
+        try:
+            status = status_node.get('code')
+        except:
+            # code can be missing when package is too new:
+            status = 'unknown'
+
+        results_per_arch[arch] = status
+
+    # evaluate the status: do we need to give more time to the build service?
+    # Was the build successful?
+    bs_not_ready = False
+    build_successful = True
+
+    for key in results_per_arch.keys():
+        arch_need_rebuild = False
+        arch = key
+        value = results_per_arch[key]
+
+        # build is done, but not successful
+        if value not in ['succeeded', 'excluded']:
+            build_successful = False
+
+        # build is happening or will happen soon
+        if value in ['blocked', 'scheduled', 'building', 'dispatching', 'finished']:
+            bs_not_ready = True
+
+        # 'disabled' => the build service didn't take into account
+        # the change we did to the meta yet (eg).
+        elif value in ['disabled']:
+            bs_not_ready = True
+
+            # special case (see long comment in the caller of this function)
+            if trigger_rebuild_for_disabled:
+                arch_need_rebuild = True
+
+        # build is done, but is it for the latest version?
+        elif value in ['succeeded']:
+            # check that the build is for the version we have
+            (success, built_srcmd5, built_rev) = self._gnome_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
+
+            if not success:
+                results_per_arch[key] = 'succeeded, but maybe not up-to-date'
+                error_counter += 1
+                # we don't know what's going on, so we'll contact the build
+                # service again
+                bs_not_ready = True
+            else:
+                # reset the error counter
+                error_counter = 0
+
+                #FIXME: "revision" seems to not have the same meaning for the
+                # build history and for the local package. See bug #436781
+                # (bnc). So, we just ignore the revision for now.
+                #if (built_srcmd5, built_rev) != (srcmd5, rev):
+                if built_srcmd5 != srcmd5:
+                    arch_need_rebuild = True
+                    results_per_arch[key] = 'rebuild needed'
+
+        if arch_need_rebuild:
+            bs_not_ready = True
+
+            try:
+                rebuild(apiurl, project, package, repo, arch)
+                # reset the error counter
+                error_counter = 0
+            except urllib2.HTTPError, e:
+                if verbose_error:
+                    print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
+                error_counter += 1
+
+    return (bs_not_ready, build_successful, results_per_arch, error_counter)
+
+
+def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev):
+    # seconds we wait before looking at the results on the build service
+    check_frequency = 60
+    max_errors = 10
+
+    select = self.OscGnomeImport.m_import('select')
+    time = self.OscGnomeImport.m_import('time')
+    if not select or not time:
+        print >>sys.stderr, 'Cannot monitor build for package in the build service: incomplete python installation.'
+        return (False, {})
+
+
+    build_successful = False
+    cached_results = {}
+    print_status = False
+    error_counter = 0
+    last_check = 0
+
+    # we don't want to trigger a rebuild the first time when the state is
+    # 'disabled' since the state might have changed very recently (if we
+    # updated the metadata ourselves), and the build service might have
+    # an old build that it can re-use instead of building again.
+    trigger_rebuild_for_disabled = False
+
+    print "Waiting for the build to finish..."
+    print "You can press enter to get the current status of the build."
+
+    # It's important to start the loop by downloading results since we might
+    # already have successful builds, and we don't want to wait to know that.
+
+    while True:
+        # get build status if we don't have a recent status
+        now = time.time()
+        if now - last_check >= 58:
+            # 58s since sleep() is not 100% precise and we don't want to miss
+            # one turn
+            last_check = now
+
+            (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, print_status)
+            # make sure we start triggering rebuilds for 'disabled' now
+            trigger_rebuild_for_disabled = True
+
+            # just stop if there are too many errors
+            if error_counter > max_errors:
+                print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                break
+
+        else:
+            # we didn't download the results, so we want to continue anyway
+            need_to_continue = True
+
+        if print_status:
+            header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
+            self._gnome_print_build_status(cached_results, header, 'no results returned by the build service')
+
+        if not need_to_continue:
+            break
+
+
+        # and now wait for input/timeout
+        print_status = False
+
+        # wait check_frequency seconds or for user input
+        now = time.time()
+        if now - last_check < check_frequency:
+            wait = check_frequency - (now - last_check)
+        else:
+            wait = check_frequency
+
+        try:
+            res = select.select([sys.stdin], [], [], wait)
+        except KeyboardInterrupt:
+            print ''
+            print 'Interrupted: not waiting for the build to finish. Cleaning up...'
+            break
+
+        # we have user input
+        if len(res[0]) > 0:
+            print_status = True
+            # empty sys.stdin
+            sys.stdin.readline()
+
+
+    return (build_successful, cached_results)
+
+
+#######################################################################
+
+
+def _gnome_build_internal(self, apiurl, osc_package):
+    repo = 'openSUSE_Factory'
+    archs = ['i586', 'x86_64']
+
+    project = osc_package.prjname
+    package = osc_package.name
+
+    # check that build is enabled for this package in this project, and if this
+    # is not the case, enable it
+    try:
+        meta_lines = show_package_meta(apiurl, project, package)
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Error while checking if package is set to build: %s' % e.msg
+        return False
+
+    meta = ''.join(meta_lines)
+    (success, changed_meta) = self._gnome_enable_build(apiurl, project, package, meta, repo, archs)
+    if not success:
+        return False
+
+    # loop to periodically check the status of the build (and eventually
+    # trigger rebuilds if necessary)
+    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev)
+
+    if not build_success:
+        self._gnome_print_build_status(build_details, 'Status', 'no status known: osc got interrupted?')
+
+    # disable build for package in this project if we manually enabled it
+    # (we just reset to the old settings)
+    if changed_meta:
+        self._gnome_package_set_meta(apiurl, project, package, meta, 'Error while resetting build settings of package on the build service')
+
+    return build_success
+
+
+#######################################################################
+
+
+def _gnome_build(self, apiurl, user, projects, msg):
+    try:
+        osc_package = filedir_to_pac('.')
+    except oscerr.NoWorkingCopy, e:
+        print >>sys.stderr, e
+        return
+
+    project = osc_package.prjname
+    package = osc_package.name
+
+    # commit if there are local changes
+    if self._gnome_osc_package_pending_commit(osc_package):
+        if not msg:
+            msg = edit_message()
+        osc_package.commit(msg)
+
+    self._gnome_build_internal(apiurl, osc_package)
+
+
+#######################################################################
+
+
+def _gnome_build_submit(self, apiurl, user, projects, msg):
+    try:
+        osc_package = filedir_to_pac('.')
+    except oscerr.NoWorkingCopy, e:
+        print >>sys.stderr, e
+        return
+
+    project = osc_package.prjname
+    package = osc_package.name
+
+    # do some preliminary checks on the package/project: it has to be
+    # a branch of a development project
+    if not osc_package.islink():
+        print >>sys.stderr, 'Package is not a link.'
+        return
+
+    parent_project = osc_package.linkinfo.project
+    if not parent_project in projects:
+        if len(projects) == 1:
+            print >>sys.stderr, 'Package links to project %s and not %s. You can use --project to override your project settings.' % (parent_project, projects[0])
+        else:
+            print >>sys.stderr, 'Package links to project %s. You can use --project to override your project settings.' % parent_project
+        return
+
+    if not project.startswith('home:%s:branches' % user):
+        print >>sys.stderr, 'Package belongs to project %s which does not look like a branch project.' % project
+        return
+
+    if project != 'home:%s:branches:%s' % (user, parent_project):
+        print >>sys.stderr, 'Package belongs to project %s which does not look like a branch project for %s.' % (project, parent_project)
+        return
+
+
+    # get the message that will be used for commit & submitreq
+    if not msg:
+        msg = edit_message()
+
+    # commit if there are local changes
+    if self._gnome_osc_package_pending_commit(osc_package):
+        osc_package.commit(msg)
+
+    build_success = self._gnome_build_internal(apiurl, osc_package)
+
+    # if build successful, submit
+    if build_success:
+        result = create_submit_request(apiurl,
+                                       project, package,
+                                       parent_project, package,
+                                       msg)
+
+        print 'Package submitted to %s (request id: %s).' % (parent_project, result)
+    else:
+        print 'Package was not submitted to %s' % parent_project
 
 
 #######################################################################
@@ -1905,8 +2496,12 @@ def _gnome_ensure_email(self):
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
-@cmdln.option('--project', metavar='PROJECT',
-              help='project to work on (default: GNOME:Factory')
+@cmdln.option('-m', '--message', metavar='TEXT',
+              dest='msg',
+              help='specify log message TEXT')
+@cmdln.option('--project', metavar='PROJECT', action='append',
+              dest='projects', default=[],
+              help='project to work on (default: GNOME:Factory)')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -1935,6 +2530,14 @@ def do_gnome(self, subcmd, opts, *args):
     "forward" (or "f") will forward a submission request to the project to
     openSUSE:Factory. This includes the step of accepting the request first.
 
+    "build" (or "b") will commit the local changes of the package in
+    the current directory and wait for the build to succeed on the build
+    service.
+
+    "buildsubmit" (or "bs") will commit the local changes of the package in
+    the current directory, wait for the build to succeed on the build service
+    and if the build succeeds, submit the package to the development project.
+
     Usage:
         osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
         osc gnome todoadmin [--exclude-submitted|--xs] [--project=PROJECT]
@@ -1948,6 +2551,9 @@ def do_gnome(self, subcmd, opts, *args):
         osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
 
         osc gnome forward [--project=PROJECT] ID
+
+        osc gnome build [--message=TEXT]
+        osc gnome buildsubmit [--message=TEXT]
     ${cmd_option_list}
     """
 
@@ -1956,7 +2562,7 @@ def do_gnome(self, subcmd, opts, *args):
     #self.gref = self.gtime.time()
     #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
 
-    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f']
+    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
                                            % ', '.join(cmds))
@@ -1964,26 +2570,37 @@ def do_gnome(self, subcmd, opts, *args):
     cmd = args[0]
 
     # Check arguments validity
-    if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta']:
+    if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta', 'build', 'b', 'buildsubmit', 'bs']:
         min_args, max_args = 0, 0
     elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up', 'forward', 'f']:
         min_args, max_args = 1, 1
     elif cmd in ['reserve', 'r', 'unreserve', 'u']:
         min_args = 1
         max_args = sys.maxint
+    else:
+        raise RuntimeError('Unknown command: %s' % cmd)
 
     if len(args) - 1 < min_args:
         raise oscerr.WrongArgs('Too few arguments.')
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
-    if opts.project:
-        project = opts.project
-    elif conf.config.has_key('gnome_project'):
-        project = conf.config['gnome_project']
+    if len(opts.projects) != 0:
+        projects = opts.projects
+    elif conf.config.has_key('gnome_projects'):
+        projects_line = conf.config['gnome_projects']
+        projects = projects_line.split(';')
+        # remove all empty projects
+        while True:
+            try:
+                projects.remove('')
+            except ValueError:
+                break
     else:
-        project = 'GNOME:Factory'
+        projects = ['GNOME:Factory']
 
+    apiurl = conf.config['apiurl']
+    user = conf.config['user']
     email = self._gnome_ensure_email()
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
@@ -1991,10 +2608,10 @@ def do_gnome(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(project, opts.exclude_reserved, opts.exclude_submitted)
+        self._gnome_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(project, opts.exclude_submitted)
+        self._gnome_todoadmin(apiurl, projects, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved()
@@ -2005,20 +2622,29 @@ def do_gnome(self, subcmd, opts, *args):
 
     elif cmd in ['reserve', 'r']:
         packages = args[1:]
-        self._gnome_reserve(packages, conf.config['user'])
+        self._gnome_reserve(packages, user)
 
     elif cmd in ['unreserve', 'u']:
         packages = args[1:]
-        self._gnome_unreserve(packages, conf.config['user'])
+        self._gnome_unreserve(packages, user)
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(conf.config['apiurl'], conf.config['user'], project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(conf.config['apiurl'], conf.config['user'], email, project, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._gnome_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(conf.config['apiurl'], project, request_id)
+        self._gnome_forward(apiurl, projects, request_id)
+
+    elif cmd in ['build', 'b']:
+        self._gnome_build(apiurl, user, projects, opts.msg)
+
+    elif cmd in ['buildsubmit', 'bs']:
+        self._gnome_build_submit(apiurl, user, projects, opts.msg)
+
+    else:
+        raise RuntimeError('Unknown command: %s' % cmd)
