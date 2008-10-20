@@ -1962,6 +1962,12 @@ def _gnome_osc_package_pending_commit(self, osc_package):
     return False
 
 
+def _gnome_osc_package_commit(self, osc_package, msg):
+    osc_package.commit(msg)
+    # See bug #436932: Package.commit() leads to outdated internal data.
+    osc_package.update_datastructs()
+
+
 #######################################################################
 
 
@@ -2192,6 +2198,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             bs_not_ready = True
 
             try:
+                print "trigger rebuild for %s" % arch
                 rebuild(apiurl, project, package, repo, arch)
                 # reset the error counter
                 error_counter = 0
@@ -2349,9 +2356,12 @@ def _gnome_build(self, apiurl, user, projects, msg):
     if self._gnome_osc_package_pending_commit(osc_package):
         if not msg:
             msg = edit_message()
-        osc_package.commit(msg)
+        self._gnome_osc_package_commit(osc_package, msg)
 
-    self._gnome_build_internal(apiurl, osc_package)
+    build_success = self._gnome_build_internal(apiurl, osc_package)
+
+    if build_success:
+        print 'Package successfully built on the build service.'
 
 
 #######################################################################
@@ -2396,7 +2406,7 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
 
     # commit if there are local changes
     if self._gnome_osc_package_pending_commit(osc_package):
-        osc_package.commit(msg)
+        self._gnome_osc_package_commit(osc_package, msg)
 
     build_success = self._gnome_build_internal(apiurl, osc_package)
 
