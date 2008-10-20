@@ -1952,8 +1952,10 @@ def _gnome_forward(self, apiurl, projects, request_id):
 
 
 def _gnome_osc_package_pending_commit(self, osc_package):
-    for filename in osc_package.todo:
-        status = self.status(filename)
+    # ideally, we could use osc_package.todo, but it's not set by default.
+    # So we just look at all files.
+    for filename in osc_package.filenamelist + osc_package.filenamelist_unvers:
+        status = osc_package.status(filename)
         if status in ['A', 'M', 'D']:
             return True
 
