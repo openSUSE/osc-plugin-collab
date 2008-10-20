@@ -2108,7 +2108,7 @@ def _gnome_print_build_status(self, repo, build_details, header, error_line, hin
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
-def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, error_counter, verbose_error):
+def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, verbose_error):
     try:
         results = show_results_meta(apiurl, project, package=package)
         # reset the error counter
@@ -2160,7 +2160,11 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         # build has failed for an architecture: no need to wait for other
         # architectures to know that there's a problem
         elif value in ['failed', 'expansion error', 'broken']:
-            do_not_wait_for_bs = True
+            # special case (see long comment in the caller of this function)
+            if not ignore_initial_errors:
+                do_not_wait_for_bs = True
+            else:
+                results_per_arch[key] = 'rebuild needed'
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
@@ -2168,7 +2172,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             bs_not_ready = True
 
             # special case (see long comment in the caller of this function)
-            if ignore_initial_trigger_rebuild:
+            if not ignore_initial_trigger_rebuild:
                 arch_need_rebuild = True
 
         # build is done, but is it for the latest version?
@@ -2212,7 +2216,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     return (bs_not_ready, build_successful, results_per_arch, error_counter)
 
 
-def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev):
+def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
@@ -2234,7 +2238,11 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
     # 'disabled' since the state might have changed very recently (if we
     # updated the metadata ourselves), and the build service might have
     # an old build that it can re-use instead of building again.
-    ignore_initial_trigger_rebuild = False
+    ignore_initial_trigger_rebuild = True
+
+    # if we just committed a change, we want to ignore the first error to let
+    # the build service reevaluate the situation
+    ignore_initial_errors = recently_changed
 
     print "Waiting for the build to finish..."
     print "You can press enter to get the current status of the build."
@@ -2252,9 +2260,11 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, error_counter, print_status)
+                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, print_status)
                 # make sure we start triggering rebuilds for 'disabled' now
-                ignore_initial_trigger_rebuild = True
+                ignore_initial_trigger_rebuild = False
+                # make sure we don't ignore errors anymore
+                ignore_initial_errors = False
 
                 # just stop if there are too many errors
                 if error_counter > max_errors:
@@ -2303,7 +2313,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 #######################################################################
 
 
-def _gnome_build_internal(self, apiurl, osc_package):
+def _gnome_build_internal(self, apiurl, osc_package, recently_changed):
     repo = 'openSUSE_Factory'
     archs = ['i586', 'x86_64']
 
@@ -2325,7 +2335,7 @@ def _gnome_build_internal(self, apiurl, osc_package):
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev)
+    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
 
     if not build_success:
         self._gnome_print_build_status(repo, build_details, 'Status', 'no status known: osc got interrupted?', hint=True)
@@ -2351,13 +2361,16 @@ def _gnome_build(self, apiurl, user, projects, msg):
     project = osc_package.prjname
     package = osc_package.name
 
+    committed = False
+
     # commit if there are local changes
     if self._gnome_osc_package_pending_commit(osc_package):
         if not msg:
             msg = edit_message()
         self._gnome_osc_package_commit(osc_package, msg)
+        committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package)
+    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -2403,11 +2416,14 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
     if not msg:
         msg = edit_message()
 
+    committed = False
+
     # commit if there are local changes
     if self._gnome_osc_package_pending_commit(osc_package):
         self._gnome_osc_package_commit(osc_package, msg)
+        committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package)
+    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
 
     # if build successful, submit
     if build_success:
