@@ -68,6 +68,13 @@ class OscGnomeWeb:
         self.Cache = cache
 
 
+    def _append_data_to_url(self, url, data):
+        if url.find('?') != -1:
+            return '%s&%s' % (url, data)
+        else:
+            return '%s?%s' % (url, data)
+
+
     def _parse_reservation(self, line):
         try:
             (package, username, comment) = line[:-1].split(';')
@@ -80,8 +87,11 @@ class OscGnomeWeb:
     def get_packages_versions(self, project):
         packages_versions = []
 
+        data = urlencode({'project': project})
+        url = self._append_data_to_url(self._csv_url, data)
+
         try:
-            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._csv_url, project), 'db-obs-csv-%s' % project, 10)
+            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-csv-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of packages: %s' % e.msg)
 
@@ -100,8 +110,11 @@ class OscGnomeWeb:
 
 
     def get_packages_with_delta(self, project):
+        data = urlencode({'project': project})
+        url = self._append_data_to_url(self._admin_url, data)
+
         try:
-            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._admin_url, project), 'db-obs-admin-%s' % project, 10)
+            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-admin-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with a delta: %s' % e.msg)
 
@@ -114,8 +127,11 @@ class OscGnomeWeb:
     def get_packages_with_error(self, project):
         errors = []
 
+        data = urlencode({'project': project})
+        url = self._append_data_to_url(self._error_url, data)
+
         try:
-            fd = self.Cache.get_url_fd_with_cache('%s&project=%s' % (self._error_url, project), 'db-obs-error-%s' % project, 10)
+            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-error-%s' % project, 10)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of packages with an error: %s' % e.msg)
 
@@ -134,8 +150,11 @@ class OscGnomeWeb:
 
 
     def get_versions(self, project, package):
+        data = urlencode({'project': project, 'package': package})
+        url = self._append_data_to_url(self._csv_url, data)
+
         try:
-            fd = urllib2.urlopen("%s&project=%s&package=%s" % (self._csv_url, project, package))
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
 
@@ -152,8 +171,11 @@ class OscGnomeWeb:
 
 
     def get_upstream_url(self, project, package):
+        data = urlencode({'project': project, 'package': package})
+        url = self._append_data_to_url(self._upstream_url, data)
+
         try:
-            fd = urllib2.urlopen('%s?project=%s&package=%s' % (self._upstream_url, project, package))
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get upstream URL of package %s: %s' % (package, e.msg))
 
@@ -175,8 +197,11 @@ class OscGnomeWeb:
     def get_reserved_packages(self, return_package = True, return_username = True, return_comment = False):
         reserved_packages = []
 
+        data = urlencode({'mode': 'getall'})
+        url = self._append_data_to_url(self._reserve_url, data)
+
         try:
-            fd = urllib2.urlopen('%s?mode=getall' % self._reserve_url)
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get list of reserved packages: %s' % e.msg)
 
@@ -212,8 +237,11 @@ class OscGnomeWeb:
 
 
     def is_package_reserved(self, package):
+        data = urlencode({'mode': 'get', 'package': package})
+        url = self._append_data_to_url(self._reserve_url, data)
+
         try:
-            fd = urllib2.urlopen('%s?mode=get&package=%s' % (self._reserve_url, package))
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot look if package %s is reserved: %s' % (package, e.msg))
 
@@ -232,8 +260,11 @@ class OscGnomeWeb:
 
 
     def reserve_package(self, package, username):
+        data = urlencode({'mode': 'set', 'user': username, 'package': package})
+        url = self._append_data_to_url(self._reserve_url, data)
+
         try:
-            fd = urllib2.urlopen('%s?mode=set&user=%s&package=%s' % (self._reserve_url, username, package))
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot reserve package %s: %s' % (package, e.msg))
 
@@ -245,8 +276,11 @@ class OscGnomeWeb:
 
 
     def unreserve_package(self, package, username):
+        data = urlencode({'mode': 'unset', 'user': username, 'package': package})
+        url = self._append_data_to_url(self._reserve_url, data)
+
         try:
-            fd = urllib2.urlopen('%s?mode=unset&user=%s&package=%s' % (self._reserve_url, username, package))
+            fd = urllib2.urlopen(url)
         except urllib2.HTTPError, e:
             raise self.Error('Cannot unreserve package %s: %s' % (package, e.msg))
 
@@ -350,10 +384,10 @@ class GnomeCache:
 
         # download the data
         try:
-            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'openSUSE:Factory\'')])
+            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
             fin = http_GET(url)
         except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
+            print >>sys.stderr, 'Cannot get metadata of packages in %s: %s' % (project, e.msg)
             return None
 
         fout = open(cache, 'w')
@@ -369,6 +403,52 @@ class GnomeCache:
                 fout.close()
                 os.unlink(cache)
                 print >>sys.stderr, 'Error while downloading metadata: %s' % e.msg
+                return None
+
+        fin.close()
+        fout.close()
+
+        return cache
+
+
+    @classmethod
+    def get_obs_build_results(cls, apiurl, project):
+        filename = 'build-results-' + project
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        # Only download if it's more than 2-hours old
+        if not cls._need_update(filename, 3600 * 2):
+            return cache
+
+        urllib = cls._import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get build results of packages in %s: incomplete python installation.' % project
+            return None
+
+        # no cache available
+        cls._print_message()
+
+        # download the data
+        try:
+            url = makeurl(apiurl, ['build', project, '_result'])
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get build results of packages in  %s: %s' % (project, e.msg)
+            return None
+
+        fout = open(cache, 'w')
+
+        while True:
+            try:
+                bytes = fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                fout.write(bytes)
+            except urllib2.HTTPError, e:
+                fin.close()
+                fout.close()
+                os.unlink(cache)
+                print >>sys.stderr, 'Error while downloading build results: %s' % e.msg
                 return None
 
         fin.close()
@@ -1198,10 +1278,12 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     new_dir = os.path.join(tmpdir, 'new')
     _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
     _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
-    old.close()
-    old = None
-    new.close()
-    new = None
+    if old:
+        old.close()
+        old = None
+    if new:
+        new.close()
+        new = None
 
     # find toplevel NEWS & ChangeLog in the new tarball
     if not os.path.exists(new_dir):
