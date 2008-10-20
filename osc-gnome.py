@@ -2198,7 +2198,6 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             bs_not_ready = True
 
             try:
-                print "trigger rebuild for %s" % arch
                 rebuild(apiurl, project, package, repo, arch)
                 # reset the error counter
                 error_counter = 0
