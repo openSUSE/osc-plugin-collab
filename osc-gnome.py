@@ -2164,6 +2164,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             if not ignore_initial_errors:
                 do_not_wait_for_bs = True
             else:
+                bs_not_ready = True
                 results_per_arch[key] = 'rebuild needed'
 
         # 'disabled' => the build service didn't take into account
