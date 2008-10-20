@@ -2069,25 +2069,35 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
     return (True, srcmd5, rev)
 
 
-def _gnome_print_build_status(self, build_details, header, error_line):
+def _gnome_print_build_status(self, repo, build_details, header, error_line, hint = False):
     print '%s:' % header
 
     keys = build_details.keys()
-    if keys and len(keys) > 0:
-        keys.sort()
-
-        max_len = 0
-        for key in keys:
-            if len(key) > max_len:
-                max_len = len(key)
-
-        # 4: because we also have a few other characters (see left variable)
-        format = '%-' + str(max_len + 4) + 's%s'
-        for key in keys:
-            left = '  %s: ' % key
-            print format % (left, build_details[key])
-    else:
+    if not keys or len(keys) == 0:
         print '  %s' % error_line
+        return
+
+    show_hint = False
+    keys.sort()
+
+    max_len = 0
+    for key in keys:
+        if len(key) > max_len:
+            max_len = len(key)
+
+    # 4: because we also have a few other characters (see left variable)
+    format = '%-' + str(max_len + 4) + 's%s'
+    for key in keys:
+        if build_details[key] in ['failed']:
+            show_hint = True
+
+        left = '  %s: ' % key
+        print format % (left, build_details[key])
+
+    if show_hint and hint:
+        for key in keys:
+            if build_details[key] == 'failed':
+                print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
 def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, trigger_rebuild_for_disabled, error_counter, verbose_error):
@@ -2249,7 +2259,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 
             if print_status:
                 header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-                self._gnome_print_build_status(cached_results, header, 'no results returned by the build service')
+                self._gnome_print_build_status(repo, cached_results, header, 'no results returned by the build service')
 
             if not need_to_continue:
                 break
@@ -2310,7 +2320,7 @@ def _gnome_build_internal(self, apiurl, osc_package):
     (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev)
 
     if not build_success:
-        self._gnome_print_build_status(build_details, 'Status', 'no status known: osc got interrupted?')
+        self._gnome_print_build_status(repo, build_details, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
