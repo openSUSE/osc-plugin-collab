@@ -2424,7 +2424,7 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
 
     # get the message that will be used for commit & submitreq
     if not msg:
-        msg = edit_message()
+        msg = edit_message(footer='This message will be used for commit (if necessary) and submitreq.\n')
 
     committed = False
 
