@@ -1406,8 +1406,17 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     # files from two tarballs that might conflict
     old_dir = os.path.join(tmpdir, 'old')
     new_dir = os.path.join(tmpdir, 'new')
-    _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
-    _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
+
+    try:
+        err_tarball = os.path.basename(old_tarball)
+        _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
+
+        err_tarball = new_tarball_basename
+        _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
+    except (tarfile.EOFError, EOFError):
+        _cleanup(old, new, tmpdir)
+        raise self.OscGnomeNewsError('Cannot extract NEWS information: %s is not a valid tarball.' % err_tarball)
+
     if old:
         old.close()
         old = None
@@ -2164,6 +2173,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             if not ignore_initial_errors:
                 do_not_wait_for_bs = True
             else:
+                bs_not_ready = True
                 results_per_arch[key] = 'rebuild needed'
 
         # 'disabled' => the build service didn't take into account
@@ -2414,7 +2424,7 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
 
     # get the message that will be used for commit & submitreq
     if not msg:
-        msg = edit_message()
+        msg = edit_message(footer='This message will be used for commit (if necessary) and submitreq.\n')
 
     committed = False
 
