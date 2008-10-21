@@ -16,6 +16,10 @@
   - use get_obs_build_results
 + 'osc gnome forward':
   - cancel old requests (automatically? ask?)
++ 'osc gnome build/buildsubmit':
+  - if the package has no explicit enable for architecture, we don't look
+    at the project metadata and enable the build in the package. We should
+    look at the project metadata.
 + 'osc gnome buildsubmit':
   - add a --forward option that makes it possible to automatically forward
     the submission to oS:F if the user has the permission to do so.
