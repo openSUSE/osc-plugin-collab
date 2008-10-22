@@ -27,3 +27,6 @@
 + Document:
   - usage with --project, or multiple projects.
   - 'osc gnome build', 'osc gnome buildsubmit'
++ Make todoadmin show packages that are newer in G:F by virtue of
+  having a patch added or some other packaging change and which need
+  to be submitted to oS:F.
