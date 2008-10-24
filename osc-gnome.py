@@ -913,6 +913,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 
     # get the packages submitted
     submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+    submitted_to_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project, include_request_id=True)
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
@@ -936,6 +937,8 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
                               lambda prj, pkg, tpl: 'Development project is not %s (%s)' % (prj, tpl[1])])
     package_data_sets.append(['error', packages_with_errors, 0, len(packages_with_errors), 0,
                               lambda prj, pkg, tpl: _message_error_package(tpl)])
+    package_data_sets.append(['submitted_to', submitted_to_packages, 0, len(submitted_to_packages), 1,
+                              lambda prj, pkg, tpl: 'Needs to be reviewed (submission id: %s)' % tpl[0]])
     package_data_sets.append(['delta', packages_with_delta, 0, len(packages_with_delta), -1,
                               lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages)])
 
