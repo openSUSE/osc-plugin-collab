@@ -862,29 +862,29 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
 #######################################################################
 
 
-def _gnome_min_package(self, *args):
+def _gnome_min_package(self, packages):
     min_package = None
-    for i in range(len(args)):
-        if args[i]:
+    for package in packages:
+        if package:
             if min_package:
-                min_package = min(args[i], min_package)
+                min_package = min(package, min_package)
             else:
-                min_package = args[i]
+                min_package = package
 
     return min_package
 
 
 def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
-    def _insert_delta_package(lines, delta_package, submitted_from_packages):
+    def _message_delta_package(delta_package, submitted_from_packages):
         if self._gnome_is_submitted(delta_package, submitted_from_packages):
             if exclude_submitted:
-                return
+                return None
             message = 'Waits for approval in openSUSE:Factory queue'
         else:
             message = 'Needs to be submitted to openSUSE:Factory'
-        lines.append((delta_package, message))
+        return message
 
-    def _insert_error_package(lines, error_package_tuple):
+    def _message_error_package(error_package_tuple):
         (error_package, error, details) = error_package_tuple
         if error == 'not-link':
             message = 'Is not a link to openSUSE:Factory'
@@ -897,7 +897,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
                 message = 'Unknown error: %s' % details
             else:
                 message = 'Unknown error'
-        lines.append((error_package, message))
+        return message
 
 
     # get packages with a delta
@@ -913,63 +913,83 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
-    delta_index = 0
-    delta_max = len(packages_with_delta)
-    error_index = 0
-    error_max = len(packages_with_errors)
-    bad_devel_index = 0
-    bad_devel_max = len(bad_devel_packages)
-    should_devel_index = 0
-    should_devel_max = len(should_devel_packages)
 
+    # We try to make the processing the the loop below more automatic, so it's
+    # easy to add a new source of messages.
+    # The items in this array contain:
+    #  + name of the set,
+    #  + array
+    #  + current index in the array from this set,
+    #  + length of the array of this set,
+    #  + if the items in the array of this set are tuples and if yes, which
+    #    item in the tuple is the package name
+    #  + a function to generate the message for this package
+    # Note that the order in this array also gives priority: if a package is
+    # in two sets, the first set wins.
+    package_data_sets = []
+    package_data_sets.append(['should_devel', should_devel_packages, 0, len(should_devel_packages), -1,
+                              lambda prj, pkg, tpl: 'Does not exist in %s while it should' % prj])
+    package_data_sets.append(['bad_devel', bad_devel_packages, 0, len(bad_devel_packages), 0,
+                              lambda prj, pkg, tpl: 'Development project is not %s (%s)' % (prj, tpl[1])])
+    package_data_sets.append(['error', packages_with_errors, 0, len(packages_with_errors), 0,
+                              lambda prj, pkg, tpl: _message_error_package(tpl)])
+    package_data_sets.append(['delta', packages_with_delta, 0, len(packages_with_delta), -1,
+                              lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages)])
 
     # This is an ugly loop to merge all the lists we have to get an output
-    # in alphabetical order AND also to not have more than one error for
+    # in alphabetical order AND also to not have more than one message for
     # one given package.
     while True:
-        if delta_index < delta_max:
-            delta_package = packages_with_delta[delta_index]
-        else:
-            delta_package = None
-        if error_index < error_max:
-            error_package_tuple = packages_with_errors[error_index]
-            error_package = error_package_tuple[0]
-        else:
-            error_package = None
-        if bad_devel_index < bad_devel_max:
-            bad_devel_package_tuple = bad_devel_packages[bad_devel_index]
-            bad_devel_package = bad_devel_package_tuple[0]
-        else:
-            bad_devel_package = None
-        if should_devel_index < should_devel_max:
-            should_devel_package = should_devel_packages[should_devel_index]
-        else:
-            should_devel_package = None
+        current_packages = {}
+        current_tuples = {}
+        for data_set in package_data_sets:
+            name = data_set[0]
+            array = data_set[1]
+            index = data_set[2]
+            max = data_set[3]
+            tuple_index = data_set[4]
 
-        package = self._gnome_min_package(delta_package, error_package, bad_devel_package, should_devel_package)
+            if index >= max:
+                current_packages[name] = None
+            else:
+                if tuple_index == -1:
+                    current_packages[name] = array[index]
+                    current_tuples[name] = None
+                else:
+                    current_packages[name] = array[index][tuple_index]
+                    current_tuples[name] = array[index]
+
+        package = self._gnome_min_package(current_packages.values())
 
         if not package:
             break
-        elif package == should_devel_package:
-            lines.append((should_devel_package, 'Does not exist in %s while it should' % project))
-            should_devel_index = should_devel_index + 1
-            # this package cannot appear in other lists since it's unknown to
-            # our scripts
-        elif package == bad_devel_package:
-            lines.append((bad_devel_package, 'Development project is not %s (%s)' % (project, bad_devel_package_tuple[1])))
-            bad_devel_index = bad_devel_index + 1
-            if package == error_package:
-                error_index = error_index + 1
-            if package == delta_package:
-                delta_index = delta_index + 1
-        elif package == error_package:
-            _insert_error_package(lines, error_package_tuple)
-            error_index = error_index + 1
-            if package == delta_package:
-                delta_index = delta_index + 1
-        elif package == delta_package:
-            _insert_delta_package(lines, delta_package, submitted_from_packages)
-            delta_index = delta_index + 1
+
+        line_added = False
+
+        for data_set in package_data_sets:
+            name = data_set[0]
+            message_func = data_set[5]
+
+            # the package is not from this data set
+            if package != current_packages[name]:
+                continue
+
+            # we're done with this package in this set
+            data_set[2] += 1
+
+            # if we already added a line for this package,
+            # just skip it in this data set
+            if line_added:
+                continue
+
+            message = message_func(project, package, current_tuples[name])
+            # sometime, we might ignore a specific message, depending on the
+            # configuration (eg, do not show submitted packages)
+            if not message:
+                continue
+
+            lines.append((package, message))
+            line_added = True
 
 
     return lines
