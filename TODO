@@ -12,7 +12,6 @@
     . one BuildRequires/Requires per line and alphabetically sorted
     . correctly order Name, License, Group, BuildRequires, etc.
 + 'osc gnome todoadmin':
-  - tell about packages with no upstream info
   - use get_obs_build_results
 + 'osc gnome forward':
   - cancel old requests (automatically? ask?)
