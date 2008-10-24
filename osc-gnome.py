@@ -2184,6 +2184,14 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     do_not_wait_for_bs = False
     build_successful = True
 
+    # A bit paranoid, but it seems it happened to me once...
+    if len(results_per_arch) == 0:
+        bs_not_ready = True
+        build_successful = False
+        if verbose_error:
+            print >>sys.stderr, 'Build service did not return any information.'
+        error_counter += 1
+
     for key in results_per_arch.keys():
         arch_need_rebuild = False
         arch = key
