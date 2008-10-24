@@ -378,6 +378,7 @@ njb-sharp:
 notification-daemon:
 notify-python:python-notify
 nss-mdns:
+ntfs-3g:
 obby:
 paprefs:
 pavucontrol:
