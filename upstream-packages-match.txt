@@ -81,7 +81,6 @@ gnome-terminal:
 gnome-themes:
 gnome-user-docs:gnome2-user-docs
 gnome-utils:
-gnome-volume-manager:
 gok:
 gst-plugins-base:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
@@ -218,7 +217,6 @@ gnome-blog:
 gnome-bluetooth:
 gnome-commander:
 gnome-common:
-gnome-cups-manager:
 gnome-libs:
 gnome-main-menu:
 gnome-phone-manager:
@@ -298,6 +296,7 @@ bombermaze:
 cairo:
 cairomm:
 check:
+clutter:
 clutter-cairo:
 clutter-gst:
 clutter-gtk:
@@ -431,6 +430,8 @@ yast2-control-center-gnome:
 ## Packages that we removed
 # banshee-1:banshee
 # fast-user-switch-applet:
+# gnome-cups-manager:
+# gnome-volume-manager:
 # gst-pulse:gstreamer-0_10-pulse
 # libssui:
 

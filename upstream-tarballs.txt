@@ -78,6 +78,7 @@ bundle-lang-gnome:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 check:sf:28255|20116
+clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
