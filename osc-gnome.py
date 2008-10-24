@@ -911,9 +911,19 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         print >>sys.stderr, e.msg
         return []
 
-    # get the packages submitted
+    # get the packages submitted from
     submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+
+    # get the packages with no upstream data
+    packages_versions = self._gnome_web.get_packages_versions(project)
+    no_upstream_packages = []
+    for (package, oF_version, devel_version, upstream_version) in packages_versions:
+        if upstream_version == '':
+            no_upstream_packages.append(package)
+
+    # get the packages submitted to, which need a review
     submitted_to_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project, include_request_id=True)
+    # get errors
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
@@ -941,6 +951,8 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
                               lambda prj, pkg, tpl: 'Needs to be reviewed (submission id: %s)' % tpl[0]])
     package_data_sets.append(['delta', packages_with_delta, 0, len(packages_with_delta), -1,
                               lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages)])
+    package_data_sets.append(['no_upstream_data', no_upstream_packages, 0, len(no_upstream_packages), -1,
+                              lambda prj, pkg, tpl: 'No upstream data available'])
 
     # This is an ugly loop to merge all the lists we have to get an output
     # in alphabetical order AND also to not have more than one message for
