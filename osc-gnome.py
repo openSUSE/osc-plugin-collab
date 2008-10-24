@@ -550,6 +550,9 @@ class GnomeCache:
         lines = []
         retval = []
         for submitted in submitted_packages:
+            if submitted.state.name != 'new':
+                continue
+
             if include_request_id:
                 retval.append((submitted.reqid, submitted.dst_package))
             else:
