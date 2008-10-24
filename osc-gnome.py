@@ -508,8 +508,8 @@ class GnomeCache:
 
 
     @classmethod
-    def get_obs_submit_request_list(cls, apiurl, project):
-        current_format = 1
+    def get_obs_submit_request_list(cls, apiurl, project, include_request_id = False):
+        current_format = 2
         filename = 'submitted-' + project
 
         # Only download if it's more than 10-minutes old
@@ -524,8 +524,12 @@ class GnomeCache:
                     line = fcache.readline()
                     if len(line) == 0:
                         break
-                    (package, revision, empty) = line.split(';', 3)
-                    retval.append(package)
+                    (request_id, package, revision, empty) = line.split(';', 4)
+
+                    if include_request_id:
+                        retval.append((request_id, package))
+                    else:
+                        retval.append(package)
 
                 fcache.close()
                 return retval
@@ -546,8 +550,12 @@ class GnomeCache:
         lines = []
         retval = []
         for submitted in submitted_packages:
-            retval.append(submitted.dst_package)
-            lines.append('%s;%s;' % (submitted.dst_package, submitted.src_md5))
+            if include_request_id:
+                retval.append((submitted.reqid, submitted.dst_package))
+            else:
+                retval.append(submitted.dst_package)
+
+            lines.append('%s;%s;%s;' % (submitted.reqid, submitted.dst_package, submitted.src_md5))
 
         # save the data in the cache
         cls._write(filename, format_nb = current_format, lines_no_cr = lines)
