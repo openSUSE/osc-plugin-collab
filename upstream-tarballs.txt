@@ -78,6 +78,7 @@ bundle-lang-gnome:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 check:sf:28255|20116
+clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
@@ -171,9 +172,10 @@ monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
-nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
+nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
+ntfs-3g:httpls:http://www.ntfs-3g.org/
 obby:httpls:http://releases.0x539.de/obby/
 #FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
 opt_gnome-compat:upstream:
