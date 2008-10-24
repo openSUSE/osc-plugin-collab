@@ -875,8 +875,8 @@ def _gnome_min_package(self, *args):
 
 
 def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
-    def _insert_delta_package(lines, delta_package, submitted_packages):
-        if self._gnome_is_submitted(delta_package, submitted_packages):
+    def _insert_delta_package(lines, delta_package, submitted_from_packages):
+        if self._gnome_is_submitted(delta_package, submitted_from_packages):
             if exclude_submitted:
                 return
             message = 'Waits for approval in openSUSE:Factory queue'
@@ -909,7 +909,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         return []
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+    submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
     lines = []
@@ -968,7 +968,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
             if package == delta_package:
                 delta_index = delta_index + 1
         elif package == delta_package:
-            _insert_delta_package(lines, delta_package, submitted_packages)
+            _insert_delta_package(lines, delta_package, submitted_from_packages)
             delta_index = delta_index + 1
 
 
