@@ -421,6 +421,7 @@ xchat-gnome:
 ## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:
 bundle-lang-gnome:
+gconf2-branding:
 ggreeter:
 gnome-patch-translation:
 gtk2-theme-openSUSE:

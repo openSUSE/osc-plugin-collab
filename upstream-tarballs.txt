@@ -97,6 +97,7 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
+gconf2-branding:upstream:
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
