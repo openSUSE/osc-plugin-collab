@@ -282,6 +282,7 @@ xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
 QtCurve-Gtk2:qtcurve-gtk2
+PackageKit:
 PolicyKit-gnome:
 abiword:
 aqbanking:
@@ -349,6 +350,7 @@ iso-codes:
 istanbul:
 ldtp:
 libao-pulse:
+libcanberra:
 libesmtp:
 libflashsupport:
 libgalago:
@@ -398,6 +400,7 @@ rarian:
 shared-mime-info:
 sobby:
 sofia-sip:
+sound-theme-freedesktop:
 startup-notification:
 system-config-printer:
 tango-icon-theme:
@@ -418,6 +421,7 @@ xchat-gnome:
 ## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:
 bundle-lang-gnome:
+gconf2-branding:
 ggreeter:
 gnome-patch-translation:
 gtk2-theme-openSUSE:

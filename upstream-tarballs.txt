@@ -59,6 +59,7 @@
 ## GNOME:Factory
 
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
+PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
@@ -96,6 +97,7 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
+gconf2-branding:upstream:
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
@@ -144,6 +146,7 @@ iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
+libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
 libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
@@ -198,6 +201,7 @@ rarian:httpls:http://rarian.freedesktop.org/Releases/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|157769
+sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
