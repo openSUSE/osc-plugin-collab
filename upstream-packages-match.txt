@@ -381,6 +381,7 @@ notification-daemon:
 notify-python:python-notify
 nss-mdns:
 ntfs-3g:
+ntfs-config:
 obby:
 paprefs:
 pavucontrol:
