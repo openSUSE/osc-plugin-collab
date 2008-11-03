@@ -195,7 +195,6 @@ pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
-pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 python-xlib:sf:10350|10058
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
@@ -221,6 +220,7 @@ yast2-control-center-gnome:upstream:
 
 ## Packages that we removed
 # gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
+# pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz-fusion.org/

@@ -395,7 +395,6 @@ pulseaudio:
 pycairo:python-cairo
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
-pysqlite:python-sqlite2
 python-xlib:
 rarian:
 shared-mime-info:
@@ -439,6 +438,7 @@ yast2-control-center-gnome:
 # gnome-volume-manager:
 # gst-pulse:gstreamer-0_10-pulse
 # libssui:
+# pysqlite:python-sqlite2
 
 
 #### X11:Compiz
