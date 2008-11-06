@@ -162,8 +162,6 @@ libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
-libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libxklavier:sf:319|49313
@@ -220,6 +218,8 @@ yast2-control-center-gnome:upstream:
 
 ## Packages that we removed
 # gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
+# libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+# libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 # pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 
 ## X11:Compiz

@@ -366,8 +366,6 @@ libnotify:
 libofx:
 liboil:
 libsexy:
-libsvg:
-libsvg-cairo:
 libtasn1:
 libtelepathy:
 libxklavier:
@@ -438,6 +436,8 @@ yast2-control-center-gnome:
 # gnome-volume-manager:
 # gst-pulse:gstreamer-0_10-pulse
 # libssui:
+# libsvg:
+# libsvg-cairo:
 # pysqlite:python-sqlite2
 
 
