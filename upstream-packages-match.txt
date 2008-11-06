@@ -366,8 +366,6 @@ libnotify:
 libofx:
 liboil:
 libsexy:
-libsvg:
-libsvg-cairo:
 libtasn1:
 libtelepathy:
 libxklavier:
@@ -381,6 +379,7 @@ notification-daemon:
 notify-python:python-notify
 nss-mdns:
 ntfs-3g:
+ntfs-config:
 obby:
 paprefs:
 pavucontrol:
@@ -394,7 +393,6 @@ pulseaudio:
 pycairo:python-cairo
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
-pysqlite:python-sqlite2
 python-xlib:
 rarian:
 shared-mime-info:
@@ -421,7 +419,6 @@ xchat-gnome:
 ## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:
 bundle-lang-gnome:
-gconf2-branding:
 ggreeter:
 gnome-patch-translation:
 gtk2-theme-openSUSE:
@@ -439,6 +436,9 @@ yast2-control-center-gnome:
 # gnome-volume-manager:
 # gst-pulse:gstreamer-0_10-pulse
 # libssui:
+# libsvg:
+# libsvg-cairo:
+# pysqlite:python-sqlite2
 
 
 #### X11:Compiz

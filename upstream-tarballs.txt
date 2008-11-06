@@ -97,7 +97,6 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
-gconf2-branding:upstream:
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
@@ -163,8 +162,6 @@ libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
-libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libxklavier:sf:319|49313
@@ -179,6 +176,7 @@ notification-daemon:httpls:http://www.galago-project.org/files/releases/source/n
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 ntfs-3g:httpls:http://www.ntfs-3g.org/
+ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 #FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
 opt_gnome-compat:upstream:
@@ -195,7 +193,6 @@ pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
-pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 python-xlib:sf:10350|10058
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
@@ -221,6 +218,9 @@ yast2-control-center-gnome:upstream:
 
 ## Packages that we removed
 # gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/
+# libsvg:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+# libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+# pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz-fusion.org/
