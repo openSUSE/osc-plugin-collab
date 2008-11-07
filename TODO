@@ -33,3 +33,6 @@
 + Make todoadmin show packages that are newer in G:F by virtue of
   having a patch added or some other packaging change and which need
   to be submitted to oS:F.
++ "osc gnome todo" should group packages somehow.  At the very least,
+   packages that are part of the GNOME release cycle (and their blessed
+   dependencies?) should be grouped apart.
