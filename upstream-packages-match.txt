@@ -228,8 +228,7 @@ gnome-reset:
 #gnome-scan:
 gnome-spell:gnome-spell2
 gnome-themes-extras:
-# No package in openSUSE
-#gnome-user-share:
+gnome-user-share:
 gnome-vfs-obexftp:
 gnome-web-photo:
 gnomeicu:
