@@ -2449,7 +2449,7 @@ def _gnome_build(self, apiurl, user, projects, msg):
 #######################################################################
 
 
-def _gnome_build_submit(self, apiurl, user, projects, msg):
+def _gnome_build_submit(self, apiurl, user, projects, msg, forward = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2503,6 +2503,10 @@ def _gnome_build_submit(self, apiurl, user, projects, msg):
                                        msg)
 
         print 'Package submitted to %s (request id: %s).' % (parent_project, result)
+        if forward:
+            # we volunteerly restrict the project list to parent_project for
+            # self-consistency and more safety
+            self._gnome_forward(apiurl, [ parent_project ], result)
     else:
         print 'Package was not submitted to %s' % parent_project
 
@@ -2617,6 +2621,9 @@ def _gnome_ensure_email(self):
 @cmdln.option('-m', '--message', metavar='TEXT',
               dest='msg',
               help='specify log message TEXT')
+@cmdln.option('-f', '--forward', action='store_true',
+              dest='forward',
+              help='automatically forward to openSUSE:Factory if successful')
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
               help='project to work on (default: GNOME:Factory)')
@@ -2670,8 +2677,8 @@ def do_gnome(self, subcmd, opts, *args):
 
         osc gnome forward [--project=PROJECT] ID
 
-        osc gnome build [--message=TEXT]
-        osc gnome buildsubmit [--message=TEXT]
+        osc gnome build [--message=TEXT|-m=TEXT]
+        osc gnome buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT]
     ${cmd_option_list}
     """
 
@@ -2762,7 +2769,7 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_build(apiurl, user, projects, opts.msg)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._gnome_build_submit(apiurl, user, projects, opts.msg)
+        self._gnome_build_submit(apiurl, user, projects, opts.msg, forward = opts.forward)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
