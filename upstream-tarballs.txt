@@ -213,7 +213,6 @@ transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
-xchat-gnome:httpls:http://xchat-gnome.navi.cx/?page_id=15
 yast2-control-center-gnome:upstream:
 
 ## Packages that we removed
