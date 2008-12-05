@@ -13,6 +13,8 @@
     . correctly order Name, License, Group, BuildRequires, etc.
 + 'osc gnome todoadmin':
   - use get_obs_build_results
+  - handle the case where there's already a submission to oS:F but the
+    submission is not from the latest revision of the package in G:F
 + 'osc gnome forward':
   - cancel old requests (automatically? ask?)
   - use 'osc meta prj GNOME:Factory' to see how to check for permissions.
@@ -30,6 +32,3 @@
 + Document:
   - usage with --project, or multiple projects.
   - 'osc gnome build', 'osc gnome buildsubmit'
-+ Make todoadmin show packages that are newer in G:F by virtue of
-  having a patch added or some other packaging change and which need
-  to be submitted to oS:F.
