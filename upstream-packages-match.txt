@@ -307,6 +307,7 @@ eiciel:
 enchant:
 exempi:
 farsight:
+farsight2:
 fyre:
 g-wrap:
 gaim-galago:
@@ -359,6 +360,7 @@ libgnomesu:
 libiptcdata:
 libjingle:
 libmcs:
+libnice:
 libnjb:
 libnl:
 libnotify:
@@ -401,6 +403,7 @@ sound-theme-freedesktop:
 startup-notification:
 system-config-printer:
 tango-icon-theme:
+telepathy-farsight:
 telepathy-gabble:
 telepathy-glib:
 telepathy-haze:

@@ -90,6 +90,7 @@ eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/farsight/
+farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 fyre:httpls:http://releases.navi.cx/fyre/
 g-wrap:httpls:http://download.savannah.gnu.org/releases/g-wrap/
 gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-galago/
@@ -155,6 +156,7 @@ libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libiptcdata:sf:130582|143234
 libjingle:google:libjingle
 libmcs:httpls:http://distfiles.atheme.org/
+libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|24667
 libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
@@ -202,6 +204,7 @@ sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|h
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
+telepathy-farsight:httpls:http://telepathy.freedesktop.org/releases/telepathy-farsight/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
