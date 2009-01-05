@@ -214,6 +214,7 @@ telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-
 translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
+unique:httpls:http://www.gnome.org/~ebassi/source/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 yast2-control-center-gnome:upstream:

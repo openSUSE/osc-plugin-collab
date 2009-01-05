@@ -412,6 +412,7 @@ telepathy-salut:
 telepathy-stream-engine:
 transmission:
 tsclient:
+unique:
 vobject:
 webkit:libwebkit
 xchat:
