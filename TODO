@@ -32,3 +32,6 @@
 + Document:
   - usage with --project, or multiple projects.
   - 'osc gnome build', 'osc gnome buildsubmit'
++ "osc gnome todo" should group packages somehow.  At the very least,
+   packages that are part of the GNOME release cycle (and their blessed
+   dependencies?) should be grouped apart.
