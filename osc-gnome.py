@@ -2383,10 +2383,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 #######################################################################
 
 
-def _gnome_build_internal(self, apiurl, osc_package, recently_changed):
-    repo = 'openSUSE_Factory'
-    archs = ['i586', 'x86_64']
-
+def _gnome_build_internal(self, apiurl, osc_package, repo, archs, recently_changed):
     project = osc_package.prjname
     package = osc_package.name
 
@@ -2421,7 +2418,7 @@ def _gnome_build_internal(self, apiurl, osc_package, recently_changed):
 #######################################################################
 
 
-def _gnome_build(self, apiurl, user, projects, msg):
+def _gnome_build(self, apiurl, user, projects, msg, repo, archs):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2440,7 +2437,7 @@ def _gnome_build(self, apiurl, user, projects, msg):
         self._gnome_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
+    build_success = self._gnome_build_internal(apiurl, osc_package, repo, archs, committed)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -2449,7 +2446,7 @@ def _gnome_build(self, apiurl, user, projects, msg):
 #######################################################################
 
 
-def _gnome_build_submit(self, apiurl, user, projects, msg, forward = False):
+def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2493,7 +2490,7 @@ def _gnome_build_submit(self, apiurl, user, projects, msg, forward = False):
         self._gnome_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package, committed)
+    build_success = self._gnome_build_internal(apiurl, osc_package, repo, archs, committed)
 
     # if build successful, submit
     if build_success:
@@ -2627,6 +2624,12 @@ def _gnome_ensure_email(self):
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
               help='project to work on (default: GNOME:Factory)')
+@cmdln.option('--repo', metavar='REPOSITORY',
+              dest='repo',
+              help='build repository to build on (default: openSUSE_Factory)')
+@cmdln.option('--arch', metavar='ARCH', action='append',
+              dest='archs', default=[],
+              help='architectures to build on (default: i586 and x86_64)')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -2677,8 +2680,8 @@ def do_gnome(self, subcmd, opts, *args):
 
         osc gnome forward [--project=PROJECT] ID
 
-        osc gnome build [--message=TEXT|-m=TEXT]
-        osc gnome buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT]
+        osc gnome build [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
+        osc gnome buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
     ${cmd_option_list}
     """
 
@@ -2724,6 +2727,27 @@ def do_gnome(self, subcmd, opts, *args):
     else:
         projects = ['GNOME:Factory']
 
+    if opts.repo:
+        repo = opts.repo
+    elif conf.config.has_key('gnome_repo'):
+        repo = conf.config['gnome_repo']
+    else:
+        repo = 'openSUSE_Factory'
+
+    if len(opts.archs) != 0:
+        archs = opts.archs
+    elif conf.config.has_key('gnome_archs'):
+        archs_line = conf.config['gnome_archs']
+        archs = projects_line.split(';')
+        # remove all empty architectures
+        while True:
+            try:
+                archs.remove('')
+            except ValueError:
+                break
+    else:
+        archs = ['i586', 'x86_64']
+
     apiurl = conf.config['apiurl']
     user = conf.config['user']
     email = self._gnome_ensure_email()
@@ -2766,10 +2790,10 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_forward(apiurl, projects, request_id)
 
     elif cmd in ['build', 'b']:
-        self._gnome_build(apiurl, user, projects, opts.msg)
+        self._gnome_build(apiurl, user, projects, opts.msg, repo, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._gnome_build_submit(apiurl, user, projects, opts.msg, forward = opts.forward)
+        self._gnome_build_submit(apiurl, user, projects, opts.msg, repo, archs, forward = opts.forward)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
