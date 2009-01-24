@@ -32,6 +32,7 @@ pango:
 
 ## DESKTOP
 alacarte:
+brasero:
 bug-buddy:
 cheese:
 dasher:
@@ -45,6 +46,7 @@ evince:
 evolution:
 evolution-data-server:
 evolution-exchange:
+evolution-mapi
 evolution-webcal:
 file-roller:
 gcalctool:
@@ -80,6 +82,7 @@ gnome-system-monitor:
 gnome-terminal:
 gnome-themes:
 gnome-user-docs:gnome2-user-docs
+gnome-user-share:
 gnome-utils:
 gok:
 gst-plugins-base:gstreamer-0_10-plugins-base
@@ -194,7 +197,6 @@ NetworkManager:
 beagle:
 beagle-xesam:
 bigboard:
-brasero:
 conduit:
 desktop-data-model:
 dia:
@@ -228,7 +230,6 @@ gnome-reset:
 #gnome-scan:
 gnome-spell:gnome-spell2
 gnome-themes-extras:
-gnome-user-share:
 gnome-vfs-obexftp:
 gnome-web-photo:
 gnomeicu:
