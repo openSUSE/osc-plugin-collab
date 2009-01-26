@@ -46,7 +46,7 @@ evince:
 evolution:
 evolution-data-server:
 evolution-exchange:
-evolution-mapi
+evolution-mapi:
 evolution-webcal:
 file-roller:
 gcalctool:
