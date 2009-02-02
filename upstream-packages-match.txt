@@ -19,7 +19,6 @@ gnome-vfs:gnome-vfs2
 gnome-vfs-monikers:
 gtk+:gtk2
 gtk-doc:
-intltool:
 libIDL:libidl
 libart_lgpl:
 libbonobo:
@@ -37,7 +36,6 @@ bug-buddy:
 cheese:
 dasher:
 deskbar-applet:
-eel:
 ekiga:
 empathy:
 eog:
@@ -110,7 +108,6 @@ libwnck:
 metacity:
 mousetweaks:
 nautilus:
-nautilus-cd-burner:
 orca:
 pygtksourceview:python-gtksourceview
 seahorse-plugins:
@@ -136,7 +133,6 @@ anjuta:
 devhelp:
 gdl:
 glade3:
-gnome-build:
 # No package in openSUSE
 #gnome-devel-docs:
 
@@ -201,6 +197,7 @@ conduit:
 desktop-data-model:
 dia:
 dogtail:
+eel:
 epiphany-extensions:
 evolution-sharp:
 f-spot:
@@ -217,6 +214,7 @@ glib-1:glib
 gnome-audio:
 gnome-blog:
 gnome-bluetooth:
+gnome-build:
 gnome-commander:
 gnome-common:
 gnome-libs:
@@ -247,6 +245,7 @@ gtk+-1:gtk
 # No package in openSUSE
 #gtranslator:
 hippo-canvas:
+intltool:
 # No package in openSUSE
 #labyrinth:
 libbeagle:
@@ -266,8 +265,10 @@ loudmouth:
 #meld:
 memprof:
 mergeant:
+nautilus-cd-burner:
 nautilus-open-terminal:
 nautilus-sendto:
+nautilus-share:
 nemiver:
 network-manager-applet:NetworkManager-gnome
 online-desktop:
@@ -410,6 +411,7 @@ telepathy-glib:
 telepathy-haze:
 telepathy-idle:
 telepathy-salut:
+telepathy-sofiasip:
 telepathy-stream-engine:
 transmission:
 tsclient:

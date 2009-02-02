@@ -172,6 +172,7 @@ metacity-themes:upstream:
 mission-control:sf:190214|224579
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
+nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
@@ -210,6 +211,7 @@ telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
+telepathy-sofiasip:sf:191149
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
