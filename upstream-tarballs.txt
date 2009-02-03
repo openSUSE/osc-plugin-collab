@@ -162,6 +162,7 @@ libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
+libproxy:google:libproxy
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
