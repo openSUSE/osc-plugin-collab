@@ -1225,6 +1225,8 @@ def _gnome_get_project_for_package(self, apiurl, projects, package, return_versi
             if oF_version != None:
                 if return_versions:
                     return (project, oF_version, devel_version, upstream_version)
+                else:
+                    return project
         except self.OscGnomeWebError, e:
             continue
 
@@ -1237,11 +1239,11 @@ def _gnome_get_project_for_package(self, apiurl, projects, package, return_versi
         try:
             show_package_meta(apiurl, project, package)
             # no exception means no 404, and therefore "okay"
-            return (project, '', '', '')
+            return project
         except urllib2.HTTPError, e:
             continue
 
-    return (None, '', '', '')
+    return None
 
 
 #######################################################################
