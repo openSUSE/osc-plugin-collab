@@ -1230,18 +1230,18 @@ def _gnome_get_project_for_package(self, apiurl, projects, package, return_versi
 
     # if we need versions, the build service can't help us, so we can fail now
     if return_versions:
-        return None
+        return (None, '', '', '')
 
     # no result via the database, so go directly to the build service
     for project in projects:
         try:
             show_package_meta(apiurl, project, package)
             # no exception means no 404, and therefore "okay"
-            return project
+            return (project, '', '', '')
         except urllib2.HTTPError, e:
             continue
 
-    return None
+    return (None, '', '', '')
 
 
 #######################################################################
