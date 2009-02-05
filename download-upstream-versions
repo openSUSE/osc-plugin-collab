@@ -366,7 +366,15 @@ def _get_version_from_files(modulename, location, files, limit):
         # full URI
         location = tarball
     else:
-        location = urlparse.urljoin(location + '/', tarball)
+        # remove files from location when we know it's not a directory
+        if len(location) > 5 and location[-5:] in [ '.html' ]:
+            last_slash = location.rfind('/')
+            if last_slash != -1:
+                location = location[:last_slash + 1]
+        # add potentially missing slash to the directory
+        if location[-1:] != '/':
+            location = location + '/'
+        location = urlparse.urljoin(location, tarball)
 
     return (location, version)
 
