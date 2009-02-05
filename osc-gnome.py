@@ -1907,9 +1907,10 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # not fatal if fails
     if upstream_tarball.endswith('.gz'):
         try:
+            old_upstream_tarball_basename = os.path.basename(upstream_tarball)
             upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
+            print '%s has been recompressed to bz2.' % old_upstream_tarball_basename
             upstream_tarball_basename = os.path.basename(upstream_tarball)
-            print '%s has been recompressed to bz2.' % upstream_tarball_basename
         except self.OscGnomeCompressError, e:
             print >>sys.stderr, e.msg
 
