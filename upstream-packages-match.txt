@@ -368,7 +368,7 @@ libnl:
 libnotify:
 libofx:
 liboil:
-libproxy
+libproxy:
 libsexy:
 libtasn1:
 libtelepathy:
