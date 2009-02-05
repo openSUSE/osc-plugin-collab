@@ -154,7 +154,7 @@ libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgala
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libiptcdata:sf:130582|143234
-libjingle:google:libjingle
+libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
 libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|24667
