@@ -92,8 +92,7 @@ gtksourceview-1.0:gtksourceview18
 gtksourceview:
 gucharmap:
 gvfs:
-# No package in openSUSE
-#hamster-applet:
+hamster-applet:
 libgail-gnome:
 libgnomekbd:
 libgnomeprint:
