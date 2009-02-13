@@ -188,6 +188,7 @@ paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|230234
+pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 poppler-data:httpls:http://poppler.freedesktop.org/

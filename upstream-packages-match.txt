@@ -388,6 +388,7 @@ paprefs:
 pavucontrol:
 pavumeter:
 pidgin:
+pixman:
 pkg-config:
 poppler:
 poppler-data:
