@@ -1696,7 +1696,9 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(changes_file))
 
     old_lc_time = locale.setlocale(locale.LC_TIME)
+    old_tz = os.getenv('TZ')
     locale.setlocale(locale.LC_TIME, 'C')
+    os.putenv('TZ', 'Europe/Paris')
 
     os.write(fdout, '-------------------------------------------------------------------\n')
     os.write(fdout, '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email))
@@ -1706,6 +1708,10 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
     os.write(fdout, '\n')
 
     locale.setlocale(locale.LC_TIME, old_lc_time)
+    if old_tz:
+        os.putenv('TZ', old_tz)
+    else:
+        os.unsetenv('TZ')
 
     fin = open(changes_file, 'r')
     while True:
