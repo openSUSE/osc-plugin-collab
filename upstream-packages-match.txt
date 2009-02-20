@@ -281,6 +281,7 @@ tasque:
 xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
+DeviceKit-power:
 QtCurve-Gtk2:qtcurve-gtk2
 PackageKit:
 PolicyKit-gnome:
