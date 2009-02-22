@@ -2193,6 +2193,12 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     results_per_arch = {}
 
     for node in res_root.findall('result'):
+
+        buildrepo = node.get('repository')
+        # ignore the repo if it's not the one we explicitly use
+        if not buildrepo == repo:
+           continue
+
         arch = node.get('arch')
         # ignore the archs we didn't explicitly enabled: this ensures we care
         # only about what is really important to us
