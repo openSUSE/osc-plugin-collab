@@ -1989,7 +1989,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
     try:
         devel_project = show_develproject(apiurl, 'openSUSE:Factory', request.dst_package)
     except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get development project for %s: %s' % (request_id, e.msg)
+        print >>sys.stderr, 'Cannot get development project for %s: %s' % (request.dst_package, e.msg)
         return
 
     if devel_project != request.dst_project:
