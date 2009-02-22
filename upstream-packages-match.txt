@@ -304,6 +304,7 @@ clutter-gst:
 clutter-gtk:
 conglomerate:
 contact-lookup-applet:
+cups-pk-helper:
 eds-feed:evolution-galago
 eiciel:
 enchant:
@@ -398,6 +399,7 @@ pulseaudio:
 pycairo:python-cairo
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
+pysmbc:python-smbc
 python-xlib:
 rarian:
 shared-mime-info:

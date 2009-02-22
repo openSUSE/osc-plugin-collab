@@ -86,6 +86,7 @@ clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
+cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
@@ -199,6 +200,7 @@ pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
+pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
