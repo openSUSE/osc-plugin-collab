@@ -102,7 +102,7 @@ checkout_project X11:Compiz
 # This is a project that we use when we want to work on the next release of
 # openSUSE but oS:F has not been branched yet. Comment/uncomment when
 # appropriate.
-checkout_project GNOME:Factory:Next
+#checkout_project GNOME:Factory:Next
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
