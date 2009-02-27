@@ -378,6 +378,7 @@ liferea:
 mission-control:telepathy-mission-control
 monsoon:
 mozilla-bonobo:
+nautilus-search-tool:
 net6:
 njb-sharp:
 notification-daemon:
