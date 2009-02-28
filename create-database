@@ -717,8 +717,9 @@ class SrcPackage(Base):
         cursor.execute('''SELECT MAX(id) FROM srcpackage;''')
         return cursor.fetchone()[0]
 
-    def __init__(self, name, parent_directory):
+    def __init__(self, name, project, parent_directory):
         self.name = name
+        self.project = project
         self.upstream_name = ''
         self.path = os.path.join(parent_directory, name)
         self.maintainer = ''
@@ -1026,7 +1027,7 @@ class Project(Base):
         for file in os.listdir(project_dir):
             if file == '.is-devel-project':
                 continue
-            srcpackage = SrcPackage(file, project_dir)
+            srcpackage = SrcPackage(file, self, project_dir)
             srcpackage.read_data(db_cache)
             if is_devel_project and not srcpackage.is_obs_link and not srcpackage.obs_error:
                 srcpackage.obs_error = 'not-link'
