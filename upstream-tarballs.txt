@@ -235,7 +235,7 @@ yast2-control-center-gnome:upstream:
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz-fusion.org/
-compiz:httpls:http://xorg.freedesktop.org/archive/individual/app/
+compiz:subdirhttpls:http://releases.compiz-fusion.org/core/
 compiz-bcop:subdirhttpls:http://releases.compiz-fusion.org/
 compiz-fusion-plugins-extra:subdirhttpls:http://releases.compiz-fusion.org/
 compiz-fusion-plugins-main:subdirhttpls:http://releases.compiz-fusion.org/
