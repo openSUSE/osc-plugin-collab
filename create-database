@@ -79,8 +79,8 @@ MAINTAINER_FILE = ''
 
 # In autobuild, it's easy to get access to the rpmlint reports. Keep this empty
 # until we find an easy way to do the same for the build service (maybe just
-# parse the output of the build log?) TODO-BS
-RPMLINT_ERRORS_PATH = ''
+# parse the output of the build log?)
+RPMLINT_ERRORS_PATH = os.path.join(OBS_DISSECTOR_DIR, 'tmp', 'rpmlint')
 
 # Changing this means breaking compatibility with previous db
 DB_MAJOR = 3
@@ -492,41 +492,142 @@ class Patch(Base):
 
 class RpmlintReport(Base):
     sql_table = 'rpmlint'
-    re_rpmlint = re.compile('(.):\s+\S+\s+(\S*)(\s+.*)?')
+    re_rpmlint = re.compile('(.+):\s+(.):\s+(\S+)\s+(\S*)(?:\s+.*)?')
+    re_rpmlint_summary = re.compile('\d+\s+packages\s+and\s+\d+\s+specfiles\s+checked\s*;')
 
     @classmethod
     def sql_setup(cls, cursor):
         cursor.execute('''CREATE TABLE %s (
             id INTEGER PRIMARY KEY,
-            package INTEGER,
+            srcpackage INTEGER,
             level TEXT,
             type TEXT,
-            detail TEXT
+            detail TEXT,
+            descr TEXT
             );''' % cls.sql_table)
 
-    def __init__(self, package, line):
-        self.package = package
-        self.level = ''
-        self.type = ''
-        self.detail = ''
-        self._analyze_line(line)
+    @classmethod
+    def analyze(cls, srcpackage, filepath):
+        rpmlints = []
 
-    def sql_add(self, cursor, package_id):
+        file = open(filepath)
+
+        # read everything until we see the rpmlint report header
+        while True:
+            line = file.readline()
+            if line == '':
+                break
+
+            # this is not the beginning of the header
+            if line[:-1] != 'RPMLINT report:':
+                continue
+
+            # we've found the beginning of the header, so let's read the whole
+            # header
+            line = file.readline()
+            if line[:-1] != '===============':
+                # oops, this is not what we expected, so go back.
+                file.seek(-len(line), os.SEEK_CUR)
+
+            break
+
+        rpmlints_without_descr = []
+        descr = None
+        separator = True
+
+        # now let's analyze the real important lines
+        while True:
+            line = file.readline()
+            if line == '':
+                break
+
+            # empty line: this is either the separator between two series of
+            # entries of the same type, or just an empty line.
+            # in the former case, this means we'll be able to set the
+            # description of the former series and save the series; we just
+            # need to be sure we're starting a new series
+            if line[:-1] == '':
+                separator = True
+                continue
+
+            # let's see if this is the end of the rpmlint report, and stop
+            # reading if this is the case
+            match = cls.re_rpmlint_summary.match(line)
+            if match:
+                break
+
+            # is this a new entry?
+            match = cls.re_rpmlint.match(line)
+            if match:
+                # we had an old series, so save it
+                if separator:
+                    if len(rpmlints_without_descr) > 0:
+                        for rpmlint in rpmlints_without_descr:
+                            rpmlint.descr = descr
+                        rpmlints.extend(rpmlints_without_descr)
+                        # reset state
+                        rpmlints_without_descr = []
+                        descr = None
+                    separator = False
+
+                package = match.group(1)
+                src = package.find('.src:')
+                if src > 0:
+                    line = package.rstrip()[src + len('.src:'):]
+                    try:
+                        line = int(line)
+                    except:
+                        print >> sys.stderr, 'Cannot parse source package line in rpmlint line from %s: %s' % (srcpackage.name, package)
+                        line = None
+                else:
+                    line = None
+
+                level = match.group(2)
+                type = match.group(3)
+                detail = match.group(4).strip()
+                if line != None:
+                    if detail == '':
+                        detail = 'line %d' % line
+                    else:
+                        detail = detail + ' (line %d)' % line
+
+                rpmlints_without_descr.append(RpmlintReport(srcpackage, level, type, detail))
+                continue
+
+            # this is not a new entry and not an empty line, so this is the
+            # description for the past few rpmlint entries. This is only
+            # expected if we had some entries before
+            if len(rpmlints_without_descr) == 0:
+                print >> sys.stderr, 'Unexpected rpmlint line from %s: %s' % (srcpackage.name, line[:-1])
+                continue
+
+            if descr:
+                descr = descr + ' ' + line[:-1]
+            else:
+                descr = line[:-1]
+
+
+        if len(rpmlints_without_descr) > 0:
+            rpmlints.extend(rpmlints_without_descr)
+
+        file.close()
+
+        return rpmlints
+
+    def __init__(self, srcpackage, level, type, detail):
+        self.srcpackage = srcpackage
+        self.level = level
+        self.type = type
+        self.detail = detail
+        self.descr = None
+
+    def sql_add(self, cursor, srcpackage_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL, ?,
-            ?, ?, ?
+            ?, ?, ?, ?
             );''' % self.sql_table,
-            (package_id,
-             self.level, self.type, self.detail))
-
-    def _analyze_line(self, line):
-        match = RpmlintReport.re_rpmlint.match(line)
-        if not match:
-            print >> sys.stderr, 'Cannot analyze rpmlint: ' % line
-
-        self.level = match.group(1)
-        self.type = match.group(2)
-        self.detail = match.group(3).strip()
+            (srcpackage_id,
+             self.level, self.type, self.detail, self.descr))
 
 #######################################################################
 
@@ -546,7 +647,6 @@ class Package(Base):
     def __init__(self, src, name):
         self.name = name
         self.src_package = src
-        self.rpmlint_reports = []
         self.summary = ''
 #FIXME
         self.description = ''
@@ -574,24 +674,6 @@ class Package(Base):
             self.description = description.encode('utf8')
         except UnicodeDecodeError:
             self.description = description.decode('latin1')
-
-    def get_rpmlint_errors(self):
-        # FIXME: autobuild specific
-        if not RPMLINT_ERRORS_PATH or RPMLINT_ERRORS_PATH == '':
-            return
-
-#FIXME i386
-        filepath = os.path.join(os.sep, RPMLINT_ERRORS_PATH, 'i386', self.name)
-        if not os.path.exists(filepath):
-            return
-
-        file = open(filepath)
-        while True:
-            line = file.readline()
-            if line == '':
-                break
-            self.rpmlint_reports.append(RpmlintReport(self, line))
-        file.close()
 
 #######################################################################
 
@@ -647,6 +729,7 @@ class SrcPackage(Base):
         self.sources = []
         self.patches = []
         self.files = []
+        self.rpmlint_reports = []
 
         self.public = True
         self.srcmd5 = ''
@@ -658,8 +741,7 @@ class SrcPackage(Base):
 
         self._analyze_files()
         self._analyze_specs()
-        for package in self.packages:
-            package.get_rpmlint_errors()
+        self._get_rpmlint_errors()
 
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
@@ -881,6 +963,16 @@ class SrcPackage(Base):
 
         spec.close()
 
+    def _get_rpmlint_errors(self):
+        if not RPMLINT_ERRORS_PATH or RPMLINT_ERRORS_PATH == '':
+            return
+
+        filepath = os.path.join(os.sep, RPMLINT_ERRORS_PATH, self.name + '.log')
+        if not os.path.exists(filepath):
+            return
+
+        self.rpmlint_reports = RpmlintReport.analyze(self, filepath)
+
     def __str__(self):
         ret = ''
         ret = ret + "Name: %s\n" % self.name
@@ -897,7 +989,8 @@ class SrcPackage(Base):
             ret = ret + "  %s: %s\n" % (patch.number, patch.filename)
         ret = ret + "Packages:\n"
         for package in self.packages:
-            ret = ret + "  %s (%d rpmlint errors)\n" % (package.name, len(package.rpmlint_reports))
+            ret = ret + "  %s\n" % package.name
+        ret = ret + "%d rpmlint errors\n" % len(self.rpmlint_reports)
         return ret
 
 #######################################################################
@@ -979,8 +1072,9 @@ def create_db(filename, projects, force):
             for package in srcpackage.packages:
                 package.sql_add(cursor, srcpackage_id)
                 package_id = Package.sql_lastid(cursor)
-                for rpmlint in package.rpmlint_reports:
-                    rpmlint.sql_add(cursor, package_id)
+
+            for rpmlint in srcpackage.rpmlint_reports:
+                rpmlint.sql_add(cursor, srcpackage_id)
 
             for source in srcpackage.sources:
                 source.sql_add(cursor, srcpackage_id)
