@@ -106,4 +106,22 @@ checkout_project X11:Compiz
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
+# We download the rpmlint data. We keep the old version around until we're sure
+# the new version is fine.
+pushd $OBS_DISSECTOR_DIR/tmp
+wget -q -nc -o rpmlint.tar.bz2 ftp://ftp.coolice.org/rpmlint/rpmlint.tar.bz2
+if test $? -eq 0; then
+    if test -d rpmlint; then
+        mv rpmlint rpmlint.old
+    fi
+    tar jxf rpmlint.tar.bz2
+    if test $? -ne 0 -a -d rpmlint.old; then
+        mv rpmlint.old rpmlint
+    fi
+    if test -d rpmlint.old; then
+        rm -rf rpmlint.old
+    fi
+fi
+popd
+
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
