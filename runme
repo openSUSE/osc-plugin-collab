@@ -108,20 +108,36 @@ $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
 # We download the rpmlint data. We keep the old version around until we're sure
 # the new version is fine.
-pushd $OBS_DISSECTOR_DIR/tmp
-wget -q -nc -o rpmlint.tar.bz2 ftp://ftp.coolice.org/rpmlint/rpmlint.tar.bz2
-if test $? -eq 0; then
-    if test -d rpmlint; then
-        mv rpmlint rpmlint.old
+get_rpmlint () {
+    PROJECT=$1
+    if test "x$1" = "x"; then
+        return
     fi
-    tar jxf rpmlint.tar.bz2
-    if test $? -ne 0 -a -d rpmlint.old; then
-        mv rpmlint.old rpmlint
+
+    if test -f rpmlint.tar.bz2; then
+        rm -f rpmlint.tar.bz2
     fi
-    if test -d rpmlint.old; then
-        rm -rf rpmlint.old
+    wget -q ftp://ftp.coolice.org/rpmlint/$PROJECT/rpmlint.tar.bz2
+    if test $? -eq 0; then
+        if test -d $PROJECT; then
+            mv $PROJECT $PROJECT.old
+        fi
+        tar jxf rpmlint.tar.bz2
+        if test $? -ne 0 -a -d $PROJECT.old; then
+            mv $PROJECT.old $PROJECT
+        fi
+        if test -d $PROJECT.old; then
+            rm -rf $PROJECT.old
+        fi
+
+        rm -f rpmlint.tar.bz2
     fi
-fi
+}
+
+mkdir -p $OBS_DISSECTOR_DIR/tmp/rpmlint
+pushd $OBS_DISSECTOR_DIR/tmp/rpmlint
+get_rpmlint openSUSE:Factory
+get_rpmlint GNOME:Factory
 popd
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db

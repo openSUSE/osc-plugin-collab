@@ -968,7 +968,7 @@ class SrcPackage(Base):
         if not RPMLINT_ERRORS_PATH or RPMLINT_ERRORS_PATH == '':
             return
 
-        filepath = os.path.join(os.sep, RPMLINT_ERRORS_PATH, self.name + '.log')
+        filepath = os.path.join(os.sep, RPMLINT_ERRORS_PATH, self.project.name, self.name + '.log')
         if not os.path.exists(filepath):
             return
 
