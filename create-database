@@ -492,8 +492,8 @@ class Patch(Base):
 
 class RpmlintReport(Base):
     sql_table = 'rpmlint'
-    re_rpmlint = re.compile('(.+):\s+(.):\s+(\S+)\s+(\S*)(?:\s+.*)?')
-    re_rpmlint_summary = re.compile('\d+\s+packages\s+and\s+\d+\s+specfiles\s+checked\s*;')
+    re_rpmlint = re.compile('\s*(.+):\s+(.):\s+(\S+)\s+(\S*)(?:\s+.*)?')
+    re_rpmlint_summary = re.compile('\s*\d+\s+packages\s+and\s+\d+\s+specfiles\s+checked\s*;')
 
     @classmethod
     def sql_setup(cls, cursor):
@@ -577,7 +577,7 @@ class RpmlintReport(Base):
                     try:
                         line = int(line)
                     except:
-                        print >> sys.stderr, 'Cannot parse source package line in rpmlint line from %s: %s' % (srcpackage.name, package)
+                        print >> sys.stderr, 'Cannot parse source package line in rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, package)
                         line = None
                 else:
                     line = None
@@ -598,7 +598,7 @@ class RpmlintReport(Base):
             # description for the past few rpmlint entries. This is only
             # expected if we had some entries before
             if len(rpmlints_without_descr) == 0:
-                print >> sys.stderr, 'Unexpected rpmlint line from %s: %s' % (srcpackage.name, line[:-1])
+                print >> sys.stderr, 'Unexpected rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, line[:-1])
                 continue
 
             if descr:
