@@ -99,7 +99,7 @@ gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-gala
 galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-daemon/
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
-gbrainy:httpls:http://www.softcatala.org/~jmas/gbrainy/
+gbrainy:httpls:http://live.gnome.org/gbrainy
 gdata.py:google:gdata-python-client
 gdesklets:httpls:http://www.gdesklets.de/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
