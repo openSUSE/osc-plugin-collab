@@ -135,9 +135,9 @@ get_rpmlint () {
 }
 
 mkdir -p $OBS_DISSECTOR_DIR/tmp/rpmlint
-pushd $OBS_DISSECTOR_DIR/tmp/rpmlint
+pushd $OBS_DISSECTOR_DIR/tmp/rpmlint > /dev/null
 get_rpmlint openSUSE:Factory
 get_rpmlint GNOME:Factory
-popd
+popd > /dev/null
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
