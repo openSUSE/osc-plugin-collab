@@ -2141,10 +2141,10 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
     return (True, srcmd5, rev)
 
 
-def _gnome_print_build_status(self, repo, build_details, header, error_line, hint = False):
+def _gnome_print_build_status(self, repo, build_state, header, error_line, hint = False):
     print '%s:' % header
 
-    keys = build_details.keys()
+    keys = build_state.keys()
     if not keys or len(keys) == 0:
         print '  %s' % error_line
         return
@@ -2160,26 +2160,28 @@ def _gnome_print_build_status(self, repo, build_details, header, error_line, hin
     # 4: because we also have a few other characters (see left variable)
     format = '%-' + str(max_len + 4) + 's%s'
     for key in keys:
-        if build_details[key] in ['failed']:
+        if build_state[key]['result'] in ['failed']:
             show_hint = True
 
         left = '  %s: ' % key
-        print format % (left, build_details[key])
+        print format % (left, build_state[key]['result'])
 
     if show_hint and hint:
         for key in keys:
-            if build_details[key] == 'failed':
+            if build_state[key]['result'] == 'failed':
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
-def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, verbose_error):
+def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
+    time = self.OscGnomeImport.m_import('time')
+
     try:
         results = show_results_meta(apiurl, project, package=package)
         if len(results) == 0:
             if verbose_error:
                 print >>sys.stderr, 'Error while getting build results of package on the build service: empty results'
             error_counter += 1
-            return (True, False, {}, error_counter)
+            return (True, False, error_counter, {})
 
         # reset the error counter
         error_counter = 0
@@ -2187,7 +2189,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         if verbose_error:
             print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e.msg
         error_counter += 1
-        return (True, False, {}, error_counter)
+        return (True, False, error_counter, {})
 
     res_root = ET.XML(''.join(results))
     results_per_arch = {}
@@ -2233,13 +2235,23 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         arch = key
         value = results_per_arch[key]
 
+        # the result has changed since last time, so we won't trigger a rebuild
+        if state[arch]['result'] != value:
+            state[arch]['rebuild'] = -1
+
         # build is done, but not successful
         if value not in ['succeeded', 'excluded']:
             build_successful = False
 
         # build is happening or will happen soon
-        if value in ['blocked', 'scheduled', 'building', 'dispatching', 'finished']:
+        if value in ['scheduled', 'building', 'dispatching', 'finished']:
             bs_not_ready = True
+
+        # sometimes, the scheduler forgets about a package in 'blocked' state,
+        # so we have to force a rebuild
+        if value in ['blocked']:
+            bs_not_ready = True
+            arch_need_rebuild = True
 
         # build has failed for an architecture: no need to wait for other
         # architectures to know that there's a problem
@@ -2255,10 +2267,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         # the change we did to the meta yet (eg).
         elif value in ['unknown', 'disabled']:
             bs_not_ready = True
-
-            # special case (see long comment in the caller of this function)
-            if not ignore_initial_trigger_rebuild:
-                arch_need_rebuild = True
+            arch_need_rebuild = True
 
         # build is done, but is it for the latest version?
         elif value in ['succeeded']:
@@ -2283,8 +2292,13 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                     arch_need_rebuild = True
                     results_per_arch[key] = 'rebuild needed'
 
-        if arch_need_rebuild:
+        if arch_need_rebuild and state[arch]['rebuild'] == 0:
             bs_not_ready = True
+
+            if not time:
+                print 'Triggering rebuild for %s' % (arch,)
+            else:
+                print 'Triggering rebuild for %s as of %s' % (arch, time.strftime('%X (%x)', time.localtime()))
 
             try:
                 rebuild(apiurl, project, package, repo, arch)
@@ -2295,10 +2309,45 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
 
+        state[arch]['result'] = results_per_arch[key]
+
+        if state[arch]['result'] in ['blocked']:
+            # if we're blocked, maybe the scheduler forgot about us, so
+            # schedule a rebuild every 60 minutes. The main use case is when
+            # you leave the plugin running for a whole night.
+            if state[arch]['rebuild'] <= 0:
+                state[arch]['rebuild-timeout'] = 60
+                state[arch]['rebuild'] = state[arch]['rebuild-timeout']
+
+            # note: it's correct to decrement even if we start with a new value
+            # of timeout, since if we don't, it adds 1 minute (ie, 5 minutes
+            # instead of 4, eg)
+            state[arch]['rebuild'] = state[arch]['rebuild'] - 1
+        elif state[arch]['result'] in ['unknown', 'disabled', 'rebuild needed']:
+            # if we're in this unexpected state, force the scheduler to do
+            # something
+            if state[arch]['rebuild'] <= 0:
+                # we do some exponential timeout until 60 minutes. We skip
+                # timeouts of 1 and 2 minutes since they're quite short.
+                if state[arch]['rebuild-timeout'] > 0:
+                    state[arch]['rebuild-timeout'] = min(60, state[arch]['rebuild-timeout'] * 2)
+                else:
+                    state[arch]['rebuild-timeout'] = 4
+                state[arch]['rebuild'] = state[arch]['rebuild-timeout']
+
+            # note: it's correct to decrement even if we start with a new value
+            # of timeout, since if we don't, it adds 1 minute (ie, 5 minutes
+            # instead of 4, eg)
+            state[arch]['rebuild'] = state[arch]['rebuild'] - 1
+        else:
+            # else, we make sure we won't manually trigger a rebuild
+            state[arch]['rebuild'] = -1
+            state[arch]['rebuild-timeout'] = -1
+
     if do_not_wait_for_bs:
         bs_not_ready = False
 
-    return (bs_not_ready, build_successful, results_per_arch, error_counter)
+    return (bs_not_ready, build_successful, error_counter, state)
 
 
 def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
@@ -2314,16 +2363,21 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 
 
     build_successful = False
-    cached_results = {}
     print_status = False
     error_counter = 0
     last_check = 0
 
-    # we don't want to trigger a rebuild the first time when the state is
-    # 'disabled' since the state might have changed very recently (if we
-    # updated the metadata ourselves), and the build service might have
-    # an old build that it can re-use instead of building again.
-    ignore_initial_trigger_rebuild = True
+    state = {}
+    # When we want to trigger a rebuild for this arch.
+    # The initial value is 1 since we don't want to trigger a rebuild the first
+    # time when the state is 'disabled' since the state might have changed very
+    # recently (if we updated the metadata ourselves), and the build service
+    # might have an old build that it can re-use instead of building again.
+    for arch in archs:
+        state[arch] = {}
+        state[arch]['rebuild'] = -1
+        state[arch]['rebuild-timeout'] = -1
+        state[arch]['result'] = 'unknown'
 
     # if we just committed a change, we want to ignore the first error to let
     # the build service reevaluate the situation
@@ -2345,9 +2399,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, cached_results, error_counter) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, ignore_initial_trigger_rebuild, ignore_initial_errors, error_counter, print_status)
-                # make sure we start triggering rebuilds for 'disabled' now
-                ignore_initial_trigger_rebuild = False
+                (need_to_continue, build_successful, error_counter, state) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
                 # make sure we don't ignore errors anymore
                 ignore_initial_errors = False
 
@@ -2362,7 +2414,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 
             if print_status:
                 header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-                self._gnome_print_build_status(repo, cached_results, header, 'no results returned by the build service')
+                self._gnome_print_build_status(repo, state, header, 'no results returned by the build service')
 
             if not need_to_continue:
                 break
@@ -2392,7 +2444,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
         print ''
         print 'Interrupted: not waiting for the build to finish. Cleaning up...'
 
-    return (build_successful, cached_results)
+    return (build_successful, state)
 
 
 #######################################################################
@@ -2417,10 +2469,10 @@ def _gnome_build_internal(self, apiurl, osc_package, repo, archs, recently_chang
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_details) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
+    (build_success, build_state) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
 
     if not build_success:
-        self._gnome_print_build_status(repo, build_details, 'Status', 'no status known: osc got interrupted?', hint=True)
+        self._gnome_print_build_status(repo, build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
