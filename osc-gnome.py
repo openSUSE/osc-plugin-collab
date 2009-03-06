@@ -1456,12 +1456,13 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     new_dir = os.path.join(tmpdir, 'new')
 
     try:
-        err_tarball = os.path.basename(old_tarball)
-        _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
+        if old:
+            err_tarball = os.path.basename(old_tarball)
+            _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
 
         err_tarball = new_tarball_basename
         _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
-    except (tarfile.EOFError, EOFError):
+    except (tarfile.ReadError, EOFError):
         _cleanup(old, new, tmpdir)
         raise self.OscGnomeNewsError('Cannot extract NEWS information: %s is not a valid tarball.' % err_tarball)
 
