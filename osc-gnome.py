@@ -2181,7 +2181,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             if verbose_error:
                 print >>sys.stderr, 'Error while getting build results of package on the build service: empty results'
             error_counter += 1
-            return (True, False, error_counter, {})
+            return (True, False, error_counter, state)
 
         # reset the error counter
         error_counter = 0
@@ -2189,7 +2189,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         if verbose_error:
             print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e.msg
         error_counter += 1
-        return (True, False, error_counter, {})
+        return (True, False, error_counter, state)
 
     res_root = ET.XML(''.join(results))
     results_per_arch = {}
