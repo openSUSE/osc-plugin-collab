@@ -187,6 +187,9 @@ pyorbit:python-orbit
 
 ## EXTRAS
 NetworkManager:
+NetworkManager-openvpn:
+NetworkManager-pptp:
+NetworkManager-vpnc:
 # No package in openSUSE
 #atomix:
 beagle:
