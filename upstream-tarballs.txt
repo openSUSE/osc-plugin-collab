@@ -62,7 +62,7 @@ DeviceKit-power:httpls:http://hal.freedesktop.org/releases/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
-webkit:httpls:http://people.freedesktop.org/~alp/webkit/gtk/
+webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 # note that we still use aqbanking 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
