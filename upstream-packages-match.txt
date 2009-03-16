@@ -187,6 +187,7 @@ pyorbit:python-orbit
 
 ## EXTRAS
 NetworkManager:
+#NetworkManager-openconnect:
 NetworkManager-openvpn:
 NetworkManager-pptp:
 NetworkManager-vpnc:
