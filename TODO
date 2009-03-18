@@ -22,8 +22,6 @@
   - if the package has no explicit enable for architecture, we don't look
     at the project metadata and enable the build in the package. We should
     look at the project metadata.
-  - if it's blocked for 30 minutes, trigger a rebuild. Sometimes the build
-    service forgets about a package...
 + 'osc gnome buildsubmit':
   - do nothing with --forward option when the user has not enough privilege to
     forward
