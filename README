@@ -16,10 +16,6 @@ create-database:
 dissector_util.py:
     Miscellaneous functions that make life easier.
 
-download-gnome-versions:
-    Download information about the latest versions of various GNOME
-    modules.
-
 download-upstream-versions:
     Download information about the latest versions of various modules
     that are not hosted on ftp.gnome.org.
