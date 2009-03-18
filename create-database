@@ -561,7 +561,8 @@ class RpmlintReport(Base):
             # we've found the beginning of the header, so let's read the whole
             # header
             line = file.readline()
-            if line[:-1] != '===============':
+            # note: we remove spurious spaces because the build service sometimes add some
+            if line[:-1].replace(' ', '') != '===============':
                 # oops, this is not what we expected, so go back.
                 file.seek(-len(line), os.SEEK_CUR)
 
