@@ -47,27 +47,58 @@ cp --force upstream-packages-match.txt $OBS_DISSECTOR_DIR
 cp --force upstream-limits.txt $OBS_DISSECTOR_DIR
 cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
 
-$basedir/download-gnome-versions
+######################################
+# Download latest upstream versions
+# For non-GNOME:Factory, we only care about the official GNOME modules.
+
+download_gnome_version () {
+    VERSION=$1
+    if test "x$1" = "x"; then
+        return
+    fi
+
+    DESTFILE=$OBS_DISSECTOR_DIR/tmp/versions-$VERSION
+    if test -f $DESTFILE; then
+        rm -f $DESTFILE
+    fi
+
+    wget -q -nc -O $DESTFILE http://www.gnome.org/~vuntz/tmp/versions/versions-$VERSION
+
+    # Don't use gstreamer from ftp.gnome.org -- it can be outdated
+    sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g" $DESTFILE
+    # We don't care about mobile stuff
+    sed -i "s/^\(mobile:.*\)$/# \1/g" $DESTFILE
+}
+
+download_gnome_version 2.24
+download_gnome_version 2.26
+download_gnome_version stable
+download_gnome_version unstable
+download_gnome_version extras
+
+FACTORY_VERSION=unstable
+
+# For G:F, we want extras and non-fgo stuff
 cp $OBS_DISSECTOR_DIR/tmp/versions-non-fgo $OBS_DISSECTOR_DIR/tmp/versions-non-fgo.bak
 $basedir/download-upstream-versions --upstream-tarballs=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --upstream-limits=$OBS_DISSECTOR_DIR/upstream-limits.txt  --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old --use-old-as-fallback
 if test $? -ne 0; then
     cp $OBS_DISSECTOR_DIR/tmp/versions-non-fgo.bak $OBS_DISSECTOR_DIR/tmp/versions-non-fgo
     echo "Error while checking for new upstream versions"
 fi
-# Don't use gstreamer from ftp.gnome.org -- it can be outdated
-sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g" $OBS_DISSECTOR_DIR/versions
-# We don't care about mobile stuff
-sed -i "s/^\(mobile:.*\)$/# \1/g" $OBS_DISSECTOR_DIR/versions
-cat $OBS_DISSECTOR_DIR/tmp/versions-non-fgo >> $OBS_DISSECTOR_DIR/versions
+cat $OBS_DISSECTOR_DIR/tmp/versions-$FACTORY_VERSION $OBS_DISSECTOR_DIR/tmp/versions-extras $OBS_DISSECTOR_DIR/tmp/versions-non-fgo > $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory
 
-# Check that we have everything in the match database.
-for i in `grep -v '^#' $OBS_DISSECTOR_DIR/versions | grep ':' | cut -d ':' -f 2`; do
+# Check that we have everything in the match database (GNOME:Factory only).
+for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory | grep ':' | cut -d ':' -f 2`; do
     re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
     grep -q -E "^(# ?)?$re_i:" $OBS_DISSECTOR_DIR/upstream-packages-match.txt
     if test $? -ne 0; then
         echo $i not in $OBS_DISSECTOR_DIR/upstream-packages-match.txt
     fi
 done
+
+
+######################################
+# Check out from the build service
 
 # We check everything out in a temporary directory.
 # At the end, we'll symlink this directory to the stable directory, and
@@ -82,29 +113,44 @@ checkout_project () {
         return
     fi
 
-    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of $PROJECT --project openSUSE:Factory
-    if test $? -ne 0; then
-        echo "Error while checking out openSUSE:Factory"
-        exit 1
+    VERSIONFILE=$2
+    PARENT=$3
+
+    if test "x$PARENT" != "x"; then
+        $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of $PROJECT --project $PARENT
+        if test $? -ne 0; then
+            echo "Error while checking out $PARENT"
+            exit 1
+        fi
+        echo "versionfile=$VERSIONFILE" > $DEST_CO/$PARENT/osc-gnome-config
     fi
+
     $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --warn-if-not-unexpanded-link --project $PROJECT
     if test $? -ne 0; then
         echo "Error while checking out $PROJECT"
         exit 1
     fi
-    echo "Development project" > $DEST_CO/$PROJECT/.is-devel-project
+    echo "parent=$PARENT" > $DEST_CO/$PROJECT/osc-gnome-config
+    echo "versionfile=$VERSIONFILE" >> $DEST_CO/$PROJECT/osc-gnome-config
 }
 
-checkout_project GNOME:Factory
-checkout_project X11:common:Factory
-checkout_project X11:Compiz
+checkout_project GNOME:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project X11:common:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project X11:Compiz "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+
+checkout_project GNOME:STABLE:2.24 "$OBS_DISSECTOR_DIR/tmp/versions-2.24" openSUSE:11.1
 
 # This is a project that we use when we want to work on the next release of
 # openSUSE but oS:F has not been branched yet. Comment/uncomment when
 # appropriate.
-#checkout_project GNOME:Factory:Next
+#checkout_project GNOME:Factory:Next openSUSE:Factory $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
+
+
+######################################
+# Get the rpmlint data
+# GNOME:Factory only
 
 # We download the rpmlint data. We keep the old version around until we're sure
 # the new version is fine.
@@ -139,5 +185,9 @@ pushd $OBS_DISSECTOR_DIR/tmp/rpmlint > /dev/null
 get_rpmlint openSUSE:Factory
 get_rpmlint GNOME:Factory
 popd > /dev/null
+
+
+######################################
+# Create the databases
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
