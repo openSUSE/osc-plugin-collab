@@ -222,6 +222,20 @@ class OscGnomeWeb:
         return (parent_project, None, None, None)
 
 
+    def get_project_parent(self, project):
+        data = urlencode({'project': project, 'package': 'ignore-this'})
+        url = self._append_data_to_url(self._csv_url, data)
+
+        try:
+            fd = urllib2.urlopen(url)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get parent of project %s: %s' % (project, e.msg))
+
+        (parent_project, packages_versions) = self._parse_project_package_details(fd)
+
+        return parent_project
+
+
     def get_upstream_url(self, project, package):
         data = urlencode({'project': project, 'package': package})
         url = self._append_data_to_url(self._upstream_url, data)
@@ -2019,7 +2033,13 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        devel_project = show_develproject(apiurl, 'openSUSE:Factory', request.dst_package)
+        parent_project = self._gnome_web.get_project_parent(request.dst_project)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, 'Cannot get parent project of %s.' % request.dst_project
+        return
+
+    try:
+        devel_project = show_develproject(apiurl, parent_project, request.dst_package)
     except urllib2.HTTPError, e:
         print >>sys.stderr, 'Cannot get development project for %s: %s' % (request.dst_package, e.msg)
         return
@@ -2028,20 +2048,20 @@ def _gnome_forward(self, apiurl, projects, request_id):
         print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (request.dst_package, request.dst_project, devel_project)
         return
 
-    result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to openSUSE:Factory')
+    result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % parent_project)
     root = ET.fromstring(result)
     if not 'code' in root.keys() or root.get('code') != 'ok':
         print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
         return
 
-    # TODO: cancel old requests from request.dst_project to oS:F
+    # TODO: cancel old requests from request.dst_project to parent project
 
     result = create_submit_request(apiurl,
                                    request.dst_project, request.dst_package,
-                                   'openSUSE:Factory', request.dst_package,
+                                   parent_project, request.dst_package,
                                    request.descr)
 
-    print 'Submission request %s has been forwarded to openSUSE:Factory (request id: %s).' % (request_id, result)
+    print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, parent_project, result)
 
 
 #######################################################################
@@ -2719,7 +2739,7 @@ def _gnome_ensure_email(self):
               help='specify log message TEXT')
 @cmdln.option('-f', '--forward', action='store_true',
               dest='forward',
-              help='automatically forward to openSUSE:Factory if successful')
+              help='automatically forward to parent project if successful')
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
               help='project to work on (default: GNOME:Factory)')
@@ -2755,7 +2775,7 @@ def do_gnome(self, subcmd, opts, *args):
     edition, etc.). The package will be checked out in the current directory.
 
     "forward" (or "f") will forward a submission request to the project to
-    openSUSE:Factory. This includes the step of accepting the request first.
+    parent project. This includes the step of accepting the request first.
 
     "build" (or "b") will commit the local changes of the package in
     the current directory and wait for the build to succeed on the build
