@@ -817,12 +817,12 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
         return (None, None)
 
     devel_dict = {}
-    # list of packages that should exist in G:F but that don't
+    # list of packages that should exist in project but that don't
     bad_devel_packages = []
-    # list of packages that exist in G:F but that shouldn't
+    # list of packages that exist in project but that shouldn't
     should_devel_packages = []
 
-    # save all packages that should be in G:F and also create a db of
+    # save all packages that should be in project and also create a db of
     # package->develproject
     for package in collection.findall('package'):
         name = package.get('name')
@@ -836,15 +836,15 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
         if devel_project == project:
             should_devel_packages.append(name)
 
-    # get the list of packages that are actually in G:F
+    # get the list of packages that are actually in project
     try:
         packages_versions = self._gnome_web.get_packages_versions(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
 
-    # now really create the list of packages that should be in G:F and
-    # create the list of packages that shouldn't stay in G:F
+    # now really create the list of packages that should be in project and
+    # create the list of packages that shouldn't stay in project
     for (package, parent_version, devel_version, upstream_version) in packages_versions:
         if package in should_devel_packages:
             should_devel_packages.remove(package)
