@@ -123,8 +123,9 @@ class OscGnomeWeb:
             return (None, None, None)
 
 
-    def get_packages_versions(self, project):
+    def get_project_details(self, project):
         packages_versions = []
+        parent_project = ''
 
         data = urlencode({'project': project})
         url = self._append_data_to_url(self._csv_url, data)
@@ -138,7 +139,13 @@ class OscGnomeWeb:
         fd.close()
 
         for line in lines:
-            if self._line_is_comment(line):
+            # there's some meta-information hidden in comments :-)
+            if line.startswith('#meta: '):
+                meta = line[len('#meta: '):-1]
+                if meta.startswith('parent='):
+                    parent_project = meta[len('parent='):].strip()
+                continue
+            elif self._line_is_comment(line):
                 continue
             try:
                 (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
@@ -147,7 +154,7 @@ class OscGnomeWeb:
                 print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
 
-        return packages_versions
+        return (parent_project, packages_versions)
 
 
     def get_packages_with_delta(self, project):
@@ -729,10 +736,10 @@ def _gnome_table_print_header(self, template, title):
 def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
-        packages_versions = self._gnome_web.get_packages_versions(project)
+        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return []
+        return ('', [])
 
     # get the list of reserved package
     try:
@@ -764,7 +771,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
             lines.append((package, parent_version, devel_version, upstream_version))
 
 
-    return lines
+    return (parent_project, lines)
 
 
 #######################################################################
@@ -772,10 +779,15 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
 def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     lines = []
+    parent_project = None
 
     for project in projects:
-        project_lines = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
+        (new_parent_project, project_lines) = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
         lines.extend(project_lines)
+        if parent_project == None:
+            parent_project = new_parent_project
+        elif parent_project != new_parent_project:
+            parent_project = 'Parent Project'
 
     if len(lines) == 0:
         print 'Nothing to do.'
@@ -790,7 +802,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     else:
         project_header = "Devel Project"
     # print headers
-    title = ('Package', 'openSUSE:Factory', project_header, 'Upstream')
+    title = ('Package', parent_project, project_header, 'Upstream')
     (max_package, max_oF, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_package = min(max_package, 48)
@@ -838,7 +850,7 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
 
     # get the list of packages that are actually in project
     try:
-        packages_versions = self._gnome_web.get_packages_versions(project)
+        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
@@ -915,7 +927,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
 
     # get the packages with no upstream data
-    packages_versions = self._gnome_web.get_packages_versions(project)
+    (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
     no_upstream_packages = []
     for (package, parent_version, devel_version, upstream_version) in packages_versions:
         if upstream_version == '':
