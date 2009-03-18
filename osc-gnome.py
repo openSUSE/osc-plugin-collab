@@ -2735,7 +2735,7 @@ def do_gnome(self, subcmd, opts, *args):
     "todo" (or "t") will list the packages that need some action.
 
     "todoadmin" (or "ta") will list the packages from the project that need
-    to be submitted to openSUSE:Factory.
+    to be submitted to the parent project, and various other errors or tasks.
 
     "listreserved" (or "lr") will list the reserved packages.
 
