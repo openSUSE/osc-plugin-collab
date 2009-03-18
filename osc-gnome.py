@@ -896,23 +896,32 @@ def _gnome_min_package(self, packages):
 
 
 def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
-    def _message_delta_package(delta_package, submitted_from_packages):
+    def _message_delta_package(delta_package, submitted_from_packages, parent_project):
+        if not parent_project:
+            return None
+
         if self._gnome_is_submitted(delta_package, submitted_from_packages):
             if exclude_submitted:
                 return None
-            message = 'Waits for approval in openSUSE:Factory queue'
+            message = 'Waits for approval in %s queue' % parent_project
         else:
-            message = 'Needs to be submitted to openSUSE:Factory'
+            message = 'Needs to be submitted to %s' % parent_project
         return message
 
-    def _message_error_package(error_package_tuple):
+    def _message_error_package(error_package_tuple, parent_project):
         (error_package, error, details) = error_package_tuple
+
+        # we use this variable in cases where it should always be set, but to
+        # be on the safe side, we fallback to a generic name
+        if not parent_project:
+            parent_project = 'parent project'
+
         if error == 'not-link':
-            message = 'Is not a link to openSUSE:Factory'
+            message = 'Is not a link to %s' % parent_project
         elif error == 'not-in-parent':
-            message = 'Does not exist in openSUSE:Factory'
+            message = 'Does not exist in %s' % parent_project
         elif error == 'need-merge-with-parent':
-            message = 'Requires a manual merge with openSUSE:Factory'
+            message = 'Requires a manual merge with %s' % parent_project
         else:
             if details:
                 message = 'Unknown error: %s' % details
@@ -929,11 +938,15 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         print >>sys.stderr, e.msg
         return []
 
+    (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
+
     # get the packages submitted from
-    submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, 'openSUSE:Factory')
+    if parent_project:
+        submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, parent_project)
+    else:
+        submitted_from_packages = []
 
     # get the packages with no upstream data
-    (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
     no_upstream_packages = []
     for (package, parent_version, devel_version, upstream_version) in packages_versions:
         if upstream_version == '':
@@ -964,11 +977,11 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     package_data_sets.append(['bad_devel', bad_devel_packages, 0, len(bad_devel_packages), 0,
                               lambda prj, pkg, tpl: 'Development project is not %s (%s)' % (prj, tpl[1])])
     package_data_sets.append(['error', packages_with_errors, 0, len(packages_with_errors), 0,
-                              lambda prj, pkg, tpl: _message_error_package(tpl)])
+                              lambda prj, pkg, tpl: _message_error_package(tpl, parent_project)])
     package_data_sets.append(['submitted_to', submitted_to_packages, 0, len(submitted_to_packages), 1,
                               lambda prj, pkg, tpl: 'Needs to be reviewed (submission id: %s)' % tpl[0]])
     package_data_sets.append(['delta', packages_with_delta, 0, len(packages_with_delta), -1,
-                              lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages)])
+                              lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages, parent_project)])
     package_data_sets.append(['no_upstream_data', no_upstream_packages, 0, len(no_upstream_packages), -1,
                               lambda prj, pkg, tpl: 'No upstream data available'])
 
