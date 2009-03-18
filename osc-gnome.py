@@ -141,8 +141,8 @@ class OscGnomeWeb:
             if self._line_is_comment(line):
                 continue
             try:
-                (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
-                packages_versions.append((package, oF_version, devel_version, upstream_version))
+                (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
+                packages_versions.append((package, parent_version, devel_version, upstream_version))
             except ValueError:
                 print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
@@ -208,12 +208,12 @@ class OscGnomeWeb:
             return (None, None, None)
 
         try:
-            (package, oF_version, devel_version, upstream_version, empty) = line.split(';')
+            (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
         except ValueError:
             print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
             return (None, None, None)
 
-        return (oF_version, devel_version, upstream_version)
+        return (parent_version, devel_version, upstream_version)
 
 
     def get_upstream_url(self, project, package):
@@ -667,8 +667,8 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
     return False
 
 
-def _gnome_needs_update(self, oF_version, devel_version, upstream_version):
-    return self._gnome_compare_versions_a_gt_b(upstream_version, oF_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
+def _gnome_needs_update(self, parent_version, devel_version, upstream_version):
+    return self._gnome_compare_versions_a_gt_b(upstream_version, parent_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
 
 
 def _gnome_is_submitted(self, package, submitted_packages):
@@ -745,13 +745,13 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
     lines = []
 
-    for (package, oF_version, devel_version, upstream_version) in packages_versions:
+    for (package, parent_version, devel_version, upstream_version) in packages_versions:
         # empty upstream version or upstream version meaning openSUSE is
         # upstream
         if upstream_version == '' or upstream_version == '--':
             continue
 
-        if self._gnome_needs_update(oF_version, devel_version, upstream_version):
+        if self._gnome_needs_update(parent_version, devel_version, upstream_version):
             if self._gnome_is_submitted(package, submitted_packages):
                 if exclude_submitted:
                     continue
@@ -761,7 +761,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
                 if exclude_reserved:
                     continue
                 upstream_version += ' (r)'
-            lines.append((package, oF_version, devel_version, upstream_version))
+            lines.append((package, parent_version, devel_version, upstream_version))
 
 
     return lines
@@ -845,7 +845,7 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
 
     # now really create the list of packages that should be in G:F and
     # create the list of packages that shouldn't stay in G:F
-    for (package, oF_version, devel_version, upstream_version) in packages_versions:
+    for (package, parent_version, devel_version, upstream_version) in packages_versions:
         if package in should_devel_packages:
             should_devel_packages.remove(package)
         if not devel_dict.has_key(package):
@@ -917,7 +917,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     # get the packages with no upstream data
     packages_versions = self._gnome_web.get_packages_versions(project)
     no_upstream_packages = []
-    for (package, oF_version, devel_version, upstream_version) in packages_versions:
+    for (package, parent_version, devel_version, upstream_version) in packages_versions:
         if upstream_version == '':
             no_upstream_packages.append(package)
 
@@ -1220,11 +1220,11 @@ def _gnome_get_project_for_package(self, apiurl, projects, package, return_versi
     # via the build service
     for project in projects:
         try:
-            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
             # if we get a result, then package exists in project
-            if oF_version != None:
+            if parent_version != None:
                 if return_versions:
-                    return (project, oF_version, devel_version, upstream_version)
+                    return (project, parent_version, devel_version, upstream_version)
                 else:
                     return project
         except self.OscGnomeWebError, e:
@@ -1792,27 +1792,27 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         project = projects[0]
 
         try:
-            (oF_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             return
     else:
-        (project, oF_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_versions = True)
+        (project, parent_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_versions = True)
         if project == None:
             print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
             return
 
 
     # check that the project is up-to-date wrt openSUSE:Factory
-    if self._gnome_compare_versions_a_gt_b(oF_version, devel_version):
+    if self._gnome_compare_versions_a_gt_b(parent_version, devel_version):
         # TODO, actually we can do a better check than that with the delta API
-        print 'Package %s is more recent in openSUSE:Factory (%s) than in %s (%s). Please synchronize %s first.' % (package, oF_version, project, devel_version, project)
+        print 'Package %s is more recent in openSUSE:Factory (%s) than in %s (%s). Please synchronize %s first.' % (package, parent_version, project, devel_version, project)
         return
 
     # check that an update is really needed
     if upstream_version == '':
         print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
-    elif not self._gnome_needs_update(oF_version, devel_version, upstream_version):
+    elif not self._gnome_needs_update(parent_version, devel_version, upstream_version):
         print 'Package %s is already up-to-date.' % package
         return
 
