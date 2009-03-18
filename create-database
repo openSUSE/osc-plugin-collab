@@ -1091,43 +1091,6 @@ def create_db(filename, projects, force):
     dbconn.close()
 
 
-def copy_files(destdir, srcpackages, use_symlink, force):
-    if force and os.path.exists(destdir):
-        shutil.rmtree(destdir)
-
-    if not os.path.exists(destdir):
-        os.makedirs(destdir)
-
-    srcpackagedir = os.path.join(os.sep, destdir, 'srcpackages')
-    packagedir = os.path.join(os.sep, destdir, 'packages')
-
-    os.mkdir(srcpackagedir)
-    os.mkdir(packagedir)
-
-    if use_symlink:
-        handle_file = os.symlink
-    else:
-        handle_file = shutil.copy2
-
-    for srcpackage in srcpackages:
-        # do not export non-public packages
-        if not srcpackage.public:
-            continue
-
-        dir = os.path.join(os.sep, srcpackagedir, srcpackage.name)
-        os.mkdir(dir)
-
-        upstream_source = None
-        for source in srcpackage.sources:
-            if int(source.number) == 0:
-                upstream_source = os.path.basename(source.filename)
-                break
-
-        for file in srcpackage.files:
-            if file.filename != upstream_source and not file.filename.endswith('tar.gz') and not file.filename.endswith('tar.bz2') and not file.filename.endswith('.xpi'):
-                handle_file(os.path.join(os.sep, srcpackage.path, file.filename), os.path.join(os.sep, dir, file.filename))
-
-
 def main(args):
     parser = optparse.OptionParser()
 
@@ -1135,14 +1098,10 @@ def main(args):
                       help="output sqlite database file")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite files if already existing")
-    parser.add_option("-i", "--output-directory", dest="outputdir",
-                      help="output directory where all relevant files will be copied")
-    parser.add_option("-s", "--symlink-files", action="store_true", dest="use_symlink",
-                      default=False, help="symlink files instead of copying them")
 
     (options, args) = parser.parse_args()
 
-    if not options.outputdb and not options.outputdir:
+    if not options.outputdb:
 #FIXME error
         return
 
@@ -1158,9 +1117,6 @@ def main(args):
 
     if options.outputdb:
         create_db(options.outputdb, projects, options.force)
-
-    if options.outputdir:
-        copy_files(options.outputdir, projects, options.use_symlink, options.force)
 
 
 if __name__ == '__main__':
