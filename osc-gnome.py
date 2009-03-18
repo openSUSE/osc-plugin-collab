@@ -123,20 +123,12 @@ class OscGnomeWeb:
             return (None, None, None)
 
 
-    def get_project_details(self, project):
-        packages_versions = []
-        parent_project = ''
-
-        data = urlencode({'project': project})
-        url = self._append_data_to_url(self._csv_url, data)
-
-        try:
-            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-csv-%s' % project, 10)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get versions of packages: %s' % e.msg)
-
+    def _parse_project_package_details(self, fd):
         lines = fd.readlines()
         fd.close()
+
+        packages_versions = []
+        parent_project = ''
 
         for line in lines:
             # there's some meta-information hidden in comments :-)
@@ -155,6 +147,18 @@ class OscGnomeWeb:
                 continue
 
         return (parent_project, packages_versions)
+
+
+    def get_project_details(self, project):
+        data = urlencode({'project': project})
+        url = self._append_data_to_url(self._csv_url, data)
+
+        try:
+            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-csv-%s' % project, 10)
+        except urllib2.HTTPError, e:
+            raise self.Error('Cannot get versions of packages: %s' % e.msg)
+
+        return self._parse_project_package_details(fd)
 
 
     def get_packages_with_delta(self, project):
@@ -208,19 +212,14 @@ class OscGnomeWeb:
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
 
-        line = fd.readline()
-        fd.close()
+        (parent_project, packages_versions) = self._parse_project_package_details(fd)
 
-        if self._line_is_comment(line):
-            return (None, None, None)
+        for (fd_package, parent_version, devel_version, upstream_version) in packages_versions:
+            if fd_package == package:
+                return (parent_project, parent_version, devel_version, upstream_version)
 
-        try:
-            (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
-        except ValueError:
-            print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
-            return (None, None, None)
-
-        return (parent_version, devel_version, upstream_version)
+        # we didn't get the package we requested, oh well...
+        return (parent_project, None, None, None)
 
 
     def get_upstream_url(self, project, package):
@@ -1246,24 +1245,24 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_get_project_for_package(self, apiurl, projects, package, return_versions = False):
+def _gnome_get_project_for_package(self, apiurl, projects, package, return_all = False):
     # first check the database: this check should be faster than checking
     # via the build service
     for project in projects:
         try:
-            (parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
             # if we get a result, then package exists in project
             if parent_version != None:
-                if return_versions:
-                    return (project, parent_version, devel_version, upstream_version)
+                if return_all:
+                    return (parent_project, project, parent_version, devel_version, upstream_version)
                 else:
                     return project
         except self.OscGnomeWebError, e:
             continue
 
-    # if we need versions, the build service can't help us, so we can fail now
-    if return_versions:
-        return (None, '', '', '')
+    # if we need all info, the build service can't help us, so we can fail now
+    if return_all:
+        return (None, None, '', '', '')
 
     # no result via the database, so go directly to the build service
     for project in projects:
@@ -1823,22 +1822,23 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         project = projects[0]
 
         try:
-            (parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             return
     else:
-        (project, parent_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_versions = True)
+        (parent_project, project, parent_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_all = True)
         if project == None:
             print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
             return
 
 
-    # check that the project is up-to-date wrt openSUSE:Factory
-    if self._gnome_compare_versions_a_gt_b(parent_version, devel_version):
-        # TODO, actually we can do a better check than that with the delta API
-        print 'Package %s is more recent in openSUSE:Factory (%s) than in %s (%s). Please synchronize %s first.' % (package, parent_version, project, devel_version, project)
-        return
+    if parent_project:
+        # check that the project is up-to-date wrt parent project
+        if self._gnome_compare_versions_a_gt_b(parent_version, devel_version):
+            # TODO, actually we can do a better check than that with the delta API
+            print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, parent_project, parent_version, project, devel_version, project)
+            return
 
     # check that an update is really needed
     if upstream_version == '':
