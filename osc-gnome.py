@@ -818,7 +818,20 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 
 
 def _gnome_get_packages_with_bad_meta(self, apiurl, project):
-    metafile = self.GnomeCache.get_obs_meta(apiurl, 'openSUSE:Factory')
+    # get the list of packages that are actually in project
+    try:
+        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return (None, None)
+
+    # no parent, then no bad meta :-)
+    if not parent_project:
+        return (None, None)
+
+    # get metadata from the parent project to be able to know if packages
+    # shouldn't belong there
+    metafile = self.GnomeCache.get_obs_meta(apiurl, parent_project)
     if not metafile:
         return (None, None)
 
@@ -847,13 +860,6 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
         devel_dict[name] = devel_project
         if devel_project == project:
             should_devel_packages.append(name)
-
-    # get the list of packages that are actually in project
-    try:
-        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return (None, None)
 
     # now really create the list of packages that should be in project and
     # create the list of packages that shouldn't stay in project
