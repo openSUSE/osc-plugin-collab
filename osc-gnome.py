@@ -203,7 +203,7 @@ class OscGnomeWeb:
         return errors
 
 
-    def get_versions(self, project, package):
+    def get_package_details(self, project, package):
         data = urlencode({'project': project, 'package': package})
         url = self._append_data_to_url(self._csv_url, data)
 
@@ -1250,7 +1250,7 @@ def _gnome_get_project_for_package(self, apiurl, projects, package, return_all =
     # via the build service
     for project in projects:
         try:
-            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_package_details(project, package)
             # if we get a result, then package exists in project
             if parent_version != None:
                 if return_all:
@@ -1822,7 +1822,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         project = projects[0]
 
         try:
-            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_versions(project, package)
+            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_package_details(project, package)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             return
