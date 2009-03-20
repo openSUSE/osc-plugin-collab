@@ -198,7 +198,6 @@ psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 #FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-pygoocanvas:httpls:http://developer.berlios.de/project/showfiles.php?group_id=6813
 pygtkglext:sf:54333|76105
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
