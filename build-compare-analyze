@@ -1,0 +1,134 @@
+#!/usr/bin/python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2009, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+import os
+import sys
+
+import optparse
+import re
+
+def compare_build_output(filepath):
+    compare_re = re.compile('^compare /.build.oldpackages/\S+-([^-]+)-(\d+).\d+.\S+.rpm /usr/src/packages/S?RPMS/\S+-([^-]+)-(\d+).\d+.\S+.rpm$')
+
+    file = open(filepath)
+
+    # read everything until we see the build-compare report header
+    while True:
+        line = file.readline()
+        if line == '':
+            break
+
+        # this is not the beginning of the header
+        if line[:-1] != '... comparing built packages with the former built':
+            continue
+
+        # we've found the beginning of the header, so let's read the whole
+        # header
+        line = file.readline()
+        if line[:-1] != '/usr/lib/build/rpm-check.sh':
+            # oops, this is not what we expected, so go back.
+            file.seek(-len(line), os.SEEK_CUR)
+
+        break
+
+    different = False
+    version_different = False
+    output = ''
+
+    # now let's analyze the real important lines
+    while True:
+        line = file.readline()
+        if line == '':
+            break
+
+        # this is the end of build-compare
+        if line[:-1] == '... build is finished':
+            break
+
+        output = output + line
+
+        match = compare_re.match(line[:-1])
+        if match:
+            oldver = match.group(1)
+            oldrel = match.group(2)
+            newver = match.group(3)
+            newrel = match.group(4)
+            if (oldver != newver) or (oldrel != newrel):
+                version_different = True
+        else:
+            # this means we have output showing the difference
+            different = True
+
+    file.close()
+
+    return (version_different, different, output)
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option("-f", "--file", dest="file",
+                      help="build log file to read")
+    parser.add_option("-o", "--output", dest="output",
+                      default=False, help="output file to create if build-compare detected a non-version difference")
+
+    (options, args) = parser.parse_args()
+
+    if not options.file:
+        print >> sys.stderr, 'No build log file.'
+        sys.exit(1)
+
+    if not os.path.exists(options.file):
+        print >> sys.stderr, 'Build log file "%s" does not exist.' % options.file
+        sys.exit(1)
+
+    if options.output and os.path.exists(options.output):
+        os.unlink(options.output)
+
+    (version_different, different, output) = compare_build_output(options.file)
+
+    if not version_different and different:
+        if options.output:
+            out = open(options.output, 'w')
+            out.write(output[:-1])
+        else:
+            print output[:-1]
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass
