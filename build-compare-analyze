@@ -76,7 +76,7 @@ def compare_build_output(filepath):
             break
 
         # this is the end of build-compare
-        if line[:-1] == '... build is finished':
+        if line[:-1] in ['... build is finished', 'compare validated built as indentical !']:
             break
 
         output = output + line
