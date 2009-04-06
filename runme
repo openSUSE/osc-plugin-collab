@@ -125,7 +125,13 @@ checkout_project () {
         echo "versionfile=$VERSIONFILE" > $DEST_CO/$PARENT/osc-gnome-config
     fi
 
-    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --warn-if-not-unexpanded-link --project $PROJECT
+    if test "x$PARENT" != "x"; then
+        OBS_CO_OPTIONS="--warn-if-not-unexpanded-link"
+    else
+        OBS_CO_OPTIONS=
+    fi
+
+    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" $OBS_CO_OPTIONS --project $PROJECT
     if test $? -ne 0; then
         echo "Error while checking out $PROJECT"
         exit 1
@@ -138,7 +144,9 @@ checkout_project GNOME:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" o
 checkout_project X11:common:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
 checkout_project X11:Compiz "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
 
-checkout_project GNOME:STABLE:2.24 "$OBS_DISSECTOR_DIR/tmp/versions-2.24" openSUSE:11.1
+# Disabling G:S:2.24 since it should be up-to-date and there's no real effort for it anymore.
+#checkout_project GNOME:STABLE:2.24 "$OBS_DISSECTOR_DIR/tmp/versions-2.24" openSUSE:11.1
+checkout_project GNOME:STABLE:2.26 "$OBS_DISSECTOR_DIR/tmp/versions-2.26"
 
 # This is a project that we use when we want to work on the next release of
 # openSUSE but oS:F has not been branched yet. Comment/uncomment when
