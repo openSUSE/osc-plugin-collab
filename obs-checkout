@@ -52,6 +52,7 @@ import sys
 
 import optparse
 import shutil
+import socket
 import tempfile
 import urllib2
 
@@ -408,6 +409,9 @@ def main(args):
         print 'No destination directory specified. Using %s' % CHECKOUT_DIR_STABLE
     else:
         dest_dir = options.dest_dir
+
+    # set default timeout to 30 seconds to not hang forever
+    socket.setdefaulttimeout(30)
 
     co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.warn_non_links)
 
