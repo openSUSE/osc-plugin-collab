@@ -1584,9 +1584,12 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
 
 
 def _gnome_gz_to_bz2_internal(self, file):
-    if not file.endswith('.gz'):
+    if file.endswith('.gz'):
+        dest_file = file[:-3] + '.bz2'
+    elif file.endswith('.tgz'):
+        dest_file = file[:-4] + '.tar.bz2'
+    else:
         raise self.OscGnomeCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
-    dest_file = file[:-3] + '.bz2'
 
     gzip = self.OscGnomeImport.m_import('gzip')
     bz2 = self.OscGnomeImport.m_import('bz2')
@@ -1960,7 +1963,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
 
     # recompress as bz2
     # not fatal if fails
-    if upstream_tarball.endswith('.gz'):
+    if upstream_tarball.endswith('.gz') or upstream_tarball.endswith('.tgz'):
         try:
             old_upstream_tarball_basename = os.path.basename(upstream_tarball)
             upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
