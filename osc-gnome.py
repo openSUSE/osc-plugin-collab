@@ -1226,6 +1226,10 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
             print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (package, obs_package.name, obs_package.prjname)
             return False
 
+        if self._gnome_osc_package_pending_commit(obs_package):
+            print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (package,)
+            return False
+
         # update the package
         try:
             # we specify the revision so that it gets expanded
