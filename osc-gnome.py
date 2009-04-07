@@ -1473,15 +1473,18 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
 
     tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
 
+    old = None
+    new = None
+
     if old_tarball and os.path.exists(old_tarball):
         try:
             old = tarfile.open(old_tarball)
         except tarfile.TarError:
-            old = None
+            pass
     else:
         # this is not fatal: we can provide the NEWS/ChangeLog from the new
         # tarball without a diff
-        old = None
+        pass
 
     if new_tarball and os.path.exists(new_tarball):
         new_tarball_basename = os.path.basename(new_tarball)
