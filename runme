@@ -43,9 +43,9 @@ fi
 
 mkdir -p $OBS_DISSECTOR_DIR
 
-cp --force upstream-packages-match.txt $OBS_DISSECTOR_DIR
-cp --force upstream-limits.txt $OBS_DISSECTOR_DIR
-cp --force upstream-tarballs.txt $OBS_DISSECTOR_DIR
+cp --force $basedir/upstream-packages-match.txt $OBS_DISSECTOR_DIR
+cp --force $basedir/upstream-limits.txt $OBS_DISSECTOR_DIR
+cp --force $basedir/upstream-tarballs.txt $OBS_DISSECTOR_DIR
 
 ######################################
 # Download latest upstream versions
