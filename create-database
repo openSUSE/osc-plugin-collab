@@ -529,7 +529,7 @@ class Patch(Base):
 class RpmlintReport(Base):
     sql_table = 'rpmlint'
     re_rpmlint = re.compile('\s*(.+):\s+(.):\s+(\S+)\s+(\S*)(?:\s+.*)?')
-    re_rpmlint_summary = re.compile('\s*\d+\s+packages\s+and\s+\d+\s+specfiles\s+checked\s*;')
+    re_rpmlint_summary = re.compile('\s*\d+\s+packages\s+and\s+\d+\s+spec\s*files\s+checked\s*;')
 
     @classmethod
     def sql_setup(cls, cursor):
