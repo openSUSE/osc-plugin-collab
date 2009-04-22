@@ -157,10 +157,14 @@ class ObsCheckout:
         # couldn't copy the file from the cache, so download it
         try:
             core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e.msg)
-        except urllib2.URLError, e:
-            print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e)
+        except (urllib2.HTTPError, urllib2.URLError):
+            # do a second try, since it's generally only a temporary error
+            try:
+                core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
+            except urllib2.HTTPError, e:
+                print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e.msg)
+            except urllib2.URLError, e:
+                print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, e)
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None):
