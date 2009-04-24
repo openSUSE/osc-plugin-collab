@@ -814,16 +814,29 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
         project_header = projects[0]
     else:
         project_header = "Devel Project"
+
     # print headers
-    title = ('Package', parent_project, project_header, 'Upstream')
-    (max_package, max_oF, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
+    if parent_project:
+        title = ('Package', parent_project, project_header, 'Upstream')
+        (max_package, max_parent, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
+    else:
+        title = ('Package', project_header, 'Upstream')
+        (max_package, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
+        max_parent = 0
+
     # trim to a reasonable max
     max_package = min(max_package, 48)
-    max_version = min(max(max(max_oF, max_devel), max_upstream), 20)
+    max_version = min(max(max(max_parent, max_devel), max_upstream), 20)
 
-    print_line = self._gnome_table_get_template(max_package, max_version, max_version, max_version)
+    if parent_project:
+        print_line = self._gnome_table_get_template(max_package, max_version, max_version, max_version)
+    else:
+        print_line = self._gnome_table_get_template(max_package, max_version, max_version)
     self._gnome_table_print_header(print_line, title)
     for line in lines:
+        if not parent_project:
+            (package, parent_version, devel_version, upstream_version) = line
+            line = (package, devel_version, upstream_version)
         print print_line % line
 
 
