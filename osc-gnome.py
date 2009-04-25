@@ -2731,7 +2731,10 @@ def _gnome_add_config_option(self, section, key, value):
 #######################################################################
 
 
-def _gnome_ensure_email(self):
+def _gnome_ensure_email(self, apiurl):
+    if conf.config['api_host_options'][apiurl].has_key('email'):
+        return conf.config['api_host_options'][apiurl]['email']
+
     if not conf.config.has_key('gnome_email'):
         conf.config['gnome_email'] = raw_input('E-mail address to use for .changes entries: ')
         if conf.config['gnome_email'] == '':
@@ -2892,7 +2895,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     apiurl = conf.config['apiurl']
     user = conf.config['user']
-    email = self._gnome_ensure_email()
+    email = self._gnome_ensure_email(apiurl)
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
     self.GnomeCache.init(self.OscGnomeImport.m_import)
