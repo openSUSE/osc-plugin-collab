@@ -578,7 +578,14 @@ class GnomeCache:
             else:
                 retval.append(submitted.dst_package)
 
-            lines.append('%s;%s;%s;' % (submitted.reqid, submitted.dst_package, submitted.src_md5))
+            if hasattr(submitted, 'src_rev'):
+                line_rev = submitted.src_rev
+            # name of the attribute in osc < 0.117
+            elif hasattr(submitted, 'src_md5'):
+                line_rev = submitted.src_md5
+            else:
+                line_rev = ''
+            lines.append('%s;%s;%s;' % (submitted.reqid, submitted.dst_package, line_rev))
 
         # save the data in the cache
         cls._write(filename, format_nb = current_format, lines_no_cr = lines)
