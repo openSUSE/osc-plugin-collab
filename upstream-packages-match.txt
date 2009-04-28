@@ -255,9 +255,11 @@ libbeagle:
 libbtctl:
 libcroco:
 libgda:
+libgda-3:libgda3
 libghttp:
 libgnomecups:
 libgnomedb:
+libgnomedb-3:libgnomedb3
 libgsf:
 libgtkhtml:
 libgtksourceviewmm:
@@ -275,10 +277,12 @@ nautilus-share:
 nemiver:
 network-manager-applet:NetworkManager-gnome
 online-desktop:
+opal:
 ORBit:orbit
 # No package in openSUSE
 #pitivi:
 planner:
+ptlib:libpt2
 rhythmbox:
 scrollkeeper:
 tasque:
