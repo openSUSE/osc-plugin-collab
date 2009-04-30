@@ -115,12 +115,12 @@ gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
-# Sf seems to be more up-to-date
-# gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
-gnucash:sf:192|202
-# Sf seems to be more up-to-date
-# gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
-gnucash-docs:sf:192|93259
+# gnucash is also hosted on sf...
+# gnucash:sf:192|202
+gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+# gnucash is also hosted on sf...
+# gnucash-docs:sf:192|93259
+gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby:httpls:http://releases.0x539.de/gobby/
 gq:sf:3805|3771
 gqview:sf:4050|4056
