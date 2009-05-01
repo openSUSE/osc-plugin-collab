@@ -264,6 +264,7 @@ libgsf:
 libgtkhtml:
 libgtksourceviewmm:
 libsigc++-1:libsigc++12
+libunique:unique
 libxml:
 loudmouth:
 # No package in openSUSE
@@ -429,7 +430,6 @@ telepathy-sofiasip:
 telepathy-stream-engine:
 transmission:
 tsclient:
-unique:
 vobject:
 webkit:libwebkit
 xchat:
