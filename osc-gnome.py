@@ -2206,7 +2206,10 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
             print >>sys.stderr, 'Cannot get build history: %s' % e.msg
         return (False, None, None)
 
-    root = ET.parse(history).getroot()
+    try:
+        root = ET.parse(history).getroot()
+    except SyntaxError:
+        return (False, None, None)
 
     max_time = 0
     rev = None
