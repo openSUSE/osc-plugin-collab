@@ -264,7 +264,7 @@ libgsf:
 libgtkhtml:
 libgtksourceviewmm:
 libsigc++-1:libsigc++12
-libunique:unique
+libunique:
 libxml:
 loudmouth:
 # No package in openSUSE
