@@ -178,6 +178,7 @@ Glib:perl-Glib
 # No package in openSUSE
 #Gtk2-GladeXML:
 Gtk2:perl-Gtk2
+Pango:perl-Pango
 
 # Python
 gnome-python:python-gnome
