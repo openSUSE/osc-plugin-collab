@@ -1270,7 +1270,12 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
     else:
         # check out the branched package
         try:
+            # disable package tracking: the current directory might not be a
+            # project directory
+            old_tracking = conf.config['do_package_tracking']
+            conf.config['do_package_tracking'] = 0
             checkout_package(apiurl, branch_project, package, expand_link=True)
+            conf.config['do_package_tracking'] = old_tracking
             print 'Package %s has been checked out.' % package
         except Exception, e:
             message = 'Error while checking out package %s: ' % package
