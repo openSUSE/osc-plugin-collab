@@ -2747,7 +2747,16 @@ def _gnome_add_config_option(self, section, key, value):
 
 
 def _gnome_ensure_email(self, apiurl):
-    if conf.config['api_host_options'][apiurl].has_key('email'):
+    if not conf.config['api_host_options'].has_key('apiurl'):
+        # old osc (0.110) was adding the host to the tuple without the http
+        # part, ie just the host
+        urlparse = self.OscGnomeImport.m_import('urlparse')
+        if urlparse:
+            apiurl = urlparse.urlparse(apiurl).netloc
+        else:
+            apiurl = None
+
+    if apiurl and conf.config['api_host_options'][apiurl].has_key('email'):
         return conf.config['api_host_options'][apiurl]['email']
 
     if not conf.config.has_key('gnome_email'):
