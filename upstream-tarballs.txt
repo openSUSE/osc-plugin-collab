@@ -110,6 +110,7 @@ gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gnome-do:lp:do
+gnome-do-plugins:lp:do-plugins
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-packagekit:httpls:http://www.packagekit.org/releases/
@@ -154,6 +155,8 @@ libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
+libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
+libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|143234
 libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
 libmcs:httpls:http://distfiles.atheme.org/
