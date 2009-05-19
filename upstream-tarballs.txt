@@ -178,6 +178,7 @@ libxklavier:sf:319|49313
 liferea:sf:87005|90495
 metacity-themes:upstream:
 mission-control:sf:190214|224579
+mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 nautilus-search-tool:sf:149158|165906

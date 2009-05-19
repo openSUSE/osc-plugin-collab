@@ -397,6 +397,7 @@ libtelepathy:
 libxklavier:
 liferea:
 mission-control:telepathy-mission-control
+mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
 nautilus-search-tool:
