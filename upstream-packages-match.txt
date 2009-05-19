@@ -428,6 +428,7 @@ shared-mime-info:
 sobby:
 sofia-sip:
 sound-theme-freedesktop:
+specto:
 startup-notification:
 system-config-printer:
 tango-icon-theme:
