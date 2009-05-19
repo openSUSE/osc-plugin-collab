@@ -82,6 +82,7 @@ bombermaze:sf:8614|8751
 bundle-lang-gnome:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+cairo-clock:httpls:http://macslow.net/?page_id=23
 check:sf:28255|20116
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
