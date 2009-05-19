@@ -46,7 +46,10 @@
 #
 # google:
 #   + use this when the upstream tarballs are hosted on code.google.com
-#   + the info field should be the project name on code.google.com
+#   + the info field should be the project name on code.google.com. It can
+#     also contain the name of tarballs if it's different from the project
+#     name. In this case, the names should be separated by a pipe:
+#     project_name|tarball_name
 #
 # lp:
 #   + use this when the upstream tarballs are hosted on launchpad
@@ -100,7 +103,7 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://live.gnome.org/gbrainy
-gdata.py:google:gdata-python-client
+gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://www.gdesklets.de/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 ggreeter:upstream:
