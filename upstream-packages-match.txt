@@ -194,6 +194,7 @@ NetworkManager-pptp:
 NetworkManager-vpnc:
 # No package in openSUSE
 #atomix:
+bakery:
 beagle:
 beagle-xesam:
 bigboard:
@@ -206,15 +207,13 @@ epiphany-extensions:
 evolution-sharp:
 f-spot:
 gdk-pixbuf:
-# No package in openSUSE
-#gedit-plugins:
+gedit-plugins:
 # No package in openSUSE
 #genius:
 ghex:
 glade:
 glib-1:glib
-# No package in openSUSE
-#glom:
+glom:
 gnome-audio:
 gnome-blog:
 gnome-bluetooth:
@@ -241,22 +240,25 @@ gob2:
 goffice:
 goobox:
 goocanvas:
+goocanvasmm:
 # No package in openSUSE
 #gossip:
 gtetrinet:
 gthumb:
 gtk+-1:gtk
-# No package in openSUSE
-#gtranslator:
+gtranslator:
 hippo-canvas:
 intltool:
+krb5-auth-dialog:
 # No package in openSUSE
 #labyrinth:
 libbeagle:
 libbtctl:
 libcroco:
-libgda:
+libepc
 libgda-3:libgda3
+libgda:
+libgdamm:
 libghttp:
 libgnomecups:
 libgnomedb:
@@ -307,6 +309,7 @@ bluez-gnome:
 bombermaze:
 cairo:
 cairomm:
+cairo-clock:
 check:
 clutter:
 clutter-cairo:
@@ -336,6 +339,7 @@ gimp:
 gimp-help:
 giver:
 glitz:
+gnome-colors:gnome-colors-icon-theme
 gnome-do:
 gnome-do-plugins:
 gnome-keyring-sharp:
@@ -355,6 +359,7 @@ gst-python:python-gstreamer-0_10
 gsynaptics:
 gtk-vnc:
 gtkglext:
+gtk-recordmydesktop:gtk-recordMyDesktop
 gwenhywfar:
 hicolor-icon-theme:
 icon-naming-utils:
@@ -417,6 +422,7 @@ pygtkglext:python-gtkglext
 pysmbc:python-smbc
 python-xlib:
 rarian:
+recordmydesktop:
 shared-mime-info:
 sobby:
 sofia-sip:

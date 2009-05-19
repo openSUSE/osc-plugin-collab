@@ -112,6 +112,7 @@ gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+gnome-colors:google:gnome-colors
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
@@ -139,6 +140,7 @@ gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk2-theme-openSUSE:upstream:
 gtk2-theme-SLED:upstream:
 gtk2-themes:upstream:
+gtk-recordmydesktop:sf:172357|202906
 gtkglext:sf:54333|48997
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
@@ -208,6 +210,7 @@ pygtkglext:sf:54333|76105
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
 rarian:httpls:http://rarian.freedesktop.org/Releases/
+recordmydesktop:sf:172357|197132
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|157769
