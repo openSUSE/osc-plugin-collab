@@ -250,6 +250,7 @@ gtk+-1:gtk
 gtranslator:
 hippo-canvas:
 intltool:
+jhbuild:
 krb5-auth-dialog:
 # No package in openSUSE
 #labyrinth:
