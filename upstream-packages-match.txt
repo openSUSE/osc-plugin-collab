@@ -192,6 +192,7 @@ NetworkManager:
 NetworkManager-openvpn:
 NetworkManager-pptp:
 NetworkManager-vpnc:
+anjuta-extras:
 # No package in openSUSE
 #atomix:
 bakery:
@@ -255,7 +256,7 @@ krb5-auth-dialog:
 libbeagle:
 libbtctl:
 libcroco:
-libepc
+libepc:
 libgda-3:libgda3
 libgda:
 libgdamm:
