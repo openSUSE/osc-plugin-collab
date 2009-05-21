@@ -301,6 +301,7 @@ PackageKit:
 PolicyKit-gnome:
 abiword:
 aqbanking:
+asio:
 avahi:
 avahi:avahi-glib2
 avahi:avahi-mono
@@ -341,6 +342,7 @@ gimp:
 gimp-help:
 giver:
 glitz:
+gmetadom:
 gnome-colors:gnome-colors-icon-theme
 gnome-do:
 gnome-do-plugins:
@@ -351,6 +353,7 @@ gnome-presence-applet:
 gnucash:
 gnucash-docs:
 gobby:
+google-gadgets-for-linux:google-gadgets
 gq:
 gqview:
 gstreamer:gstreamer-0_10-doc
@@ -360,8 +363,9 @@ gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gsynaptics:
 gtk-vnc:
-gtkglext:
 gtk-recordmydesktop:gtk-recordMyDesktop
+gtkglext:
+gtkmathview:
 gwenhywfar:
 hicolor-icon-theme:
 icon-naming-utils:
@@ -389,6 +393,7 @@ libnl:
 libnotify:
 libofx:
 liboil:
+libopenraw:
 libproxy:
 libproxy:libproxy-plugins
 libsexy:
@@ -396,6 +401,7 @@ libtasn1:
 libtelepathy:
 libxklavier:
 liferea:
+link-grammar:
 mission-control:telepathy-mission-control
 mod_dnssd:apache2-mod_dnssd
 monsoon:
@@ -409,6 +415,8 @@ nss-mdns:
 ntfs-3g:
 ntfs-config:
 obby:
+padevchooser:
+paman:
 paprefs:
 pavucontrol:
 pavumeter:
@@ -426,6 +434,7 @@ pysmbc:python-smbc
 python-xlib:
 pyxdg:python-xdg
 rarian:
+raw-thumbnailer:
 recordmydesktop:
 shared-mime-info:
 sobby:
@@ -445,6 +454,7 @@ telepathy-sofiasip:
 telepathy-stream-engine:
 transmission:
 tsclient:
+twitux:
 vobject:
 webkit:libwebkit
 xchat:

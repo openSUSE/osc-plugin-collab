@@ -70,6 +70,7 @@ abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 # note that we still use aqbanking 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
 aqbanking:sf:115695|125492
+asio:sf:122478|134200
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|85308
@@ -112,6 +113,7 @@ gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+gmetadom:sf:40627|32815
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
@@ -126,6 +128,7 @@ gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 # gnucash-docs:sf:192|93259
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby:httpls:http://releases.0x539.de/gobby/
+google-gadgets-for-linux:google:google-gadgets-for-linux
 gq:sf:3805|3771
 gqview:sf:4050|4056
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
@@ -140,6 +143,7 @@ gtk2-theme-openSUSE:upstream:
 gtk2-theme-SLED:upstream:
 gtk2-themes:upstream:
 gtkglext:sf:54333|48997
+gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
 gwenhywfar:sf:88769|171330
@@ -169,6 +173,7 @@ libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
+libopenraw:httpls:http://libopenraw.freedesktop.org/download/
 libproxy:google:libproxy
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
@@ -176,6 +181,7 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libxklavier:sf:319|49313
 liferea:sf:87005|90495
+link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 metacity-themes:upstream:
 mission-control:sf:190214|224579
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
@@ -193,6 +199,8 @@ ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 #FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
 opt_gnome-compat:upstream:
+padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
+paman:httpls:http://0pointer.de/lennart/projects/paman/
 paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
@@ -210,6 +218,7 @@ pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
+raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|157769
@@ -228,6 +237,7 @@ telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-
 translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|226432
+twitux:sf:198704|235460
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 yast2-control-center-gnome:upstream:
