@@ -424,6 +424,7 @@ pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
 pysmbc:python-smbc
 python-xlib:
+pyxdg:python-xdg
 rarian:
 recordmydesktop:
 shared-mime-info:

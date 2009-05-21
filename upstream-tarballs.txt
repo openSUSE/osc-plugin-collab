@@ -208,6 +208,7 @@ pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/
 pygtkglext:sf:54333|76105
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
+pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
