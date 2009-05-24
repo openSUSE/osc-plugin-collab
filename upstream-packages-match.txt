@@ -403,6 +403,8 @@ libtelepathy:
 libxklavier:
 liferea:
 link-grammar:
+metatheme-Sonar:gtk2-metatheme-sonar
+metatheme-gilouche:gtk2-metatheme-gilouche
 mission-control:telepathy-mission-control
 mod_dnssd:apache2-mod_dnssd
 monsoon:
@@ -416,6 +418,7 @@ nss-mdns:
 ntfs-3g:
 ntfs-config:
 obby:
+opensuse-font-fifth-leg:fifth-leg-font
 padevchooser:
 paman:
 paprefs:
