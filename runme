@@ -200,3 +200,4 @@ popd > /dev/null
 # Create the databases
 
 $basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
+$basedir/list-packages --output-database $OBS_DISSECTOR_DIR/packagelist.db
