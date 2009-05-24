@@ -261,6 +261,7 @@ libepc:
 libgda-3:libgda3
 libgda:
 libgdamm:
+libgdata:
 libghttp:
 libgnomecups:
 libgnomedb:
