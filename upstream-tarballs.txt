@@ -139,8 +139,6 @@ gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
-gtk2-theme-openSUSE:upstream:
-gtk2-theme-SLED:upstream:
 gtk2-themes:upstream:
 gtkglext:sf:54333|48997
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/

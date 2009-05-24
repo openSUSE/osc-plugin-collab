@@ -467,8 +467,6 @@ beagle-index:
 bundle-lang-gnome:
 ggreeter:
 gnome-patch-translation:
-gtk2-theme-openSUSE:
-gtk2-theme-SLED:
 gtk2-themes:
 metacity-themes:
 opt_gnome-compat:
