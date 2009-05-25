@@ -113,7 +113,7 @@ def get_project_id(cursor, project):
     id = get_existing_id(cursor, project)
     return id
 
-def update_project(cursor, project):
+def update_project(cursor, project, try_again = True):
     # Note: we don't remove the old packages (or create the project if it
     # wasn't already there) until we were able to parse the XML. This way, in
     # case of error, we keep the old data
@@ -124,8 +124,11 @@ def update_project(cursor, project):
 
         directory = ET.parse(fd).getroot()
         if int(directory.get('count')) < 1:
-            print >>sys.stderr, 'Ignoring project %s: %s' % (project, 'no package? Sounds like an error...')
             fd.close()
+            if try_again:
+                update_project(cursor, project, False)
+            else:
+                print >>sys.stderr, 'Ignoring project %s: %s' % (project, 'no package? Sounds like an error...')
             return
 
         project_id = get_project_id(cursor, project)
@@ -143,11 +146,20 @@ def update_project(cursor, project):
         fd.close()
 
     except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
+        if try_again:
+            update_project(cursor, project, False)
+        else:
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
     except urllib2.URLError, e:
-        print >>sys.stderr, 'Ignoring project %s: %s' % (project, e)
+        if try_again:
+            update_project(cursor, project, False)
+        else:
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, e)
     except SyntaxError, e:
-        print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
+        if try_again:
+            update_project(cursor, project, False)
+        else:
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
 
 
 def update_projects(cursor, projects):
