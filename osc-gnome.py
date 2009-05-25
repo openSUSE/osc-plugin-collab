@@ -856,23 +856,23 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
         (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return (None, None)
+        return ([], [])
 
     # no parent, then no bad meta :-)
     if not parent_project:
-        return (None, None)
+        return ([], [])
 
     # get metadata from the parent project to be able to know if packages
     # shouldn't belong there
     metafile = self.GnomeCache.get_obs_meta(apiurl, parent_project)
     if not metafile:
-        return (None, None)
+        return ([], [])
 
     try:
         collection = ET.parse(metafile).getroot()
     except SyntaxError:
         print >>sys.stderr, 'Cannot parse %s: %s' % (metafile, e.msg)
-        return (None, None)
+        return ([], [])
 
     devel_dict = {}
     # list of packages that should exist in project but that don't
