@@ -145,6 +145,8 @@ gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
 gwenhywfar:sf:88769|171330
+# There's no upstream tarball for gwibber, though
+gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|99112
@@ -217,6 +219,7 @@ pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/
 pygtkglext:sf:54333|76105
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
+pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/

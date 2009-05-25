@@ -368,6 +368,7 @@ gtk-recordmydesktop:gtk-recordMyDesktop
 gtkglext:
 gtkmathview:
 gwenhywfar:
+gwibber:
 hicolor-icon-theme:
 icon-naming-utils:
 inkscape:
@@ -436,6 +437,7 @@ pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
 pysmbc:python-smbc
 python-xlib:
+pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
 rarian:
 raw-thumbnailer:
