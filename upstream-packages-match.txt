@@ -479,7 +479,7 @@ translation-update:
 yast2-control-center-gnome:
 
 ## Packages that we removed
-# banshee-1:banshee
+# banshee-1:
 # fast-user-switch-applet:
 # gnome-cups-manager:
 # gnome-volume-manager:
