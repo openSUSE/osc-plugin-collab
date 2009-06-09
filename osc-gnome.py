@@ -2254,7 +2254,12 @@ def _gnome_print_build_status(self, repo, build_state, header, error_line, hint 
             show_hint = True
 
         left = '  %s: ' % key
-        print format % (left, build_state[key]['result'])
+        if build_state[key]['result'] in ['expansion error', 'broken', 'blocked'] and build_state[key]['details']:
+            status = '%s (%s)' % (build_state[key]['result'], build_state[key]['details'])
+        else:
+            status = build_state[key]['result']
+
+        print format % (left, status)
 
     if show_hint and hint:
         for key in keys:
@@ -2304,7 +2309,14 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             # code can be missing when package is too new:
             status = 'unknown'
 
-        results_per_arch[arch] = status
+        try:
+            details = status_node.find('details').text
+        except:
+            details = None
+
+        results_per_arch[arch] = {}
+        results_per_arch[arch]['status'] = status
+        results_per_arch[arch]['details'] = details
 
     # evaluate the status: do we need to give more time to the build service?
     # Was the build successful?
@@ -2323,7 +2335,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     for key in results_per_arch.keys():
         arch_need_rebuild = False
         arch = key
-        value = results_per_arch[key]
+        value = results_per_arch[key]['status']
 
         # the result has changed since last time, so we won't trigger a rebuild
         if state[arch]['result'] != value:
@@ -2351,7 +2363,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                 do_not_wait_for_bs = True
             else:
                 bs_not_ready = True
-                results_per_arch[key] = 'rebuild needed'
+                results_per_arch[key]['status'] = 'rebuild needed'
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
@@ -2365,7 +2377,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
             (success, built_srcmd5, built_rev) = self._gnome_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
 
             if not success:
-                results_per_arch[key] = 'succeeded, but maybe not up-to-date'
+                results_per_arch[key]['status'] = 'succeeded, but maybe not up-to-date'
                 error_counter += 1
                 # we don't know what's going on, so we'll contact the build
                 # service again
@@ -2380,7 +2392,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                 #if (built_srcmd5, built_rev) != (srcmd5, rev):
                 if built_srcmd5 != srcmd5:
                     arch_need_rebuild = True
-                    results_per_arch[key] = 'rebuild needed'
+                    results_per_arch[key]['status'] = 'rebuild needed'
 
         if arch_need_rebuild and state[arch]['rebuild'] == 0:
             bs_not_ready = True
@@ -2399,7 +2411,8 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
 
-        state[arch]['result'] = results_per_arch[key]
+        state[arch]['result'] = results_per_arch[key]['status']
+        state[arch]['details'] = results_per_arch[key]['details']
 
         if state[arch]['result'] in ['blocked']:
             # if we're blocked, maybe the scheduler forgot about us, so
