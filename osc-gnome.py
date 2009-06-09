@@ -560,9 +560,15 @@ class GnomeCache:
         # no cache available
         cls._print_message()
 
+        try:
+            _gnome_get_request_list = get_request_list
+        except NameError, e:
+            # in osc <= 0.117, get_request_list was named get_submit_request_list
+            _gnome_get_request_list = get_submit_request_list
+
         # download the data
         try:
-            submitted_packages = get_submit_request_list(apiurl, project, None)
+            submitted_packages = _gnome_get_request_list(apiurl, project, None)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
             return []
@@ -573,19 +579,26 @@ class GnomeCache:
             if submitted.state.name != 'new':
                 continue
 
-            if include_request_id:
-                retval.append((submitted.reqid, submitted.dst_package))
+            if hasattr(submitted, 'actions'):
+                dest_package = submitted.actions[0].dst_package
+                src_rev = submitted.actions[0].src_rev
             else:
-                retval.append(submitted.dst_package)
+                # actions appeared with osc 0.118
+                dest_package = submitted.dst_package
+                if hasattr(submitted, 'src_rev'):
+                    src_rev = submitted.src_rev
+                # name of the attribute in osc < 0.117
+                elif hasattr(submitted, 'src_md5'):
+                    src_rev = submitted.src_md5
+                else:
+                    src_rev = ''
 
-            if hasattr(submitted, 'src_rev'):
-                line_rev = submitted.src_rev
-            # name of the attribute in osc < 0.117
-            elif hasattr(submitted, 'src_md5'):
-                line_rev = submitted.src_md5
+            if include_request_id:
+                retval.append((submitted.reqid, dest_package))
             else:
-                line_rev = ''
-            lines.append('%s;%s;%s;' % (submitted.reqid, submitted.dst_package, line_rev))
+                retval.append(dest_package)
+
+            lines.append('%s;%s;%s;' % (submitted.reqid, dest_package, src_rev))
 
         # save the data in the cache
         cls._write(filename, format_nb = current_format, lines_no_cr = lines)
@@ -2056,11 +2069,19 @@ def _gnome_forward(self, apiurl, projects, request_id):
     except urllib2.HTTPError:
         print >>sys.stderr, 'Cannot get submission request %s: %s' % (request_id, e.msg)
 
-    if request.dst_project not in projects:
+    if hasattr(request, 'actions'):
+        dest_package = request.actions[0].dst_package
+        dest_project = request.actions[0].dst_project
+    else:
+        # actions appeared with osc 0.118
+        dest_package = request.dst_package
+        dest_project = request.dst_project
+
+    if dest_project not in projects:
         if len(projects) == 1:
-            print >>sys.stderr, 'Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, request.dst_project, projects[0])
+            print >>sys.stderr, 'Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, dest_project, projects[0])
         else:
-            print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, request.dst_project)
+            print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, dest_project)
         return
 
     if request.state.name != 'new':
@@ -2068,19 +2089,19 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        parent_project = self._gnome_web.get_project_parent(request.dst_project)
+        parent_project = self._gnome_web.get_project_parent(dest_project)
     except self.OscGnomeWebError, e:
-        print >>sys.stderr, 'Cannot get parent project of %s.' % request.dst_project
+        print >>sys.stderr, 'Cannot get parent project of %s.' % dest_project
         return
 
     try:
-        devel_project = show_develproject(apiurl, parent_project, request.dst_package)
+        devel_project = show_develproject(apiurl, parent_project, dest_package)
     except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get development project for %s: %s' % (request.dst_package, e.msg)
+        print >>sys.stderr, 'Cannot get development project for %s: %s' % (dest_package, e.msg)
         return
 
-    if devel_project != request.dst_project:
-        print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (request.dst_package, request.dst_project, devel_project)
+    if devel_project != dest_project:
+        print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (dest_package, dest_project, devel_project)
         return
 
     result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % parent_project)
@@ -2092,8 +2113,8 @@ def _gnome_forward(self, apiurl, projects, request_id):
     # TODO: cancel old requests from request.dst_project to parent project
 
     result = create_submit_request(apiurl,
-                                   request.dst_project, request.dst_package,
-                                   parent_project, request.dst_package,
+                                   dest_project, dest_package,
+                                   parent_project, dest_package,
                                    request.descr)
 
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, parent_project, result)
