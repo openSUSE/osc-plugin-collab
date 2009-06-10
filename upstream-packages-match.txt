@@ -340,6 +340,7 @@ gdesklets:gDesklets
 gegl:
 ggz-client-libs:
 gimp:
+gimp-gap:
 gimp-help:
 giver:
 glitz:

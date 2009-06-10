@@ -110,6 +110,8 @@ gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
+# FIXME: not good: we have the version in the URL...
+gimp-gap:ftpls:ftp://ftp.gimp.org/pub/gimp/plug-ins/v2.6/gap/
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
@@ -169,7 +171,7 @@ libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
 libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|24667
-libnl:httpls:http://people.suug.ch/~tgr/libnl/files/
+libnl:httpls:http://www.infradead.org/~tgr/libnl/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
