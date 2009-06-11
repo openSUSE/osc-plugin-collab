@@ -15,8 +15,6 @@ aqbanking:max|3
 gwenhywfar:max|3
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
-# we need clutter-gst and clutter-gtk too
-clutter:max|0.9
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable
