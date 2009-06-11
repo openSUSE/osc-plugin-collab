@@ -212,6 +212,7 @@ gedit-plugins:
 # No package in openSUSE
 #genius:
 ghex:
+gir-repository:
 glade:
 glib-1:glib
 glom:
@@ -238,6 +239,7 @@ gnomeicu:
 gnopernicus:
 gnumeric:
 gob2:
+gobject-introspection:
 goffice:
 goobox:
 goocanvas:
