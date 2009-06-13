@@ -293,6 +293,7 @@ xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 gnome-color-chooser:sf:211146|253676
 gnome-colors:google:gnome-colors
+gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-recordmydesktop:sf:172357|202906
 recordmydesktop:sf:172357|197132
 specto:httpls:http://specto.sourceforge.net/?go=download

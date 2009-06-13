@@ -364,6 +364,7 @@ gnucash-docs:
 gobby:
 gobby|0.4:gobby04
 google-gadgets-for-linux:google-gadgets
+gpointing-device-settings:
 gq:
 gqview:
 gstreamer:gstreamer-0_10-doc
