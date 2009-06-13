@@ -384,6 +384,7 @@ inkscape:
 ipod-sharp:
 iso-codes:
 istanbul:
+json-glib:
 ldtp:
 libao-pulse:
 libatasmart:

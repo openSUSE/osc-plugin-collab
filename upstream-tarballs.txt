@@ -160,6 +160,7 @@ inkscape:sf:93438|99112
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
+json-glib:httpls:http://live.gnome.org/JsonGlib
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libatasmart:httpls:http://0pointer.de/public/
