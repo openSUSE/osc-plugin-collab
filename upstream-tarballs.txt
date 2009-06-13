@@ -63,6 +63,7 @@
 
 ## GNOME:Factory
 
+DeviceKit:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-power:httpls:http://hal.freedesktop.org/releases/
 PackageKit:httpls:http://www.packagekit.org/releases/
