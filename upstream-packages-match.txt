@@ -353,6 +353,7 @@ glitz:
 gmetadom:
 gnome-color-chooser:
 gnome-colors:gnome-colors-icon-theme
+gnome-disk-utility:
 gnome-do:
 gnome-do-plugins:
 gnome-keyring-sharp:

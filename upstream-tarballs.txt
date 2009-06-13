@@ -120,6 +120,7 @@ gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 giver:google:giver
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gmetadom:sf:40627|32815
+gnome-disk-utility:httpls:http://hal.freedesktop.org/releases/
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
