@@ -3,6 +3,8 @@
 #
 # where:
 #   + name is the upstream module name found in tarball names
+#     (it can contain a branch name after the '|' character, for example:
+#     'gobby|0.4')
 #   + method is one of 'upstream', 'ftpls', 'httpls', 'dualhttpls',
 #     'subdirhttpls', 'sf', 'google', 'lp'
 #   + info depends on method
@@ -130,6 +132,7 @@ gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 # gnucash is also hosted on sf...
 # gnucash-docs:sf:192|93259
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
 gq:sf:3805|3771

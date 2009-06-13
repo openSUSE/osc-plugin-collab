@@ -1,6 +1,8 @@
 # Format of this file:
 # upstreamname:packagename
 # If packagename is the same as upstreamname, then you can leave it empty
+# If tracking a specific branch of upstream, then upstreamname should look like
+# this: "realupstreamname|branchname". For example: gobby|0.4
 
 
 #### GNOME:Factory
@@ -359,6 +361,7 @@ gnome-presence-applet:
 gnucash:
 gnucash-docs:
 gobby:
+gobby|0.4:gobby04
 google-gadgets-for-linux:google-gadgets
 gq:
 gqview:

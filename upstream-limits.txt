@@ -19,3 +19,6 @@ libflashsupport:max|2000
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable
 liferea:no-odd-unstable
+
+# branches
+gobby|0.4:max|0.4.90
