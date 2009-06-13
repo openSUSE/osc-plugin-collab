@@ -367,6 +367,7 @@ google-gadgets-for-linux:google-gadgets
 gpointing-device-settings:
 gq:
 gqview:
+gssdp:
 gstreamer:gstreamer-0_10-doc
 gst-plugins-bad:gstreamer-0_10-plugins-bad
 gst-plugins-farsight:gstreamer-0_10-plugins-farsight
@@ -377,6 +378,11 @@ gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
 gtkglext:
 gtkmathview:
+gupnp:
+gupnp-av:
+gupnp-igd:
+gupnp-tools:
+gupnp-ui:
 gwenhywfar:
 gwibber:
 hicolor-icon-theme:

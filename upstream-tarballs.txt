@@ -138,6 +138,7 @@ gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
 gq:sf:3805|3771
 gqview:sf:4050|4056
+gssdp:httpls:http://www.gupnp.org/sources/gssdp/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
@@ -149,6 +150,11 @@ gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk2-themes:upstream:
 gtkglext:sf:54333|48997
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
+gupnp:httpls:http://www.gupnp.org/sources/gupnp/
+gupnp-av:httpls:http://www.gupnp.org/sources/gupnp-av/
+gupnp-igd:httpls:http://www.gupnp.org/sources/gupnp-igd/
+gupnp-tools:httpls:http://www.gupnp.org/sources/gupnp-tools/
+gupnp-ui:httpls:http://www.gupnp.org/sources/gupnp-ui/
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
 gwenhywfar:sf:88769|171330
