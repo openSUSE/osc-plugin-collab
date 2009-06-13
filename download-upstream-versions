@@ -650,6 +650,9 @@ def _get_version_from_launchpad(project, limit):
 
 
 def get_upstream_version(modulename, method, additional_info, limit):
+    # for branches, get the real modulename
+    modulename = modulename.split('|')[0]
+
     if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'google', 'lp' ]:
         print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
