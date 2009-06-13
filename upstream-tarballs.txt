@@ -61,6 +61,7 @@
 
 ## GNOME:Factory
 
+DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-power:httpls:http://hal.freedesktop.org/releases/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
@@ -157,6 +158,7 @@ iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
+libatasmart:httpls:http://0pointer.de/public/
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
 libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/

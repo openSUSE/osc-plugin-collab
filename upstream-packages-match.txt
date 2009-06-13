@@ -298,6 +298,7 @@ tasque:
 xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
+DeviceKit-disks:
 DeviceKit-power:
 QtCurve-Gtk2:qtcurve-gtk2
 PackageKit:
@@ -381,6 +382,7 @@ iso-codes:
 istanbul:
 ldtp:
 libao-pulse:
+libatasmart:
 libcanberra:
 libesmtp:
 libflashsupport:
