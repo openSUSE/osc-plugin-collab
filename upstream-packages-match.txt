@@ -307,7 +307,7 @@ DeviceKit-power:
 QtCurve-Gtk2:qtcurve-gtk2
 PackageKit:
 PolicyKit-gnome:
-UPnP-Inspector:
+UPnP-Inspector:upnp-inspector
 abiword:
 aqbanking:
 asio:
@@ -370,6 +370,7 @@ google-gadgets-for-linux:google-gadgets
 gpointing-device-settings:
 gq:
 gqview:
+gromit:
 gssdp:
 gstreamer:gstreamer-0_10-doc
 gst-plugins-bad:gstreamer-0_10-plugins-bad
