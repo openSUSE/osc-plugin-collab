@@ -356,6 +356,7 @@ gimp:
 gimp-gap:
 gimp-help:
 giver:
+glipper:
 glitz:
 gmetadom:
 gnome-color-chooser:
@@ -426,6 +427,7 @@ liboil:
 libopenraw:
 libproxy:
 libproxy:libproxy-plugins
+librep:
 libsexy:
 libtasn1:
 libtelepathy:
@@ -472,6 +474,8 @@ pyxdg:python-xdg
 rarian:
 raw-thumbnailer:
 recordmydesktop:
+rep-gtk:
+sawfish:
 shared-mime-info:
 sobby:
 sofia-sip:
