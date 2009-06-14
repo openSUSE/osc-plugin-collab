@@ -283,6 +283,7 @@ memprof:
 mergeant:
 nautilus-cd-burner:
 nautilus-open-terminal:
+nautilus-python:python-nautilus
 nautilus-sendto:
 nautilus-share:
 nemiver:
