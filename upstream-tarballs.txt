@@ -63,6 +63,7 @@
 
 ## GNOME:Factory
 
+Coherence:httpls:http://coherence.beebits.net/download/
 DeviceKit:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-power:httpls:http://hal.freedesktop.org/releases/
@@ -297,6 +298,7 @@ xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
 
 
 ## GNOME:Contrib
+UPnP-Inspector:httpls:http://coherence.beebits.net/download/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 gnome-color-chooser:sf:211146|253676
 gnome-colors:google:gnome-colors

@@ -300,12 +300,14 @@ tasque:
 xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
+Coherence:python-coherence
 DeviceKit:
 DeviceKit-disks:
 DeviceKit-power:
 QtCurve-Gtk2:qtcurve-gtk2
 PackageKit:
 PolicyKit-gnome:
+UPnP-Inspector:
 abiword:
 aqbanking:
 asio:
