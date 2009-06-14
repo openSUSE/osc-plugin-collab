@@ -303,6 +303,7 @@ byzanz:httpls:http://people.freedesktop.org/~company/byzanz/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 computertemp:httpls:http://computertemp.berlios.de/download.php
 dopi:httpls:http://www.snorp.net/files/dopi/
+gtk-engines-cleanice:sf:57808|61114
 gnome-color-chooser:sf:211146|253676
 gnome-colors:google:gnome-colors
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
@@ -312,3 +313,4 @@ last-exit:httpls:http://lastexit-player.org/releases/
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 recordmydesktop:sf:172357|197132
 specto:httpls:http://specto.sourceforge.net/?go=download
+spheres-and-crystals:sf:64400|72957

@@ -382,6 +382,7 @@ gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gsynaptics:
+gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
 gtkglext:
@@ -474,6 +475,7 @@ sobby:
 sofia-sip:
 sound-theme-freedesktop:
 specto:
+spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
 startup-notification:
 system-config-printer:
 tango-icon-theme:
