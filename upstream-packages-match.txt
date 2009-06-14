@@ -454,6 +454,7 @@ paprefs:
 pavucontrol:
 pavumeter:
 pidgin:
+pidgin-guifications:
 pixman:
 pkg-config:
 poppler:
@@ -478,6 +479,7 @@ specto:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
 startup-notification:
 system-config-printer:
+tangerine:
 tango-icon-theme:
 telepathy-farsight:
 telepathy-gabble:

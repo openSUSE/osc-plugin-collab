@@ -57,6 +57,10 @@
 #   + use this when the upstream tarballs are hosted on launchpad
 #   + the info field should be the project name on launchpad
 #
+# trac:
+#   + use this when the upstream tarballs are hosted on trac, with a download page
+#   + the info field should be the URL of the trac download page
+#
 # Note that you need to add a line in upstream-packages-match.txt for each
 # module you add here. The line should go in the "Non ftp.gnome.org stuff"
 # section or in the "Packages where we are upstream" section.
@@ -311,6 +315,8 @@ gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-recordmydesktop:sf:172357|202906
 last-exit:httpls:http://lastexit-player.org/releases/
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
+pidgin-guifications:trac:http://plugins.guifications.org/trac/downloads
 recordmydesktop:sf:172357|197132
 specto:httpls:http://specto.sourceforge.net/?go=download
 spheres-and-crystals:sf:64400|72957
+tangerine:httpls:http://snorp.net/files/tangerine/
