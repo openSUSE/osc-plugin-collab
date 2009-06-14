@@ -281,6 +281,7 @@ loudmouth:
 #meld:
 memprof:
 mergeant:
+muine:
 nautilus-cd-burner:
 nautilus-open-terminal:
 nautilus-python:python-nautilus
