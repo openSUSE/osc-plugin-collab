@@ -309,5 +309,6 @@ gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-recordmydesktop:sf:172357|202906
 last-exit:httpls:http://lastexit-player.org/releases/
+nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 recordmydesktop:sf:172357|197132
 specto:httpls:http://specto.sourceforge.net/?go=download

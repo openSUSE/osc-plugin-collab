@@ -438,6 +438,7 @@ monsoon:
 mozilla-bonobo:
 nautilus-search-tool:
 net6:
+nimbus:gtk2-metatheme-nimbus
 njb-sharp:
 notification-daemon:
 notify-python:python-notify
