@@ -211,8 +211,7 @@ evolution-sharp:
 f-spot:
 gdk-pixbuf:
 gedit-plugins:
-# No package in openSUSE
-#genius:
+genius:
 ghex:
 gir-repository:
 glade:
@@ -258,6 +257,7 @@ jhbuild:
 krb5-auth-dialog:
 # No package in openSUSE
 #labyrinth:
+last-exit:
 libbeagle:
 libbtctl:
 libcroco:
@@ -329,9 +329,11 @@ clutter:
 clutter-cairo:
 clutter-gst:
 clutter-gtk:
+computertemp:
 conglomerate:
 contact-lookup-applet:
 cups-pk-helper:
+dopi:
 eds-feed:evolution-galago
 eiciel:
 enchant:
