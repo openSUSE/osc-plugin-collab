@@ -646,6 +646,87 @@ def _get_version_from_launchpad(project, limit):
         return (location, biggest)
 
 
+
+#######################################################################
+
+
+class trac_urllister(SGMLParser):
+    def __init__(self, modulename):
+        SGMLParser.__init__(self)
+        self.modulename = modulename
+
+    def reset(self):
+        SGMLParser.reset(self)
+        self.in_a = False
+        self.current_url = None
+        self.files = []
+
+    def start_a(self, attrs):
+        self.in_a = True
+        href = [v for k, v in attrs if k=='href']
+        if href:
+            self.current_url = href[0]
+
+    def handle_data(self, data):
+        data = data.strip()
+        if self.in_a and self.modulename in data:
+            self.files.append([self.current_url, data])
+
+    def end_a(self):
+        self.in_a = False
+
+
+def _get_version_from_trac(modulename, url, limit):
+    # this is clearly based on _get_version_from_files, so read comments there
+
+    obj = urllib2.build_opener()
+
+    # Get the files
+    usock = obj.open(url)
+    parser = trac_urllister(modulename)
+    parser.feed(usock.read())
+    usock.close()
+    parser.close()
+    files = parser.files
+
+    (limit, limit_data) = _setup_limit(limit)
+    re_tarball = r'^.*'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
+    tarballs = filter(lambda t: re.search(re_tarball, t[1]), files)
+    versions = map(lambda t: re.sub(re_tarball, r'\1', t[1]), tarballs)
+    version = _get_latest_version(versions, limit)
+
+    indexes = _all_indexes(versions, version)
+    # the list is not in the right order, because of the way we build the list
+    indexes.reverse()
+
+    latest = [tarballs[index] for index in indexes]
+
+    tarballs = None
+    if not tarballs:
+        tarballs = [file for file in latest if file[1].endswith('.tar.bz2')]
+    if not tarballs:
+        tarballs = [file for file in latest if file[1].endswith('.tar.gz')]
+    if not tarballs:
+        tarballs = [file for file in latest if file[1].endswith('.tbz2')]
+    if not tarballs:
+        tarballs = [file for file in latest if file[1].endswith('.tgz')]
+
+    if not tarballs:
+        raise UpstreamDownloadError('No tarballs found for version %s' % version)
+
+    # first tarball is fine
+    tarball = tarballs[0]
+    semi_url = tarball[0]
+
+    if urlparse.urlparse(semi_url).scheme != '':
+        # full URI
+        location = semi_url
+    else:
+        location = urlparse.urljoin(url, semi_url)
+
+    return (location, version)
+
+
 #######################################################################
 
 
@@ -653,7 +734,7 @@ def get_upstream_version(modulename, method, additional_info, limit):
     # for branches, get the real modulename
     modulename = modulename.split('|')[0]
 
-    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'google', 'lp' ]:
+    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'google', 'lp', 'trac' ]:
         print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
 
@@ -709,6 +790,9 @@ def get_upstream_version(modulename, method, additional_info, limit):
 
     elif method == 'lp':
         return _get_version_from_launchpad(additional_info, limit)
+
+    elif method == 'trac':
+        return _get_version_from_trac(modulename, additional_info, limit)
 
 
 #######################################################################
