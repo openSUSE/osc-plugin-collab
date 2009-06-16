@@ -2275,7 +2275,7 @@ def _gnome_print_build_status(self, repo, build_state, header, error_line, hint 
             show_hint = True
 
         left = '  %s: ' % key
-        if build_state[key]['result'] in ['expansion error', 'broken', 'blocked'] and build_state[key]['details']:
+        if build_state[key]['result'] in ['expansion error', 'broken', 'blocked', 'finished'] and build_state[key]['details']:
             status = '%s (%s)' % (build_state[key]['result'], build_state[key]['details'])
         else:
             status = build_state[key]['result']
