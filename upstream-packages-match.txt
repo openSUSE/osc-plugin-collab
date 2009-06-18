@@ -223,6 +223,7 @@ gnome-bluetooth:
 gnome-build:
 gnome-commander:
 gnome-common:
+gnome-games-extra-data:
 gnome-libs:
 gnome-main-menu:
 gnome-phone-manager:
@@ -260,6 +261,7 @@ krb5-auth-dialog:
 last-exit:
 libbeagle:
 libbtctl:
+libchamplain:
 libcroco:
 libepc:
 libgda-3:libgda3
@@ -465,6 +467,7 @@ poppler-data:
 psiconv:
 pulseaudio:
 pycairo:python-cairo
+pymsn:python-msn
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
 pysmbc:python-smbc
@@ -486,11 +489,13 @@ startup-notification:
 system-config-printer:
 tangerine:
 tango-icon-theme:
+telepathy-butterfly:
 telepathy-farsight:
 telepathy-gabble:
 telepathy-glib:
 telepathy-haze:
 telepathy-idle:
+telepathy-python:python-telepathy
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
@@ -547,6 +552,8 @@ simple-ccsm:
 chmlib:
 desktop-data-openSUSE:
 exiv2:
+geoclue:
+gypsy:
 libspectre:
 raptor:
 rasqal:

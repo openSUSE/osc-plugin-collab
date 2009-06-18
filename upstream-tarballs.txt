@@ -238,6 +238,7 @@ psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygtkglext:sf:54333|76105
+pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|10058
 pywebkitgtk:google:pywebkitgtk
@@ -251,11 +252,13 @@ sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|h
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
+telepathy-butterfly:httpls:http://telepathy.freedesktop.org/releases/telepathy-butterfly/
 telepathy-farsight:httpls:http://telepathy.freedesktop.org/releases/telepathy-farsight/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
+telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 telepathy-sofiasip:sf:191149
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
@@ -292,6 +295,8 @@ simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
 chmlib:httpls:http://www.jedrea.com/chmlib/
 desktop-data-openSUSE:upstream:
 exiv2:httpls:http://www.exiv2.org/download.html
+geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
+gypsy:httpls:http://gypsy.freedesktop.org/gypsy-releases/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
 raptor:httpls:http://download.librdf.org/source/
 rasqal:httpls:http://download.librdf.org/source/
