@@ -488,7 +488,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
                     path = url.path[1:]
                 else:
                     path = url.path
-                location = 'http://dl.sourceforge.net/%s' % path
+                location = 'http://prdownloads.sourceforge.net/%s' % path
 
 
     if biggest == '0' and location == None:
