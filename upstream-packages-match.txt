@@ -502,15 +502,16 @@ telepathy-stream-engine:
 transmission:
 tsclient:
 twitux:
+vala:
 vobject:
 webkit:libwebkit
 xchat:
 xchat-gnome:
+xsane:
 
 ## Packages where we are upstream
 ## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:
-bundle-lang-gnome:
 ggreeter:
 gnome-patch-translation:
 gtk2-themes:
@@ -549,15 +550,28 @@ simple-ccsm:
 
 #### X11:common:Factory
 
+bundle-lang-common:
+bundle-lang-gnome:
+bundle-lang-gnome-extra:
+bundle-lang-kde:
+bundle-lang-other:
 chmlib:
 desktop-data-openSUSE:
+desktop-data-SLED:
+desktop-file-utils:
+desktop-translations:
+devilspie:
+ding:
 exiv2:
 geoclue:
+gos-wallpapers:
 gypsy:
 libspectre:
+nspluginwrapper:
 raptor:
 rasqal:
 redland:
+update-desktop-files:
 xdg-user-dirs:
 xdg-utils:
 xesam-tools:

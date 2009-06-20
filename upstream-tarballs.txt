@@ -268,6 +268,7 @@ tsclient:sf:192483|226432
 twitux:sf:198704|235460
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
+xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
 yast2-control-center-gnome:upstream:
 
 ## Packages that we removed
@@ -292,15 +293,28 @@ simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
 
 
 ## X11:common:Factory
+bundle-lang-common:upstream:
+bundle-lang-gnome:upstream:
+bundle-lang-gnome-extra:upstream:
+bundle-lang-kde:upstream:
+bundle-lang-other:upstream:
 chmlib:httpls:http://www.jedrea.com/chmlib/
 desktop-data-openSUSE:upstream:
+desktop-data-SLED:upstream:
+desktop-file-utils:httpls:http://www.freedesktop.org/software/desktop-file-utils/releases/
+desktop-translations:upstream:
+devilspie:httpls:http://www.burtonini.com/computing/
+ding:httpls:http://ftp.tu-chemnitz.de/pub/Local/urz/ding/
 exiv2:httpls:http://www.exiv2.org/download.html
 geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
+gos-wallpapers:upstream:
 gypsy:httpls:http://gypsy.freedesktop.org/gypsy-releases/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
+nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
 raptor:httpls:http://download.librdf.org/source/
 rasqal:httpls:http://download.librdf.org/source/
 redland:httpls:http://download.librdf.org/source/
+update-desktop-files:upstream:
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
 xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
