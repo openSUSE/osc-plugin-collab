@@ -180,7 +180,7 @@ def main(args):
         return
 
     # 'DISCONTINUED:openSUSE:10.2', 'DISCONTINUED:openSUSE:10.2:Update', 'openSUSE:10.3:Update', 'openSUSE:11.0:Update'
-    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Contrib', 'openSUSE:10.3', 'openSUSE:11.0', 'openSUSE:11.1', 'openSUSE:11.1:Update' ]
+    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Contrib', 'GNOME:STABLE:2.26', 'openSUSE:10.3', 'openSUSE:11.0', 'openSUSE:11.1', 'openSUSE:11.1:Update' ]
 
     osc_conf_init()
 
