@@ -129,6 +129,7 @@ class OscGnomeWeb:
 
         packages_versions = []
         parent_project = ''
+        ignore_upstream = False
 
         for line in lines:
             # there's some meta-information hidden in comments :-)
@@ -136,11 +137,16 @@ class OscGnomeWeb:
                 meta = line[len('#meta: '):-1]
                 if meta.startswith('parent='):
                     parent_project = meta[len('parent='):].strip()
+                if meta == 'ignore-upstream':
+                    ignore_upstream = True
                 continue
             elif self._line_is_comment(line):
                 continue
             try:
                 (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
+                # if we ignore upstream, let's force an empty upstream
+                if ignore_upstream:
+                    upstream_version = ''
                 packages_versions.append((package, parent_version, devel_version, upstream_version))
             except ValueError:
                 print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
