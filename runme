@@ -146,8 +146,8 @@ checkout_project X11:Compiz "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" open
 checkout_project GNOME:Contrib "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory:Contrib
 
 # Moblin support
-checkout_project Moblin:Base "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" Moblin:Factory
-checkout_project Moblin:UI "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" Moblin:Factory
+checkout_project Moblin:Base "" Moblin:Factory
+checkout_project Moblin:UI "" Moblin:Factory
 
 # Disabling G:S:2.24 since it should be up-to-date and there's no real effort for it anymore.
 #checkout_project GNOME:STABLE:2.24 "$OBS_DISSECTOR_DIR/tmp/versions-2.24" openSUSE:11.1
