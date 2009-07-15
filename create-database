@@ -1041,7 +1041,8 @@ class Project(Base):
         cursor.execute('''CREATE TABLE %s (
             id INTEGER PRIMARY KEY,
             name TEXT,
-            parent TEXT
+            parent TEXT,
+            ignore_upstream INTEGER
             );''' % cls.sql_table)
 
     def __init__(self, name, parent_directory):
@@ -1054,9 +1055,9 @@ class Project(Base):
 
     def sql_add(self, cursor):
         cursor.execute('''INSERT INTO %s VALUES (
-            NULL, ?, ?
+            NULL, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, self.parent))
+            (self.name, self.parent, self.versionfile == ''))
 
     def _read_config(self):
         project_dir = os.path.join(self.parent_directory, self.name)
