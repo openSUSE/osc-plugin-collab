@@ -363,11 +363,13 @@ class GnomeCache:
     _cache_dir = None
     _format_str = '# osc-gnome-format: '
     _import = None
+    _ignore_cache = False
     _printed = False
 
     @classmethod
-    def init(cls, import_function):
+    def init(cls, import_function, ignore_cache):
         cls._import = import_function
+        cls._ignore_cache = ignore_cache
 
     @classmethod
     def _print_message(cls):
@@ -394,6 +396,9 @@ class GnomeCache:
 
     @classmethod
     def _need_update(cls, filename, maxage):
+        if cls._ignore_cache:
+            return True
+
         cache = os.path.join(cls._get_xdg_cache_dir(), filename)
 
         if not os.path.exists(cache):
@@ -2832,6 +2837,9 @@ def _gnome_ensure_email(self, apiurl):
 @cmdln.option('--arch', metavar='ARCH', action='append',
               dest='archs', default=[],
               help='architectures to build on (default: i586 and x86_64)')
+@cmdln.option('--nc', '--no-cache', action='store_true',
+              dest='no_cache',
+              help='ignore data from the cache')
 def do_gnome(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
 
@@ -2955,7 +2963,7 @@ def do_gnome(self, subcmd, opts, *args):
     email = self._gnome_ensure_email(apiurl)
 
     self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
-    self.GnomeCache.init(self.OscGnomeImport.m_import)
+    self.GnomeCache.init(self.OscGnomeImport.m_import, opts.no_cache)
 
     # Do the command
     if cmd in ['todo', 't']:
