@@ -152,7 +152,7 @@ class OscGnomeWeb:
                 print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
                 continue
 
-        return (parent_project, packages_versions)
+        return (parent_project, ignore_upstream, packages_versions)
 
 
     def get_project_details(self, project):
@@ -218,7 +218,7 @@ class OscGnomeWeb:
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
 
-        (parent_project, packages_versions) = self._parse_project_package_details(fd)
+        (parent_project, ignore_upstream, packages_versions) = self._parse_project_package_details(fd)
 
         for (fd_package, parent_version, devel_version, upstream_version) in packages_versions:
             if fd_package == package:
@@ -237,7 +237,7 @@ class OscGnomeWeb:
         except urllib2.HTTPError, e:
             raise self.Error('Cannot get parent of project %s: %s' % (project, e.msg))
 
-        (parent_project, packages_versions) = self._parse_project_package_details(fd)
+        (parent_project, ignore_upstream, packages_versions) = self._parse_project_package_details(fd)
 
         return parent_project
 
@@ -762,9 +762,12 @@ def _gnome_table_print_header(self, template, title):
 def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
-        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
+        (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
+        return ('', [])
+
+    if ignore_upstream:
         return ('', [])
 
     # get the list of reserved package
@@ -860,7 +863,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 def _gnome_get_packages_with_bad_meta(self, apiurl, project):
     # get the list of packages that are actually in project
     try:
-        (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
+        (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return ([], [])
@@ -978,7 +981,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         print >>sys.stderr, e.msg
         return []
 
-    (parent_project, packages_versions) = self._gnome_web.get_project_details(project)
+    (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
 
     # get the packages submitted from
     if parent_project:
@@ -988,9 +991,10 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 
     # get the packages with no upstream data
     no_upstream_packages = []
-    for (package, parent_version, devel_version, upstream_version) in packages_versions:
-        if upstream_version == '':
-            no_upstream_packages.append(package)
+    if not ignore_upstream:
+        for (package, parent_version, devel_version, upstream_version) in packages_versions:
+            if upstream_version == '':
+                no_upstream_packages.append(package)
 
     # get the packages submitted to, which need a review
     submitted_to_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project, include_request_id=True)
