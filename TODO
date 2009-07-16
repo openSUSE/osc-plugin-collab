@@ -29,11 +29,6 @@
   - automatically unreserve (if it was reserved), with a --no-unreserve option.
 + Kill usage of http_GET, http_PUT (?)
 + Output an error if the project passed with --project does not exist (?)
-+ Document:
-  - usage with --project, or multiple projects.
-  - 'osc gnome build', 'osc gnome buildsubmit'
 + "osc gnome todo" should group packages somehow.  At the very least,
    packages that are part of the GNOME release cycle (and their blessed
    dependencies?) should be grouped apart.
-+ create 'osc gnome review' command that adds a comment to .changes. Bonus if
-  it doesn't have to check out the package.
