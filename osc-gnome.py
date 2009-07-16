@@ -116,11 +116,11 @@ class OscGnomeWeb:
 
     def _parse_reservation(self, line):
         try:
-            (package, username, comment) = line[:-1].split(';')
-            return (package, username, comment)
+            (project, package, username, comment) = line[:-1].split(';')
+            return (project, package, username, comment)
         except ValueError:
             print >>sys.stderr, 'Cannot parse reservation information: %s' % line[:-1]
-            return (None, None, None)
+            return (None, None, None, None)
 
 
     def _parse_project_package_details(self, fd):
@@ -269,10 +269,10 @@ class OscGnomeWeb:
         return upstream_url
 
 
-    def get_reserved_packages(self, return_package = True, return_username = True, return_comment = False):
+    def get_reserved_packages(self, projects):
         reserved_packages = []
 
-        data = urlencode({'mode': 'getall'})
+        data = urlencode({'mode': 'getall', 'project': projects}, True)
         url = self._append_data_to_url(self._reserve_url, data)
 
         try:
@@ -293,28 +293,15 @@ class OscGnomeWeb:
             for line in lines:
                 if self._line_is_comment(line):
                     continue
-                (package, username, comment) = self._parse_reservation(line)
+                (project, package, username, comment) = self._parse_reservation(line)
                 if package:
-                    reserved_packages.append((package, username, comment))
+                    reserved_packages.append((project, package, username))
 
-        if return_package and return_username and return_comment:
-            return reserved_packages
-        elif return_package and return_username and not return_comment:
-            retval = []
-            for (package, username, comment) in reserved_packages:
-                retval.append((package, username))
-            return retval
-        elif return_package and not return_username and not return_comment:
-            retval = []
-            for (package, username, comment) in reserved_packages:
-                retval.append(package)
-            return retval
-        else:
-            raise self.Error('Unsupported request for reserved packages. Please ask developers to implement it.')
+        return reserved_packages
 
 
-    def is_package_reserved(self, package):
-        data = urlencode({'mode': 'get', 'package': package})
+    def is_package_reserved(self, projects, package):
+        data = urlencode({'mode': 'get', 'project': projects, 'package': package}, True)
         url = self._append_data_to_url(self._reserve_url, data)
 
         try:
@@ -328,16 +315,16 @@ class OscGnomeWeb:
         if line[:3] != '200':
             raise self.Error('Cannot look if package %s is reserved: %s' % (package, line[4:-1]))
 
-        (package, username, comment) = self._parse_reservation(line[4:])
+        (project, package, username, comment) = self._parse_reservation(line[4:])
 
         if not username or username == '':
-            return None
+            return (None, None, None)
         else:
-            return username
+            return (project, package, username)
 
 
-    def reserve_package(self, package, username):
-        data = urlencode({'mode': 'set', 'user': username, 'package': package})
+    def reserve_package(self, projects, package, username):
+        data = urlencode({'mode': 'set', 'user': username, 'project': projects, 'package': package}, True)
         url = self._append_data_to_url(self._reserve_url, data)
 
         try:
@@ -352,8 +339,8 @@ class OscGnomeWeb:
             raise self.Error('Cannot reserve package %s: %s' % (package, line[4:-1]))
 
 
-    def unreserve_package(self, package, username):
-        data = urlencode({'mode': 'unset', 'user': username, 'package': package})
+    def unreserve_package(self, projects, package, username):
+        data = urlencode({'mode': 'unset', 'user': username, 'project': projects, 'package': package}, True)
         url = self._append_data_to_url(self._reserve_url, data)
 
         try:
@@ -782,7 +769,8 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
     # get the list of reserved package
     try:
-        reserved_packages = self._gnome_web.get_reserved_packages(return_username = False)
+        reserved = self._gnome_web.get_reserved_packages((project,))
+        reserved_packages = [ package for (project, package, username) in reserved ]
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
 
@@ -1130,9 +1118,9 @@ def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
 #######################################################################
 
 
-def _gnome_listreserved(self):
+def _gnome_listreserved(self, projects):
     try:
-        reserved_packages = self._gnome_web.get_reserved_packages()
+        reserved_packages = self._gnome_web.get_reserved_packages(projects)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1142,26 +1130,27 @@ def _gnome_listreserved(self):
         return
 
     # print headers
-    title = ('Package', 'Reserved by')
-    (max_package, max_username) = self._gnome_table_get_maxs(title, reserved_packages)
-    # trim to a reasonable max (less than 80 characters wide)
+    title = ('Project', 'Package', 'Reserved by')
+    (max_project, max_package, max_username) = self._gnome_table_get_maxs(title, reserved_packages)
+    # trim to a reasonable max
+    max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_username = min(max_username, 28)
 
-    print_line = self._gnome_table_get_template(max_package, max_username)
+    print_line = self._gnome_table_get_template(max_project, max_package, max_username)
     self._gnome_table_print_header(print_line, title)
 
-    for (package, username) in reserved_packages:
-        if (package and username):
-            print print_line % (package, username)
+    for (project, package, username) in reserved_packages:
+        if (project and package and username):
+            print print_line % (project, package, username)
 
 
 #######################################################################
 
 
-def _gnome_isreserved(self, package):
+def _gnome_isreserved(self, projects, package):
     try:
-        username = self._gnome_web.is_package_reserved(package)
+        (prj_r, pkg_r, username) = self._gnome_web.is_package_reserved(projects, package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1169,16 +1158,16 @@ def _gnome_isreserved(self, package):
     if not username:
         print 'Package is not reserved.'
     else:
-        print 'Package %s is reserved by %s.' % (package, username)
+        print 'Package %s in %s is reserved by %s.' % (package, prj_r, username)
 
 
 #######################################################################
 
 
-def _gnome_reserve(self, packages, username):
+def _gnome_reserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_web.reserve_package(package, username)
+            self._gnome_web.reserve_package(projects, package, username)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1191,10 +1180,10 @@ def _gnome_reserve(self, packages, username):
 #######################################################################
 
 
-def _gnome_unreserve(self, packages, username):
+def _gnome_unreserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_web.unreserve_package(package, username)
+            self._gnome_web.unreserve_package(projects, package, username)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1208,7 +1197,7 @@ def _gnome_unreserve(self, packages, username):
 def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
-        reserved_by = self._gnome_web.is_package_reserved(package)
+        (prj_r, pkg_r, reserved_by) = self._gnome_web.is_package_reserved((project,), package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return False
@@ -1223,7 +1212,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
     # package not reserved
     elif not reserved_by and not no_reserve:
         try:
-            self._gnome_web.reserve_package(package, username)
+            self._gnome_web.reserve_package((project,), package, username)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
             print '    osc gnome unreserve %s' % package
@@ -2972,19 +2961,19 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_todoadmin(apiurl, projects, opts.exclude_submitted)
 
     elif cmd in ['listreserved', 'lr']:
-        self._gnome_listreserved()
+        self._gnome_listreserved(projects)
 
     elif cmd in ['isreserved', 'ir']:
         package = args[1]
-        self._gnome_isreserved(package)
+        self._gnome_isreserved(projects, package)
 
     elif cmd in ['reserve', 'r']:
         packages = args[1:]
-        self._gnome_reserve(packages, user)
+        self._gnome_reserve(projects, packages, user)
 
     elif cmd in ['unreserve', 'u']:
         packages = args[1:]
-        self._gnome_unreserve(packages, user)
+        self._gnome_unreserve(projects, packages, user)
 
     elif cmd in ['setup', 's']:
         package = args[1]
