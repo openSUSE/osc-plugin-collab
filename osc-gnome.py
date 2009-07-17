@@ -2069,7 +2069,19 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        request = get_submit_request(apiurl, request_id)
+        _gnome_get_request = get_request
+    except NameError, e:
+        # in osc <= 0.120, get_request was named get_submit_request
+        _gnome_get_request = get_submit_request
+
+    try:
+        _gnome_change_request_state = change_request_state
+    except NameError, e:
+        # in osc <= 0.120, change_request_state was named change_submit_request_state
+        _gnome_change_request_state = change_submit_request_state
+
+    try:
+        request = _gnome_get_request(apiurl, request_id)
     except urllib2.HTTPError:
         print >>sys.stderr, 'Cannot get submission request %s: %s' % (request_id, e.msg)
 
@@ -2108,7 +2120,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
         print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (dest_package, dest_project, devel_project)
         return
 
-    result = change_submit_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % parent_project)
+    result = _gnome_change_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % parent_project)
     root = ET.fromstring(result)
     if not 'code' in root.keys() or root.get('code') != 'ok':
         print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
