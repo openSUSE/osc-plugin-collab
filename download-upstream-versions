@@ -451,7 +451,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
     if location:
         (location, files) = _get_files_from_http(location)
 
-        good_files = [file for file in files if 'downloading.php' in file]
+        good_files = [file for file in files if file.endswith('/download') and biggest in file]
 
         tarballs = None
         if not tarballs:
@@ -469,27 +469,6 @@ def _get_version_from_sf_rss(modulename, id, limit):
             if url.query:
                 path = '%s?%s' % (path, url.query)
             location = 'http://sourceforge.net/%s' % path
-
-            # this is now the page where we're redirected to the download...
-            (location, files) = _get_files_from_http(location)
-
-            good_files = [file for file in files if 'dl.sourceforge.net' in file]
-
-            tarballs = None
-            if not tarballs:
-                tarballs = [file for file in good_files if '.tar.bz2' in file]
-            if not tarballs:
-                tarballs = [file for file in good_files if '.tar.gz' in file]
-
-            if tarballs:
-                # let's take the first tarball
-                url = urlparse.urlparse(tarballs[0])
-                if url.path[0] == '/':
-                    path = url.path[1:]
-                else:
-                    path = url.path
-                location = 'http://prdownloads.sourceforge.net/%s' % path
-
 
     if biggest == '0' and location == None:
         biggest = None
