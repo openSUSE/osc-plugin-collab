@@ -611,6 +611,10 @@ class GnomeCache:
 
     @classmethod
     def _write(cls, filename, format_nb = None, fin = None, lines = None, lines_no_cr = None):
+        if not fin and lines == None and lines_no_cr == None:
+            print >>sys.stderr, 'Internal error when saving a cache: no data.'
+            return False
+
         cachedir = cls._get_xdg_cache_dir()
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
@@ -623,10 +627,6 @@ class GnomeCache:
         if os.path.exists(cache):
             os.unlink(cache)
         fout = open(cache, 'w')
-
-        if not fin and lines == None and lines_no_cr == None:
-            print >>sys.stderr, 'Internal error when saving a cache: no data.'
-            return False
 
         if format_nb:
             fout.write('%s%s\n' % (cls._format_str, format_nb))
