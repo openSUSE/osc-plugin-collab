@@ -140,9 +140,17 @@ checkout_project () {
     echo "versionfile=$VERSIONFILE" >> $DEST_CO/$PROJECT/osc-gnome-config
 }
 
+checkout_project Apache:Modules "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project Base:System "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project devel:languages:python "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
 checkout_project GNOME:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project graphics "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project multimedia:libs "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project network:telephony "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
 checkout_project X11:common:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
 checkout_project X11:Compiz "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+checkout_project YaST:Head "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
+
 checkout_project GNOME:Contrib "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory:Contrib
 
 # Moblin support
