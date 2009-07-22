@@ -146,7 +146,7 @@ def debug_thread(context, state, indent = '', use_remaining = False):
             fout.write('Remaining: %s\n' % (remaining,))
         fout.close()
     except Exception, e:
-        print >>sys.stderr, 'Exception in debug_print: %s' % (e,)
+        print >>sys.stderr, 'Exception in debug_thread: %s' % (e,)
 
 
 def socket_closer_thread_run(obs_checkout, empty_event):
