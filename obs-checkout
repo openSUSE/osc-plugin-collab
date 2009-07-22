@@ -132,9 +132,9 @@ def debug_thread(context, state, indent = '', use_remaining = False):
         return
 
     try:
+        name = threading.currentThread().name
         safe_mkdir_p('obs-checkout-debug')
         fout = open(os.path.join('obs-checkout-debug', name), 'a')
-        name = threading.currentThread().name
 
         # ignore indent since we write in files
         fout.write('[%s] %s %s\n' % (context, time.strftime("%H:%M:%S", time.localtime()), state))
