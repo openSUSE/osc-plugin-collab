@@ -50,11 +50,17 @@
 import os
 import sys
 
+import bisect
 import optparse
 import shutil
 import socket
 import tempfile
+import time
+from urllib import pathname2url
 import urllib2
+
+import Queue
+import threading
 
 try:
     from xml.etree import cElementTree as ET
@@ -85,6 +91,14 @@ if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
 # consistent data.
 CHECKOUT_DIR_STABLE = os.path.join(CHECKOUT_DIR_PARENT, CHECKOUT_DIR_PREFIX + 'stable')
 
+# Number of threads to use at a time
+THREADS_MAX = 10
+
+# Timeout for sockets
+SOCKET_TIMEOUT = 30
+
+# Debug output?
+USE_DEBUG = False
 
 #######################################################################
 
@@ -107,8 +121,125 @@ def osc_conf_init():
 #######################################################################
 
 
+def debug_thread(context, state, indent = '', use_remaining = False):
+    global USE_DEBUG
+
+    if not USE_DEBUG:
+        return
+
+    if context == 'main':
+        print '%s%s' % (indent, state)
+        return
+
+    try:
+        safe_mkdir_p('obs-checkout-debug')
+        fout = open(os.path.join('obs-checkout-debug', name), 'a')
+        name = threading.currentThread().name
+
+        # ignore indent since we write in files
+        fout.write('[%s] %s %s\n' % (context, time.strftime("%H:%M:%S", time.localtime()), state))
+
+        if use_remaining:
+            remaining = ''
+            for i in threading.enumerate():
+                remaining += i.name + ', '
+            fout.write('Remaining: %s\n' % (remaining,))
+        fout.close()
+    except Exception, e:
+        print >>sys.stderr, 'Exception in debug_print: %s' % (e,)
+
+
+def socket_closer_thread_run(obs_checkout, empty_event):
+    while True:
+        if empty_event.is_set():
+            break
+
+        obs_checkout.socket_timeouts_acquire()
+
+        # Find the socket that is supposed to be closed the first, so we can
+        # monitor it
+        while True:
+            if not len(obs_checkout.socket_timeouts):
+                (max_time, current_socket) = (0, None)
+                break
+
+            (max_time, current_socket, url) = obs_checkout.socket_timeouts[0]
+
+            if time.time() + SOCKET_TIMEOUT + 1 < max_time:
+                debug_thread('monitor', 'closing socket for %s (too far)' % url)
+                # close this socket: the max time is way too high
+                current_socket.close()
+                obs_checkout.socket_timeouts.remove((max_time, current_socket, url))
+            else:
+                break
+
+        obs_checkout.socket_timeouts_release()
+
+        # There's a socket to monitor, let's just do it
+        if max_time > 0:
+
+            while time.time() < max_time:
+                time.sleep(1)
+                # This is not thread-safe, but it can only go from False to
+                # True.
+                # If the value is still False, then we'll just try another
+                # time (and worst case: we exit the loop because of the
+                # timeout, but then we acquire the lock so the end will be
+                # thread-safe: we won't close it twice).
+                # If the value is True, then it's really closed anyway.
+                if not current_socket.fp or current_socket.fp.closed:
+                    break
+
+            obs_checkout.socket_timeouts_acquire()
+            if time.time() >= max_time:
+                debug_thread('monitor', 'closing socket for %s (timed out)' % url)
+                current_socket.close()
+            if (max_time, current_socket, url) in obs_checkout.socket_timeouts:
+                 obs_checkout.socket_timeouts.remove((max_time, current_socket, url))
+            obs_checkout.socket_timeouts_release()
+
+        else:
+            # There's no socket to monitor at the moment, so we wait for one to
+            # appear or for the notification of the end of the work.
+            # We use less than the socket timeout value as timeout so we are
+            # sure to not start too late the monitoring of the next socket (so
+            # we don't allow a socket to stay more than its timeout).
+            empty_event.wait(SOCKET_TIMEOUT / 2)
+
+
+def obs_checkout_thread_run(obs_checkout, queue):
+    try:
+        while True:
+            debug_thread('thread_loop', 'start loop', use_remaining = True)
+            if queue.empty():
+                break
+
+            debug_thread('thread_loop', 'getting work...')
+            # we don't want to block: the queue is filled at the beginning and
+            # once it's empty, then it means we're done. So we want the
+            # exception to happen.
+            (project, package) = queue.get(block = False)
+            debug_thread('main', '%s starting %s' % (threading.currentThread().name, package))
+
+            try:
+                debug_thread('thread_loop', 'work = %s' % package)
+                obs_checkout.checkout_package(project, package)
+                debug_thread('thread_loop', 'work done')
+            except Exception, e:
+                print >>sys.stderr, 'Exception in worker thread for %s: %s' % (package, e)
+
+            queue.task_done()
+            debug_thread('thread_loop', 'end loop', use_remaining = True)
+    except Queue.Empty:
+        pass
+    debug_thread('thread_loop', 'exit loop', use_remaining = True)
+
+
+#######################################################################
+
+
 class ObsCheckout:
-    def __init__(self, dest_dir, cache_dir = None, no_update = False, warn_non_links = False):
+    def __init__(self, dest_dir, cache_dir = None, no_update = False, warn_non_links = False, threads = THREADS_MAX):
         osc_conf_init()
 
         self.dest_dir = dest_dir
@@ -118,6 +249,67 @@ class ObsCheckout:
             print >>sys.stderr, 'Ignoring specified cache directory that is also the destination directory'
         self.no_update = no_update
         self.warn_non_links = warn_non_links
+        self.threads = threads
+        self.socket_timeouts = None
+        self.socket_timeouts_lock = None
+
+
+    def socket_timeouts_acquire(self):
+        if self.socket_timeouts_lock:
+            debug_thread('lock', 'acquiring lock')
+            self.socket_timeouts_lock.acquire()
+            debug_thread('lock', 'acquired lock')
+
+
+    def socket_timeouts_release(self):
+        if self.socket_timeouts_lock:
+            self.socket_timeouts_lock.release()
+            debug_thread('lock', 'released lock')
+
+
+    def _download_url_to_file(self, url, file):
+        fin = None
+        fout = None
+        timeout = 0
+        try:
+            debug_thread('url', 'start %s (timeout = %d)' % (url, socket.getdefaulttimeout()), ' ')
+            fin = urllib2.urlopen(url)
+            debug_thread('url', 'opened', ' ')
+
+            self.socket_timeouts_acquire()
+            timeout = time.time() + SOCKET_TIMEOUT
+            bisect.insort(self.socket_timeouts, (timeout, fin, url))
+            self.socket_timeouts_release()
+
+            fout = open(file, 'w')
+
+            while True:
+                bytes = fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                fout.write(bytes)
+            fout.close()
+
+            self.socket_timeouts_acquire()
+            if (timeout, fin, url) in self.socket_timeouts:
+                self.socket_timeouts.remove((timeout, fin, url))
+            fin.close()
+            self.socket_timeouts_release()
+
+            debug_thread('url', 'done', ' ')
+        except Exception, e:
+            debug_thread('url', 'exception: %s' % (e,), ' ')
+
+            self.socket_timeouts_acquire()
+            if (timeout, fin, url) in self.socket_timeouts:
+                self.socket_timeouts.remove((timeout, fin, url))
+            if fin:
+                fin.close()
+            self.socket_timeouts_release()
+
+            if fout:
+                fout.close()
+            raise e
 
 
     def _get_file_metadata_from_cache(self, project, package, filename):
@@ -156,7 +348,12 @@ class ObsCheckout:
 
         # couldn't copy the file from the cache, so download it
         try:
-            core.get_source_file(conf.config['apiurl'], project, package, filename, destfile, revision)
+            query = None
+            if revision:
+                query = { 'rev': revision }
+            url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package, pathname2url(filename)], query=query)
+            self._download_url_to_file(url, destfile)
+
         except urllib2.HTTPError, e:
             if try_again:
                 self._get_file(project, package, filename, destfile, revision, False)
@@ -185,7 +382,12 @@ class ObsCheckout:
 
         # download files metadata
         try:
-            metadata = core.show_files_meta(conf.config['apiurl'], project, package, revision)
+            query = None
+            if revision:
+                query = { 'rev': revision }
+            url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package], query=query)
+            self._download_url_to_file(url, filename)
+
         except urllib2.HTTPError, e:
             if e.code == 404:
                 print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
@@ -205,10 +407,6 @@ class ObsCheckout:
             else:
                 print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e)
             return None
-
-        f = open(filename, 'w')
-        f.write(''.join(metadata))
-        f.close()
 
         try:
             return ET.parse(filename).getroot()
@@ -282,9 +480,55 @@ class ObsCheckout:
                 self._get_file(project, package, filename, md5, mtime, revision)
 
 
-    def _checkout_packages_from_project(self, project, packages):
-        for package in packages:
-            self.checkout_package(project, package)
+    def _checkout_packages_from_project(self, project, packages, use_thread = True):
+        self.socket_timeouts = []
+
+        if use_thread and self.threads > 1:
+            # Architecture with threads:
+            #  + we fill a queue with all the tasks that have to be done
+            #  + the main thread does nothing until the queue is empty
+            #  + we create a bunch of threads that will take the tasks from the
+            #    queue
+            #  + we create a monitor thread that ensures that the socket
+            #    connections from the other threads don't hang forever. The
+            #    issue is that those threads use urllib2, and urllib2 will
+            #    remove the timeout from the underlying socket. (see
+            #    socket.makefile() documentation)
+            #  + there's an event between the main thread and the monitor
+            #    thread to announce to the monitor thread that the queue is
+            #    empty and that it can leave.
+            #  + once the queue is empty:
+            #    - the helper threads all exit since there's nothing left to do
+            #    - the main thread is waken up and sends an event to the
+            #      monitor thread. It waits for it to exit.
+            #    - the monitor thread receives the event and exits.
+            #    - the main thread can continue towards the end of the process.
+
+            # queue for tasks
+            queue = Queue.Queue()
+            # this is used to signal the monitor thread it can exit
+            empty_event = threading.Event()
+            # this is the lock for the data shared between the threads
+            self.socket_timeouts_lock = threading.Lock()
+
+            for package in packages:
+                queue.put((project, package))
+
+            monitor = threading.Thread(target=socket_closer_thread_run, args=(self, empty_event))
+            monitor.start()
+
+            thread_args = (self, queue)
+            for i in range(min(self.threads, len(packages))):
+                t = threading.Thread(target=obs_checkout_thread_run, args=thread_args)
+                t.start()
+
+            queue.join()
+            # tell the monitor thread to quit and wait for it
+            empty_event.set()
+            monitor.join()
+        else:
+            for package in packages:
+                self.checkout_package(project, package)
 
 
     def checkout_project_packages_existing_in_project(self, project, existing_in_project, try_again = True):
@@ -360,6 +604,8 @@ def make_directory_stable(directory):
 
 
 def main(args):
+    global USE_DEBUG
+
     parser = optparse.OptionParser()
 
     parser.add_option('--get-stable-directory', action='store_true',
@@ -370,6 +616,9 @@ def main(args):
                       help='output the path of a new directory ready to be used')
     parser.add_option('--make-directory-stable', dest='make_directory_stable',
                       help='make the specified directory the stable directory')
+
+    parser.add_option('--debug', action='store_true', dest='debug', default=USE_DEBUG)
+    parser.add_option('--threads', type='int', dest='threads', default=THREADS_MAX)
 
     parser.add_option('--cache-directory', dest='cache_dir',
                       help='cache directory containing previous checkouts')
@@ -387,6 +636,8 @@ def main(args):
                       help='project to check out')
 
     (options, args) = parser.parse_args()
+
+    USE_DEBUG = options.debug
 
     # Check options validity
 
@@ -437,10 +688,10 @@ def main(args):
     else:
         dest_dir = options.dest_dir
 
-    # set default timeout to 30 seconds to not hang forever
-    socket.setdefaulttimeout(30)
+    # set default timeout to SOCKET_TIMEOUT seconds to not hang forever
+    socket.setdefaulttimeout(SOCKET_TIMEOUT)
 
-    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.warn_non_links)
+    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.warn_non_links, options.threads)
 
     if options.packages_of:
         co.checkout_project_packages_existing_in_project(options.project, options.packages_of)
