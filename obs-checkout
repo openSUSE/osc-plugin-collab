@@ -605,7 +605,7 @@ class ObsCheckout:
                 devel = package.find('devel')
                 if devel != None:
                     devel_project = devel.get('project')
-                    if devel_project:
+                    if devel_project and devel_project != project:
                         devel_projects.add(devel_project)
 
             fin.close()
