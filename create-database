@@ -652,11 +652,9 @@ class SrcPackage(Base):
             name TEXT,
             project INTEGER,
             upstream_name TEXT,
-            path TEXT,
             version TEXT,
             upstream_version TEXT,
             upstream_url TEXT,
-            srcmd5 TEXT,
             is_obs_link INTEGER,
             obs_link_has_delta INTEGER,
             obs_error TEXT,
@@ -682,7 +680,6 @@ class SrcPackage(Base):
         self.files = []
         self.rpmlint_reports = []
 
-        self.srcmd5 = ''
         # not booleans, since sqlite doesn't support this
         self.is_obs_link = 0
         self.obs_link_has_delta = 0
@@ -696,9 +693,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.version, self.upstream_version, self.upstream_url, self.srcmd5, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
+            (self.name, project_id, self.upstream_name, self.version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -735,7 +732,6 @@ class SrcPackage(Base):
             except SyntaxError, e:
                 print >> sys.stderr, 'Cannot parse %s: %s' % (files, e.msg)
             else:
-                self.srcmd5 = root.get('srcmd5')
                 linkinfo = root.find('linkinfo')
                 if linkinfo != None:
                     error = linkinfo.get('error')
