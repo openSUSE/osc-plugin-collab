@@ -230,7 +230,7 @@ def obs_checkout_thread_run(obs_checkout):
             # once it's empty, then it means we're done. So we want the
             # exception to happen.
             (project, package) = obs_checkout.queue.get(block = False)
-            debug_thread('main', 'starting %s' % (package,))
+            debug_thread('main', 'starting %s/%s' % (project, package))
 
             try:
                 debug_thread('thread_loop', 'work = %s' % package)
