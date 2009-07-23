@@ -456,9 +456,6 @@ class ObsCheckout:
         # be the right value to expand the link
         revision = linkinfo.xsrcmd5
 
-        if linkinfo.haserror():
-            print >>sys.stderr, 'Link in %s from %s has an error: %s' % (package, project, linkinfo.error)
-
         if linkinfo.needshandling():
             # download the _link file first. This makes it possible to know if
             # the project has a delta compared to the target of the link
