@@ -125,13 +125,7 @@ checkout_project () {
         echo "versionfile=$VERSIONFILE" > $DEST_CO/$PARENT/osc-gnome-config
     fi
 
-    if test "x$PARENT" != "x"; then
-        OBS_CO_OPTIONS="--warn-if-not-unexpanded-link"
-    else
-        OBS_CO_OPTIONS=
-    fi
-
-    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" $OBS_CO_OPTIONS --project $PROJECT
+    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --project $PROJECT
     if test $? -ne 0; then
         echo "Error while checking out $PROJECT"
         exit 1

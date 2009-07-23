@@ -250,7 +250,7 @@ def obs_checkout_thread_run(obs_checkout):
 
 
 class ObsCheckout:
-    def __init__(self, dest_dir, cache_dir = None, no_update = False, warn_non_links = False, threads = THREADS_MAX):
+    def __init__(self, dest_dir, cache_dir = None, no_update = False, threads = THREADS_MAX):
         osc_conf_init()
 
         self.dest_dir = dest_dir
@@ -259,7 +259,6 @@ class ObsCheckout:
         else:
             print >>sys.stderr, 'Ignoring specified cache directory that is also the destination directory'
         self.no_update = no_update
-        self.warn_non_links = warn_non_links
         self.threads = threads
         self.queue = None
         self.socket_timeouts = []
@@ -459,10 +458,6 @@ class ObsCheckout:
 
         if linkinfo.haserror():
             print >>sys.stderr, 'Link in %s from %s has an error: %s' % (package, project, linkinfo.error)
-        elif self.warn_non_links and not linkinfo.islink():
-            print >>sys.stderr, 'Package %s from %s is not a link.' % (package, project)
-        elif self.warn_non_links and linkinfo.isexpanded():
-            print >>sys.stderr, 'Package %s from %s is an expanded link.' % (package, project)
 
         if linkinfo.needshandling():
             # download the _link file first. This makes it possible to know if
@@ -686,9 +681,6 @@ def main(args):
     parser.add_option('--no-update', action='store_true',
                       default=False, dest='no_update',
                       help='when checking out something that already exists, just assume it is up-to-date instead of updating it')
-    parser.add_option('--warn-if-not-unexpanded-link', action='store_true',
-                      default=False, dest='warn_non_links',
-                      help='print a warning for packages that are not unexpanded links')
     parser.add_option('--project', metavar='PROJECT', action='append',
                       default=[], dest='projects',
                       help='project(s) to check out')
@@ -759,7 +751,7 @@ def main(args):
     # set default timeout to SOCKET_TIMEOUT seconds to not hang forever
     socket.setdefaulttimeout(SOCKET_TIMEOUT)
 
-    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.warn_non_links, options.threads)
+    co = ObsCheckout(dest_dir, options.cache_dir, options.no_update, options.threads)
 
     if options.packages_of:
         for packages_of_one in options.packages_of:
