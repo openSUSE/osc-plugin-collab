@@ -499,6 +499,8 @@ class ObsCheckout:
         if not self.queue:
             return
 
+        debug_thread('main', 'queue has %d items' % self.queue.qsize())
+
         if use_threads and self.threads > 1:
             # Architecture with threads:
             #  + we fill a queue with all the tasks that have to be done
@@ -529,7 +531,6 @@ class ObsCheckout:
             monitor.start()
 
             thread_args = (self,)
-            print self.queue.qsize()
             for i in range(min(self.threads, self.queue.qsize())):
                 t = threading.Thread(target=obs_checkout_thread_run, args=thread_args)
                 t.start()
@@ -542,6 +543,7 @@ class ObsCheckout:
             try:
                 while not self.queue.empty():
                     (project, package) = self.queue.get(block = False)
+                    debug_thread('main', 'starting %s/%s' % (project, package))
                     self.checkout_package(project, package)
             except Queue.Empty:
                 pass
