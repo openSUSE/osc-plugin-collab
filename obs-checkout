@@ -374,7 +374,7 @@ class ObsCheckout:
                     detail = e.msg
                 else:
                     detail = e
-                print >>sys.stderr, 'Could not get file %s for %s from %s: %s' % (filename, package, project, detail)
+                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, detail)
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None, try_again = True):
