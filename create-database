@@ -1187,6 +1187,8 @@ def main(args):
     projects = []
 
     for file in os.listdir(PACKAGE_LOOKUP_PATH):
+        if not os.path.isdir(os.path.join(PACKAGE_LOOKUP_PATH, file)):
+            continue
         project = Project(file, PACKAGE_LOOKUP_PATH)
         project.read_srcpackages(db_cache)
         projects.append(project)
