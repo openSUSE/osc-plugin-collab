@@ -1176,7 +1176,11 @@ def main(args):
     (options, args) = parser.parse_args()
 
     if not options.outputdb:
-#FIXME error
+        options.outputdb = os.path.join(OBS_DISSECTOR_DIR, 'obs.db')
+        print 'No database file specified; using %s.' % options.outputdb
+
+    if not options.force and os.path.exists(options.outputdb):
+        print >> sys.stderr,  '%s already exists. You can use --force to overwrite it.' % options.outputdb
         return
 
     db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE, MAINTAINER_FILE, PDBCACHE_FILE)
