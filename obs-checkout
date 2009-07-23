@@ -233,11 +233,11 @@ def obs_checkout_thread_run(obs_checkout):
             debug_thread('main', 'starting %s/%s' % (project, package))
 
             try:
-                debug_thread('thread_loop', 'work = %s' % package)
+                debug_thread('thread_loop', 'work = %s/%s' % (project, package))
                 obs_checkout.checkout_package(project, package)
                 debug_thread('thread_loop', 'work done')
             except Exception, e:
-                print >>sys.stderr, 'Exception in worker thread for %s: %s' % (package, e)
+                print >>sys.stderr, 'Exception in worker thread for %s/%s: %s' % (project, package, e)
 
             obs_checkout.queue.task_done()
             debug_thread('thread_loop', 'end loop', use_remaining = True)
