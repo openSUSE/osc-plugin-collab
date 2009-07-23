@@ -56,7 +56,7 @@ import shutil
 import socket
 import tempfile
 import time
-from urllib import pathname2url
+import urllib
 import urllib2
 
 import Queue
@@ -363,7 +363,7 @@ class ObsCheckout:
             query = None
             if revision:
                 query = { 'rev': revision }
-            url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package, pathname2url(filename)], query=query)
+            url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package, urllib.pathname2url(filename)], query=query)
             self._download_url_to_file(url, destfile)
 
         except urllib2.HTTPError, e:
@@ -597,8 +597,39 @@ class ObsCheckout:
         self._queue_packages_from_project(project, packages)
 
 
-    def queue_checkout_devel_projects(self, project):
-        pass
+    def queue_checkout_devel_projects(self, project, try_again = True):
+        devel_projects = set()
+
+        fin = None
+        try:
+            url = core.makeurl(conf.config['apiurl'], ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+            fin = urllib2.urlopen(url)
+            collection = ET.parse(fin).getroot()
+            for package in collection.findall('package'):
+                devel = package.find('devel')
+                if devel != None:
+                    devel_project = devel.get('project')
+                    if devel_project:
+                        devel_projects.add(devel_project)
+
+            fin.close()
+
+        except (urllib2.HTTPError, urllib2.URLError, SyntaxError), e:
+            if fin:
+                fin.close()
+
+            if try_again:
+                self.queue_checkout_devel_projects(project, False)
+            else:
+                if hasattr(e, 'msg'):
+                    detail = e.msg
+                else:
+                    detail = e
+                print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, detail)
+            return
+
+        for devel_project in devel_projects:
+            self.queue_checkout_project(devel_project)
 
 
 #######################################################################
