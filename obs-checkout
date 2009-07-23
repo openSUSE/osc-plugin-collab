@@ -127,12 +127,17 @@ def debug_thread(context, state, indent = '', use_remaining = False):
     if not USE_DEBUG:
         return
 
+    # compatibility with old versions of python (< 2.6)
+    if hasattr(threading.currentThread(), 'name'):
+        name = threading.currentThread().name
+    else:
+        name = threading.currentThread().getName()
+
     if context == 'main':
-        print '%s%s' % (indent, state)
+        print '%s%s: %s' % (indent, name, state)
         return
 
     try:
-        name = threading.currentThread().name
         safe_mkdir_p('obs-checkout-debug')
         fout = open(os.path.join('obs-checkout-debug', name), 'a')
 
@@ -150,8 +155,14 @@ def debug_thread(context, state, indent = '', use_remaining = False):
 
 
 def socket_closer_thread_run(obs_checkout, empty_event):
+    # compatibility with old versions of python (< 2.6)
+    if hasattr(empty_event, 'is_set'):
+        empty_is_set = empty_event.is_set
+    else:
+        empty_is_set = empty_event.isSet
+
     while True:
-        if empty_event.is_set():
+        if empty_is_set():
             break
 
         obs_checkout.socket_timeouts_acquire()
@@ -219,7 +230,7 @@ def obs_checkout_thread_run(obs_checkout, queue):
             # once it's empty, then it means we're done. So we want the
             # exception to happen.
             (project, package) = queue.get(block = False)
-            debug_thread('main', '%s starting %s' % (threading.currentThread().name, package))
+            debug_thread('main', 'starting %s' % (package,))
 
             try:
                 debug_thread('thread_loop', 'work = %s' % package)
