@@ -68,11 +68,6 @@ MODULE_SRCPACKAGE_MATCH_FILE = os.path.join(OBS_DISSECTOR_DIR, 'upstream-package
 # Files to just ignore in the file list of a package.
 IGNORE_FILES = [ 'ready', 'MD5SUMS', 'MD5SUMS.meta' ]
 
-# This is data that comes from autobuild. Keep it empty for the build service
-# until we can get the same data without any internal access. TODO-BS
-PDBCACHE_FILE = ''
-MAINTAINER_FILE = ''
-
 # Would be nice to get the list of failed package builds. In autobuild, look
 # at /work/built/info/failed/ TODO-BS
 
@@ -91,16 +86,12 @@ DB_MINOR = 2
 #######################################################################
 
 class DataCache:
-    def __init__(self, upstream_name, maintainer, pdb_cache):
+    def __init__(self, upstream_name):
         self.db = sqlite3.connect(':memory:')
         self.cursor = self.db.cursor()
-        self.use_pdb = (pdb_cache != None and pdb_cache != '')
-        self.has_autobuild_data = ((pdb_cache != None and pdb_cache != '') or (maintainer != None and maintainer != ''))
 
         self._sql_setup()
         self._fill_upstream_name(upstream_name)
-        if self.has_autobuild_data:
-            self._fill_autobuild_data(maintainer, pdb_cache)
 
     def _sql_setup(self):
         self.cursor.execute('''CREATE TABLE upstream_name (
@@ -118,17 +109,6 @@ class DataCache:
         self.cursor.execute('''CREATE TABLE upstream_version_file (
             id INTEGER PRIMARY KEY,
             file TEXT
-            );''')
-        self.cursor.execute('''CREATE TABLE maintainer (
-            id INTEGER PRIMARY KEY,
-            srcpackage TEXT,
-            maintainer TEXT
-            );''')
-        self.cursor.execute('''CREATE TABLE pdb (
-            id INTEGER PRIMARY KEY,
-            srcpackage TEXT,
-            maintainer TEXT,
-            public INTEGER
             );''')
 
 
@@ -218,40 +198,6 @@ class DataCache:
 
         file.close()
 
-    def _fill_autobuild_data(self, maintainer, pdb_cache):
-        if not self.use_pdb:
-            if maintainer:
-                file = open(maintainer)
-                re_maintainer = re.compile('^([^#]\S*)\s*(\S*)')
-                line = file.readline()
-                while line != '':
-                    match = re_maintainer.match(line)
-                    if match:
-                        self.cursor.execute('''INSERT INTO maintainer VALUES (
-                            NULL, ?, ?
-                            );''',
-                            (match.group(1), match.group(2)))
-                    line = file.readline()
-                file.close()
-        else:
-            file = open(pdb_cache)
-            re_pdb_cache = re.compile('^([^:]+):([^:]+):((?:yes|no))$')
-            line = file.readline()
-            while line != '':
-                match = re_pdb_cache.match(line)
-                if match:
-                    if match.group(3) == "yes":
-                        public = 1
-                    else:
-                        public = 0
-                    self.cursor.execute('''INSERT INTO pdb VALUES (
-                        NULL, ?, ?, ?
-                        );''',
-                        (match.group(1), match.group(2), public))
-                line = file.readline()
-            file.close()
-
-
     def __del__(self):
         self.cursor.close()
         self.db.close()
@@ -303,37 +249,6 @@ class DataCache:
             return row[0]
         else:
             return ''
-
-    def get_maintainer(self, srcpackage):
-        if not self.has_autobuild_data:
-            return ''
-
-        if self.use_pdb:
-            self.cursor.execute('''SELECT maintainer FROM pdb WHERE
-                srcpackage = ?;''', (srcpackage,))
-        else:
-            self.cursor.execute('''SELECT maintainer FROM maintainer WHERE
-                srcpackage = ?;''', (srcpackage,))
-        row = self.cursor.fetchone()
-        if row:
-            return row[0]
-        else:
-            return ''
-
-    def get_public(self, srcpackage):
-        if not self.has_autobuild_data:
-            return True
-
-        if self.use_pdb:
-            self.cursor.execute('''SELECT public FROM pdb WHERE
-                srcpackage = ?;''', (srcpackage,))
-            row = self.cursor.fetchone()
-            if row:
-                return (row[0] == 1)
-            else:
-                return True
-        else:
-            return False
 
 #######################################################################
 
@@ -738,7 +653,6 @@ class SrcPackage(Base):
             project INTEGER,
             upstream_name TEXT,
             path TEXT,
-            maintainer TEXT,
             version TEXT,
             upstream_version TEXT,
             upstream_url TEXT,
@@ -759,7 +673,6 @@ class SrcPackage(Base):
         self.project = project
         self.upstream_name = ''
         self.path = os.path.join(parent_directory, name)
-        self.maintainer = ''
         self.version = ''
         self.upstream_version = ''
         self.upstream_url = ''
@@ -769,7 +682,6 @@ class SrcPackage(Base):
         self.files = []
         self.rpmlint_reports = []
 
-        self.public = True
         self.srcmd5 = ''
         # not booleans, since sqlite doesn't support this
         self.is_obs_link = 0
@@ -786,7 +698,7 @@ class SrcPackage(Base):
             NULL,
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.path, self.maintainer, self.version, self.upstream_version, self.upstream_url, self.srcmd5, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
+            (self.name, project_id, self.upstream_name, self.path, self.version, self.upstream_version, self.upstream_url, self.srcmd5, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -798,12 +710,6 @@ class SrcPackage(Base):
         #print >> sys.stderr, '%s: cannot get upstream version because there\'s no upstream name' % self.name
             self.upstream_version = db_cache.get_upstream_version(self.project.versionfile, self.upstream_name)
             self.upstream_url = db_cache.get_upstream_url(self.project.versionfile, self.upstream_name)
-        self.maintainer = db_cache.get_maintainer(self.name)
-        self.public = db_cache.get_public(self.name)
-        for package in self.packages:
-            self.public = db_cache.get_public(package.name)
-            if not self.public:
-                break
 
     def _analyze_files(self):
         linkfile = os.path.join(self.path, '_link')
@@ -1018,7 +924,6 @@ class SrcPackage(Base):
         ret = ret + "Packaged version: %s\n" % self.version
         ret = ret + "Upstream version: %s\n" % self.upstream_version
         #ret = ret + "Path: %s\n" % self.path
-        ret = ret + "Maintainer: %s\n" % self.maintainer
         ret = ret + "Sources:\n"
         for source in self.sources:
             ret = ret + "  %s\n" % source.filename
@@ -1137,10 +1042,6 @@ def create_db(filename, projects, force):
         project_id = Project.sql_lastid(cursor)
 
         for srcpackage in project.srcpackages:
-            # do not export non-public packages
-            if not srcpackage.public:
-                continue
-
             srcpackage.sql_add(cursor, project_id)
             srcpackage_id = SrcPackage.sql_lastid(cursor)
 
@@ -1183,7 +1084,7 @@ def main(args):
         print >> sys.stderr,  '%s already exists. You can use --force to overwrite it.' % options.outputdb
         return
 
-    db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE, MAINTAINER_FILE, PDBCACHE_FILE)
+    db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE)
     projects = []
 
     for file in os.listdir(PACKAGE_LOOKUP_PATH):
