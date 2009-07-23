@@ -667,13 +667,16 @@ class SrcPackage(Base):
         return cursor.fetchone()[0]
 
     def __init__(self, name, project, parent_directory):
+        self.path = os.path.join(parent_directory, name)
+
         self.name = name
         self.project = project
-        self.upstream_name = ''
-        self.path = os.path.join(parent_directory, name)
         self.version = ''
+
+        self.upstream_name = ''
         self.upstream_version = ''
         self.upstream_url = ''
+
         self.packages = []
         self.sources = []
         self.patches = []
@@ -681,10 +684,10 @@ class SrcPackage(Base):
         self.rpmlint_reports = []
 
         # not booleans, since sqlite doesn't support this
-        self.is_obs_link = 0
-        self.obs_link_has_delta = 0
-        self.obs_error = ''
-        self.obs_error_details = ''
+        self.is_link = 0
+        self.has_delta = 0
+        self.error = ''
+        self.error_details = ''
 
         self._analyze_files()
         self._analyze_specs()
@@ -695,7 +698,7 @@ class SrcPackage(Base):
             NULL,
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.upstream_name, self.version, self.upstream_version, self.upstream_url, self.is_obs_link, self.obs_link_has_delta, self.obs_error, self.obs_error_details))
+            (self.name, project_id, self.upstream_name, self.version, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -711,7 +714,7 @@ class SrcPackage(Base):
     def _analyze_files(self):
         linkfile = os.path.join(self.path, '_link')
         if os.path.exists(linkfile):
-            self.is_obs_link = 1
+            self.is_link = 1
 
             try:
                 root = ET.parse(linkfile).getroot()
@@ -721,7 +724,7 @@ class SrcPackage(Base):
                 node = root.find('patches')
                 if node:
                     if node.find('delete') != None or node.find('apply') != None:
-                        self.obs_link_has_delta = 1
+                        self.has_delta = 1
 
         files = os.path.join(self.path, '_files-expanded')
         if not os.path.exists(files):
@@ -737,10 +740,10 @@ class SrcPackage(Base):
                     error = linkinfo.get('error')
                     if error:
                         if error.find('does not exist in project') != -1:
-                            self.obs_error = 'not-in-parent'
+                            self.error = 'not-in-parent'
                         elif error.find('could not apply patch') != -1:
-                            self.obs_error = 'need-merge-with-parent'
-                        self.obs_error_details = error
+                            self.error = 'need-merge-with-parent'
+                        self.error_details = error
 
                 for node in root.findall('entry'):
                     filename = node.get('name')
@@ -1004,8 +1007,8 @@ class Project(Base):
                 continue
             srcpackage = SrcPackage(file, self, project_dir)
             srcpackage.read_data(db_cache)
-            if self.parent and not srcpackage.is_obs_link and not srcpackage.obs_error:
-                srcpackage.obs_error = 'not-link'
+            if self.parent and not srcpackage.is_link and not srcpackage.error:
+                srcpackage.error = 'not-link'
             self.srcpackages.append(srcpackage)
 
 #######################################################################
