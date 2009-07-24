@@ -602,7 +602,20 @@ class ObsCheckout:
         self.queue.put((project, ''))
 
 
-    def queue_checkout_projects_packages_existing_in_project(self, projects, existing_in_project, try_again = True):
+    def _add_metadata_to_project(self, project, metadata):
+        if not metadata:
+            return
+
+        project_dir = os.path.join(self.dest_dir, project)
+        safe_mkdir_p(project_dir)
+
+        metadata_file = os.path.join(project_dir, 'osc-gnome-config')
+        fout = open(metadata_file, 'a')
+        for meta in metadata:
+            fout.write('%s\n' % meta)
+        fout.close()
+
+    def queue_checkout_projects_packages_existing_in_project(self, projects, existing_in_project, metadata, try_again = True):
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
         except (urllib2.HTTPError, urllib2.URLError), e:
@@ -618,14 +631,15 @@ class ObsCheckout:
 
         for project in projects:
             self._queue_packages_from_project(project, packages)
+            self._add_metadata_to_project(project, metadata)
 
 
-    def queue_checkout_project(self, project, try_again = True):
+    def queue_checkout_project(self, project, metadata, try_again = True):
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], project)
         except (urllib2.HTTPError, urllib2.URLError), e:
             if try_again:
-                self.checkout_project(project, False)
+                self.checkout_project(project, metadata, False)
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
@@ -636,9 +650,10 @@ class ObsCheckout:
 
         self._queue_packages_from_project(project, packages)
         self._queue_meta_of_project(project)
+        self._add_metadata_to_project(project, metadata)
 
 
-    def queue_checkout_devel_projects(self, project):
+    def queue_checkout_devel_projects(self, project, metadata):
         self.checkout_meta(project)
         meta_file = os.path.join(self.dest_dir, project, 'osc-gnome-meta')
         if not os.path.exists(meta_file):
@@ -664,7 +679,7 @@ class ObsCheckout:
             return
 
         for devel_project in devel_projects:
-            self.queue_checkout_project(devel_project)
+            self.queue_checkout_project(devel_project, metadata)
 
 
 #######################################################################
@@ -725,6 +740,11 @@ def main(args):
     parser.add_option('--no-update', action='store_true',
                       default=False, dest='no_update',
                       help='when checking out something that already exists, just assume it is up-to-date instead of updating it')
+
+    parser.add_option('--metadata', metavar='METADATA', action='append',
+                      default=[], dest='metadata',
+                      help='metadata to add to the project(s)')
+
     parser.add_option('--project', metavar='PROJECT', action='append',
                       default=[], dest='projects',
                       help='project(s) to check out')
@@ -799,12 +819,12 @@ def main(args):
 
     if options.packages_of:
         for packages_of_one in options.packages_of:
-            co.queue_checkout_projects_packages_existing_in_project(options.projects, options.packages_of_one)
+            co.queue_checkout_projects_packages_existing_in_project(options.projects, options.packages_of_one, options.metadata)
     else:
         for project in options.projects:
-            co.queue_checkout_project(project)
+            co.queue_checkout_project(project, options.metadata)
         for devel_projects_of_one in options.devel_projects_of:
-            co.queue_checkout_devel_projects(devel_projects_of_one)
+            co.queue_checkout_devel_projects(devel_projects_of_one, options.metadata)
 
     co.run()
 
