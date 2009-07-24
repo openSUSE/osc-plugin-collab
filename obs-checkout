@@ -234,7 +234,10 @@ def obs_checkout_thread_run(obs_checkout):
 
             try:
                 debug_thread('thread_loop', 'work = %s/%s' % (project, package))
-                obs_checkout.checkout_package(project, package)
+                if not package:
+                    obs_checkout.checkout_meta(project)
+                else:
+                    obs_checkout.checkout_package(project, package)
                 debug_thread('thread_loop', 'work done')
             except Exception, e:
                 print >>sys.stderr, 'Exception in worker thread for %s/%s: %s' % (project, package, e)
@@ -431,6 +434,11 @@ class ObsCheckout:
 
 
     def checkout_package(self, project, package):
+        if not package:
+            print >>sys.stderr, 'Internal error: checkout_package called instead of checkout_meta'
+            self.checkout_meta(project)
+            return
+
         # TODO: handle updates (if not self.no_update):
         # if the directory already exists, list files in there so we can know
         # what to remove afterwards.
@@ -480,6 +488,40 @@ class ObsCheckout:
             # download .spec files
             if filename.endswith('.spec'):
                 self._get_file(project, package, filename, md5, mtime, revision)
+
+
+    def checkout_meta(self, project, try_again = True):
+        project_dir = os.path.join(self.dest_dir, project)
+        safe_mkdir_p(project_dir)
+
+        meta_file = os.path.join(project_dir, 'osc-gnome-meta')
+
+        # if the file exists, it's likely up-to-date since metadata doesn't
+        # change that often, so don't update it
+        if os.path.exists(meta_file):
+            return
+
+        try:
+            url = core.makeurl(conf.config['apiurl'], ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+            self._download_url_to_file(url, meta_file)
+
+        except (urllib2.HTTPError, urllib2.URLError), e:
+            if try_again:
+                self.checkout_meta(project, False)
+                return
+            else:
+                if hasattr(e, 'msg'):
+                    detail = e.msg
+                else:
+                    detail = e
+
+                if self.cache_dir:
+                    cached_meta = os.path.join(self.cache_dir, project, 'osc-gnome-meta')
+                if self.cache_dir and os.path.exists(cached_meta):
+                    shutil.copyfile(cached_meta, meta_file)
+                    print >>sys.stderr, 'Using previous version of packages metadata of %s: %s' % (project, detail)
+                else:
+                    print >>sys.stderr, 'Cannot get packages metadata of %s: %s' % (project, detail)
 
 
     def run(self, use_threads = True):
@@ -536,7 +578,10 @@ class ObsCheckout:
                 while not self.queue.empty():
                     (project, package) = self.queue.get(block = False)
                     debug_thread('main', 'starting %s/%s' % (project, package))
-                    self.checkout_package(project, package)
+                    if not package:
+                        obs_checkout.checkout_meta(project)
+                    else:
+                        obs_checkout.checkout_package(project, package)
             except Queue.Empty:
                 pass
 
@@ -548,6 +593,13 @@ class ObsCheckout:
 
         for package in packages:
             self.queue.put((project, package))
+
+
+    def _queue_meta_of_project(self, project):
+        if not self.queue:
+            # queue for tasks
+            self.queue = Queue.Queue()
+        self.queue.put((project, ''))
 
 
     def queue_checkout_projects_packages_existing_in_project(self, projects, existing_in_project, try_again = True):
@@ -583,37 +635,32 @@ class ObsCheckout:
             return
 
         self._queue_packages_from_project(project, packages)
+        self._queue_meta_of_project(project)
 
 
-    def queue_checkout_devel_projects(self, project, try_again = True):
+    def queue_checkout_devel_projects(self, project):
+        self.checkout_meta(project)
+        meta_file = os.path.join(self.dest_dir, project, 'osc-gnome-meta')
+        if not os.path.exists(meta_file):
+            print >>sys.stderr, 'Ignoring devel projects for project %s: no packages metadata' % (project,)
+            return
+
         devel_projects = set()
 
-        fin = None
         try:
-            url = core.makeurl(conf.config['apiurl'], ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
-            fin = urllib2.urlopen(url)
-            collection = ET.parse(fin).getroot()
+            collection = ET.parse(meta_file).getroot()
             for package in collection.findall('package'):
                 devel = package.find('devel')
-                if devel != None:
-                    devel_project = devel.get('project')
-                    if devel_project and devel_project != project:
-                        devel_projects.add(devel_project)
+                # "not devel" won't work (probably checks if devel.text is
+                # empty)
+                if devel == None:
+                    continue
+                devel_project = devel.get('project')
+                if devel_project and devel_project != project:
+                    devel_projects.add(devel_project)
 
-            fin.close()
-
-        except (urllib2.HTTPError, urllib2.URLError, SyntaxError), e:
-            if fin:
-                fin.close()
-
-            if try_again:
-                self.queue_checkout_devel_projects(project, False)
-            else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                else:
-                    detail = e
-                print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, detail)
+        except SyntaxError, e:
+            print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, e.msg)
             return
 
         for devel_project in devel_projects:
