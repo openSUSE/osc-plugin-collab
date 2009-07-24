@@ -369,15 +369,18 @@ class ObsCheckout:
             self._download_url_to_file(url, destfile)
 
         except (urllib2.HTTPError, urllib2.URLError), e:
-            if try_again:
+            if type(e) == urllib2.HTTPError and e.code == 404:
+                print >>sys.stderr, 'File in package %s of project %s doesn\'t exist.' % (filename, package, project)
+            elif try_again:
                 self._get_file(project, package, filename, destfile, revision, False)
-                return
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
                 else:
                     detail = e
                 print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, detail)
+
+            return
 
 
     def _get_files_metadata(self, project, package, save_basename, revision = None, try_again = True):
@@ -400,24 +403,21 @@ class ObsCheckout:
             url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package], query=query)
             self._download_url_to_file(url, filename)
 
-        except urllib2.HTTPError, e:
-            if e.code == 404:
-                print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
+        except (urllib2.HTTPError, urllib2.URLError), e:
+            if hasattr(e, 'msg'):
+                detail = e.msg
             else:
-                if try_again:
-                    return self._get_files_metadata(project, package, save_basename, revision, False)
-                elif revision:
-                    print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, e.msg)
-                else:
-                    print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e.msg)
-            return None
-        except urllib2.URLError, e:
-            if try_again:
+                detail = e
+
+            if type(e) == urllib2.HTTPError and e.code == 404:
+                print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
+            elif try_again:
                 return self._get_files_metadata(project, package, save_basename, revision, False)
             elif revision:
-                print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, e)
+                print >>sys.stderr, 'Cannot download metadata of %s from %s with specified revision: %s' % (package, project, detail)
             else:
-                print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, e)
+                print >>sys.stderr, 'Cannot download metadata of %s from %s: %s' % (package, project, detail)
+
             return None
 
         try:
@@ -506,9 +506,10 @@ class ObsCheckout:
             self._download_url_to_file(url, meta_file)
 
         except (urllib2.HTTPError, urllib2.URLError), e:
-            if try_again:
+            if type(e) == urllib2.HTTPError and e.code == 404:
+                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+            elif try_again:
                 self.checkout_meta(project, False)
-                return
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
@@ -522,6 +523,8 @@ class ObsCheckout:
                     print >>sys.stderr, 'Using previous version of packages metadata of %s: %s' % (project, detail)
                 else:
                     print >>sys.stderr, 'Cannot get packages metadata of %s: %s' % (project, detail)
+
+            return
 
 
     def run(self, use_threads = True):
@@ -619,7 +622,9 @@ class ObsCheckout:
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
         except (urllib2.HTTPError, urllib2.URLError), e:
-            if try_again:
+            if type(e) == urllib2.HTTPError and e.code == 404:
+                print >>sys.stderr, 'Project %s doesn\'t exist.' % (existing_in_project,)
+            elif try_again:
                 self.checkout_project_packages_existing_in_project(project, existing_in_project, False)
             else:
                 if hasattr(e, 'msg'):
@@ -627,6 +632,7 @@ class ObsCheckout:
                 else:
                     detail = e
                 print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, detail)
+
             return
 
         for project in projects:
@@ -638,7 +644,9 @@ class ObsCheckout:
         try:
             packages = core.meta_get_packagelist(conf.config['apiurl'], project)
         except (urllib2.HTTPError, urllib2.URLError), e:
-            if try_again:
+            if type(e) == urllib2.HTTPError and e.code == 404:
+                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+            elif try_again:
                 self.queue_checkout_project(project, metadata, False)
             else:
                 if hasattr(e, 'msg'):
@@ -646,6 +654,7 @@ class ObsCheckout:
                 else:
                     detail = e
                 print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
+
             return
 
         self._queue_packages_from_project(project, packages)
