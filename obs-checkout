@@ -494,7 +494,7 @@ class ObsCheckout:
         project_dir = os.path.join(self.dest_dir, project)
         safe_mkdir_p(project_dir)
 
-        meta_file = os.path.join(project_dir, 'osc-gnome-meta')
+        meta_file = os.path.join(project_dir, 'obs-checkout-pkgmeta')
 
         # if the file exists, it's likely up-to-date since metadata doesn't
         # change that often, so don't update it
@@ -517,7 +517,7 @@ class ObsCheckout:
                     detail = e
 
                 if self.cache_dir:
-                    cached_meta = os.path.join(self.cache_dir, project, 'osc-gnome-meta')
+                    cached_meta = os.path.join(self.cache_dir, project, 'obs-checkout-pkgmeta')
                 if self.cache_dir and os.path.exists(cached_meta):
                     shutil.copyfile(cached_meta, meta_file)
                     print >>sys.stderr, 'Using previous version of packages metadata of %s: %s' % (project, detail)
@@ -612,7 +612,7 @@ class ObsCheckout:
         project_dir = os.path.join(self.dest_dir, project)
         safe_mkdir_p(project_dir)
 
-        metadata_file = os.path.join(project_dir, 'osc-gnome-config')
+        metadata_file = os.path.join(project_dir, 'obs-checkout-meta')
         fout = open(metadata_file, 'a')
         for meta in metadata:
             fout.write('%s\n' % meta)
@@ -664,7 +664,7 @@ class ObsCheckout:
 
     def queue_checkout_devel_projects(self, project, metadata):
         self.checkout_meta(project)
-        meta_file = os.path.join(self.dest_dir, project, 'osc-gnome-meta')
+        meta_file = os.path.join(self.dest_dir, project, 'obs-checkout-pkgmeta')
         if not os.path.exists(meta_file):
             print >>sys.stderr, 'Ignoring devel projects for project %s: no packages metadata' % (project,)
             return

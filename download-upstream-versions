@@ -888,7 +888,7 @@ def main(args):
         if options.save:
             save_file = options.save
         else:
-            save_file = os.path.join(directory, 'versions-non-fgo')
+            save_file = os.path.join(directory, 'versions-upstream')
 
         if not os.path.exists(upstream_file):
             print >>sys.stderr, 'Upstream data file %s does not exist.' % upstream_file

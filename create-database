@@ -990,7 +990,7 @@ class Project(Base):
     def _read_config(self):
         project_dir = os.path.join(self.parent_directory, self.name)
 
-        config_file = os.path.join(project_dir, 'osc-gnome-config')
+        config_file = os.path.join(project_dir, 'obs-checkout-meta')
         if not os.path.exists(config_file):
             return
 
@@ -1023,7 +1023,7 @@ class Project(Base):
     def _read_meta(self):
         project_dir = os.path.join(self.parent_directory, self.name)
 
-        meta_file = os.path.join(project_dir, 'osc-gnome-meta')
+        meta_file = os.path.join(project_dir, 'obs-checkout-pkgmeta')
         if not os.path.exists(meta_file):
             return
 
@@ -1056,7 +1056,7 @@ class Project(Base):
             db_cache.fill_upstream_version(self.versionfile)
 
         for file in os.listdir(project_dir):
-            if file in ['osc-gnome-config', 'osc-gnome-meta']:
+            if file in ['obs-checkout-meta', 'obs-checkout-pkgmeta']:
                 continue
 
             srcpackage = SrcPackage(file, self, project_dir)
