@@ -653,6 +653,8 @@ class SrcPackage(Base):
             project INTEGER,
             srcmd5 TEXT,
             version TEXT,
+            devel_project TEXT,
+            devel_package TEXT,
             upstream_name TEXT,
             upstream_version TEXT,
             upstream_url TEXT,
@@ -685,6 +687,9 @@ class SrcPackage(Base):
         self.files = []
         self.rpmlint_reports = []
 
+        self.devel_project = ''
+        self.devel_package = ''
+
         # not booleans, since sqlite doesn't support this
         self.is_link = 0
         self.has_delta = 0
@@ -698,9 +703,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.srcmd5, self.version, self.upstream_name, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details))
+            (self.name, project_id, self.srcmd5, self.version, self.devel_project, self.devel_package, self.upstream_name, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -958,6 +963,7 @@ class Project(Base):
         self.srcpackages = []
         self.parent = ''
         self.versionfile = ''
+        self.meta_devel = {}
         self._read_config()
 
     def sql_add(self, cursor):
@@ -997,22 +1003,57 @@ class Project(Base):
             else:
                 print >> sys.stderr, 'Unknown config option in %s: %s' % (config_file, line)
 
+    def _read_meta(self):
+        project_dir = os.path.join(self.parent_directory, self.name)
+
+        meta_file = os.path.join(project_dir, 'osc-gnome-meta')
+        if not os.path.exists(meta_file):
+            return
+
+        collection = ET.parse(meta_file).getroot()
+        for package in collection.findall('package'):
+            name = package.get('name')
+            if not name:
+                continue
+
+            devel = package.find('devel')
+            if not devel:
+                continue
+
+            devel_project = devel.get('project', '')
+            if not devel_project:
+                continue
+            devel_package = devel.get('package', '')
+
+            self.meta_devel[name] = (devel_project, devel_package)
+
     def read_srcpackages(self, db_cache):
         project_dir = os.path.join(self.parent_directory, self.name)
         if not os.path.exists(project_dir):
             return
 
+        self._read_meta()
+
         if self.versionfile:
             db_cache.fill_upstream_version(self.versionfile)
 
         for file in os.listdir(project_dir):
-            if file in ['osc-gnome-config']:
+            if file in ['osc-gnome-config', 'osc-gnome-meta']:
                 continue
+
             srcpackage = SrcPackage(file, self, project_dir)
             srcpackage.read_data(db_cache)
+
             if self.parent and not srcpackage.is_link and not srcpackage.error:
                 srcpackage.error = 'not-link'
+
+            if self.meta_devel.has_key(srcpackage.name):
+                (srcpackage.devel_project, srcpackage.devel_package) = self.meta_devel[srcpackage.name]
+
             self.srcpackages.append(srcpackage)
+
+        del self.meta_devel
+        self.meta_devel = {}
 
 #######################################################################
 
