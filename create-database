@@ -1032,7 +1032,8 @@ class Project(Base):
                 continue
 
             devel = package.find('devel')
-            if not devel:
+            # "not devel" won't work (probably checks if devel.text is empty)
+            if devel == None:
                 continue
 
             devel_project = devel.get('project', '')
