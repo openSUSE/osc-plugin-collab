@@ -1123,8 +1123,11 @@ def create_db(filename, projects, force):
 def main(args):
     parser = optparse.OptionParser()
 
-    parser.add_option("-d", "--output-database", dest="outputdb",
+    parser.add_option("-o", "--output-database", dest="outputdb",
                       help="output sqlite database file")
+    parser.add_option("-d", "--checkout-dir", dest="checkout_dir",
+                      default=PACKAGE_LOOKUP_PATH,
+                      help="directory where the projects have been checked out")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite files if already existing")
 
@@ -1141,10 +1144,10 @@ def main(args):
     db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE)
     projects = []
 
-    for file in os.listdir(PACKAGE_LOOKUP_PATH):
-        if not os.path.isdir(os.path.join(PACKAGE_LOOKUP_PATH, file)):
+    for file in os.listdir(options.checkout_dir):
+        if not os.path.isdir(os.path.join(options.checkout_dir, file)):
             continue
-        project = Project(file, PACKAGE_LOOKUP_PATH)
+        project = Project(file, options.checkout_dir)
         project.read_srcpackages(db_cache)
         projects.append(project)
 
