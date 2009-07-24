@@ -117,6 +117,10 @@ class DataCache:
 
 
     def _fill_upstream_name(self, upstream_name):
+        if not os.path.exists(upstream_name):
+            print >> sys.stderr, 'No upstream name database available.'
+            return
+
         file = open(upstream_name)
         re_upstream_name = re.compile('^(.+):(.*)$')
         while True:
