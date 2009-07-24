@@ -43,10 +43,6 @@ fi
 
 mkdir -p $OBS_DISSECTOR_DIR
 
-cp --force $basedir/upstream-packages-match.txt $OBS_DISSECTOR_DIR
-cp --force $basedir/upstream-limits.txt $OBS_DISSECTOR_DIR
-cp --force $basedir/upstream-tarballs.txt $OBS_DISSECTOR_DIR
-
 ######################################
 # Download latest upstream versions
 # For non-GNOME:Factory, we only care about the official GNOME modules.
@@ -57,7 +53,7 @@ download_gnome_version () {
         return
     fi
 
-    DESTFILE=$OBS_DISSECTOR_DIR/tmp/versions-$VERSION
+    DESTFILE=$OBS_DISSECTOR_DIR/tmp/versions-gnome-$VERSION
     if test -f $DESTFILE; then
         rm -f $DESTFILE
     fi
@@ -70,29 +66,34 @@ download_gnome_version () {
     sed -i "s/^\(mobile:.*\)$/# \1/g" $DESTFILE
 }
 
-download_gnome_version 2.24
 download_gnome_version 2.26
 download_gnome_version stable
 download_gnome_version unstable
 download_gnome_version extras
 
-FACTORY_VERSION=unstable
+GNOME_FACTORY_VERSION=unstable
 
-# For G:F, we want extras and non-fgo stuff
-cp $OBS_DISSECTOR_DIR/tmp/versions-non-fgo $OBS_DISSECTOR_DIR/tmp/versions-non-fgo.bak
-$basedir/download-upstream-versions --upstream-tarballs=$OBS_DISSECTOR_DIR/upstream-tarballs.txt --upstream-limits=$OBS_DISSECTOR_DIR/upstream-limits.txt  --save-file=$OBS_DISSECTOR_DIR/tmp/versions-non-fgo --only-if-old --use-old-as-fallback
+cp $OBS_DISSECTOR_DIR/tmp/versions-upstream $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak
+$basedir/download-upstream-versions \
+    --upstream-tarballs=$basedir/upstream-tarballs.txt \
+    --upstream-limits=$basedir/upstream-limits.txt \
+    --save-file=$OBS_DISSECTOR_DIR/tmp/versions-upstream \
+    --only-if-old --use-old-as-fallback
 if test $? -ne 0; then
-    cp $OBS_DISSECTOR_DIR/tmp/versions-non-fgo.bak $OBS_DISSECTOR_DIR/tmp/versions-non-fgo
+    cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak $OBS_DISSECTOR_DIR/tmp/versions-upstream
     echo "Error while checking for new upstream versions"
 fi
-cat $OBS_DISSECTOR_DIR/tmp/versions-$FACTORY_VERSION $OBS_DISSECTOR_DIR/tmp/versions-extras $OBS_DISSECTOR_DIR/tmp/versions-non-fgo > $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory
+cat $OBS_DISSECTOR_DIR/tmp/versions-gnome-$GNOME_FACTORY_VERSION \
+    $OBS_DISSECTOR_DIR/tmp/versions-gnome-extras \
+    $OBS_DISSECTOR_DIR/tmp/versions-upstream \
+    > $OBS_DISSECTOR_DIR/tmp/versions-latest
 
-# Check that we have everything in the match database (GNOME:Factory only).
-for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory | grep ':' | cut -d ':' -f 2`; do
+# Check that we have everything in the match database
+for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-latest | grep ':' | cut -d ':' -f 2`; do
     re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
-    grep -q -E "^(# ?)?$re_i:" $OBS_DISSECTOR_DIR/upstream-packages-match.txt
+    grep -q -E "^(# ?)?$re_i:" $basedir/upstream-packages-match.txt
     if test $? -ne 0; then
-        echo $i not in $OBS_DISSECTOR_DIR/upstream-packages-match.txt
+        echo $i not in $basedir/upstream-packages-match.txt
     fi
 done
 
@@ -107,58 +108,34 @@ done
 CACHE_CO=`$basedir/obs-checkout --get-stable-directory`
 DEST_CO=`$basedir/obs-checkout --get-new-directory`
 
-checkout_project () {
-    PROJECT=$1
-    if test "x$1" = "x"; then
-        return
-    fi
+OBS_CHECKOUT_ARGS="--cache-directory $CACHE_CO --destination-directory $DEST_CO"
 
-    VERSIONFILE=$2
-    PARENT=$3
-
-    if test "x$PARENT" != "x"; then
-        $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --packages-of $PROJECT --project $PARENT
-        if test $? -ne 0; then
-            echo "Error while checking out $PARENT"
-            exit 1
-        fi
-        echo "versionfile=$VERSIONFILE" > $DEST_CO/$PARENT/osc-gnome-config
-    fi
-
-    $basedir/obs-checkout --cache-directory "$CACHE_CO" --destination-directory "$DEST_CO" --project $PROJECT
-    if test $? -ne 0; then
-        echo "Error while checking out $PROJECT"
-        exit 1
-    fi
-    echo "parent=$PARENT" > $DEST_CO/$PROJECT/osc-gnome-config
-    echo "versionfile=$VERSIONFILE" >> $DEST_CO/$PROJECT/osc-gnome-config
-}
-
-checkout_project Apache:Modules "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project Base:System "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project devel:languages:python "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project GNOME:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project graphics "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project multimedia:libs "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project network:telephony "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project X11:common:Factory "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project X11:Compiz "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-checkout_project YaST:Head "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory
-
-checkout_project GNOME:Contrib "$OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory" openSUSE:Factory:Contrib
-
-# Moblin support
-checkout_project Moblin:Base "" Moblin:Factory
-checkout_project Moblin:UI "" Moblin:Factory
-
-# Disabling G:S:2.24 since it should be up-to-date and there's no real effort for it anymore.
-#checkout_project GNOME:STABLE:2.24 "$OBS_DISSECTOR_DIR/tmp/versions-2.24" openSUSE:11.1
-checkout_project GNOME:STABLE:2.26 "$OBS_DISSECTOR_DIR/tmp/versions-2.26"
-
-# This is a project that we use when we want to work on the next release of
-# openSUSE but oS:F has not been branched yet. Comment/uncomment when
-# appropriate.
-#checkout_project GNOME:Factory:Next openSUSE:Factory $OBS_DISSECTOR_DIR/tmp/versions-GNOME_Factory
+obs-checkout $OBS_CHECKOUT_ARGS \
+    --project openSUSE:Factory \
+    --devel-projects-of openSUSE:Factory \
+    --metadata "parent=openSUSE:Factory" \
+    --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
+    || (echo "Error in obs-checkout."; exit 1)
+# No version file for Moblin: we don't care about upstream there
+obs-checkout $OBS_CHECKOUT_ARGS \
+    --project Moblin:Factory \
+    --devel-projects-of Moblin:Factory \
+    --metadata "parent=Moblin:Factory" \
+    || (echo "Error in obs-checkout."; exit 1)
+obs-checkout $OBS_CHECKOUT_ARGS \
+    --project openSUSE:Factory:Contrib \
+    --metadata "parent=openSUSE:Factory:Contrib" \
+    --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
+    || (echo "Error in obs-checkout."; exit 1)
+obs-checkout $OBS_CHECKOUT_ARGS \
+    --project GNOME:Contrib \
+    --metadata "parent=openSUSE:Factory:Contrib" \
+    --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
+    || (echo "Error in obs-checkout."; exit 1)
+obs-checkout $OBS_CHECKOUT_ARGS \
+    --project GNOME:STABLE:2.26 \
+    --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.26" \
+    || (echo "Error in obs-checkout."; exit 1)
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"
 
@@ -206,5 +183,9 @@ popd > /dev/null
 ######################################
 # Create the databases
 
-$basedir/create-database --force --output-database $OBS_DISSECTOR_DIR/obs.db
+$basedir/create-database --force \
+    --output-database $OBS_DISSECTOR_DIR/obs.db \
+    --checkout-dir $DEST_CO \
+    --upstream-name $basedir/upstream-packages-match.txt
+
 $basedir/list-packages --output-database $OBS_DISSECTOR_DIR/packagelist.db
