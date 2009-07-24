@@ -673,6 +673,11 @@ class ObsCheckout:
 
         try:
             collection = ET.parse(meta_file).getroot()
+            package = collection.find('package')
+            if package == None:
+                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+                return
+
             for package in collection.findall('package'):
                 devel = package.find('devel')
                 # "not devel" won't work (probably checks if devel.text is
