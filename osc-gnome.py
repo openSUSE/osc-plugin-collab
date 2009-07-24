@@ -698,9 +698,13 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
             int_b = int(split_b[i])
             if int_a > int_b:
                 return True
+            if int_b > int_a:
+                return False
         except ValueError:
             if split_a[i] > split_b[i]:
                 return True
+            if split_b[i] > split_a[i]:
+                return False
 
     return False
 
