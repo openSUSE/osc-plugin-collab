@@ -1002,12 +1002,14 @@ class Project(Base):
             line = line[:-1]
             if line.startswith('parent='):
                 parent = line[len('parent='):]
-                if parent:
-                    self.parent = parent
+                if parent == self.name:
+                    parent = ''
+                self.parent = parent
 
             elif line.startswith('versionfile='):
                 versionfile = line[len('versionfile='):]
                 if not versionfile:
+                    self.versionfile = ''
                     continue
 
                 if os.path.exists(versionfile):
