@@ -1133,6 +1133,9 @@ def main(args):
     parser.add_option("-d", "--checkout-dir", dest="checkout_dir",
                       default=PACKAGE_LOOKUP_PATH,
                       help="directory where the projects have been checked out")
+    parser.add_option("-u", "--upstream-name", dest="upstream_name",
+                      default=MODULE_SRCPACKAGE_MATCH_FILE,
+                      help="file containing the mapping between upstream and package names")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite files if already existing")
 
@@ -1146,7 +1149,7 @@ def main(args):
         print >> sys.stderr,  '%s already exists. You can use --force to overwrite it.' % options.outputdb
         return
 
-    db_cache = DataCache(MODULE_SRCPACKAGE_MATCH_FILE)
+    db_cache = DataCache(options.upstream_name)
     projects = []
 
     for file in os.listdir(options.checkout_dir):
