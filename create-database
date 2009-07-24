@@ -653,6 +653,8 @@ class SrcPackage(Base):
             project INTEGER,
             srcmd5 TEXT,
             version TEXT,
+            link_project TEXT,
+            link_package TEXT,
             devel_project TEXT,
             devel_package TEXT,
             upstream_name TEXT,
@@ -687,6 +689,8 @@ class SrcPackage(Base):
         self.files = []
         self.rpmlint_reports = []
 
+        self.link_project = ''
+        self.link_package = ''
         self.devel_project = ''
         self.devel_package = ''
 
@@ -703,9 +707,9 @@ class SrcPackage(Base):
     def sql_add(self, cursor, project_id):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, project_id, self.srcmd5, self.version, self.devel_project, self.devel_package, self.upstream_name, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details))
+            (self.name, project_id, self.srcmd5, self.version, self.link_project, self.link_package, self.devel_project, self.devel_package, self.upstream_name, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details))
 
     def read_data(self, db_cache):
         if not db_cache:
@@ -745,6 +749,13 @@ class SrcPackage(Base):
                 self.srcmd5 = root.get('srcmd5')
                 linkinfo = root.find('linkinfo')
                 if linkinfo != None:
+                    link_project = linkinfo.get('project')
+                    if link_project:
+                        self.link_project = link_project
+                    link_package = linkinfo.get('package')
+                    if link_package:
+                        self.link_package = link_package
+
                     error = linkinfo.get('error')
                     if error:
                         if error.find('does not exist in project') != -1:
