@@ -710,21 +710,21 @@ def get_stable_directory():
 
 
 def make_directory_stable(directory):
+    cleanup_directory = None
+
     if os.path.lexists(CHECKOUT_DIR_STABLE):
         if os.path.islink(CHECKOUT_DIR_STABLE):
-            old_stable_directory = os.readlink(CHECKOUT_DIR_STABLE)
+            cleanup_directory = os.readlink(CHECKOUT_DIR_STABLE)
             os.unlink(CHECKOUT_DIR_STABLE)
         else:
             shutil.rmtree(CHECKOUT_DIR_STABLE)
-    else:
-        old_stable_directory = None
 
     os.symlink(directory, CHECKOUT_DIR_STABLE)
 
     # Do this after symlinking the new directory: doing it before would just
     # delay the access to the latest data
-    if old_stable_directory and os.path.exists(old_stable_directory):
-        shutil.rmtree(old_stable_directory)
+    if cleanup_directory and os.path.exists(cleanup_directory):
+        shutil.rmtree(cleanup_directory)
 
 
 #######################################################################
