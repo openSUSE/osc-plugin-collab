@@ -40,8 +40,8 @@ import sys
 
 import optparse
 import re
-import shutil
 import sqlite3
+import tempfile
 
 try:
     from xml.etree import cElementTree as ET
@@ -1075,56 +1075,100 @@ class Project(Base):
 
 #######################################################################
 
-def create_db(filename, projects, force):
-    if force and os.path.exists(filename):
-        os.unlink(filename)
+class CreateDbException(Exception):
 
-    dbconn = sqlite3.connect(filename)
-    cursor = dbconn.cursor()
+    def __init__(self, value):
+        self.msg = value
 
-    cursor.execute('''CREATE TABLE db_version (
-        major INTEGER,
-        minor INTEGER
-        );''')
-    cursor.execute('''INSERT INTO db_version VALUES (
-        ?, ?
-        );''', (DB_MAJOR, DB_MINOR))
+    def __str__(self):
+        return repr(self.msg)
 
-    Project.sql_setup(cursor)
-    SrcPackage.sql_setup(cursor)
-    Package.sql_setup(cursor)
-    Source.sql_setup(cursor)
-    Patch.sql_setup(cursor)
-    File.sql_setup(cursor)
-    RpmlintReport.sql_setup(cursor)
+class CreateDb:
 
-    for project in projects:
-        project.sql_add(cursor)
-        project_id = Project.sql_lastid(cursor)
+    def __init__(self, filename, force):
+        self.dbconn = None
+        self.cursor = None
+
+        if not force and os.path.exists(filename):
+            raise CreateDbException('%s already exists.' % filename)
+
+        self.filename = filename
+        # We prefer a temp file that has a predictable name so we don't fill
+        # the disk in case of issues.
+        #(fout, self.tmpfilename) = tempfile.mkstemp(dir = os.path.)
+        #fout.close()
+        self.tmpfilename = filename + '.tmp'
+        if os.path.exists(self.tmpfilename):
+            os.unlink(self.tmpfilename)
+
+        self.dbconn = sqlite3.connect(self.tmpfilename)
+        self.cursor = self.dbconn.cursor()
+
+        self._create_tables()
+
+    def __del__(self):
+        self.close()
+
+    def _create_tables(self):
+        self.cursor.execute('''CREATE TABLE db_version (
+            major INTEGER,
+            minor INTEGER
+            );''')
+        self.cursor.execute('''INSERT INTO db_version VALUES (
+            ?, ?
+            );''', (DB_MAJOR, DB_MINOR))
+
+        Project.sql_setup(self.cursor)
+        SrcPackage.sql_setup(self.cursor)
+        Package.sql_setup(self.cursor)
+        Source.sql_setup(self.cursor)
+        Patch.sql_setup(self.cursor)
+        File.sql_setup(self.cursor)
+        RpmlintReport.sql_setup(self.cursor)
+
+        self.dbconn.commit()
+
+    def add_project(self, project):
+        project.sql_add(self.cursor)
+        project_id = Project.sql_lastid(self.cursor)
 
         for srcpackage in project.srcpackages:
-            srcpackage.sql_add(cursor, project_id)
-            srcpackage_id = SrcPackage.sql_lastid(cursor)
+            srcpackage.sql_add(self.cursor, project_id)
+            srcpackage_id = SrcPackage.sql_lastid(self.cursor)
 
             for package in srcpackage.packages:
-                package.sql_add(cursor, srcpackage_id)
-                package_id = Package.sql_lastid(cursor)
+                package.sql_add(self.cursor, srcpackage_id)
+                package_id = Package.sql_lastid(self.cursor)
 
             for rpmlint in srcpackage.rpmlint_reports:
-                rpmlint.sql_add(cursor, srcpackage_id)
+                rpmlint.sql_add(self.cursor, srcpackage_id)
 
             for source in srcpackage.sources:
-                source.sql_add(cursor, srcpackage_id)
+                source.sql_add(self.cursor, srcpackage_id)
 
             for patch in srcpackage.patches:
-                patch.sql_add(cursor, srcpackage_id)
+                patch.sql_add(self.cursor, srcpackage_id)
 
             for file in srcpackage.files:
-                file.sql_add(cursor, srcpackage_id)
+                file.sql_add(self.cursor, srcpackage_id)
 
-    dbconn.commit()
-    cursor.close()
-    dbconn.close()
+        # It's apparently not needed to commit each time to keep a low-memory
+        # profile, and committing is slowing things down.
+        #self.dbconn.commit()
+
+    def close(self):
+        if self.cursor:
+            self.cursor.close()
+            self.cursor = None
+        if self.dbconn:
+            self.dbconn.commit()
+            self.dbconn.close()
+            self.dbconn = None
+
+        if self.tmpfilename:
+            # this overwrites the old file if needed
+            os.rename(self.tmpfilename, self.filename)
+            self.tmpfilename = None
 
 
 def main(args):
@@ -1152,19 +1196,22 @@ def main(args):
         return
 
     db_cache = DataCache(options.upstream_name)
-    projects = []
+    try:
+        db = CreateDb(options.outputdb, options.force)
+    except CreateDbException, e:
+        print >> sys.stderr,  e.msg
+        return
 
     for file in os.listdir(options.checkout_dir):
         if not os.path.isdir(os.path.join(options.checkout_dir, file)):
             continue
         project = Project(file, options.checkout_dir)
         project.read_srcpackages(db_cache)
-        projects.append(project)
+        db.add_project(project)
+        del project
 
     del db_cache
-
-    if options.outputdb:
-        create_db(options.outputdb, projects, options.force)
+    db.close()
 
 
 if __name__ == '__main__':
