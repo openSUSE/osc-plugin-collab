@@ -110,29 +110,29 @@ DEST_CO=`$basedir/obs-checkout --get-new-directory`
 
 OBS_CHECKOUT_ARGS="--cache-directory $CACHE_CO --destination-directory $DEST_CO"
 
-obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project openSUSE:Factory \
     --devel-projects-of openSUSE:Factory \
     --metadata "parent=openSUSE:Factory" \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
     || (echo "Error in obs-checkout."; exit 1)
 # No version file for Moblin: we don't care about upstream there
-obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project Moblin:Factory \
     --devel-projects-of Moblin:Factory \
     --metadata "parent=Moblin:Factory" \
     || (echo "Error in obs-checkout."; exit 1)
-obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project openSUSE:Factory:Contrib \
     --metadata "parent=openSUSE:Factory:Contrib" \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
     || (echo "Error in obs-checkout."; exit 1)
-obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:Contrib \
     --metadata "parent=openSUSE:Factory:Contrib" \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
     || (echo "Error in obs-checkout."; exit 1)
-obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:STABLE:2.26 \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.26" \
     || (echo "Error in obs-checkout."; exit 1)
