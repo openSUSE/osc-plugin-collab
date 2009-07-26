@@ -1027,7 +1027,12 @@ class Project(Base):
         if not os.path.exists(meta_file):
             return
 
-        collection = ET.parse(meta_file).getroot()
+        try:
+            collection = ET.parse(meta_file).getroot()
+        except SyntaxError, e:
+            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e.msg)
+            return
+
         for package in collection.findall('package'):
             name = package.get('name')
             if not name:
