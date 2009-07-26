@@ -368,7 +368,7 @@ class ObsCheckout:
             url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package, urllib.pathname2url(filename)], query=query)
             self._download_url_to_file(url, destfile)
 
-        except (urllib2.HTTPError, urllib2.URLError), e:
+        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
             if type(e) == urllib2.HTTPError and e.code == 404:
                 print >>sys.stderr, 'File in package %s of project %s doesn\'t exist.' % (filename, package, project)
             elif try_again:
@@ -376,6 +376,8 @@ class ObsCheckout:
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
+                elif hasattr(e, 'message'):
+                    detail = e.message
                 else:
                     detail = e
                 print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, detail)
@@ -403,9 +405,11 @@ class ObsCheckout:
             url = core.makeurl(conf.config['apiurl'], ['public', 'source', project, package], query=query)
             self._download_url_to_file(url, filename)
 
-        except (urllib2.HTTPError, urllib2.URLError), e:
+        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
             if hasattr(e, 'msg'):
                 detail = e.msg
+            elif hasattr(e, 'message'):
+                detail = e.message
             else:
                 detail = e
 
@@ -505,7 +509,7 @@ class ObsCheckout:
             url = core.makeurl(conf.config['apiurl'], ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
             self._download_url_to_file(url, meta_file)
 
-        except (urllib2.HTTPError, urllib2.URLError), e:
+        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
             if type(e) == urllib2.HTTPError and e.code == 404:
                 print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
             elif try_again:
@@ -513,6 +517,8 @@ class ObsCheckout:
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
+                elif hasattr(e, 'message'):
+                    detail = e.message
                 else:
                     detail = e
 
@@ -618,21 +624,31 @@ class ObsCheckout:
             fout.write('%s\n' % meta)
         fout.close()
 
-    def queue_checkout_projects_packages_existing_in_project(self, projects, existing_in_project, metadata, try_again = True):
+    def _get_packages_in_project(self, project, try_again = True):
         try:
-            packages = core.meta_get_packagelist(conf.config['apiurl'], existing_in_project)
-        except (urllib2.HTTPError, urllib2.URLError), e:
+            packages = core.meta_get_packagelist(conf.config['apiurl'], project)
+            return (packages, None)
+        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
             if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'Project %s doesn\'t exist.' % (existing_in_project,)
+                return (None, 'Project %s doesn\'t exist.' % (project,))
             elif try_again:
-                self.checkout_project_packages_existing_in_project(project, existing_in_project, False)
+                return self._get_packages_in_project(project, False)
             else:
                 if hasattr(e, 'msg'):
                     detail = e.msg
+                elif hasattr(e, 'message'):
+                    detail = e.message
                 else:
                     detail = e
-                print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, detail)
+                return (None, str(detail))
 
+        return (None, 'Internal error')
+
+    def queue_checkout_projects_packages_existing_in_project(self, projects, existing_in_project, metadata):
+        (packages, error) = self._get_packages_in_project(existing_in_project)
+
+        if error is not None:
+            print >>sys.stderr, 'Ignoring packages from %s for project %s: %s' % (existing_in_project, project, error)
             return
 
         for project in projects:
@@ -640,21 +656,11 @@ class ObsCheckout:
             self._add_metadata_to_project(project, metadata)
 
 
-    def queue_checkout_project(self, project, metadata, try_again = True):
-        try:
-            packages = core.meta_get_packagelist(conf.config['apiurl'], project)
-        except (urllib2.HTTPError, urllib2.URLError), e:
-            if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
-            elif try_again:
-                self.queue_checkout_project(project, metadata, False)
-            else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                else:
-                    detail = e
-                print >>sys.stderr, 'Ignoring project %s: %s' % (project, e.msg)
+    def queue_checkout_project(self, project, metadata):
+        (packages, error) = self._get_packages_in_project(existing_in_project)
 
+        if error is not None:
+            print >>sys.stderr, 'Ignoring project %s: %s' % (project, error)
             return
 
         self._queue_packages_from_project(project, packages)
