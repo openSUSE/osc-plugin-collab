@@ -657,7 +657,7 @@ class ObsCheckout:
 
 
     def queue_checkout_project(self, project, metadata):
-        (packages, error) = self._get_packages_in_project(existing_in_project)
+        (packages, error) = self._get_packages_in_project(project)
 
         if error is not None:
             print >>sys.stderr, 'Ignoring project %s: %s' % (project, error)
