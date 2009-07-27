@@ -44,9 +44,12 @@ import sqlite3
 import tempfile
 
 try:
-    from xml.etree import cElementTree as ET
+    from lxml import etree as ET
 except ImportError:
-    import cElementTree as ET
+    try:
+        from xml.etree import cElementTree as ET
+    except ImportError:
+        import cElementTree as ET
 
 # This script was originally written for an usage with autobuild. It has been
 # adapted for the build service, but a few features might still need to be

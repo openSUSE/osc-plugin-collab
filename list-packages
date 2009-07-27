@@ -43,9 +43,12 @@ import sqlite3
 import urllib2
 
 try:
-    from xml.etree import cElementTree as ET
+    from lxml import etree as ET
 except ImportError:
-    import cElementTree as ET
+    try:
+        from xml.etree import cElementTree as ET
+    except ImportError:
+        import cElementTree as ET
 
 from osc import conf
 from osc import core
