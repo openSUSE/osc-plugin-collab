@@ -143,9 +143,11 @@ class OscGnomeProject(dict):
         if node is None:
             self.name = None
             self.parent = None
+            self.ignore_upstream = False
         else:
             self.name = node.get('name')
             self.parent = node.get('parent')
+            self.ignore_upstream = node.get('ignore_upstream') == 'true'
 
 
     def __eq__(self, other):
@@ -211,15 +213,17 @@ class OscGnomePackage:
             version = node.find('version')
             if version is not None:
                 self.version = version.get('current')
-                self.upstream_version = version.get('upstream')
+                if not project or not project.ignore_upstream:
+                    self.upstream_version = version.get('upstream')
                 self.parent_version = version.get('parent')
                 self.devel_version = version.get('devel')
 
-            upstream = node.find('upstream')
-            if upstream is not None:
-                url = upstream.find('url')
-                if url is not None:
-                    self.upstream_url = url.text
+            if not project or not project.ignore_upstream:
+                upstream = node.find('upstream')
+                if upstream is not None:
+                    url = upstream.find('url')
+                    if url is not None:
+                        self.upstream_url = url.text
 
             link = node.find('link')
             if link is not None:
@@ -1118,6 +1122,35 @@ def _gnome_min_package(self, packages):
 
 
 def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
+
+    try:
+        prj = self._gnome_api.get_project_details(project)
+    except self.OscGnomeWebError, e:
+        print >>sys.stderr, e.msg
+        return []
+
+    # Dictionary for quick access to all potential parent projects
+    prj_dict = {}
+    should_devel_packages = []
+
+    if prj.parent:
+        try:
+            prj_dict[prj.parent] = self._gnome_api.get_project_details(prj.parent)
+            should_devel_packages = [ package.name if package.parent_project == project for package in prj_dict[prj.parent].itervalues()]
+        except self.OscGnomeWebError, e:
+            print >>sys.stderr, e.msg
+
+    for package in prj.itervalues():
+        if package.name in should_devel_packages:
+            should_devel_packages.remove(package.name)
+
+        elif prj.parent and prj_dict[prj.parent] and prj_dict[prj.parent].has_key(package.name):
+            # TODO: not right: we need to check parent_package
+
+
+
+
+
     def _message_delta_package(delta_package, submitted_from_packages, parent_project):
         if not parent_project:
             return None
