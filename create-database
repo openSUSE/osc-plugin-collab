@@ -740,7 +740,7 @@ class SrcPackage(Base):
                 print >> sys.stderr, 'Cannot parse %s: %s' % (linkfile, e.msg)
             else:
                 node = root.find('patches')
-                if node:
+                if node is not None:
                     if node.find('delete') != None or node.find('apply') != None:
                         self.has_delta = 1
 

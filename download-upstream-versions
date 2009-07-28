@@ -544,7 +544,7 @@ def _get_version_from_launchpad_series(project, limit, limit_data, series):
 
     for node in root.findall(LP_NS + 'release'):
         productrelease = node.find(LP_NS + 'ProductRelease')
-        if not productrelease:
+        if productrelease is None:
             continue
         specified = productrelease.find(LP_NS + 'specifiedAt')
         release = specified.get(RDF_NS + 'resource')
@@ -589,7 +589,7 @@ def _get_version_from_launchpad(project, limit):
 
     for node in root.findall(LP_NS + 'series'):
         product = node.find(LP_NS + 'ProductSeries')
-        if not product:
+        if product is None:
             continue
         specified = product.find(LP_NS + 'specifiedAt')
         series = specified.get(RDF_NS + 'resource')
