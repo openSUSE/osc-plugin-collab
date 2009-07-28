@@ -91,21 +91,207 @@ class OscGnomeImport:
 #######################################################################
 
 
-class OscGnomeWeb:
+class OscGnomeReservation:
 
-    _reserve_url = 'http://tmp.vuntz.net/opensuse-packages/reserve.py'
-    _upstream_url = 'http://tmp.vuntz.net/opensuse-packages/upstream.py'
-    _admin_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py?mode=delta'
-    _error_url = 'http://tmp.vuntz.net/opensuse-packages/admin.py?mode=error'
-    _csv_url = 'http://tmp.vuntz.net/opensuse-packages/obs.py?format=csv'
+    project = None
+    package = None
+    user = None
 
-    def __init__(self, exception, cache):
+    def __init__(self, project = None, package = None, user = None, node = None):
+        if node is None:
+            self.project = project
+            self.package = package
+            self.user = user
+        else:
+            self.project = node.get('project')
+            self.package = node.get('package')
+            self.user = node.get('user')
+
+
+    def __len__(self):
+        return 3
+
+
+    def __getitem__(self, key):
+        if not type(key) == int:
+            raise TypeError
+
+        if key == 0:
+            return self.project
+        elif key == 1:
+            return self.package
+        elif key == 2:
+            return self.user
+        else:
+            raise IndexError
+
+
+    def is_relevant(self, projects, package):
+        if self.project not in projects:
+            return False
+        if self.package != package:
+            return False
+        return True
+
+
+#######################################################################
+
+
+class OscGnomeProject(dict):
+
+    def __init__(self, node):
+        if node is None:
+            self.name = None
+            self.parent = None
+        else:
+            self.name = node.get('name')
+            self.parent = node.get('parent')
+
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+
+    def __le__(self, other):
+        return self.__eq__(other) or self.__lt__(other)
+
+
+    def __gt__(self, other):
+        return other.__lt__(self)
+
+
+    def __ge__(self, other):
+        return other.__eq__(self) or other.__lt__(self)
+
+
+#######################################################################
+
+
+class OscGnomePackage:
+
+    def __init__(self, node, project):
+        self.name = None
+        self.version = None
+        self.parent_project = None
+        self.parent_package = None
+        self.parent_version = None
+        self.devel_project = None
+        self.devel_package = None
+        self.devel_version = None
+        self.upstream_version = None
+        self.upstream_url = None
+        self.is_link = False
+        self.has_delta = False
+        self.error = None
+        self.error_details = None
+
+        self.project = project
+
+        if node is not None:
+            self.name = node.get('name')
+
+            parent = node.find('parent')
+            if parent is not None:
+                self.parent_project = parent.get('project')
+                self.parent_package = parent.get('package')
+
+            devel = node.find('devel')
+            if devel is not None:
+                self.devel_project = devel.get('project')
+                self.devel_package = devel.get('package')
+
+            version = node.find('version')
+            if version is not None:
+                self.version = version.get('current')
+                self.upstream_version = version.get('upstream')
+                self.parent_version = version.get('parent')
+                self.devel_version = version.get('devel')
+
+            upstream = node.find('upstream')
+            if upstream is not None:
+                url = upstream.find('url')
+                if url is not None:
+                    self.upstream_url = url.text
+
+            link = node.find('link')
+            if link is not None:
+                self.is_link = True
+                if link.get('delta') == 'true':
+                    self.has_delta = True
+
+            error = node.find('error')
+            if error is not None:
+                self.error = error.get('type')
+                self.error_details = error.text
+
+        # Reconstruct some data that we can deduce from the XML
+        if project and self.is_link and not self.parent_project:
+            self.parent_project = project.parent
+        if self.parent_project and not self.parent_package:
+            self.parent_package = self.name
+        if self.devel_project and not self.devel_package:
+            self.devel_package = self.name
+
+
+    def __eq__(self, other):
+        return self.name == other.name and self.project and other.project and self.project.name == other.project.name
+
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+    def __lt__(self, other):
+        if not self.project or not self.project.name:
+            if other.project and other.project.name:
+                return True
+            else:
+                return self.name < other.name
+
+        if self.project.name == other.project.name:
+            return self.name < other.name
+
+        return self.project.name < other.project.name
+
+
+    def __le__(self, other):
+        return self.__eq__(other) or self.__lt__(other)
+
+
+    def __gt__(self, other):
+        return other.__lt__(self)
+
+
+    def __ge__(self, other):
+        return other.__eq__(self) or other.__lt__(self)
+
+
+#######################################################################
+
+
+class OscGnomeApi:
+
+    _api_url = 'http://tmp.vuntz.net/opensuse-packages/api'
+    _supported_api = '0.1'
+    _supported_api_major = '0'
+
+    def __init__(self, exception, cache, reservation, project, package, apiurl = None):
         self.Error = exception
         self.Cache = cache
+        self.Reservation = reservation
+        self.Project = project
+        self.Package = package
+        if apiurl:
+            self._api_url = apiurl
 
-
-    def _line_is_comment(self, line):
-        return line.strip() == '' or line[0] == '#'
 
     def _append_data_to_url(self, url, data):
         if url.find('?') != -1:
@@ -114,245 +300,196 @@ class OscGnomeWeb:
             return '%s?%s' % (url, data)
 
 
-    def _parse_reservation(self, line):
+    def _get_api_url_for(self, api, project = None, projects = None, package = None):
+        if not project and len(projects) == 1:
+            project = projects[0]
+
+        items = [ self._api_url, api ]
+        if project:
+            items.append(project)
+        if package:
+            items.append(package)
+        url = '/'.join(items)
+
+        if not project and package and projects:
+            data = urlencode({'version': self._supported_api, 'project': projects}, True)
+            url = self._append_data_to_url(url, data)
+        else:
+            data = urlencode({'version': self._supported_api})
+            url = self._append_data_to_url(url, data)
+
+        return url
+
+
+    def _get_info_url(self, project = None, projects = None, package = None):
+        return self._get_api_url_for('info', project, projects, package)
+
+
+    def _get_reserve_url(self, project = None, projects = None, package = None):
+        return self._get_api_url_for('reserve', project, projects, package)
+
+
+    def _get_root_for_url(self, url, error_prefix, cache_file = None, cache_age = 10):
         try:
-            (project, package, username, comment) = line[:-1].split(';')
-            return (project, package, username, comment)
-        except ValueError:
-            print >>sys.stderr, 'Cannot parse reservation information: %s' % line[:-1]
-            return (None, None, None, None)
+            if cache_file:
+                fd = self.Cache.get_url_fd_with_cache(url, cache_file, cache_age)
+            else:
+                fd = urllib2.urlopen(url)
+        except urllib2.HTTPError, e:
+            raise self.Error('%s: %s' % (error_prefix, e.msg))
 
+        try:
+            root = ET.parse(fd).getroot()
+        except SyntaxError:
+            raise self.Error('%s: malformed reply from server.' % error_prefix)
 
-    def _parse_project_package_details(self, fd):
-        lines = fd.readlines()
-        fd.close()
+        if root.tag != 'api' or not root.get('version'):
+            raise self.Error('%s: invalid reply from server.' % error_prefix)
 
-        packages_versions = []
-        parent_project = ''
-        ignore_upstream = False
-
-        for line in lines:
-            # there's some meta-information hidden in comments :-)
-            if line.startswith('#meta: '):
-                meta = line[len('#meta: '):-1]
-                if meta.startswith('parent='):
-                    parent_project = meta[len('parent='):].strip()
-                if meta == 'ignore-upstream':
-                    ignore_upstream = True
-                continue
-            elif self._line_is_comment(line):
-                continue
+        version = root.get('version')
+        version_items = version.split('.')
+        for item in version_items:
             try:
-                (package, parent_version, devel_version, upstream_version, empty) = line.split(';')
-                # if we ignore upstream, let's force an empty upstream
-                if ignore_upstream:
-                    upstream_version = ''
-                packages_versions.append((package, parent_version, devel_version, upstream_version))
+                int(item)
             except ValueError:
-                print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
-                continue
+                raise self.Error('%s: unknown protocol used by server.' % error_prefix)
+        protocol = int(version_items[0])
+        if int(version_items[0]) != int(self._supported_api_major):
+            raise self.Error('%s: unknown protocol used by server.' % error_prefix)
 
-        return (parent_project, ignore_upstream, packages_versions)
+        result = root.find('result')
+        if result is None or not result.get('ok'):
+            raise self.Error('%s: reply from server with no result summary.' % error_prefix)
 
+        if result.get('ok') != 'true':
+            if result.text:
+                raise self.Error('%s: %s' % (error_prefix, result.text))
+            else:
+                raise self.Error('%s: unknown error in the request.' % error_prefix)
 
-    def get_project_details(self, project):
-        data = urlencode({'project': project})
-        url = self._append_data_to_url(self._csv_url, data)
-
-        try:
-            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-csv-%s' % project, 10)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get versions of packages: %s' % e.msg)
-
-        return self._parse_project_package_details(fd)
-
-
-    def get_packages_with_delta(self, project):
-        data = urlencode({'project': project})
-        url = self._append_data_to_url(self._admin_url, data)
-
-        try:
-            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-admin-%s' % project, 10)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of packages with a delta: %s' % e.msg)
-
-        lines = fd.readlines()
-        fd.close()
-
-        return [ line.strip() for line in lines if not self._line_is_comment(line) ]
+        return root
 
 
-    def get_packages_with_error(self, project):
-        errors = []
-
-        data = urlencode({'project': project})
-        url = self._append_data_to_url(self._error_url, data)
-
-        try:
-            fd = self.Cache.get_url_fd_with_cache(url, 'db-obs-error-%s' % project, 10)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of packages with an error: %s' % e.msg)
-
-        lines = fd.readlines()
-        fd.close()
-
-        for line in lines:
-            if self._line_is_comment(line):
-                continue
-            try:
-                (package, error, details) = line.split(';', 3)
-                errors.append((package, error, details))
-            except ValueError:
-                print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
-                continue
-
-        return errors
-
-
-    def get_package_details(self, project, package):
-        data = urlencode({'project': project, 'package': package})
-        url = self._append_data_to_url(self._csv_url, data)
-
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get versions of package %s: %s' % (package, e.msg))
-
-        (parent_project, ignore_upstream, packages_versions) = self._parse_project_package_details(fd)
-
-        for (fd_package, parent_version, devel_version, upstream_version) in packages_versions:
-            if fd_package == package:
-                return (parent_project, parent_version, devel_version, upstream_version)
-
-        # we didn't get the package we requested, oh well...
-        return (parent_project, None, None, None)
-
-
-    def get_project_parent(self, project):
-        data = urlencode({'project': project, 'package': 'ignore-this'})
-        url = self._append_data_to_url(self._csv_url, data)
-
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get parent of project %s: %s' % (project, e.msg))
-
-        (parent_project, ignore_upstream, packages_versions) = self._parse_project_package_details(fd)
-
-        return parent_project
-
-
-    def get_upstream_url(self, project, package):
-        data = urlencode({'project': project, 'package': package})
-        url = self._append_data_to_url(self._upstream_url, data)
-
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get upstream URL of package %s: %s' % (package, e.msg))
-
-        line = fd.readline()
-        fd.close()
-
-        if self._line_is_comment(line):
+    def _parse_reservation_node(self, node):
+        reservation = self.Reservation(node = node)
+        if not reservation.project or not reservation.package:
             return None
 
-        try:
-            (package, upstream_version, upstream_url, empty) = line.split(';')
-        except ValueError:
-            print >>sys.stderr, 'Cannot parse line: %s' % line[:-1]
-            return None
-
-        if empty and empty.strip() != '':
-            raise self.Error('Upstream URL of package %s probably contains a semi-colon. This is a bug in the server and the plugin.' % package)
-
-        return upstream_url
+        return reservation
 
 
     def get_reserved_packages(self, projects):
+        url = self._get_reserve_url(projects = projects)
+        root = self._get_root_for_url(url, 'Cannot get list of reserved packages')
+
         reserved_packages = []
-
-        data = urlencode({'mode': 'getall', 'project': projects}, True)
-        url = self._append_data_to_url(self._reserve_url, data)
-
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot get list of reserved packages: %s' % e.msg)
-
-        lines = fd.readlines()
-        fd.close()
-
-        # it returns a status code on the first line, and then one package per
-        # line
-        # if the status code is 200, then everything is good
-        if lines[0][:3] != '200':
-            raise self.Error('Error while getting list of reserved packages: %s' % lines[0][4:-1])
-        else:
-            del lines[0]
-            for line in lines:
-                if self._line_is_comment(line):
-                    continue
-                (project, package, username, comment) = self._parse_reservation(line)
-                if package:
-                    reserved_packages.append((project, package, username))
+        for reservation in root.findall('reservation'):
+            item = self._parse_reservation_node(reservation)
+            if item is None or not item.user:
+                continue
+            reserved_packages.append(item)
 
         return reserved_packages
 
 
     def is_package_reserved(self, projects, package):
-        data = urlencode({'mode': 'get', 'project': projects, 'package': package}, True)
-        url = self._append_data_to_url(self._reserve_url, data)
+        '''
+            Only returns something if the package is really reserved.
+        '''
+        url = self._get_reserve_url(projects = projects, package = package)
+        root = self._get_root_for_url(url, 'Cannot look if package %s is reserved' % package)
 
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot look if package %s is reserved: %s' % (package, e.msg))
+        for reservation in root.findall('reservation'):
+            item = self._parse_reservation_node(reservation)
+            if not item or not item.is_relevant(projects, package):
+                continue
+            if not item.user:
+                # We continue to make sure there are no other relevant entries
+                continue
+            return item
 
-        line = fd.readline()
-        fd.close()
-
-        if line[:3] != '200':
-            raise self.Error('Cannot look if package %s is reserved: %s' % (package, line[4:-1]))
-
-        (project, package, username, comment) = self._parse_reservation(line[4:])
-
-        if not username or username == '':
-            return (None, None, None)
-        else:
-            return (project, package, username)
+        return None
 
 
     def reserve_package(self, projects, package, username):
-        data = urlencode({'mode': 'set', 'user': username, 'project': projects, 'package': package}, True)
-        url = self._append_data_to_url(self._reserve_url, data)
+        url = self._get_reserve_url(projects = projects, package = package)
+        data = urlencode({'cmd': 'set', 'user': username})
+        url = self._append_data_to_url(url, data)
+        root = self._get_root_for_url(url, 'Cannot reserve package %s' % package)
 
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot reserve package %s: %s' % (package, e.msg))
-
-        line = fd.readline()
-        fd.close()
-
-        if line[:3] != '200':
-            raise self.Error('Cannot reserve package %s: %s' % (package, line[4:-1]))
+        for reservation in root.findall('reservation'):
+            item = self._parse_reservation_node(reservation)
+            if not item or not item.is_relevant(projects, package):
+                continue
+            if not item.user:
+                raise self.Error('Cannot reserve package %s: unknown error' % package)
+            if item.user != username:
+                raise self.Error('Cannot reserve package %s: already reserved by %s' % (package, item.user))
 
 
     def unreserve_package(self, projects, package, username):
-        data = urlencode({'mode': 'unset', 'user': username, 'project': projects, 'package': package}, True)
-        url = self._append_data_to_url(self._reserve_url, data)
+        url = self._get_reserve_url(projects = projects, package = package)
+        data = urlencode({'cmd': 'unset', 'user': username})
+        url = self._append_data_to_url(url, data)
+        root = self._get_root_for_url(url, 'Cannot unreserve package %s' % package)
 
-        try:
-            fd = urllib2.urlopen(url)
-        except urllib2.HTTPError, e:
-            raise self.Error('Cannot unreserve package %s: %s' % (package, e.msg))
+        for reservation in root.findall('reservation'):
+            item = self._parse_reservation_node(reservation)
+            if not item or not item.is_relevant(projects, package):
+                continue
+            if item.user:
+                raise self.Error('Cannot unreserve package %s: reserved by %s' % (package, item.user))
 
-        line = fd.readline()
-        fd.close()
 
-        if line[:3] != '200':
-            raise self.Error('Cannot unreserve package %s: %s' % (package, line[4:-1]))
+    def _parse_package_node(self, node, project):
+        package = self.Package(node, project)
+        if not package.name:
+            return None
+
+        if project is not None:
+            project[package.name] = package
+
+        return package
+
+
+    def _parse_project_node(self, node):
+        project = self.Project(node)
+        if not project.name:
+            return None
+
+        for package in node.findall('package'):
+            self._parse_package_node(package, project)
+
+        return project
+
+
+    def get_project_details(self, project):
+        url = self._get_info_url(project = project)
+        root = self._get_root_for_url(url, 'Cannot get information of project %s' % project, cache_file = project + '.xml')
+
+        for node in root.findall('project'):
+            item = self._parse_project_node(node)
+            if item is None or item.name != project:
+                continue
+            return item
+
+        return None
+
+
+    def get_package_details(self, projects, package):
+        url = self._get_info_url(projects = projects, package = package)
+        root = self._get_root_for_url(url, 'Cannot get information of package %s' % package)
+
+        for node in root.findall('project'):
+            item = self._parse_project_node(node)
+            if item is None or item.name not in projects:
+                continue
+
+            pkgitem = item[package]
+            if pkgitem:
+                return pkgitem
+
+        return None
 
 
 #######################################################################
@@ -675,7 +812,6 @@ def _gnome_is_program_in_path(self, program):
 #######################################################################
 
 
-# TODO: put this in a common library -- it's used in the examples too
 def _gnome_compare_versions_a_gt_b(self, a, b):
     rpm = self.OscGnomeImport.m_import('rpm')
     if rpm:
@@ -709,6 +845,8 @@ def _gnome_compare_versions_a_gt_b(self, a, b):
     return False
 
 
+# TODO: this should be a method of the OscGnomePackage class, but this needs
+# some access to the 'import rpm', which is not fun
 def _gnome_needs_update(self, parent_version, devel_version, upstream_version):
     return self._gnome_compare_versions_a_gt_b(upstream_version, parent_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
 
@@ -771,66 +909,98 @@ def _gnome_table_print_header(self, template, title):
 def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
-        (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
+        prj = self._gnome_api.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
-        return ('', [])
-
-    if ignore_upstream:
-        return ('', [])
+        return (None, None)
 
     # get the list of reserved package
     try:
-        reserved = self._gnome_web.get_reserved_packages((project,))
-        reserved_packages = [ package for (project, package, username) in reserved ]
+        reserved = self._gnome_api.get_reserved_packages((project,))
+        reserved_packages = [ reservation.package for reservation in reserved ]
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
 
     # get the packages submitted
     submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project)
 
-    lines = []
+    parent_project = None
+    packages = []
 
-    for (package, parent_version, devel_version, upstream_version) in packages_versions:
+    for package in prj.itervalues():
         # empty upstream version or upstream version meaning openSUSE is
         # upstream
-        if upstream_version == '' or upstream_version == '--':
+        if package.upstream_version in [ None, '', '--' ]:
             continue
 
-        if self._gnome_needs_update(parent_version, devel_version, upstream_version):
-            if self._gnome_is_submitted(package, submitted_packages):
-                if exclude_submitted:
-                    continue
-                devel_version += ' (s)'
-                upstream_version += ' (s)'
-            if package in reserved_packages:
-                if exclude_reserved:
-                    continue
-                upstream_version += ' (r)'
-            lines.append((package, parent_version, devel_version, upstream_version))
+        if not self._gnome_needs_update(package.parent_version, package.version, package.upstream_version):
+            continue
+
+        broken_link = package.error not in [ None, 'not-link' ] or (package.error == 'not-link' and package.error_details)
+
+        if package.parent_version or package.is_link:
+            package.parent_version_print = package.parent_version or ''
+        elif broken_link:
+            # this can happen if the link is to a project that doesn't exist
+            # anymore
+            package.parent_version_print = '??'
+        else:
+            package.parent_version_print = '--'
+
+        if package.version:
+            package.version_print = package.version
+        elif broken_link:
+            package.version_print = '(broken)'
+        else:
+            package.version_print = '??'
+
+        package.upstream_version_print = package.upstream_version
+
+        if self._gnome_is_submitted(package.name, submitted_packages):
+            if exclude_submitted:
+                continue
+            package.version_print += ' (s)'
+            package.upstream_version_print += ' (s)'
+        if package.name in reserved_packages:
+            if exclude_reserved:
+                continue
+            package.upstream_version_print += ' (r)'
+
+        if package.parent_project:
+            if parent_project == None:
+                parent_project = package.parent_project
+            elif parent_project != package.parent_project:
+                parent_project = 'Parent Project'
+
+        packages.append(package)
 
 
-    return (parent_project, lines)
+    return (parent_project, packages)
 
 
 #######################################################################
 
 
 def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
-    lines = []
+    packages = []
     parent_project = None
 
     for project in projects:
-        (new_parent_project, project_lines) = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
-        lines.extend(project_lines)
+        (new_parent_project, project_packages) = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
+        if not project_packages:
+            continue
+        packages.extend(project_packages)
+
         if parent_project == None:
             parent_project = new_parent_project
         elif parent_project != new_parent_project:
             parent_project = 'Parent Project'
 
-    if len(lines) == 0:
+    if len(packages) == 0:
         print 'Nothing to do.'
         return
+
+    lines = [ (package.name, package.parent_version_print, package.version_print, package.upstream_version_print) for package in packages ]
 
     # the first element in the tuples is the package name, so it will sort
     # the lines the right way for what we want
@@ -872,7 +1042,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 def _gnome_get_packages_with_bad_meta(self, apiurl, project):
     # get the list of packages that are actually in project
     try:
-        (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
+        (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return ([], [])
@@ -984,13 +1154,13 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 
     # get packages with a delta
     try:
-        packages_with_delta = self._gnome_web.get_packages_with_delta(project)
-        packages_with_errors = self._gnome_web.get_packages_with_error(project)
+        packages_with_delta = self._gnome_api.get_packages_with_delta(project)
+        packages_with_errors = self._gnome_api.get_packages_with_error(project)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return []
 
-    (parent_project, ignore_upstream, packages_versions) = self._gnome_web.get_project_details(project)
+    (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
 
     # get the packages submitted from
     if parent_project:
@@ -1133,7 +1303,7 @@ def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
 
 def _gnome_listreserved(self, projects):
     try:
-        reserved_packages = self._gnome_web.get_reserved_packages(projects)
+        reserved_packages = self._gnome_api.get_reserved_packages(projects)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1143,6 +1313,8 @@ def _gnome_listreserved(self, projects):
         return
 
     # print headers
+    # if changing the order here, then we need to change __getitem__ of
+    # Reservation in the same way
     title = ('Project', 'Package', 'Reserved by')
     (max_project, max_package, max_username) = self._gnome_table_get_maxs(title, reserved_packages)
     # trim to a reasonable max
@@ -1153,9 +1325,9 @@ def _gnome_listreserved(self, projects):
     print_line = self._gnome_table_get_template(max_project, max_package, max_username)
     self._gnome_table_print_header(print_line, title)
 
-    for (project, package, username) in reserved_packages:
-        if (project and package and username):
-            print print_line % (project, package, username)
+    for reservation in reserved_packages:
+        if reservation.user:
+            print print_line % (reservation.project, reservation.package, reservation.user)
 
 
 #######################################################################
@@ -1163,15 +1335,15 @@ def _gnome_listreserved(self, projects):
 
 def _gnome_isreserved(self, projects, package):
     try:
-        (prj_r, pkg_r, username) = self._gnome_web.is_package_reserved(projects, package)
+        reservation = self._gnome_api.is_package_reserved(projects, package)
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return
 
-    if not username:
+    if not reservation:
         print 'Package is not reserved.'
     else:
-        print 'Package %s in %s is reserved by %s.' % (package, prj_r, username)
+        print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
 
 
 #######################################################################
@@ -1180,7 +1352,7 @@ def _gnome_isreserved(self, projects, package):
 def _gnome_reserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_web.reserve_package(projects, package, username)
+            self._gnome_api.reserve_package(projects, package, username)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1196,7 +1368,7 @@ def _gnome_reserve(self, projects, packages, username):
 def _gnome_unreserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_web.unreserve_package(projects, package, username)
+            self._gnome_api.unreserve_package(projects, package, username)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1210,7 +1382,11 @@ def _gnome_unreserve(self, projects, packages, username):
 def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
-        (prj_r, pkg_r, reserved_by) = self._gnome_web.is_package_reserved((project,), package)
+        reservation = self._gnome_api.is_package_reserved((project,), package)
+        if reservation:
+            reserved_by = reservation.user
+        else:
+            reserved_by = None
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return False
@@ -1225,7 +1401,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
     # package not reserved
     elif not reserved_by and not no_reserve:
         try:
-            self._gnome_web.reserve_package((project,), package, username)
+            self._gnome_api.reserve_package((project,), package, username)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
             print '    osc gnome unreserve %s' % package
@@ -1309,35 +1485,17 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_get_project_for_package(self, apiurl, projects, package, return_all = False):
-    # first check the database: this check should be faster than checking
-    # via the build service
-    for project in projects:
-        try:
-            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_package_details(project, package)
-            # if we get a result, then package exists in project
-            if parent_version != None:
-                if return_all:
-                    return (parent_project, project, parent_version, devel_version, upstream_version)
-                else:
-                    return project
-        except self.OscGnomeWebError, e:
-            continue
+def _gnome_get_package_with_valid_project(self, projects, package):
+    try:
+        pkg = self._gnome_api.get_package_details(projects, package)
+    except self.OscGnomeWebError, e:
+        pass
 
-    # if we need all info, the build service can't help us, so we can fail now
-    if return_all:
-        return (None, None, '', '', '')
+    if pkg is None or pkg.project is None or not pkg.project.name:
+        print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+        return None
 
-    # no result via the database, so go directly to the build service
-    for project in projects:
-        try:
-            show_package_meta(apiurl, project, package)
-            # no exception means no 404, and therefore "okay"
-            return project
-        except urllib2.HTTPError, e:
-            continue
-
-    return None
+    return pkg
 
 
 #######################################################################
@@ -1347,10 +1505,10 @@ def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = Fa
     if len(projects) == 1:
         project = projects[0]
     else:
-        project = self._gnome_get_project_for_package(apiurl, projects, package)
-        if project == None:
-            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+        pkg = self._gnome_get_package_with_valid_project(projects, package)
+        if not pkg:
             return
+        project = pkg.project.name
 
     if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
@@ -1887,28 +2045,29 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         project = projects[0]
 
         try:
-            (parent_project, parent_version, devel_version, upstream_version) = self._gnome_web.get_package_details(project, package)
+            pkg = self._gnome_api.get_package_details(project, package)
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
             return
     else:
-        (parent_project, project, parent_version, devel_version, upstream_version) = self._gnome_get_project_for_package(apiurl, projects, package, return_all = True)
-        if project == None:
-            print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+        pkg = self._gnome_get_package_with_valid_project(projects, package)
+        if not pkg:
             return
+        project = pkg.project.name
 
-
-    if parent_project:
+    if pkg.parent_version:
         # check that the project is up-to-date wrt parent project
-        if self._gnome_compare_versions_a_gt_b(parent_version, devel_version):
-            # TODO, actually we can do a better check than that with the delta API
-            print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, parent_project, parent_version, project, devel_version, project)
+        if self._gnome_compare_versions_a_gt_b(pkg.parent_version, pkg.version):
+            print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, pkg.parent_project, pkg.parent_version, project, pkg.version, project)
             return
 
     # check that an update is really needed
-    if upstream_version == '':
+    if not pkg.upstream_version:
         print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
-    elif not self._gnome_needs_update(parent_version, devel_version, upstream_version):
+    elif pkg.upstream_version == '--':
+        print 'Package %s has no upstream.' % package
+        return
+    elif not self._gnome_needs_update(pkg.parent_version, pkg.version, pkg.upstream_version):
         print 'Package %s is already up-to-date.' % package
         return
 
@@ -1920,7 +2079,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    (updated, old_tarball, define_in_source) = self._gnome_update_spec(spec_file, upstream_version)
+    (updated, old_tarball, define_in_source) = self._gnome_update_spec(spec_file, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
@@ -1940,7 +2099,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # start adding an entry to .changes
     # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
-    if self._gnome_update_changes(changes_file, upstream_version, email):
+    if self._gnome_update_changes(changes_file, pkg.upstream_version, email):
         print '%s has been prepared.' % os.path.basename(changes_file)
 
     # warn if there are other spec files which might need an update
@@ -1951,19 +2110,13 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
 
     # download the upstream tarball
     # fatal if fails
-    try:
-        upstream_url = self._gnome_web.get_upstream_url(project, package)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return
-
-    if not upstream_url:
+    if not pkg.upstream_url:
         print >>sys.stderr, 'Cannot download latest upstream tarball for %s: no URL defined.' % package
         return
 
     print 'Looking for the upstream tarball...'
     try:
-        upstream_tarball = self._gnome_download_internal(upstream_url, package_dir)
+        upstream_tarball = self._gnome_download_internal(pkg.upstream_url, package_dir)
     except self.OscGnomeDownloadError, e:
         print >>sys.stderr, e.msg
         return
@@ -2111,22 +2264,24 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        parent_project = self._gnome_web.get_project_parent(dest_project)
+        pkg = self._gnome_api.get_package_details((dest_project,), dest_package)
+        if not pkg or not pkg.parent_project:
+            print >>sys.stderr, 'No parent project for %s/%s.' % (dest_project, dest_package)
     except self.OscGnomeWebError, e:
-        print >>sys.stderr, 'Cannot get parent project of %s.' % dest_project
+        print >>sys.stderr, 'Cannot get parent project of %s/%s.' % (dest_project, dest_package)
         return
 
     try:
-        devel_project = show_develproject(apiurl, parent_project, dest_package)
+        devel_project = show_develproject(apiurl, pkg.parent_project, pkg.parent_package)
     except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get development project for %s: %s' % (dest_package, e.msg)
+        print >>sys.stderr, 'Cannot get development project for %s/%s: %s' % (pkg.parent_project, pkg.parent_package, e.msg)
         return
 
     if devel_project != dest_project:
-        print >>sys.stderr, 'Development project for %s is %s, but package has been submitted to %s' % (dest_package, dest_project, devel_project)
+        print >>sys.stderr, 'Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project)
         return
 
-    result = _gnome_change_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % parent_project)
+    result = _gnome_change_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project)
     root = ET.fromstring(result)
     if not 'code' in root.keys() or root.get('code') != 'ok':
         print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
@@ -2136,10 +2291,10 @@ def _gnome_forward(self, apiurl, projects, request_id):
 
     result = create_submit_request(apiurl,
                                    dest_project, dest_package,
-                                   parent_project, dest_package,
+                                   pkg.parent_project, pkg.parent_package,
                                    request.descr)
 
-    print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, parent_project, result)
+    print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
 
 
 #######################################################################
@@ -2828,6 +2983,9 @@ def _gnome_ensure_email(self, apiurl):
 #######################################################################
 
 
+@cmdln.option('-A', '--apiurl', metavar='URL',
+              dest='apiurl',
+              help='url to use to connect to the database (different from the build service server)')
 @cmdln.option('--xs', '--exclude-submitted', action='store_true',
               dest='exclude_submitted',
               help='do not show submitted packages in the output')
@@ -2941,6 +3099,13 @@ def do_gnome(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
+    if opts.apiurl:
+        gnome_apiurl = opts.apiurl
+    elif conf.config.has_key('gnome_apiurl'):
+        gnome_apiurl = conf.config['gnome_apiurl']
+    else:
+        gnome_apiurl = None
+
     if len(opts.projects) != 0:
         projects = opts.projects
     elif conf.config.has_key('gnome_projects'):
@@ -2980,7 +3145,7 @@ def do_gnome(self, subcmd, opts, *args):
     user = conf.config['user']
     email = self._gnome_ensure_email(apiurl)
 
-    self._gnome_web = self.OscGnomeWeb(self.OscGnomeWebError, self.GnomeCache)
+    self._gnome_api = self.OscGnomeApi(self.OscGnomeWebError, self.GnomeCache, self.OscGnomeReservation, self.OscGnomeProject, self.OscGnomePackage, gnome_apiurl)
     self.GnomeCache.init(self.OscGnomeImport.m_import, opts.no_cache)
 
     # Do the command
