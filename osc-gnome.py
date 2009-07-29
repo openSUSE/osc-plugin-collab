@@ -2300,6 +2300,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
         pkg = self._gnome_api.get_package_details((dest_project,), dest_package)
         if not pkg or not pkg.parent_project:
             print >>sys.stderr, 'No parent project for %s/%s.' % (dest_project, dest_package)
+            return
     except self.OscGnomeWebError, e:
         print >>sys.stderr, 'Cannot get parent project of %s/%s.' % (dest_project, dest_package)
         return
