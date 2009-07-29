@@ -237,7 +237,7 @@ class OscGnomePackage:
                 self.error_details = error.text
 
         # Reconstruct some data that we can deduce from the XML
-        if project and self.is_link and not self.parent_project:
+        if project is not None and self.is_link and not self.parent_project:
             self.parent_project = project.parent
         if self.parent_project and not self.parent_package:
             self.parent_package = self.name
