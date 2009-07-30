@@ -226,6 +226,7 @@ opt_gnome-compat:upstream:
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 paman:httpls:http://0pointer.de/lennart/projects/paman/
 paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
+papyon:httpls:http://telepathy.freedesktop.org/releases/papyon/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|230234

@@ -456,6 +456,7 @@ opensuse-font-fifth-leg:fifth-leg-font
 padevchooser:
 paman:
 paprefs:
+papyon:
 pavucontrol:
 pavumeter:
 pidgin:
