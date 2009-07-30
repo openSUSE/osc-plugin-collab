@@ -456,7 +456,7 @@ class ObsCheckout:
 
         # find files we're interested in from the metadata
         root = self._get_files_metadata(project, package, '_files')
-        if not root:
+        if root is None:
             return
 
         # detect if the package is a link package
@@ -484,7 +484,7 @@ class ObsCheckout:
 
             # download the metadata of the expanded package
             root = self._get_files_metadata(project, package, '_files-expanded', revision)
-            if not root:
+            if root is None:
                 return
 
         # look at all files and download what might be interesting
