@@ -35,9 +35,6 @@ obs-checkout:
     requests on the Build Service servers.
     See also 'obs-checkout --help'.
 
-osc_extend.py:
-    Mini-classes extending the OSC classes, to make life easier.
-
 osc-gnome.py:
     A osc plugin for collaboration within the openSUSE GNOME Team.
     Copy in ~/.osc-plugins/ and check 'osc gnome --help' out.

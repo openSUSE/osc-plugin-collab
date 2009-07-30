@@ -75,7 +75,6 @@ from osc import core
 from osc import oscerr
 
 from dissector_util import *
-from osc_extend import *
 
 # We will check out everything in CHECKOUT_DIR_PARENT/$some_dir where $some_dir
 # is based on CHECKOUT_DIR_PREFIX and some random data.
@@ -461,7 +460,7 @@ class ObsCheckout:
 
         # detect if the package is a link package
         linkinfos_nb = len(root.findall('linkinfo'))
-        linkinfo = EasyLinkinfo()
+        linkinfo = core.Linkinfo()
         if linkinfos_nb == 1:
             linkinfo.read(root.find('linkinfo'))
         elif linkinfos_nb > 1:
@@ -471,7 +470,7 @@ class ObsCheckout:
         # be the right value to expand the link
         revision = linkinfo.xsrcmd5
 
-        if linkinfo.needshandling():
+        if linkinfo.islink():
             # download the _link file first. This makes it possible to know if
             # the project has a delta compared to the target of the link
             for node in root.findall('entry'):
@@ -481,6 +480,11 @@ class ObsCheckout:
                 # download .spec files
                 if filename == '_link':
                     self._get_file(project, package, filename, md5, mtime)
+
+            # if the link has an error, then we can't do anything else since we
+            # won't be able to expand
+            if linkinfo.haserror():
+                return
 
             # download the metadata of the expanded package
             root = self._get_files_metadata(project, package, '_files-expanded', revision)
