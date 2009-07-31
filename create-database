@@ -639,8 +639,8 @@ class Package(Base):
 class SrcPackage(Base):
     sql_table = 'srcpackage'
 
+    re_spec_define = re.compile('^%define\s+(\S*)\s+(\S*)', re.IGNORECASE)
     re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
-    re_spec__name = re.compile('^%define\s+_name\s+(\S*)', re.IGNORECASE)
     re_spec_version = re.compile('^Version:\s*(\S*)', re.IGNORECASE)
     re_spec_summary = re.compile('^Summary:\s*(.*)', re.IGNORECASE)
     re_spec_source = re.compile('^Source(\d*):\s*(\S*)', re.IGNORECASE)
@@ -797,22 +797,17 @@ class SrcPackage(Base):
         spec = open(filename)
 
         current_package = None
-        name = self.name
-        _name = None
-        version = None
+        defines = {}
+        defines['name'] = self.name
 
-        def subst_name_version(s, name, _name, version):
-            '''Replace %{version} and %{name} in strings. Useful for sources
-               and patches '''
-            if version:
-                s = s.replace('%{version}', version)
-                s = s.replace('%version', version)
-            if name:
-                s = s.replace('%{name}', name)
-                s = s.replace('%name', name)
-            if _name:
-                s = s.replace('%{_name}', _name)
-                s = s.replace('%_name', _name)
+        def subst_defines(s, defines):
+            '''Replace macros like %{version} and %{name} in strings. Useful
+               for sources and patches '''
+            for key in defines.keys():
+                if s.find(key) != -1:
+                    value = defines[key]
+                    s = s.replace('%%{%s}' % key, value)
+                    s = s.replace('%%%s' % key, value)
             return s
 
         # to help if Summary is defined before Name
@@ -831,9 +826,15 @@ class SrcPackage(Base):
             if match:
                 break
 
+            match = SrcPackage.re_spec_define.match(line)
+            if match:
+                defines[match.group(1)] = match.group(2)
+                continue
+
             match = SrcPackage.re_spec_name.match(line)
             if match:
                 name = match.group(1)
+                defines['name'] = name
                 current_package = Package(self, match.group(1))
                 if early_summary:
                     # if we had a summary before the name, then use it now
@@ -842,32 +843,27 @@ class SrcPackage(Base):
                 self.packages.append(current_package)
                 continue
 
-            match = SrcPackage.re_spec__name.match(line)
-            if match:
-                _name = match.group(1)
-                continue
-
             match = SrcPackage.re_spec_lang_package.match(line)
             if match:
-                current_package = Package(self, name + '-lang')
+                current_package = Package(self, defines['name'] + '-lang')
                 self.packages.append(current_package)
                 continue
 
             match = SrcPackage.re_spec_package.match(line)
             if match:
-                pack_line = match.group(1)
+                pack_line = subst_defines(match.group(1), defines)
                 match = SrcPackage.re_spec_package2.match(pack_line)
                 if match:
                     current_package = Package(self, match.group(1))
                 else:
-                    current_package = Package(self, name + '-' + pack_line)
+                    current_package = Package(self, defines['name'] + '-' + pack_line)
                 self.packages.append(current_package)
                 continue
 
             match = SrcPackage.re_spec_version.match(line)
             if match:
-                version = match.group(1)
-                self.version = version
+                self.version = subst_defines(match.group(1), defines)
+                defines['version'] = self.version
                 continue
 
             match = SrcPackage.re_spec_summary.match(line)
@@ -885,7 +881,7 @@ class SrcPackage(Base):
                     nb = '0'
                 else:
                     nb = match.group(1)
-                buf = subst_name_version(match.group(2), name, _name, version)
+                buf = subst_defines(match.group(2), defines)
                 source = Source(self, buf, nb)
                 self.sources.append(source)
                 continue
@@ -899,7 +895,7 @@ class SrcPackage(Base):
                     nb = '0'
                 else:
                     nb = match.group(2)
-                buf = subst_name_version(match.group(3), name, _name, version)
+                buf = subst_defines(match.group(3), defines)
                 patch = Patch(self, buf, nb)
                 patch.set_tag(previous_line)
                 self.patches.append(patch)
