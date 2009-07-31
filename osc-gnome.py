@@ -1672,30 +1672,29 @@ def _gnome_gz_to_bz2_internal(self, file):
 def _gnome_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
-        return (False, None)
+        return (False, None, False)
     elif not os.path.isfile(spec_file):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
-        return (False, None)
+        return (False, None, False)
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
     re = self.OscGnomeImport.m_import('re')
 
     if not tempfile or not re:
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
-        return (False, None)
+        return (False, None, False)
 
     re_spec_header = re.compile('^(# spec file for package \S* \(Version )\S*(\).*)', re.IGNORECASE)
+    re_spec_define = re.compile('^%define\s+(\S*)\s+(\S*)', re.IGNORECASE)
     re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
-    re_spec__name = re.compile('^%define\s+_name\s+(\S*)', re.IGNORECASE)
     re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
     re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
     re_spec_source = re.compile('^Source0?:\s*(\S*)', re.IGNORECASE)
     re_spec_prep = re.compile('^%prep', re.IGNORECASE)
 
-    name = None
-    _name = None
-    old_version = None
+    defines = {}
     old_source = None
+    define_in_source = False
 
     fin = open(spec_file, 'r')
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(spec_file))
@@ -1716,21 +1715,21 @@ def _gnome_update_spec(self, spec_file, upstream_version):
             os.write(fdout, '%s%s%s\n' % (match.group(1), upstream_version, match.group(2)))
             continue
 
-        match = re_spec_name.match(line)
+        match = re_spec_define.match(line)
         if match:
-            name = os.path.basename(match.group(1))
+            defines[match.group(1)] = match.group(2)
             os.write(fdout, line)
             continue
 
-        match = re_spec__name.match(line)
+        match = re_spec_name.match(line)
         if match:
-            _name = os.path.basename(match.group(1))
+            defines['name'] = match.group(1)
             os.write(fdout, line)
             continue
 
         match = re_spec_version.match(line)
         if match:
-            old_version = match.group(2)
+            defines['version'] = match.group(2)
             os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
@@ -1759,20 +1758,16 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 
     os.rename(tmp, spec_file)
 
-    if old_version == upstream_version:
-        old_source = None
-    elif old_source:
-        if name:
-            old_source = old_source.replace('%{name}', name)
-            old_source = old_source.replace('%name', name)
-        if _name:
-            old_source = old_source.replace('%{_name}', _name)
-            old_source = old_source.replace('%_name', _name)
-        if old_version:
-            old_source = old_source.replace('%{version}', old_version)
-            old_source = old_source.replace('%version', old_version)
+    if old_source:
+        for key in defines.keys():
+            if old_source.find(key) != -1:
+                old_source = old_source.replace('%%{%s}' % key, defines[key])
+                old_source = old_source.replace('%%%s' % key, defines[key])
+                if key not in [ 'name', 'version' ]:
+                    define_in_source = True
 
-    return (True, old_source)
+
+    return (True, old_source, define_in_source)
 
 
 #######################################################################
@@ -1925,12 +1920,14 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    (updated, old_tarball) = self._gnome_update_spec(spec_file, upstream_version)
+    (updated, old_tarball, define_in_source) = self._gnome_update_spec(spec_file, upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
         old_tarball_with_dir = None
 
+    if define_in_source:
+        print 'WARNING: the Source tag in %s is using some define that might not be valid anymore.' % spec_file
     if updated:
         print '%s has been prepared.' % os.path.basename(spec_file)
 
@@ -1976,6 +1973,11 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         return
     else:
         upstream_tarball_basename = os.path.basename(upstream_tarball)
+        # same file as the old one: oops, we don't want to do anything weird
+        # there
+        if upstream_tarball_basename == old_tarball:
+            old_tarball = None
+            old_tarball_with_dir = None
         print '%s has been downloaded.' % upstream_tarball_basename
 
 
