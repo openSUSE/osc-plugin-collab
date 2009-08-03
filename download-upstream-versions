@@ -50,6 +50,7 @@ import optparse
 from posixpath import join as posixjoin # Handy for URLs
 import re
 from sgmllib import SGMLParser
+import urllib
 import urllib2
 import urlparse
 
@@ -492,7 +493,9 @@ def _get_version_from_google_atom(name, limit):
     else:
         tarball = project
 
-    url = 'http://code.google.com/feeds/p/%s/downloads/basic' % project
+    # See http://code.google.com/p/support/issues/detail?id=2926
+    #url = 'http://code.google.com/feeds/p/%s/downloads/basic?%s' % (project, urllib.urlencode({'q': tarball}))
+    url = 'http://code.google.com/feeds/p/%s/downloads/basic' % (project, )
 
     feed = feedparser.parse(url)
 
