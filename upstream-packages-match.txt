@@ -424,6 +424,7 @@ libgsasl:
 libinfinity:
 libiptcdata:
 libjingle:
+liblouis:
 libmcs:
 libnice:
 libnjb:

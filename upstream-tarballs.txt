@@ -188,6 +188,7 @@ libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|143234
 libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
+liblouis:google:liblouis
 libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|24667
