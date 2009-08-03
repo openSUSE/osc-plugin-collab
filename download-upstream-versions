@@ -422,6 +422,15 @@ def _get_version_from_sf_rss(modulename, id, limit):
     if len(ids) > 1:
         url += '&package_id=%s' % ids[1]
 
+    ## New sourceforge scheme. But it doesn't work: some feeds are broken, and
+    ## we need to do some recursive feed retrieval.
+    ## Example of broken feed:
+    ##     http://sourceforge.net/api/file/index/project-id/87005/rss?path=/Liferea%20Stable
+    #url = 'http://sourceforge.net/api/file/index/project-id/%s/rss' % ids[0]
+    #if len(ids) > 1:
+    #    # we do not want urlencode since spaces are %20 and not +
+    #    url += '?path=/%s' % urllib.quote(ids[1])
+
     feed = feedparser.parse(url)
 
     version_re = re.compile('.* ((?:[0-9]+\.)*)([0-9]+) (\([^\)]*\) )?released.*')
