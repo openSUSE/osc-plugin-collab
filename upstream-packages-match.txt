@@ -254,6 +254,7 @@ gtetrinet:
 gthumb:
 gtk+-1:gtk
 gtranslator:
+gwget:
 hippo-canvas:
 intltool:
 jhbuild:
@@ -325,13 +326,18 @@ avahi:avahi-mono
 avahi:avahi-qt4
 babl:
 bakefile:
+balsa:
 bluez-gnome:
 bombermaze:
+boot-mode-ui:
 byzanz:
 cairo:
 cairomm:
 cairo-clock:
 check:
+chmsee:
+claws-mail:
+claws-mail-extra-plugins:
 clutter:
 clutter-cairo:
 clutter-gst:
@@ -341,6 +347,8 @@ computertemp:
 conglomerate:
 contact-lookup-applet:
 cups-pk-helper:
+decibel-audio-player:
+dmlangsel:
 dopi:
 eds-feed:evolution-galago
 eiciel:
@@ -348,6 +356,7 @@ enchant:
 exempi:
 farsight:
 farsight2:
+file-shrimp:
 fyre:
 g-wrap:
 gaim-galago:
@@ -357,12 +366,17 @@ galago-sharp:
 gbrainy:
 gdata.py:python-gdata
 gdesklets:gDesklets
+gdome2:
 gegl:
+gftp:
 ggz-client-libs:
 gimp:
 gimp-gap:
 gimp-help:
+gimp-save-for-web:
 giver:
+gkrellm:
+glabels:
 glipper:
 glitz:
 gmetadom:
@@ -494,6 +508,8 @@ sound-theme-freedesktop:
 specto:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
 startup-notification:
+swfdec:
+swfdec-mozilla:
 system-config-printer:
 tangerine:
 tango-icon-theme:
@@ -520,6 +536,7 @@ xsane:
 ## Packages where we are upstream
 ## It's not required to list -branding-{openSUSE,SLED} packages.
 beagle-index:
+build-compare:
 ggreeter:
 gnome-patch-translation:
 gtk2-themes:
@@ -560,7 +577,7 @@ simple-ccsm:
 
 bundle-lang-common:
 bundle-lang-gnome:
-bundle-lang-gnome-extra:
+bundle-lang-gnome-extras:
 bundle-lang-kde:
 bundle-lang-other:
 chmlib:

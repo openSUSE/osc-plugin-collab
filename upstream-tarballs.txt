@@ -83,16 +83,23 @@ asio:sf:122478|134200
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|85308
+balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
 banshee-1:subdirhttpls:http://download.banshee-project.org/banshee/stable/
 beagle-index:upstream:
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
 bombermaze:sf:8614|8751
+boot-mode-ui:google:loolixbodes|boot-mode-ui
 bundle-lang-gnome:upstream:
+bundle-lang-gnome-extras:upstream:
+build-compare:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 check:sf:28255|20116
+chmsee:google:chmsee
+claws-mail:sf:25528
+claws-mail-extra-plugins:sf:25528
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
@@ -101,12 +108,15 @@ colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
+decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
+dmlangsel:google:loolixbodes|dmlangsel
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/farsight/
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
+file-shrimp:google:loolixbodes|file-shrimp
 fyre:httpls:http://releases.navi.cx/fyre/
 g-wrap:httpls:http://download.savannah.gnu.org/releases/g-wrap/
 gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-galago/
@@ -116,14 +126,19 @@ galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-s
 gbrainy:httpls:http://live.gnome.org/gbrainy
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://www.gdesklets.de/
+gdome2:httpls:http://gdome2.cs.unibo.it/tarball/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
+gftp:httpls:http://gftp.seul.org/
 ggreeter:upstream:
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 # FIXME: not good: we have the version in the URL...
 gimp-gap:ftpls:ftp://ftp.gimp.org/pub/gimp/plug-ins/v2.6/gap/
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
+gimp-save-for-web:httpls:http://registry.gimp.org/node/33
 giver:google:giver
+gkrellm:httpls:http://members.dslextreme.com/users/billw/gkrellm/gkrellm.html
+glabels:sf:46122
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gmetadom:sf:40627|32815
 gnome-disk-utility:httpls:http://hal.freedesktop.org/releases/
@@ -254,6 +269,8 @@ sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|157769
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
+swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
+swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-butterfly:httpls:http://telepathy.freedesktop.org/releases/telepathy-butterfly/
