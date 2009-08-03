@@ -1522,7 +1522,7 @@ def _gnome_get_package_with_valid_project(self, projects, package):
     try:
         pkg = self._gnome_api.get_package_details(projects, package)
     except self.OscGnomeWebError, e:
-        pass
+        pkg = None
 
     if pkg is None or pkg.project is None or not pkg.project.name:
         print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
