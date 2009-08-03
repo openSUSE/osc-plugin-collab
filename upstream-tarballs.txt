@@ -97,6 +97,7 @@ clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
+colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 conglomerate:sf:82766|85066
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
@@ -195,6 +196,7 @@ libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|57485
 liboil:httpls:http://liboil.freedesktop.org/download/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
+libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
 libproxy:google:libproxy
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui

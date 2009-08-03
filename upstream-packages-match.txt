@@ -214,6 +214,7 @@ gedit-plugins:
 genius:
 ghex:
 gir-repository:
+gjs:
 glade:
 glib-1:glib
 glom:
@@ -224,6 +225,7 @@ gnome-build:
 gnome-commander:
 gnome-common:
 gnome-games-extra-data:
+gnome-js-common:
 gnome-libs:
 gnome-main-menu:
 gnome-phone-manager:
@@ -284,6 +286,7 @@ loudmouth:
 memprof:
 mergeant:
 muine:
+mutter:
 nautilus-cd-burner:
 nautilus-open-terminal:
 nautilus-python:python-nautilus
@@ -300,6 +303,7 @@ planner:
 ptlib:libpt2
 rhythmbox:
 scrollkeeper:
+seed:
 tasque:
 xdg-user-dirs-gtk:
 
@@ -332,6 +336,7 @@ clutter:
 clutter-cairo:
 clutter-gst:
 clutter-gtk:
+colorblind:
 computertemp:
 conglomerate:
 contact-lookup-applet:
@@ -427,6 +432,7 @@ libnotify:
 libofx:
 liboil:
 libopenraw:
+libpst:
 libproxy:
 libproxy:libproxy-plugins
 librep:
