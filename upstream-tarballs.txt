@@ -363,4 +363,4 @@ rep-gtk:sf:581|591
 sawfish:sf:32|17
 specto:httpls:http://specto.sourceforge.net/?go=download
 spheres-and-crystals:sf:64400|72957
-tangerine:httpls:http://snorp.net/files/tangerine/
+tangerine:lp:tangerine
