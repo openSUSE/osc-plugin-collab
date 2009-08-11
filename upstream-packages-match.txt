@@ -233,6 +233,7 @@ gnome-pilot:
 gnome-pilot-conduits:
 gnome-python-extras:python-gnome-extras
 gnome-reset:
+gnome-shell:
 # No package in openSUSE
 #gnome-scan:
 gnome-spell:gnome-spell2
