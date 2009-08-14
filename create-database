@@ -67,6 +67,7 @@ else:
 PACKAGE_LOOKUP_PATH = os.path.join(OBS_DISSECTOR_DIR, 'obs-co-stable')
 
 MODULE_SRCPACKAGE_MATCH_FILE = os.path.join(OBS_DISSECTOR_DIR, 'upstream-packages-match.txt')
+UPSTREAM_VERSIONS_FALLBACK_FILE = os.path.join(OBS_DISSECTOR_DIR, 'upstream-versions-fallback.txt')
 
 # Files to just ignore in the file list of a package.
 IGNORE_FILES = [ 'ready', 'MD5SUMS', 'MD5SUMS.meta' ]
@@ -89,12 +90,15 @@ DB_MINOR = 2
 #######################################################################
 
 class DataCache:
-    def __init__(self, upstream_name):
+    def __init__(self, upstream_name, upstream_versions_fallback):
         self.db = sqlite3.connect(':memory:')
         self.cursor = self.db.cursor()
 
+        self.upstream_versions_fallback = {}
+
         self._sql_setup()
         self._fill_upstream_name(upstream_name)
+        self._fill_upstream_versions_fallback(upstream_versions_fallback)
 
     def _sql_setup(self):
         self.cursor.execute('''CREATE TABLE upstream_name (
@@ -147,6 +151,21 @@ class DataCache:
                     (srcpackage, upstream))
 
         file.close()
+
+    def _fill_upstream_versions_fallback(self, upstream_versions_fallback):
+        if not os.path.exists(upstream_versions_fallback):
+            return
+
+        file = open(upstream_versions_fallback)
+        lines = file.readlines()
+        file.close()
+
+        for line in lines:
+            line = line[:-1]
+            fields = line.split(',')
+            if len(fields) < 2:
+                continue
+            self.upstream_versions_fallback[fields[0]] = fields[1]
 
     def _get_upstream_version_file_id(self, upstream_version_file):
         self.cursor.execute('''SELECT id FROM upstream_version_file WHERE
@@ -215,7 +234,7 @@ class DataCache:
             return name[index:] in ['branding-openSUSE', 'branding-SLED', 'branding-SLES']
         return False
 
-    def get_upstream_name(self, srcpackage):
+    def _get_upstream_name(self, srcpackage):
         self.cursor.execute('''SELECT upstream FROM upstream_name WHERE
             srcpackage = ?;''', (srcpackage,))
         row = self.cursor.fetchone()
@@ -226,36 +245,37 @@ class DataCache:
         else:
             return ''
 
-    def get_upstream_version(self, upstream_version_file, upstream_name):
+    def _get_upstream_data_from_db(self, upstream_version_file, upstream_name):
         file_id = self._get_upstream_version_file_id(upstream_version_file)
         if not file_id:
+            return ('', '')
+
+        self.cursor.execute('''SELECT version, url FROM upstream_version WHERE
+            upstream = ? AND upstream_version_file = ?;''', (upstream_name, file_id))
+        row = self.cursor.fetchone()
+        if row:
+            return (row[0], row[1])
+        else:
+            return ('', '')
+
+    def _get_upstream_version_fallback(self, srcpackage):
+        try:
+            return self.upstream_versions_fallback[srcpackage]
+        except KeyError:
+            return ''
+
+    def get_upstream_data(self, upstream_version_file, srcpackage):
+        upstream_name = self._get_upstream_name(srcpackage)
+
+        (version, url) = self._get_upstream_data_from_db(upstream_version_file, upstream_name)
+
+        if not version:
             if self._is_without_upstream(upstream_name):
-                return '--'
+                version = '--'
             else:
-                return ''
+                version = self._get_upstream_version_fallback(srcpackage)
 
-        self.cursor.execute('''SELECT version FROM upstream_version WHERE
-            upstream = ? AND upstream_version_file = ?;''', (upstream_name, file_id))
-        row = self.cursor.fetchone()
-        if row:
-            return row[0]
-        elif self._is_without_upstream(upstream_name):
-            return '--'
-        else:
-            return ''
-
-    def get_upstream_url(self, upstream_version_file, upstream_name):
-        file_id = self._get_upstream_version_file_id(upstream_version_file)
-        if not file_id:
-            return ''
-
-        self.cursor.execute('''SELECT url FROM upstream_version WHERE
-            upstream = ? AND upstream_version_file = ?;''', (upstream_name, file_id))
-        row = self.cursor.fetchone()
-        if row:
-            return row[0]
-        else:
-            return ''
+        return (upstream_name, version, url)
 
 #######################################################################
 
@@ -722,12 +742,7 @@ class SrcPackage(Base):
         if not db_cache:
             return
 
-        self.upstream_name = db_cache.get_upstream_name(self.name)
-        if self.upstream_name:
-#FIXME verbose
-        #print >> sys.stderr, '%s: cannot get upstream version because there\'s no upstream name' % self.name
-            self.upstream_version = db_cache.get_upstream_version(self.project.versionfile, self.upstream_name)
-            self.upstream_url = db_cache.get_upstream_url(self.project.versionfile, self.upstream_name)
+        (self.upstream_name, self.upstream_version, self.upstream_url) = db_cache.get_upstream_data(self.project.versionfile, self.name)
 
     def _analyze_files(self):
         linkfile = os.path.join(self.path, '_link')
@@ -1186,6 +1201,9 @@ def main(args):
     parser.add_option("-u", "--upstream-name", dest="upstream_name",
                       default=MODULE_SRCPACKAGE_MATCH_FILE,
                       help="file containing the mapping between upstream and package names")
+    parser.add_option("--upstream-versions-fallback", dest="upstream_versions_fallback",
+                      default=UPSTREAM_VERSIONS_FALLBACK_FILE,
+                      help="file containing upstream versions for packages, that will be used as a fallback if no upstream version is available in the main database")
     parser.add_option("-f", "--force", action="store_true", dest="force",
                       default=False, help="overwrite files if already existing")
 
@@ -1199,7 +1217,7 @@ def main(args):
         print >> sys.stderr,  '%s already exists. You can use --force to overwrite it.' % options.outputdb
         return
 
-    db_cache = DataCache(options.upstream_name)
+    db_cache = DataCache(options.upstream_name, options.upstream_versions_fallback)
     try:
         db = CreateDb(options.outputdb, options.force)
     except CreateDbException, e:
