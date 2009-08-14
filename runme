@@ -73,14 +73,14 @@ download_gnome_version extras
 
 GNOME_FACTORY_VERSION=unstable
 
-cp $OBS_DISSECTOR_DIR/tmp/versions-upstream $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak
+test -f $OBS_DISSECTOR_DIR/tmp/versions-upstream && cp $OBS_DISSECTOR_DIR/tmp/versions-upstream $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak
 $basedir/download-upstream-versions \
     --upstream-tarballs=$basedir/upstream-tarballs.txt \
     --upstream-limits=$basedir/upstream-limits.txt \
     --save-file=$OBS_DISSECTOR_DIR/tmp/versions-upstream \
     --only-if-old --use-old-as-fallback
 if test $? -ne 0; then
-    cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak $OBS_DISSECTOR_DIR/tmp/versions-upstream
+    test -f cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak && cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak $OBS_DISSECTOR_DIR/tmp/versions-upstream
     echo "Error while checking for new upstream versions"
 fi
 cat $OBS_DISSECTOR_DIR/tmp/versions-gnome-$GNOME_FACTORY_VERSION \
@@ -96,6 +96,13 @@ for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-latest | grep ':' | cut -
         echo $i not in $basedir/upstream-packages-match.txt
     fi
 done
+
+test -f $OBS_DISSECTOR_DIR/tmp/versions-fallback && cp $OBS_DISSECTOR_DIR/tmp/versions-fallback $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak
+wget -q -nc -O $OBS_DISSECTOR_DIR/tmp/versions-fallback http://www.suse.de/~meissner/factory.upstream.lst
+if test $? -ne 0; then
+    test -f $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak && cp $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak $OBS_DISSECTOR_DIR/tmp/versions-fallback
+    echo "Error while checking for fallback of new upstream versions"
+fi
 
 
 ######################################
@@ -186,6 +193,7 @@ popd > /dev/null
 $basedir/create-database --force \
     --output-database $OBS_DISSECTOR_DIR/obs.db \
     --checkout-dir $DEST_CO \
-    --upstream-name $basedir/upstream-packages-match.txt
+    --upstream-name $basedir/upstream-packages-match.txt \
+    --upstream-versions-fallback $OBS_DISSECTOR_DIR/tmp/versions-fallback
 
 $basedir/list-packages --output-database $OBS_DISSECTOR_DIR/packagelist.db
