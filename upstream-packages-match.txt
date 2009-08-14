@@ -322,6 +322,8 @@ UPnP-Inspector:upnp-inspector
 abiword:
 aqbanking:
 asio:
+at-spi2-atk:
+at-spi2-core:
 avahi:
 avahi:avahi-glib2
 avahi:avahi-mono

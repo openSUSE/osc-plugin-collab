@@ -80,6 +80,8 @@ abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 # http://www.aquamaniac.de/sites/download/packages.php
 aqbanking:sf:115695|125492
 asio:sf:122478|134200
+at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
+at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|85308
