@@ -1154,17 +1154,17 @@ def _gnome_todoadmin_internal(self, apiurl, project):
 
         if package.error:
             if package.error == 'not-link':
-                message = 'Is not a link to %s (note: there might be a delta between the two)' % package.project.parent
+                message = 'Is not a link to %s (check for delta and make link)' % package.project.parent
             elif package.error == 'not-link-not-in-parent':
-                message = 'Is not a link, and is not in %s: maybe it should be submitted?' % package.project.parent
+                message = 'Is not a link, and is not in %s (submit it?)' % package.project.parent
             elif package.error == 'not-in-parent':
                 message = 'Broken link: does not exist in %s' % package.parent_project
             elif package.error == 'need-merge-with-parent':
                 message = 'Broken link: requires a manual merge with %s' % package.parent_project
             elif package.error == 'not-real-devel':
-                message = 'Should not exist here: %s' package.error_details
+                message = 'Should not exist: %s' % package.error_details
             elif package.error == 'parent-without-devel':
-                message = 'Parent (%s/%s) has no devel project set' % (package.parent_project, package.parent_package)
+                message = 'No devel project set for parent (%s/%s)' % (package.parent_project, package.parent_package)
             else:
                 if package.error_details:
                     message = 'Unknown error (%s): %s' % (package.error, package.error_details)
@@ -1176,7 +1176,7 @@ def _gnome_todoadmin_internal(self, apiurl, project):
 
 
     for (package, parent_project, parent_package) in prj.missing_packages:
-        message = 'Does not exist, but is the devel package for %s/%s' % (parent_project, parent_package)
+        message = 'Does not exist, but is devel package for %s/%s' % (parent_project, parent_package)
         lines.append((project, package, message))
 
 
