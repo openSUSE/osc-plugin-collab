@@ -334,6 +334,112 @@ class OscGnomePackage:
 #######################################################################
 
 
+class OscGnomeObs:
+
+    Cache = None
+    Request = None
+    _import = None
+    apiurl = None
+
+
+    @classmethod
+    def init(cls, parent, apiurl):
+        cls.Cache = parent.GnomeCache
+        cls.Request = parent.OscGnomeRequest
+        cls._import = parent.OscGnomeImport.m_import
+        cls.apiurl = apiurl
+
+
+    @classmethod
+    def get_meta(cls, project):
+        what = 'metadata of packages in %s' % project
+
+        urllib = cls._import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
+            return None
+
+        # download the data (cache for 2 days)
+        url = makeurl(cls.apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+        filename = 'meta-' + project
+        max_age_minutes = 3600 * 24 * 2
+
+        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+
+
+    @classmethod
+    def get_build_results(cls, project):
+        what = 'build results of packages in %s' % project
+
+        # download the data (cache for 2 hours)
+        url = makeurl(cls.apiurl, ['build', project, '_result'])
+        filename = 'build-results-' + project
+        max_age_minutes = 3600 * 2
+
+        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+
+
+    @classmethod
+    def _get_request_list_internal(cls, project, type):
+        if type == 'source':
+            what = 'list of requests from %s' % project
+        elif type == 'target':
+            what = 'list of requests to %s' % project
+        else:
+            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
+            return None
+
+        urllib = cls._import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
+            return None
+
+        match = 'state/@name=\'new\''
+        match += '%20and%20'
+        match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
+
+        # download the data (cache for 10 minutes)
+        url = makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
+        filename = 'submitted-%s-%s' % (type, project)
+        max_age_minutes = 60 * 10
+
+        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+
+
+    @classmethod
+    def _parse_request_list_internal(cls, file):
+        requests = []
+
+        if not file or not os.path.exists(file):
+            return requests
+
+        try:
+            collection = ET.parse(file).getroot()
+        except SyntaxError, e:
+            print >>sys.stderr, 'Cannot parse request list: %s' % (e.msg,)
+            return requests
+
+        for node in collection.findall('request'):
+            requests.append(cls.Request(node))
+
+        return requests
+
+
+    @classmethod
+    def get_request_list_from(cls, project):
+        file = cls._get_request_list_internal(project, 'source')
+        return cls._parse_request_list_internal(file)
+
+
+    @classmethod
+    def get_request_list_to(cls, project):
+        file = cls._get_request_list_internal(project, 'target')
+        return cls._parse_request_list_internal(file)
+
+
+#######################################################################
+
+
 class OscGnomeApi:
 
     _api_url = 'http://tmp.vuntz.net/opensuse-packages/api'
@@ -562,7 +668,6 @@ class GnomeCache:
 
     @classmethod
     def init(cls, parent, ignore_cache):
-        cls.Request = parent.OscGnomeRequest
         cls._import = parent.OscGnomeImport.m_import
         cls._ignore_cache = ignore_cache
 
@@ -630,14 +735,22 @@ class GnomeCache:
 
 
     @classmethod
-    def _get_obs_internal(cls, url, file, what):
+    def get_from_obs(cls, url, filename, max_age_minutes, what):
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        if not cls._need_update(cache, max_age_minutes):
+            return cache
+
+        # no cache available
+        cls._print_message()
+
         try:
             fin = http_GET(url)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Cannot get %s: %s' % (what, e.msg)
             return None
 
-        fout = open(file, 'w')
+        fout = open(cache, 'w')
 
         while True:
             try:
@@ -648,126 +761,14 @@ class GnomeCache:
             except urllib2.HTTPError, e:
                 fin.close()
                 fout.close()
-                os.unlink(file)
+                os.unlink(cache)
                 print >>sys.stderr, 'Error while downloading %s: %s' % (what, e.msg)
-                return False
+                return None
 
         fin.close()
         fout.close()
 
-        return True
-
-
-    @classmethod
-    def get_obs_meta(cls, apiurl, project):
-        filename = 'meta-' + project
-        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
-
-        # Only download if it's more than 2-days old
-        if not cls._need_update(filename, 3600 * 24 * 2):
-            return cache
-
-        urllib = cls._import('urllib')
-        if not urllib:
-            print >>sys.stderr, 'Cannot get metadata of packages in %s: incomplete python installation.' % project
-            return None
-
-        # no cache available
-        cls._print_message()
-
-        # download the data
-        url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
-        if cls._get_obs_internal(url, cache, 'metadata of packages in %s' % project):
-            return cache
-        else:
-            return None
-
-
-    @classmethod
-    def obs_get_build_results(cls, apiurl, project):
-        filename = 'build-results-' + project
-        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
-
-        # Only download if it's more than 2-hours old
-        if not cls._need_update(filename, 3600 * 2):
-            return cache
-
-        # no cache available
-        cls._print_message()
-
-        # download the data
-        url = makeurl(apiurl, ['build', project, '_result'])
-        if cls._get_obs_internal(url, cache, 'build results of packages in %s' % project):
-            return cache
-        else:
-            return None
-
-
-    @classmethod
-    def _obs_get_request_list_internal(cls, apiurl, project, type):
-        if type == 'source':
-            what = 'list of requests from %s' % project
-        elif type == 'target':
-            what = 'list of requests to %s' % project
-        else:
-            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
-            return None
-
-        filename = 'submitted-%s-%s' % (type, project)
-        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
-
-        # Only download if it's more than 10-minutes old
-        if not cls._need_update(filename, 60 * 10):
-            return cache
-
-        urllib = cls._import('urllib')
-        if not urllib:
-            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
-            return None
-
-        # no cache available
-        cls._print_message()
-
-        # download the data
-        match = 'state/@name=\'new\''
-        match += '%20and%20'
-        match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
-        url = makeurl(apiurl, ['search', 'request'], ['match=%s' % match])
-        if cls._get_obs_internal(url, cache, what):
-            return cache
-        else:
-            return None
-
-
-    @classmethod
-    def _obs_parse_request_list_internal(cls, file):
-        requests = []
-
-        if not file or not os.path.exists(file):
-            return requests
-
-        try:
-            collection = ET.parse(file).getroot()
-        except SyntaxError, e:
-            print >>sys.stderr, 'Cannot parse request list: %s' % (e.msg,)
-            return requests
-
-        for node in collection.findall('request'):
-            requests.append(cls.Request(node))
-
-        return requests
-
-
-    @classmethod
-    def obs_get_request_list_from(cls, apiurl, project):
-        file = cls._obs_get_request_list_internal(apiurl, project, 'source')
-        return cls._obs_parse_request_list_internal(file)
-
-
-    @classmethod
-    def obs_get_request_list_to(cls, apiurl, project):
-        file = cls._obs_get_request_list_internal(apiurl, project, 'target')
-        return cls._obs_parse_request_list_internal(file)
+        return cache
 
 
     @classmethod
@@ -941,7 +942,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.obs_get_request_list_to(apiurl, project)
+    submitted_packages = self.OscGnomeObs.get_request_list_to(project)
 
     parent_project = None
     packages = []
@@ -1072,7 +1073,7 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
 
     # get metadata from the parent project to be able to know if packages
     # shouldn't belong there
-    metafile = self.GnomeCache.get_obs_meta(apiurl, parent_project)
+    metafile = self.OscGnomeObs.get_meta(parent_project)
     if not metafile:
         return ([], [])
 
@@ -1215,7 +1216,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
 
     # get the packages submitted from
-    submitted_from_packages = self.GnomeCache.obs_get_request_list_from(apiurl, project)
+    submitted_from_packages = self.OscGnomeObs.get_request_list_from(project)
 
     # get the packages with no upstream data
     no_upstream_packages = []
@@ -1225,7 +1226,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
                 no_upstream_packages.append(package)
 
     # get the packages submitted to, which need a review
-    submitted_to_packages = self.GnomeCache.obs_get_request_list_to(apiurl, project)
+    submitted_to_packages = self.OscGnomeObs.get_request_list_to(project)
     # get errors
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
@@ -3197,6 +3198,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     self._gnome_api = self.OscGnomeApi(self, gnome_apiurl)
     self.GnomeCache.init(self, opts.no_cache)
+    self.OscGnomeObs.init(self, apiurl)
 
     # Do the command
     if cmd in ['todo', 't']:
