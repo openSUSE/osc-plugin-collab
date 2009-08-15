@@ -149,6 +149,7 @@ class OscGnomeRequest():
     state = None
     by = None
     at = None
+    description = None
 
     def __init__(self, node):
         self.req_id = int(node.get('id'))
@@ -171,11 +172,15 @@ class OscGnomeRequest():
             self.target_project = subnode.get('project')
             self.target_package = subnode.get('package')
 
-        subnode = action.find('state')
+        subnode = node.find('state')
         if subnode is not None:
             self.state = subnode.get('name')
             self.by = subnode.get('who')
             self.at = subnode.get('when')
+
+        subnode = node.find('description')
+        if subnode is not None:
+            self.description = subnode.text
 
 
 #######################################################################
@@ -435,6 +440,28 @@ class OscGnomeObs:
     def get_request_list_to(cls, project):
         file = cls._get_request_list_internal(project, 'target')
         return cls._parse_request_list_internal(file)
+
+
+    @classmethod
+    def get_request(cls, id):
+        url = makeurl(cls.apiurl, ['request', id])
+
+        try:
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get request %s: %s' % (id, e.msg)
+            return None
+
+        try:
+            node = ET.parse(fin).getroot()
+        except SyntaxError, e:
+            fin.close()
+            print >>sys.stderr, 'Cannot parse request %s: %s' % (id, e.msg)
+            return None
+
+        fin.close()
+
+        return cls.Request(node)
 
 
 #######################################################################
@@ -2278,29 +2305,17 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        _gnome_get_request = get_request
-    except NameError, e:
-        # in osc <= 0.120, get_request was named get_submit_request
-        _gnome_get_request = get_submit_request
-
-    try:
         _gnome_change_request_state = change_request_state
     except NameError, e:
         # in osc <= 0.120, change_request_state was named change_submit_request_state
         _gnome_change_request_state = change_submit_request_state
 
-    try:
-        request = _gnome_get_request(apiurl, request_id)
-    except urllib2.HTTPError:
-        print >>sys.stderr, 'Cannot get submission request %s: %s' % (request_id, e.msg)
+    request = self.OscGnomeObs.get_request(request_id)
+    if request is None:
+        return
 
-    if hasattr(request, 'actions'):
-        dest_package = request.actions[0].dst_package
-        dest_project = request.actions[0].dst_project
-    else:
-        # actions appeared with osc 0.118
-        dest_package = request.dst_package
-        dest_project = request.dst_project
+    dest_package = request.target_package
+    dest_project = request.target_project
 
     if dest_project not in projects:
         if len(projects) == 1:
@@ -2309,7 +2324,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
             print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, dest_project)
         return
 
-    if request.state.name != 'new':
+    if request.state != 'new':
         print >>sys.stderr, 'Submission request %s is not new.' % request_id
         return
 
@@ -2343,7 +2358,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
     result = create_submit_request(apiurl,
                                    dest_project, dest_package,
                                    pkg.parent_project, pkg.parent_package,
-                                   request.descr)
+                                   request.description)
 
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
 
