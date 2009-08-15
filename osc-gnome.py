@@ -189,14 +189,10 @@ class OscGnomeRequest():
 class OscGnomeProject(dict):
 
     def __init__(self, node):
-        if node is None:
-            self.name = None
-            self.parent = None
-            self.ignore_upstream = False
-        else:
-            self.name = node.get('name')
-            self.parent = node.get('parent')
-            self.ignore_upstream = node.get('ignore_upstream') == 'true'
+        self.name = node.get('name')
+        self.parent = node.get('parent')
+        self.ignore_upstream = node.get('ignore_upstream') == 'true'
+        self.missing_packages = []
 
 
     def strip_internal_links(self):
@@ -661,6 +657,17 @@ class OscGnomeApi:
         return package
 
 
+    def _parse_missing_package_node(self, node, project):
+        name = node.get('name')
+        parent_project = node.get('parent_project')
+        parent_package = node.get('parent_package') or name
+
+        if not name or not parent_project:
+            return
+
+        project.missing_packages.append((name, parent_project, parent_package))
+
+
     def _parse_project_node(self, node):
         project = self.Project(node)
         if not project.name:
@@ -668,6 +675,11 @@ class OscGnomeApi:
 
         for package in node.findall('package'):
             self._parse_package_node(package, project)
+
+        missing = node.find('missing')
+        if missing is not None:
+            for package in missing.findall('package'):
+                self._parse_missing_package_node(package, project)
 
         return project
 
@@ -1159,14 +1171,16 @@ def _gnome_todoadmin_internal(self, apiurl, project):
                 else:
                     message = 'Unknown error (%s)' % package.error
 
-        # FIXME should_devel
-# /search/package?match=devel/@project='GNOME:Factory'%20and%20(@project='openSUSE:Factory'%20or%20@project='openSUSE:Factory:Contrib'%20or%20@project='Moblin:Factory')
-        if False:
-            # FIXME: % project is wrong
-            message = 'Does not exist here, but is the devel package for %s/%s' % (project, package)
-
         if message:
             lines.append((project, package.name, message))
+
+
+    for (package, parent_project, parent_package) in prj.missing_packages:
+        message = 'Does not exist, but is the devel package for %s/%s' % (parent_project, parent_package)
+        lines.append((project, package, message))
+
+
+    lines.sort()
 
     return lines
 
