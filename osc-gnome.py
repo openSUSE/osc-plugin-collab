@@ -296,12 +296,12 @@ class OscGnomeApi:
     _supported_api = '0.1'
     _supported_api_major = '0'
 
-    def __init__(self, exception, cache, reservation, project, package, apiurl = None):
-        self.Error = exception
-        self.Cache = cache
-        self.Reservation = reservation
-        self.Project = project
-        self.Package = package
+    def __init__(self, parent, apiurl = None):
+        self.Error = parent.OscGnomeWebError
+        self.Cache = parent.GnomeCache
+        self.Reservation = parent.OscGnomeReservation
+        self.Project = parent.OscGnomeProject
+        self.Package = parent.OscGnomePackage
         if apiurl:
             self._api_url = apiurl
 
@@ -517,8 +517,8 @@ class GnomeCache:
     _printed = False
 
     @classmethod
-    def init(cls, import_function, ignore_cache):
-        cls._import = import_function
+    def init(cls, parent, ignore_cache):
+        cls._import = parent.OscGnomeImport.m_import
         cls._ignore_cache = ignore_cache
 
     @classmethod
@@ -3226,8 +3226,8 @@ def do_gnome(self, subcmd, opts, *args):
     user = conf.config['user']
     email = self._gnome_ensure_email(apiurl)
 
-    self._gnome_api = self.OscGnomeApi(self.OscGnomeWebError, self.GnomeCache, self.OscGnomeReservation, self.OscGnomeProject, self.OscGnomePackage, gnome_apiurl)
-    self.GnomeCache.init(self.OscGnomeImport.m_import, opts.no_cache)
+    self._gnome_api = self.OscGnomeApi(self, gnome_apiurl)
+    self.GnomeCache.init(self, opts.no_cache)
 
     # Do the command
     if cmd in ['todo', 't']:
