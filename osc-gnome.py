@@ -464,6 +464,25 @@ class OscGnomeObs:
         return cls.Request(node)
 
 
+    @classmethod
+    def change_request_state(cls, id, new_state, message):
+        try:
+            _gnome_change_request_state = change_request_state
+        except NameError, e:
+            # in osc <= 0.120, change_request_state was named
+            # change_submit_request_state
+            _gnome_change_request_state = change_submit_request_state
+
+        result = _gnome_change_request_state(cls.apiurl, id, new_state, message)
+
+        root = ET.fromstring(result)
+        if not 'code' in root.keys() or root.get('code') != 'ok':
+            print >>sys.stderr, 'Cannot accept request %s: %s' % (id, result)
+            return False
+
+        return True
+
+
 #######################################################################
 
 
@@ -2304,12 +2323,6 @@ def _gnome_forward(self, apiurl, projects, request_id):
         print >>sys.stderr, '%s is not a valid submission request id.' % (request_id)
         return
 
-    try:
-        _gnome_change_request_state = change_request_state
-    except NameError, e:
-        # in osc <= 0.120, change_request_state was named change_submit_request_state
-        _gnome_change_request_state = change_submit_request_state
-
     request = self.OscGnomeObs.get_request(request_id)
     if request is None:
         return
@@ -2347,10 +2360,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
         print >>sys.stderr, 'Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project)
         return
 
-    result = _gnome_change_request_state(apiurl, request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project)
-    root = ET.fromstring(result)
-    if not 'code' in root.keys() or root.get('code') != 'ok':
-        print >>sys.stderr, 'Cannot accept submission request %s: %s' % (request_id, result)
+    if not self.OscGnomeObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
         return
 
     # TODO: cancel old requests from request.dst_project to parent project
