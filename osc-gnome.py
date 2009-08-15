@@ -639,7 +639,7 @@ class GnomeCache:
 
 
     @classmethod
-    def get_obs_build_results(cls, apiurl, project):
+    def obs_get_build_results(cls, apiurl, project):
         filename = 'build-results-' + project
         cache = os.path.join(cls._get_xdg_cache_dir(), filename)
 
