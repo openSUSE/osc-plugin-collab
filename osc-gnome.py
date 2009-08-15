@@ -1083,7 +1083,7 @@ def _gnome_get_packages_with_bad_meta(self, apiurl, project):
 
     try:
         collection = ET.parse(metafile).getroot()
-    except SyntaxError:
+    except SyntaxError, e:
         print >>sys.stderr, 'Cannot parse %s: %s' % (metafile, e.msg)
         return ([], [])
 
