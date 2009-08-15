@@ -233,6 +233,13 @@ class OscGnomeProject(dict):
 
 class OscGnomePackage:
 
+    _import = None
+
+    @classmethod
+    def init(cls, parent):
+        cls._import = parent.OscGnomeImport.m_import
+
+
     def __init__(self, node, project):
         self.name = None
         self.version = None
@@ -297,6 +304,55 @@ class OscGnomePackage:
             self.parent_package = self.name
         if self.devel_project and not self.devel_package:
             self.devel_package = self.name
+
+
+    def _compare_versions_a_gt_b(self, a, b):
+        rpm = self._import('rpm')
+        if rpm:
+            # We're not really interested in the epoch or release parts of the
+            # complete version because they're not relevant when comparing to
+            # upstream version
+            return rpm.labelCompare((None, a, '1'), (None, b, '1')) > 0
+
+        split_a = a.split('.')
+        split_b = b.split('.')
+
+        # the two versions don't have the same format; we don't know how to
+        # handle this
+        if len(split_a) != len(split_b):
+            return a > b
+
+        for i in range(len(split_a)):
+            try:
+                int_a = int(split_a[i])
+                int_b = int(split_b[i])
+                if int_a > int_b:
+                    return True
+                if int_b > int_a:
+                    return False
+            except ValueError:
+                if split_a[i] > split_b[i]:
+                    return True
+                if split_b[i] > split_a[i]:
+                    return False
+
+        return False
+
+
+    def parent_more_recent(self):
+        if not self.parent_version:
+            return False
+
+        return self._compare_versions_a_gt_b(self.parent_version, self.version)
+
+
+    def needs_update(self):
+        # empty upstream version, or upstream version meaning openSUSE is
+        # upstream
+        if self.upstream_version in [ None, '', '--' ]:
+            return False
+
+        return self._compare_versions_a_gt_b(self.upstream_version, self.parent_version) and self._compare_versions_a_gt_b(self.upstream_version, self.version)
 
 
     def __eq__(self, other):
@@ -880,45 +936,6 @@ def _gnome_is_program_in_path(self, program):
 #######################################################################
 
 
-def _gnome_compare_versions_a_gt_b(self, a, b):
-    rpm = self.OscGnomeImport.m_import('rpm')
-    if rpm:
-        # We're not really interested in the epoch or release parts of the
-        # complete version because they're not relevant when comparing to
-        # upstream version
-        return rpm.labelCompare((None, a, '1'), (None, b, '1')) > 0
-
-    split_a = a.split('.')
-    split_b = b.split('.')
-
-    # the two versions don't have the same format; we don't know how to handle
-    # this
-    if len(split_a) != len(split_b):
-        return a > b
-
-    for i in range(len(split_a)):
-        try:
-            int_a = int(split_a[i])
-            int_b = int(split_b[i])
-            if int_a > int_b:
-                return True
-            if int_b > int_a:
-                return False
-        except ValueError:
-            if split_a[i] > split_b[i]:
-                return True
-            if split_b[i] > split_a[i]:
-                return False
-
-    return False
-
-
-# TODO: this should be a method of the OscGnomePackage class, but this needs
-# some access to the 'import rpm', which is not fun
-def _gnome_needs_update(self, parent_version, devel_version, upstream_version):
-    return self._gnome_compare_versions_a_gt_b(upstream_version, parent_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
-
-
 def _gnome_find_request_to(self, package, requests):
     for request in requests:
         if request.target_package == package:
@@ -926,7 +943,6 @@ def _gnome_find_request_to(self, package, requests):
     return None
 
 
-# FIXME: maybe we don't need this
 def _gnome_has_request_from(self, package, requests):
     for request in requests:
         if request.source_package == package:
@@ -1008,12 +1024,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
     packages = []
 
     for package in prj.itervalues():
-        # empty upstream version or upstream version meaning openSUSE is
-        # upstream
-        if package.upstream_version in [ None, '', '--' ]:
-            continue
-
-        if not self._gnome_needs_update(package.parent_version, package.version, package.upstream_version):
+        if not package.needs_update():
             continue
 
         broken_link = package.error not in [ None, 'not-link' ] or (package.error == 'not-link' and package.error_details)
@@ -1974,11 +1985,10 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
             return
         project = pkg.project.name
 
-    if pkg.parent_version:
-        # check that the project is up-to-date wrt parent project
-        if self._gnome_compare_versions_a_gt_b(pkg.parent_version, pkg.version):
-            print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, pkg.parent_project, pkg.parent_version, project, pkg.version, project)
-            return
+    # check that the project is up-to-date wrt parent project
+    if pkg.parent_more_recent():
+        print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, pkg.parent_project, pkg.parent_version, project, pkg.version, project)
+        return
 
     # check that an update is really needed
     if not pkg.upstream_version:
@@ -1986,7 +1996,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     elif pkg.upstream_version == '--':
         print 'Package %s has no upstream.' % package
         return
-    elif not self._gnome_needs_update(pkg.parent_version, pkg.version, pkg.upstream_version):
+    elif not pkg.needs_update():
         print 'Package %s is already up-to-date.' % package
         return
 
@@ -3050,6 +3060,7 @@ def do_gnome(self, subcmd, opts, *args):
     self._gnome_api = self.OscGnomeApi(self, gnome_apiurl)
     self.GnomeCache.init(self, opts.no_cache)
     self.OscGnomeObs.init(self, apiurl)
+    self.OscGnomePackage.init(self)
 
     # Do the command
     if cmd in ['todo', 't']:
