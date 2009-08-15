@@ -692,11 +692,6 @@ class GnomeCache:
         if not cls._need_update(filename, 3600 * 2):
             return cache
 
-        urllib = cls._import('urllib')
-        if not urllib:
-            print >>sys.stderr, 'Cannot get build results of packages in %s: incomplete python installation.' % project
-            return None
-
         # no cache available
         cls._print_message()
 
