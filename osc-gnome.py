@@ -1141,34 +1141,29 @@ def _gnome_todoadmin_internal(self, apiurl, project):
             message = 'Needs to be reviewed (request id: %s)' % request.req_id
 
         if package.error:
-            # FIXME: differentiate between:
-            #  - exists in package.project.parent, but is not a link at all
-            #  - doesn't exist in package.project.parent
-            #  First case is "this should be a link" while second case is
-            #  "maybe you want to submit it?"
             if package.error == 'not-link':
-                message = 'Is not a link to %s (note: there might be a delta between the two)' % (package.parent_project or package.project.parent)
+                message = 'Is not a link to %s (note: there might be a delta between the two)' % package.project.parent
+            elif package.error == 'not-link-not-in-parent':
+                message = 'Is not a link, and is not in %s: maybe it should be submitted?' % package.project.parent
             elif package.error == 'not-in-parent':
                 message = 'Broken link: does not exist in %s' % package.parent_project
             elif package.error == 'need-merge-with-parent':
                 message = 'Broken link: requires a manual merge with %s' % package.parent_project
+            elif package.error == 'not-real-devel':
+                message = 'Should not exist here: %s' package.error_details
+            elif package.error == 'parent-without-devel':
+                message = 'Parent (%s/%s) has no devel project set' % (package.parent_project, package.parent_package)
             else:
                 if package.error_details:
                     message = 'Unknown error (%s): %s' % (package.error, package.error_details)
                 else:
                     message = 'Unknown error (%s)' % package.error
 
-        # FIXME bad_devel
-        if False:
-            # if package.parent_project or package.project.parent has the package, with a different devel
-            # FIXME: % project is wrong
-            message = 'Should not exist here: development project is %s' % project
-
         # FIXME should_devel
 # /search/package?match=devel/@project='GNOME:Factory'%20and%20(@project='openSUSE:Factory'%20or%20@project='openSUSE:Factory:Contrib'%20or%20@project='Moblin:Factory')
         if False:
             # FIXME: % project is wrong
-            message = 'Does not exist here, but is the development package for %s/%s' % (project, package)
+            message = 'Does not exist here, but is the devel package for %s/%s' % (project, package)
 
         if message:
             lines.append((project, package.name, message))
