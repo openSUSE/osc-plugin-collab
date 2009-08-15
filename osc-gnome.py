@@ -137,6 +137,50 @@ class OscGnomeReservation:
 #######################################################################
 
 
+class OscGnomeRequest():
+
+    req_id = -1
+    type = None
+    source_project = None
+    source_package = None
+    source_rev = None
+    dest_project = None
+    dest_package = None
+    state = None
+    by = None
+    at = None
+
+    def __init__(self, node):
+        self.req_id = int(node.get('id'))
+
+        # we only care about the first action here
+        action = node.find('action')
+        if action is None:
+            action = node.find('submit') # for old style requests
+
+        type = action.get('type', 'submit')
+
+        subnode = action.find('source')
+        if subnode is not None:
+            self.source_project = subnode.get('project')
+            self.source_package = subnode.get('package')
+            self.source_rev = subnode.get('rev')
+
+        subnode = action.find('target')
+        if subnode is not None:
+            self.target_project = subnode.get('project')
+            self.target_package = subnode.get('package')
+
+        subnode = action.find('state')
+        if subnode is not None:
+            self.state = subnode.get('name')
+            self.by = subnode.get('who')
+            self.at = subnode.get('when')
+
+
+#######################################################################
+
+
 class OscGnomeProject(dict):
 
     def __init__(self, node):
@@ -518,6 +562,7 @@ class GnomeCache:
 
     @classmethod
     def init(cls, parent, ignore_cache):
+        cls.Request = parent.OscGnomeRequest
         cls._import = parent.OscGnomeImport.m_import
         cls._ignore_cache = ignore_cache
 
@@ -700,102 +745,39 @@ class GnomeCache:
 
 
     @classmethod
+    def _obs_parse_request_list_internal(cls, file):
+        requests = []
+
+        if not file or not os.path.exists(file):
+            return requests
+
+        try:
+            collection = ET.parse(file).getroot()
+        except SyntaxError, e:
+            print >>sys.stderr, 'Cannot parse request list: %s' % (e.msg,)
+            return requests
+
+        for node in collection.findall('request'):
+            requests.append(cls.Request(node))
+
+        return requests
+
+
+    @classmethod
     def obs_get_request_list_from(cls, apiurl, project):
-        return cls._obs_get_request_list_internal(apiurl, project, 'source')
+        file = cls._obs_get_request_list_internal(apiurl, project, 'source')
+        return cls._obs_parse_request_list_internal(file)
 
 
     @classmethod
     def obs_get_request_list_to(cls, apiurl, project):
-        return cls._obs_get_request_list_internal(apiurl, project, 'target')
+        file = cls._obs_get_request_list_internal(apiurl, project, 'target')
+        return cls._obs_parse_request_list_internal(file)
 
 
     @classmethod
-    def get_obs_submit_request_list(cls, apiurl, project, include_request_id = False):
-        current_format = 2
-        filename = 'submitted-' + project
-
-        # Only download if it's more than 10-minutes old
-        if not cls._need_update(filename, 60 * 10):
-            fcache = open(os.path.join(cls._get_xdg_cache_dir(), filename))
-            format_line = fcache.readline()
-
-            if cls._is_same_format(format_line, current_format):
-                # we can use the cache
-                retval = []
-                while True:
-                    line = fcache.readline()
-                    if len(line) == 0:
-                        break
-                    (request_id, package, revision, empty) = line.split(';', 4)
-
-                    if include_request_id:
-                        retval.append((request_id, package))
-                    else:
-                        retval.append(package)
-
-                fcache.close()
-                return retval
-            else:
-                fcache.close()
-                # don't return: we'll download again
-
-        # no cache available
-        cls._print_message()
-
-        try:
-            _gnome_get_request_list = get_request_list
-        except NameError, e:
-            # in osc <= 0.117, get_request_list was named get_submit_request_list
-            _gnome_get_request_list = get_submit_request_list
-
-        # download the data
-        try:
-            submitted_packages = _gnome_get_request_list(apiurl, project, None)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get list of submissions to %s: %s' % (project, e.msg)
-            return []
-
-        lines = []
-        retval = []
-        for submitted in submitted_packages:
-            if submitted.state.name != 'new':
-                continue
-
-            if hasattr(submitted, 'actions'):
-                dest_package = submitted.actions[0].dst_package
-                src_rev = submitted.actions[0].src_rev
-            else:
-                # actions appeared with osc 0.118
-                dest_package = submitted.dst_package
-                if hasattr(submitted, 'src_rev'):
-                    src_rev = submitted.src_rev
-                # name of the attribute in osc < 0.117
-                elif hasattr(submitted, 'src_md5'):
-                    src_rev = submitted.src_md5
-                else:
-                    src_rev = ''
-
-            if include_request_id:
-                retval.append((submitted.reqid, dest_package))
-            else:
-                retval.append(dest_package)
-
-            lines.append('%s;%s;%s;' % (submitted.reqid, dest_package, src_rev))
-
-        # save the data in the cache
-        cls._write(filename, format_nb = current_format, lines_no_cr = lines)
-
-        return retval
-
-
-    @classmethod
-    def _is_same_format(cls, format_line, format_nb):
-        return format_line == cls._format_str + str(format_nb) + '\n'
-
-
-    @classmethod
-    def _write(cls, filename, format_nb = None, fin = None, lines = None, lines_no_cr = None):
-        if not fin and lines == None and lines_no_cr == None:
+    def _write(cls, filename, fin = None):
+        if not fin:
             print >>sys.stderr, 'Internal error when saving a cache: no data.'
             return False
 
@@ -812,9 +794,6 @@ class GnomeCache:
             os.unlink(cache)
         fout = open(cache, 'w')
 
-        if format_nb:
-            fout.write('%s%s\n' % (cls._format_str, format_nb))
-
         if fin:
             while True:
                 try:
@@ -826,18 +805,6 @@ class GnomeCache:
                     fout.close()
                     os.unlink(cache)
                     raise e
-            fout.close()
-            return True
-
-        if lines:
-            for line in lines:
-                fout.write(line)
-            fout.close()
-            return True
-
-        if lines_no_cr:
-            for line in lines_no_cr:
-                fout.write('%s\n' % line)
             fout.close()
             return True
 
@@ -898,8 +865,17 @@ def _gnome_needs_update(self, parent_version, devel_version, upstream_version):
     return self._gnome_compare_versions_a_gt_b(upstream_version, parent_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
 
 
-def _gnome_is_submitted(self, package, submitted_packages):
-    return package in submitted_packages
+def _gnome_is_submitted_to(self, package, submitted_packages):
+    for submitted_package in submitted_packages:
+        if submitted_package.target_package == package:
+            return True
+
+
+# FIXME: maybe we don't need this
+def _gnome_is_submitted_from(self, package, submitted_packages):
+    for submitted_package in submitted_packages:
+        if submitted_package.source_package == package:
+            return True
 
 
 #######################################################################
@@ -970,7 +946,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project)
+    submitted_packages = self.GnomeCache.obs_get_request_list_to(apiurl, project)
 
     parent_project = None
     packages = []
@@ -1004,7 +980,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
         package.upstream_version_print = package.upstream_version
 
-        if self._gnome_is_submitted(package.name, submitted_packages):
+        if self._gnome_is_submitted_to(package.name, submitted_packages):
             if exclude_submitted:
                 continue
             package.version_print += ' (s)'
@@ -1202,7 +1178,8 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         if not parent_project:
             return None
 
-        if self._gnome_is_submitted(delta_package, submitted_from_packages):
+        # FIXME: we chould check the submission is to the parent project
+        if self._gnome_is_submitted_from(delta_package, submitted_from_packages):
             if exclude_submitted:
                 return None
             message = 'Waits for approval in %s queue' % parent_project
@@ -1243,10 +1220,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
 
     # get the packages submitted from
-    if parent_project:
-        submitted_from_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, parent_project)
-    else:
-        submitted_from_packages = []
+    submitted_from_packages = self.GnomeCache.obs_get_request_list_from(apiurl, project)
 
     # get the packages with no upstream data
     no_upstream_packages = []
@@ -1256,7 +1230,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
                 no_upstream_packages.append(package)
 
     # get the packages submitted to, which need a review
-    submitted_to_packages = self.GnomeCache.get_obs_submit_request_list(apiurl, project, include_request_id=True)
+    submitted_to_packages = self.GnomeCache.obs_get_request_list_to(apiurl, project)
     # get errors
     (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
 
