@@ -1,7 +1,5 @@
 + Put server code in git.
-+ Make --xs the default for 'osc gnome t/ta'
-  For ta: it makes sense if the submitted revision is the current revision
-  in G:F.
++ Make --xs the default for 'osc gnome t'
   For t: maybe check the version in the home project?
 + add 'osc gnome validate/check': make sure that committing is fine
 + 'osc gnome update':
