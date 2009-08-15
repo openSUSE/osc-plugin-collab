@@ -150,6 +150,15 @@ class OscGnomeProject(dict):
             self.ignore_upstream = node.get('ignore_upstream') == 'true'
 
 
+    def strip_internal_links(self):
+        to_rm = []
+        for package in self.itervalues():
+            if package.parent_project == self.name:
+                to_rm.append(package.name)
+        for name in to_rm:
+            del self[name]
+
+
     def __eq__(self, other):
         return self.name == other.name
 
@@ -914,6 +923,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
     # get all versions of packages
     try:
         prj = self._gnome_api.get_project_details(project)
+        prj.strip_internal_links()
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
@@ -1125,6 +1135,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 
     try:
         prj = self._gnome_api.get_project_details(project)
+        prj.strip_internal_links()
     except self.OscGnomeWebError, e:
         print >>sys.stderr, e.msg
         return []
@@ -1136,6 +1147,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
     if prj.parent:
         try:
             prj_dict[prj.parent] = self._gnome_api.get_project_details(prj.parent)
+            prj_dict[prj.parent].strip_internal_links()
             should_devel_packages = [ package.name if package.parent_project == project for package in prj_dict[prj.parent].itervalues()]
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
