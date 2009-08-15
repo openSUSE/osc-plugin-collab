@@ -877,6 +877,13 @@ class SrcPackage(Base):
 
             match = SrcPackage.re_spec_version.match(line)
             if match:
+                # Ignore version if it's redefined for a second package.
+                # Test case: MozillaThunderbird.spec, where the main package
+                # has a version, and the enigmail subpackage has another
+                # version.
+                if self.version and len(self.packages) > 1:
+                    continue
+
                 self.version = subst_defines(match.group(1), defines)
                 defines['version'] = self.version
                 continue
