@@ -97,7 +97,7 @@ for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-latest | grep ':' | cut -
     fi
 done
 
-test -f $OBS_DISSECTOR_DIR/tmp/versions-fallback && cp $OBS_DISSECTOR_DIR/tmp/versions-fallback $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak
+test -f $OBS_DISSECTOR_DIR/tmp/versions-fallback && mv $OBS_DISSECTOR_DIR/tmp/versions-fallback $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak
 wget -q -nc -O $OBS_DISSECTOR_DIR/tmp/versions-fallback http://www.suse.de/~meissner/factory.upstream.lst
 if test $? -ne 0; then
     test -f $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak && cp $OBS_DISSECTOR_DIR/tmp/versions-fallback.bak $OBS_DISSECTOR_DIR/tmp/versions-fallback
