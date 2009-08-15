@@ -1182,7 +1182,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         try:
             prj_dict[prj.parent] = self._gnome_api.get_project_details(prj.parent)
             prj_dict[prj.parent].strip_internal_links()
-            should_devel_packages = [ package.name if package.parent_project == project for package in prj_dict[prj.parent].itervalues()]
+            should_devel_packages = [ package.name for package in prj_dict[prj.parent].itervalues() if package.parent_project == project ]
         except self.OscGnomeWebError, e:
             print >>sys.stderr, e.msg
 
@@ -1191,6 +1191,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
             should_devel_packages.remove(package.name)
 
         elif prj.parent and prj_dict[prj.parent] and prj_dict[prj.parent].has_key(package.name):
+            pass
             # TODO: not right: we need to check parent_package
 
 
