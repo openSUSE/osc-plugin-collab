@@ -907,17 +907,19 @@ def _gnome_needs_update(self, parent_version, devel_version, upstream_version):
     return self._gnome_compare_versions_a_gt_b(upstream_version, parent_version) and self._gnome_compare_versions_a_gt_b(upstream_version, devel_version)
 
 
-def _gnome_is_submitted_to(self, package, submitted_packages):
-    for submitted_package in submitted_packages:
-        if submitted_package.target_package == package:
-            return True
+def _gnome_find_request_to(self, package, requests):
+    for request in requests:
+        if request.target_package == package:
+            return request
+    return None
 
 
 # FIXME: maybe we don't need this
-def _gnome_is_submitted_from(self, package, submitted_packages):
-    for submitted_package in submitted_packages:
-        if submitted_package.source_package == package:
+def _gnome_has_request_from(self, package, requests):
+    for request in requests:
+        if request.source_package == package:
             return True
+    return False
 
 
 #######################################################################
@@ -988,7 +990,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    submitted_packages = self.OscGnomeObs.get_request_list_to(project)
+    requests_to = self.OscGnomeObs.get_request_list_to(project)
 
     parent_project = None
     packages = []
@@ -1022,7 +1024,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
         package.upstream_version_print = package.upstream_version
 
-        if self._gnome_is_submitted_to(package.name, submitted_packages):
+        if self._gnome_find_request_to(package.name, requests_to) != None:
             if exclude_submitted:
                 continue
             package.version_print += ' (s)'
@@ -1105,85 +1107,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
-def _gnome_get_packages_with_bad_meta(self, apiurl, project):
-    # get the list of packages that are actually in project
-    try:
-        (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return ([], [])
-
-    # no parent, then no bad meta :-)
-    if not parent_project:
-        return ([], [])
-
-    # get metadata from the parent project to be able to know if packages
-    # shouldn't belong there
-    metafile = self.OscGnomeObs.get_meta(parent_project)
-    if not metafile:
-        return ([], [])
-
-    try:
-        collection = ET.parse(metafile).getroot()
-    except SyntaxError, e:
-        print >>sys.stderr, 'Cannot parse %s: %s' % (metafile, e.msg)
-        return ([], [])
-
-    devel_dict = {}
-    # list of packages that should exist in project but that don't
-    bad_devel_packages = []
-    # list of packages that exist in project but that shouldn't
-    should_devel_packages = []
-
-    # save all packages that should be in project and also create a db of
-    # package->develproject
-    for package in collection.findall('package'):
-        name = package.get('name')
-        devel = package.find('devel')
-        if devel != None:
-            devel_project = devel.get('project')
-        else:
-            devel_project = ''
-
-        devel_dict[name] = devel_project
-        if devel_project == project:
-            should_devel_packages.append(name)
-
-    # now really create the list of packages that should be in project and
-    # create the list of packages that shouldn't stay in project
-    for (package, parent_version, devel_version, upstream_version) in packages_versions:
-        if package in should_devel_packages:
-            should_devel_packages.remove(package)
-        if not devel_dict.has_key(package):
-            # FIXME: this should be not-in-parent error, in create-database
-            # test-case right now: compiz-fusion-plugins-unsupported
-            continue
-        devel_project = devel_dict[package]
-        if devel_project != project:
-            bad_devel_packages.append((package, devel_project))
-
-    bad_devel_packages.sort()
-    should_devel_packages.sort()
-
-    return (bad_devel_packages, should_devel_packages)
-
-
-#######################################################################
-
-
-def _gnome_min_package(self, packages):
-    min_package = None
-    for package in packages:
-        if package:
-            if min_package:
-                min_package = min(package, min_package)
-            else:
-                min_package = package
-
-    return min_package
-
-
-def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
+def _gnome_todoadmin_internal(self, apiurl, project):
 
     try:
         prj = self._gnome_api.get_project_details(project)
@@ -1192,173 +1116,62 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
         print >>sys.stderr, e.msg
         return []
 
-    # Dictionary for quick access to all potential parent projects
-    prj_dict = {}
-    should_devel_packages = []
-
-    if prj.parent:
-        try:
-            prj_dict[prj.parent] = self._gnome_api.get_project_details(prj.parent)
-            prj_dict[prj.parent].strip_internal_links()
-            should_devel_packages = [ package.name for package in prj_dict[prj.parent].itervalues() if package.parent_project == project ]
-        except self.OscGnomeWebError, e:
-            print >>sys.stderr, e.msg
-
-    for package in prj.itervalues():
-        if package.name in should_devel_packages:
-            should_devel_packages.remove(package.name)
-
-        elif prj.parent and prj_dict[prj.parent] and prj_dict[prj.parent].has_key(package.name):
-            pass
-            # TODO: not right: we need to check parent_package
-
-
-
-
-
-    def _message_delta_package(delta_package, submitted_from_packages, parent_project):
-        if not parent_project:
-            return None
-
-        # FIXME: we chould check the submission is to the parent project
-        if self._gnome_is_submitted_from(delta_package, submitted_from_packages):
-            if exclude_submitted:
-                return None
-            message = 'Waits for approval in %s queue' % parent_project
-        else:
-            message = 'Needs to be submitted to %s' % parent_project
-        return message
-
-    def _message_error_package(error_package_tuple, parent_project):
-        (error_package, error, details) = error_package_tuple
-
-        # we use this variable in cases where it should always be set, but to
-        # be on the safe side, we fallback to a generic name
-        if not parent_project:
-            parent_project = 'parent project'
-
-        if error == 'not-link':
-            message = 'Is not a link to %s' % parent_project
-        elif error == 'not-in-parent':
-            message = 'Does not exist in %s' % parent_project
-        elif error == 'need-merge-with-parent':
-            message = 'Requires a manual merge with %s' % parent_project
-        else:
-            if details:
-                message = 'Unknown error: %s' % details
-            else:
-                message = 'Unknown error'
-        return message
-
-
-    # get packages with a delta
-    try:
-        packages_with_delta = self._gnome_api.get_packages_with_delta(project)
-        packages_with_errors = self._gnome_api.get_packages_with_error(project)
-    except self.OscGnomeWebError, e:
-        print >>sys.stderr, e.msg
-        return []
-
-    (parent_project, ignore_upstream, packages_versions) = self._gnome_api.get_project_details(project)
-
-    # get the packages submitted from
-    submitted_from_packages = self.OscGnomeObs.get_request_list_from(project)
-
-    # get the packages with no upstream data
-    no_upstream_packages = []
-    if not ignore_upstream:
-        for (package, parent_version, devel_version, upstream_version) in packages_versions:
-            if upstream_version == '':
-                no_upstream_packages.append(package)
-
-    # get the packages submitted to, which need a review
-    submitted_to_packages = self.OscGnomeObs.get_request_list_to(project)
-    # get errors
-    (bad_devel_packages, should_devel_packages) = self._gnome_get_packages_with_bad_meta(apiurl, project)
+    # get the packages submitted to/from
+    requests_to = self.OscGnomeObs.get_request_list_to(project)
+    requests_from = self.OscGnomeObs.get_request_list_from(project)
 
     lines = []
 
-    # We try to make the processing the the loop below more automatic, so it's
-    # easy to add a new source of messages.
-    # The items in this array contain:
-    #  + name of the set,
-    #  + array
-    #  + current index in the array from this set,
-    #  + length of the array of this set,
-    #  + if the items in the array of this set are tuples and if yes, which
-    #    item in the tuple is the package name
-    #  + a function to generate the message for this package
-    # Note that the order in this array also gives priority: if a package is
-    # in two sets, the first set wins.
-    package_data_sets = []
-    package_data_sets.append(['should_devel', should_devel_packages, 0, len(should_devel_packages), -1,
-                              lambda prj, pkg, tpl: 'Does not exist in %s while it should' % prj])
-    package_data_sets.append(['bad_devel', bad_devel_packages, 0, len(bad_devel_packages), 0,
-                              lambda prj, pkg, tpl: 'Development project is not %s (%s)' % (prj, tpl[1])])
-    package_data_sets.append(['error', packages_with_errors, 0, len(packages_with_errors), 0,
-                              lambda prj, pkg, tpl: _message_error_package(tpl, parent_project)])
-    package_data_sets.append(['submitted_to', submitted_to_packages, 0, len(submitted_to_packages), 1,
-                              lambda prj, pkg, tpl: 'Needs to be reviewed (submission id: %s)' % tpl[0]])
-    package_data_sets.append(['delta', packages_with_delta, 0, len(packages_with_delta), -1,
-                              lambda prj, pkg, tpl: _message_delta_package(pkg, submitted_from_packages, parent_project)])
-    package_data_sets.append(['no_upstream_data', no_upstream_packages, 0, len(no_upstream_packages), -1,
-                              lambda prj, pkg, tpl: 'No upstream data available'])
+    for package in prj.itervalues():
+        message = None
 
-    # This is an ugly loop to merge all the lists we have to get an output
-    # in alphabetical order AND also to not have more than one message for
-    # one given package.
-    while True:
-        current_packages = {}
-        current_tuples = {}
-        for data_set in package_data_sets:
-            name = data_set[0]
-            array = data_set[1]
-            index = data_set[2]
-            max = data_set[3]
-            tuple_index = data_set[4]
+        # We look for all possible messages. The last message overwrite the
+        # first, so we start with the less important ones.
 
-            if index >= max:
-                current_packages[name] = None
+        if not package.upstream_version:
+            message = 'No upstream data available'
+
+        if package.has_delta:
+            # FIXME: we should check the request is to the parent project
+            if not self._gnome_has_request_from(package.name, requests_from):
+                message = 'Needs to be submitted to %s' % package.parent_project
+
+        request = self._gnome_find_request_to(package.name, requests_to)
+        if request is not None:
+            message = 'Needs to be reviewed (request id: %s)' % request.req_id
+
+        if package.error:
+            # FIXME: differentiate between:
+            #  - exists in package.project.parent, but is not a link at all
+            #  - doesn't exist in package.project.parent
+            #  First case is "this should be a link" while second case is
+            #  "maybe you want to submit it?"
+            if package.error == 'not-link':
+                message = 'Is not a link to %s (note: there might be a delta between the two)' % (package.parent_project or package.project.parent)
+            elif package.error == 'not-in-parent':
+                message = 'Broken link: does not exist in %s' % package.parent_project
+            elif package.error == 'need-merge-with-parent':
+                message = 'Broken link: requires a manual merge with %s' % package.parent_project
             else:
-                if tuple_index == -1:
-                    current_packages[name] = array[index]
-                    current_tuples[name] = None
+                if package.error_details:
+                    message = 'Unknown error (%s): %s' % (package.error, package.error_details)
                 else:
-                    current_packages[name] = array[index][tuple_index]
-                    current_tuples[name] = array[index]
+                    message = 'Unknown error (%s)' % package.error
 
-        package = self._gnome_min_package(current_packages.values())
+        # FIXME bad_devel
+        if False:
+            # if package.parent_project or package.project.parent has the package, with a different devel
+            # FIXME: % project is wrong
+            message = 'Should not exist here: development project is %s' % project
 
-        if not package:
-            break
+        # FIXME should_devel
+# /search/package?match=devel/@project='GNOME:Factory'%20and%20(@project='openSUSE:Factory'%20or%20@project='openSUSE:Factory:Contrib'%20or%20@project='Moblin:Factory')
+        if False:
+            # FIXME: % project is wrong
+            message = 'Does not exist here, but is the development package for %s/%s' % (project, package)
 
-        line_added = False
-
-        for data_set in package_data_sets:
-            name = data_set[0]
-            message_func = data_set[5]
-
-            # the package is not from this data set
-            if package != current_packages[name]:
-                continue
-
-            # we're done with this package in this set
-            data_set[2] += 1
-
-            # if we already added a line for this package,
-            # just skip it in this data set
-            if line_added:
-                continue
-
-            message = message_func(project, package, current_tuples[name])
-            # sometime, we might ignore a specific message, depending on the
-            # configuration (eg, do not show submitted packages)
-            if not message:
-                continue
-
-            lines.append((package, message))
-            line_added = True
-
+        if message:
+            lines.append((project, package.name, message))
 
     return lines
 
@@ -1366,11 +1179,11 @@ def _gnome_todoadmin_internal(self, apiurl, project, exclude_submitted):
 #######################################################################
 
 
-def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
+def _gnome_todoadmin(self, apiurl, projects):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todoadmin_internal(apiurl, project, exclude_submitted)
+        project_lines = self._gnome_todoadmin_internal(apiurl, project)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -1382,13 +1195,14 @@ def _gnome_todoadmin(self, apiurl, projects, exclude_submitted):
     lines.sort()
 
     # print headers
-    title = ('Package', 'Details')
-    (max_package, max_details) = self._gnome_table_get_maxs(title, lines)
+    title = ('Project', 'Package', 'Details')
+    (max_project, max_package, max_details) = self._gnome_table_get_maxs(title, lines)
     # trim to a reasonable max
+    max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_details = min(max_details, 65)
 
-    print_line = self._gnome_table_get_template(max_package, max_details)
+    print_line = self._gnome_table_get_template(max_project, max_package, max_details)
     self._gnome_table_print_header(print_line, title)
     for line in lines:
         print print_line % line
@@ -3120,8 +2934,8 @@ def do_gnome(self, subcmd, opts, *args):
     branch, checking out, download of the latest upstream tarball, .spec
     edition, etc.). The package will be checked out in the current directory.
 
-    "forward" (or "f") will forward a submission request to the project to
-    parent project. This includes the step of accepting the request first.
+    "forward" (or "f") will forward a request to the project to parent project.
+    This includes the step of accepting the request first.
 
     "build" (or "b") will commit the local changes of the package in
     the current directory and wait for the build to succeed on the build
@@ -3133,7 +2947,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     Usage:
         osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
-        osc gnome todoadmin [--exclude-submitted|--xs] [--project=PROJECT]
+        osc gnome todoadmin [--project=PROJECT]
 
         osc gnome listreserved
         osc gnome isreserved PKG
@@ -3233,7 +3047,7 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(apiurl, projects, opts.exclude_submitted)
+        self._gnome_todoadmin(apiurl, projects)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved(projects)
