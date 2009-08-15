@@ -1121,6 +1121,7 @@ class CreateDb:
             os.unlink(self.tmpfilename)
 
         self.dbconn = sqlite3.connect(self.tmpfilename)
+        self.dbconn.text_factory = sqlite3.OptimizedUnicode
         self.cursor = self.dbconn.cursor()
 
         self._create_tables()
