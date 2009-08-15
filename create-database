@@ -1121,6 +1121,7 @@ class CreateDb:
             os.unlink(self.tmpfilename)
 
         self.dbconn = sqlite3.connect(self.tmpfilename)
+        self.dbconn.row_factory = sqlite3.Row
         self.dbconn.text_factory = sqlite3.OptimizedUnicode
         self.cursor = self.dbconn.cursor()
 
@@ -1175,6 +1176,89 @@ class CreateDb:
         # It's apparently not needed to commit each time to keep a low-memory
         # profile, and committing is slowing things down.
         #self.dbconn.commit()
+
+    def analyze_for_errors(self):
+        '''
+            Do some post-commit analysis on the db, to find new errors now that
+            we have all the data.
+        '''
+
+        def _not_link_and_not_in_parent(cache, cursor_helper, row):
+            '''
+                Check if this is not a link and if it doesn't exist in the
+                potential parent. In that case, the error is that maybe it
+                should exist there
+            '''
+            if row['obs_error'] != 'not-link':
+                return False
+
+            project_parent = row['project_parent']
+            if not project_parent:
+                return False
+
+            try:
+                cache[project_parent][row['name']]
+            except KeyError:
+                error = 'not-link-not-in-parent'
+                details = ''
+                cursor_helper.execute('''UPDATE %s SET obs_error = ?, obs_error_details = ? WHERE id = ?;''' % SrcPackage.sql_table, (error, details, row['id']))
+                return True
+
+            return False
+
+        def _not_real_devel_package(cache, cursor_helper, row):
+            '''
+                Look if the link package should really exist there (ie, is it
+                the devel package of the parent?)
+            '''
+            link_project = row['link_project']
+            link_package = row['link_package'] or row['name']
+
+            # internal link inside a project (to build another spec file)
+            if link_project == row['project']:
+                return False
+
+            try:
+                (devel_project, devel_package) = cache[link_project][link_package]
+                if devel_project != row['project'] or devel_package != row['name']:
+                    if devel_project:
+                        error = 'not-real-devel'
+                        details = 'development project is %s' % devel_project
+                    else:
+                        error = 'parent-without-devel'
+                        details = ''
+                    cursor_helper.execute('''UPDATE %s SET obs_error = ?, obs_error_details = ? WHERE id = ?;''' % SrcPackage.sql_table, (error, details, row['id']))
+                    return True
+
+            except KeyError:
+                # this happens when the parent package doesn't exist; link will
+                # be broken, so we already have an error
+                pass
+
+            return False
+
+
+        cache = {}
+        cursor_helper = self.dbconn.cursor()
+
+        self.cursor.execute('''SELECT name FROM %s;''' % Project.sql_table)
+        for row in self.cursor:
+            cache[row['name']] = {}
+
+        self.cursor.execute('''SELECT A.name, A.devel_project, A.devel_package, B.name AS project FROM %s AS A, %s AS B WHERE A.project = B.id;''' % (SrcPackage.sql_table, Project.sql_table))
+        for row in self.cursor:
+            devel_package = row['devel_package'] or row['name']
+            cache[row['project']][row['name']] = (row['devel_project'], devel_package)
+
+        self.cursor.execute('''SELECT A.id, A.name, A.obs_error, A.link_project, A.link_package, B.name AS project, B.parent AS project_parent FROM %s AS A, %s AS B WHERE A.project = B.id;''' % (SrcPackage.sql_table, Project.sql_table))
+        for row in self.cursor:
+            if _not_link_and_not_in_parent(cache, cursor_helper, row):
+                continue
+
+            if _not_real_devel_package(cache, cursor_helper, row):
+                continue
+
+        cursor_helper.close()
 
     def close(self):
         if self.cursor:
@@ -1234,6 +1318,9 @@ def main(args):
         del project
 
     del db_cache
+
+    db.analyze_for_errors()
+
     db.close()
 
 
