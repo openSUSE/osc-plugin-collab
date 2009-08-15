@@ -405,7 +405,7 @@ class OscGnomeObs:
 
         # download the data (cache for 10 minutes)
         url = makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
-        filename = 'submitted-%s-%s' % (type, project)
+        filename = 'requests-%s-%s' % (type, project)
         max_age_minutes = 60 * 10
 
         return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
@@ -2134,7 +2134,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
     try:
         int_request_id = int(request_id)
     except ValueError:
-        print >>sys.stderr, '%s is not a valid submission request id.' % (request_id)
+        print >>sys.stderr, '%s is not a valid request id.' % (request_id)
         return
 
     request = self.OscGnomeObs.get_request(request_id)
@@ -2740,9 +2740,9 @@ def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward 
         return
 
 
-    # get the message that will be used for commit & submitreq
+    # get the message that will be used for commit & request
     if not msg:
-        msg = edit_message(footer='This message will be used for commit (if necessary) and submitreq.\n')
+        msg = edit_message(footer='This message will be used for the commit (if necessary) and the request.\n')
 
     committed = False
 
