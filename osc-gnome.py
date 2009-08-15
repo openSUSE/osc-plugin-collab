@@ -2478,6 +2478,7 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
     try:
         root = ET.parse(history).getroot()
     except SyntaxError:
+        history.close ()
         return (False, None, None)
 
     max_time = 0
@@ -2491,6 +2492,8 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
 
         srcmd5 = node.get('srcmd5')
         rev = node.get('rev')
+
+    history.close ()
 
     return (True, srcmd5, rev)
 
