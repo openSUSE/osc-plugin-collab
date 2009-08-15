@@ -355,6 +355,10 @@ class OscGnomePackage:
         return self._compare_versions_a_gt_b(self.upstream_version, self.parent_version) and self._compare_versions_a_gt_b(self.upstream_version, self.version)
 
 
+    def is_broken_link(self):
+        return self.error in [ 'not-in-parent', 'need-merge-with-parent' ]
+
+
     def __eq__(self, other):
         return self.name == other.name and self.project and other.project and self.project.name == other.project.name
 
@@ -1027,7 +1031,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
         if not package.needs_update():
             continue
 
-        broken_link = package.error not in [ None, 'not-link' ] or (package.error == 'not-link' and package.error_details)
+        broken_link = package.is_broken_link()
 
         if package.parent_version or package.is_link:
             package.parent_version_print = package.parent_version or ''
