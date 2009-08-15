@@ -583,6 +583,36 @@ class GnomeCache:
 
         return open(os.path.join(cls._get_xdg_cache_dir(), filename))
 
+
+    @classmethod
+    def _get_obs_internal(cls, url, file, what):
+        try:
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get %s: %s' % (what, e.msg)
+            return None
+
+        fout = open(file, 'w')
+
+        while True:
+            try:
+                bytes = fin.read(500 * 1024)
+                if len(bytes) == 0:
+                    break
+                fout.write(bytes)
+            except urllib2.HTTPError, e:
+                fin.close()
+                fout.close()
+                os.unlink(file)
+                print >>sys.stderr, 'Error while downloading %s: %s' % (what, e.msg)
+                return False
+
+        fin.close()
+        fout.close()
+
+        return True
+
+
     @classmethod
     def get_obs_meta(cls, apiurl, project):
         filename = 'meta-' + project
@@ -601,32 +631,11 @@ class GnomeCache:
         cls._print_message()
 
         # download the data
-        try:
-            url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
-            fin = http_GET(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get metadata of packages in %s: %s' % (project, e.msg)
+        url = makeurl(apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+        if cls._get_obs_internal(url, cache, 'metadata of packages in %s' % project):
+            return cache
+        else:
             return None
-
-        fout = open(cache, 'w')
-
-        while True:
-            try:
-                bytes = fin.read(500 * 1024)
-                if len(bytes) == 0:
-                    break
-                fout.write(bytes)
-            except urllib2.HTTPError, e:
-                fin.close()
-                fout.close()
-                os.unlink(cache)
-                print >>sys.stderr, 'Error while downloading metadata: %s' % e.msg
-                return None
-
-        fin.close()
-        fout.close()
-
-        return cache
 
 
     @classmethod
@@ -647,32 +656,11 @@ class GnomeCache:
         cls._print_message()
 
         # download the data
-        try:
-            url = makeurl(apiurl, ['build', project, '_result'])
-            fin = http_GET(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get build results of packages in  %s: %s' % (project, e.msg)
+        url = makeurl(apiurl, ['build', project, '_result'])
+        if cls._get_obs_internal(url, cache, 'build results of packages in %s' % project):
+            return cache
+        else:
             return None
-
-        fout = open(cache, 'w')
-
-        while True:
-            try:
-                bytes = fin.read(500 * 1024)
-                if len(bytes) == 0:
-                    break
-                fout.write(bytes)
-            except urllib2.HTTPError, e:
-                fin.close()
-                fout.close()
-                os.unlink(cache)
-                print >>sys.stderr, 'Error while downloading build results: %s' % e.msg
-                return None
-
-        fin.close()
-        fout.close()
-
-        return cache
 
 
     @classmethod
