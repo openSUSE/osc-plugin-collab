@@ -664,6 +664,52 @@ class GnomeCache:
 
 
     @classmethod
+    def _obs_get_request_list_internal(cls, apiurl, project, type):
+        if type == 'source':
+            what = 'list of requests from %s' % project
+        elif type == 'target':
+            what = 'list of requests to %s' % project
+        else:
+            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
+            return None
+
+        filename = 'submitted-%s-%s' % (type, project)
+        cache = os.path.join(cls._get_xdg_cache_dir(), filename)
+
+        # Only download if it's more than 10-minutes old
+        if not cls._need_update(filename, 60 * 10):
+            return cache
+
+        urllib = cls._import('urllib')
+        if not urllib:
+            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
+            return None
+
+        # no cache available
+        cls._print_message()
+
+        # download the data
+        match = 'state/@name=\'new\''
+        match += '%20and%20'
+        match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
+        url = makeurl(apiurl, ['search', 'request'], ['match=%s' % match])
+        if cls._get_obs_internal(url, cache, what):
+            return cache
+        else:
+            return None
+
+
+    @classmethod
+    def obs_get_request_list_from(cls, apiurl, project):
+        return cls._obs_get_request_list_internal(apiurl, project, 'source')
+
+
+    @classmethod
+    def obs_get_request_list_to(cls, apiurl, project):
+        return cls._obs_get_request_list_internal(apiurl, project, 'target')
+
+
+    @classmethod
     def get_obs_submit_request_list(cls, apiurl, project, include_request_id = False):
         current_format = 2
         filename = 'submitted-' + project
