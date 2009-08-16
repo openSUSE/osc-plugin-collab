@@ -422,7 +422,7 @@ class OscGnomeObs:
 
         # download the data (cache for 2 days)
         url = makeurl(cls.apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
-        filename = 'meta-' + project
+        filename = '%s-meta.obs' % project
         max_age_minutes = 3600 * 24 * 2
 
         return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
@@ -434,7 +434,7 @@ class OscGnomeObs:
 
         # download the data (cache for 2 hours)
         url = makeurl(cls.apiurl, ['build', project, '_result'])
-        filename = 'build-results-' + project
+        filename = '%s-build-results.obs' % project
         max_age_minutes = 3600 * 2
 
         return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
@@ -461,7 +461,7 @@ class OscGnomeObs:
 
         # download the data (cache for 10 minutes)
         url = makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
-        filename = 'requests-%s-%s' % (type, project)
+        filename = '%s-requests-%s.obs' % (project, type)
         max_age_minutes = 60 * 10
 
         return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
