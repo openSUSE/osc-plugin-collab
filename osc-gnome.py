@@ -1180,7 +1180,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
             if package.error == 'not-link':
                 message = 'Is not a link to %s (check for delta and make link)' % package.project.parent
             elif package.error == 'not-link-not-in-parent':
-                message = 'Is not a link, and is not in %s (submit it?)' % package.project.parent
+                message = 'Is not a link, and is not in %s (maybe submit it)' % package.project.parent
             elif package.error == 'not-in-parent':
                 message = 'Broken link: does not exist in %s' % package.parent_project
             elif package.error == 'need-merge-with-parent':
