@@ -1134,7 +1134,7 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
-def _gnome_todoadmin_internal(self, apiurl, project):
+def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
 
     try:
         prj = self._gnome_api.get_project_details(project)
@@ -1155,8 +1155,11 @@ def _gnome_todoadmin_internal(self, apiurl, project):
         # We look for all possible messages. The last message overwrite the
         # first, so we start with the less important ones.
 
-        if not package.upstream_version:
-            message = 'No upstream data available'
+        if include_upstream:
+            if not package.upstream_version:
+                message = 'No upstream data available'
+            elif not package.upstream_url:
+                message = 'No URL for upstream tarball available'
 
         if package.has_delta:
             # FIXME: we should check the request is to the parent project
@@ -1203,11 +1206,11 @@ def _gnome_todoadmin_internal(self, apiurl, project):
 #######################################################################
 
 
-def _gnome_todoadmin(self, apiurl, projects):
+def _gnome_todoadmin(self, apiurl, projects, include_upstream):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todoadmin_internal(apiurl, project)
+        project_lines = self._gnome_todoadmin_internal(apiurl, project, include_upstream)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -2911,6 +2914,9 @@ def _gnome_ensure_email(self, apiurl):
 @cmdln.option('--ir', '--ignore-reserved', action='store_true',
               dest='ignore_reserved',
               help='ignore the reservation state of the package if necessary')
+@cmdln.option('--iu', '--include-upstream', action='store_true',
+              dest='include_upstream',
+              help='include reports about missing upstream data')
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
@@ -2970,7 +2976,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     Usage:
         osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
-        osc gnome todoadmin [--project=PROJECT]
+        osc gnome todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc gnome listreserved
         osc gnome isreserved PKG
@@ -3071,7 +3077,7 @@ def do_gnome(self, subcmd, opts, *args):
         self._gnome_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(apiurl, projects)
+        self._gnome_todoadmin(apiurl, projects, opts.include_upstream)
 
     elif cmd in ['listreserved', 'lr']:
         self._gnome_listreserved(projects)
