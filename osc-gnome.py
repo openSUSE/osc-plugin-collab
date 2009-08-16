@@ -192,6 +192,7 @@ class OscGnomeProject(dict):
         self.name = node.get('name')
         self.parent = node.get('parent')
         self.ignore_upstream = node.get('ignore_upstream') == 'true'
+        self.toplevel = node.get('toplevel') == 'true'
         self.missing_packages = []
 
 
@@ -1164,7 +1165,12 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
         if package.has_delta:
             # FIXME: we should check the request is to the parent project
             if not self._gnome_has_request_from(package.name, requests_from):
-                message = 'Needs to be submitted to %s' % package.parent_project
+                if not package.project.toplevel:
+                    message = 'Needs to be submitted to %s' % package.parent_project
+                else:
+                    # packages in a toplevel project don't necessarily have to
+                    # be submitted
+                    message = 'Is a link with delta (maybe submit changes to %s)' % package.parent_project
 
         request = self._gnome_find_request_to(package.name, requests_to)
         if request is not None:
