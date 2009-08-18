@@ -142,6 +142,7 @@ $basedir/obs-checkout $OBS_CHECKOUT_ARGS \
 $basedir/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:STABLE:2.26 \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.26" \
+    --metadata "ignore-fallback=true" \
     || (echo "Error in obs-checkout."; exit 1)
 
 $basedir/obs-checkout --make-directory-stable "$DEST_CO"

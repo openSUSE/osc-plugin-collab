@@ -264,7 +264,7 @@ class DataCache:
         except KeyError:
             return ''
 
-    def get_upstream_data(self, upstream_version_file, srcpackage):
+    def get_upstream_data(self, upstream_version_file, srcpackage, ignore_fallback):
         upstream_name = self._get_upstream_name(srcpackage)
 
         (version, url) = self._get_upstream_data_from_db(upstream_version_file, upstream_name)
@@ -272,8 +272,10 @@ class DataCache:
         if not version:
             if self._is_without_upstream(upstream_name):
                 version = '--'
-            else:
+            elif not ignore_fallback:
                 version = self._get_upstream_version_fallback(srcpackage)
+            else:
+                version = ''
 
         return (upstream_name, version, url)
 
@@ -742,7 +744,7 @@ class SrcPackage(Base):
         if not db_cache:
             return
 
-        (self.upstream_name, self.upstream_version, self.upstream_url) = db_cache.get_upstream_data(self.project.versionfile, self.name)
+        (self.upstream_name, self.upstream_version, self.upstream_url) = db_cache.get_upstream_data(self.project.versionfile, self.name, self.project.ignore_fallback)
 
     def _analyze_files(self):
         linkfile = os.path.join(self.path, '_link')
@@ -1000,6 +1002,7 @@ class Project(Base):
         self.parent = ''
         self.versionfile = ''
         self.meta_devel = {}
+        self.ignore_fallback = False
         self._read_config()
 
     def sql_add(self, cursor):
@@ -1037,6 +1040,10 @@ class Project(Base):
                     self.versionfile = versionfile
                 else:
                     print >> sys.stderr, 'Version file specified in %s does not exist: %s' % (config_file, versionfile)
+
+            elif line.startswith('ignore-fallback='):
+                ignore_fallback = line[len('ignore-fallback='):]
+                self.ignore_fallback = ignore_fallback.lower() in [ '1', 'true' ]
 
             else:
                 print >> sys.stderr, 'Unknown config option in %s: %s' % (config_file, line)
