@@ -604,3 +604,9 @@ update-desktop-files:
 xdg-user-dirs:
 xdg-utils:
 xesam-tools:
+
+
+#### Stuff from various other places:
+libebml:
+libmatroska:
+mkvtoolnix:

@@ -366,3 +366,9 @@ sawfish:sf:32|17
 specto:httpls:http://specto.sourceforge.net/?go=download
 spheres-and-crystals:sf:64400|72957
 tangerine:lp:tangerine
+
+
+#### Stuff from various other places:
+libebml:httpls:http://dl.matroska.org/downloads/libebml/
+libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
+mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
