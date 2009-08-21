@@ -1474,7 +1474,19 @@ def _gnome_download_internal(self, url, dest_dir):
 
     parsed_url = urlparse.urlparse(url)
     basename = os.path.basename(parsed_url.path)
-    if basename == '':
+    if not basename:
+        # FIXME: workaround until we get a upstream_basename property for each
+        # package (would be needed for upstream hosted on sf, anyway).
+        # Currently needed for mkvtoolnix.
+        for field in parsed_url.query.split('&'):
+            try:
+                (key, value) = field.split('=', 1)
+            except ValueError:
+                value = field
+            if value.endswith('.gz') or value.endswith('.tgz') or value.endswith('.bz2'):
+                basename = os.path.basename(value)
+
+    if not basename:
         raise self.OscGnomeDownloadError('Cannot download %s: no basename in URL.' % url)
 
     dest_file = os.path.join(dest_dir, basename)
