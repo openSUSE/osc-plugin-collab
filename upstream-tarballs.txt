@@ -283,7 +283,9 @@ telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
 telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
-telepathy-sofiasip:sf:191149
+telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
+# Used to be:
+#telepathy-sofiasip:sf:191149
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
