@@ -1879,7 +1879,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
             if old_source.find(key) != -1:
                 old_source = old_source.replace('%%{%s}' % key, defines[key])
                 old_source = old_source.replace('%%%s' % key, defines[key])
-                if key not in [ 'name', '_name' 'version' ]:
+                if key not in [ 'name', '_name', 'version' ]:
                     define_in_source = True
 
 
