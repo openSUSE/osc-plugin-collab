@@ -463,7 +463,8 @@ liferea:
 link-grammar:
 metatheme-Sonar:gtk2-metatheme-sonar
 metatheme-gilouche:gtk2-metatheme-gilouche
-mission-control:telepathy-mission-control
+# This is the old mission-control. Not needed anymore (unless we want to package the 4.x branch)
+#mission-control:telepathy-mission-control
 mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
@@ -523,6 +524,7 @@ telepathy-gabble:
 telepathy-glib:
 telepathy-haze:
 telepathy-idle:
+telepathy-mission-control:
 telepathy-python:python-telepathy
 telepathy-salut:
 telepathy-sofiasip:

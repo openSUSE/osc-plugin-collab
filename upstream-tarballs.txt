@@ -281,6 +281,7 @@ telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabb
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
+telepathy-mission-control:httpls:http://telepathy.freedesktop.org/releases/telepathy-mission-control/
 telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
