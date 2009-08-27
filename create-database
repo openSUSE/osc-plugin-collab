@@ -800,10 +800,21 @@ class SrcPackage(Base):
             #print >> sys.stderr, '%s: cannot analyze spec because there\'s no path' % self.name
             return
 
-#FIXME: maybe have SpecPackage between SrcPackage and Package? For libxml2, we have two times the upstream tarball as source because we have two spec files. This also means we write self.version twice
+        # Only look at one spec file, since the build service works this way.
+        # By default, we take the spec file with the same name as the source
+        # package; if it doesn't exist, we take the first one.
+        bestfile = None
+
         for file in self.files:
             if file.filename[-5:] == '.spec':
-                self._analyze_spec(os.path.join(os.sep, self.path, file.filename))
+                if file.filename[:-5] == self.name:
+                    bestfile = file.filename
+                    break
+                elif not bestfile:
+                    bestfile = file.filename
+
+        if bestfile:
+            self._analyze_spec(os.path.join(os.sep, self.path, bestfile))
 
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
