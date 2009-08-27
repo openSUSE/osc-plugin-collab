@@ -35,7 +35,13 @@
 #
 
 # This is a hack to have osc ignore the file we create in a package directory.
-exclude_stuff.append('osc-gnome.*')
+try:
+    import conf
+    conf.DEFAULTS['exclude_glob'] += ' osc-gnome.*'
+except:
+    # compatibility with osc <= 0.121
+    exclude_stuff.append('osc-gnome.*')
+
 
 class OscGnomeError(Exception):
     def __init__(self, value):
