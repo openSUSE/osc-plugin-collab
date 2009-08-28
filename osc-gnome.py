@@ -1794,17 +1794,17 @@ def _gnome_gz_to_bz2_internal(self, file):
 def _gnome_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
-        return (False, None, False)
+        return (False, None, None, False)
     elif not os.path.isfile(spec_file):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
-        return (False, None, False)
+        return (False, None, None, False)
 
     tempfile = self.OscGnomeImport.m_import('tempfile')
     re = self.OscGnomeImport.m_import('re')
 
     if not tempfile or not re:
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
-        return (False, None, False)
+        return (False, None, None, False)
 
     re_spec_header = re.compile('^(# spec file for package \S* \(Version )\S*(\).*)', re.IGNORECASE)
     re_spec_define = re.compile('^%define\s+(\S*)\s+(\S*)', re.IGNORECASE)
@@ -1816,6 +1816,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 
     defines = {}
     old_source = None
+    old_version = None
     define_in_source = False
 
     fin = open(spec_file, 'r')
@@ -1852,6 +1853,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
         match = re_spec_version.match(line)
         if match:
             defines['version'] = match.group(2)
+            old_version = match.group(2)
             os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
@@ -1880,7 +1882,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 
     os.rename(tmp, spec_file)
 
-    if old_source:
+    if old_source and old_source.find('%') != -1:
         for key in defines.keys():
             if old_source.find(key) != -1:
                 old_source = old_source.replace('%%{%s}' % key, defines[key])
@@ -1888,8 +1890,14 @@ def _gnome_update_spec(self, spec_file, upstream_version):
                 if key not in [ 'name', '_name', 'version' ]:
                     define_in_source = True
 
+    if old_version and old_version.find('%') != -1:
+        for key in defines.keys():
+            if old_version.find(key) != -1:
+                old_version = old_version.replace('%%{%s}' % key, defines[key])
+                old_version = old_version.replace('%%%s' % key, defines[key])
 
-    return (True, old_source, define_in_source)
+
+    return (True, old_source, old_version, define_in_source)
 
 
 #######################################################################
@@ -2042,11 +2050,15 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    (updated, old_tarball, define_in_source) = self._gnome_update_spec(spec_file, pkg.upstream_version)
+    (updated, old_tarball, old_version, define_in_source) = self._gnome_update_spec(spec_file, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
         old_tarball_with_dir = None
+
+    if old_version and old_version == pkg.upstream_version:
+        print 'Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % package
+        return
 
     if define_in_source:
         print 'WARNING: the Source tag in %s is using some define that might not be valid anymore.' % spec_file
