@@ -321,7 +321,7 @@ simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
 ## X11:common:Factory
 bundle-lang-common:upstream:
 bundle-lang-gnome:upstream:
-bundle-lang-gnome-extra:upstream:
+bundle-lang-gnome-extras:upstream:
 bundle-lang-kde:upstream:
 bundle-lang-other:upstream:
 chmlib:httpls:http://www.jedrea.com/chmlib/

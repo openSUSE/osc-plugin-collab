@@ -583,7 +583,7 @@ simple-ccsm:
 
 bundle-lang-common:
 bundle-lang-gnome:
-bundle-lang-gnome-extra:
+bundle-lang-gnome-extras:
 bundle-lang-kde:
 bundle-lang-other:
 chmlib:
