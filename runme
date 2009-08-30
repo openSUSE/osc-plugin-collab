@@ -38,7 +38,7 @@
 basedir=`dirname $0`
 
 if test "x$OBS_DISSECTOR_DIR" = "x"; then
-    OBS_DISSECTOR_DIR=/tmp/obs-dissector
+    export OBS_DISSECTOR_DIR=/tmp/obs-dissector
 fi
 
 mkdir -p $OBS_DISSECTOR_DIR
