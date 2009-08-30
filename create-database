@@ -725,6 +725,8 @@ class SrcPackage(Base):
 
         # not booleans, since sqlite doesn't support this
         self.is_link = 0
+        # 1 means link delta, 2 means delta but without link so a human being
+        # has to look on how to synchronize this
         self.has_delta = 0
         self.error = ''
         self.error_details = ''
@@ -761,6 +763,7 @@ class SrcPackage(Base):
                     if node.find('delete') != None or node.find('apply') != None:
                         self.has_delta = 1
 
+        root = None
         files = os.path.join(self.path, '_files-expanded')
         if not os.path.exists(files):
             files = os.path.join(self.path, '_files')
@@ -794,6 +797,133 @@ class SrcPackage(Base):
                         continue
                     self.files.append(File(self, filename))
 
+        # if we want to force the parent to the project parent, then we do it
+        # only if the package is a link and there's no error in the link
+        # package
+        if self.project.force_project_parent and self.is_link and not self.error and (self.link_project != self.project.name or self.link_package != self.name):
+            self.is_link = 0
+            self.has_delta = 0
+            self.link_project = None
+            self.link_package = None
+
+        if not self.is_link and root is not None:
+            self._compare_raw_files_with_parent(root)
+
+    def _compare_raw_files_with_parent(self, root):
+        '''
+            Compare the content of two source packages by looking at the
+            present files, and their md5sum.
+        '''
+        if root is None:
+            return
+        if not self.project.parent:
+            return
+
+        parent_project_dir = os.path.join(self.project.parent_directory, self.project.parent, self.name)
+        files = os.path.join(parent_project_dir, '_files-expanded')
+        if not os.path.exists(files):
+            files = os.path.join(parent_project_dir, '_files')
+
+        if not os.path.exists(files):
+            return
+
+        try:
+            parent_root = ET.parse(files).getroot()
+        except SyntaxError, e:
+            print >> sys.stderr, 'Cannot parse %s: %s' % (files, e.msg)
+            return
+
+        parent_files = {}
+        for node in parent_root.findall('entry'):
+            filename = node.get('name')
+            if filename in IGNORE_FILES:
+                continue
+            md5 = node.get('md5')
+            parent_files[filename] = md5
+
+        for node in root.findall('entry'):
+            filename = node.get('name')
+            if filename in IGNORE_FILES:
+                continue
+            md5 = node.get('md5')
+            if not parent_files.has_key(filename):
+                self.has_delta = 2
+                break
+            elif md5 != parent_files[filename]:
+                if self.project.lenient_delta:
+                    # we don't really care about .changes here
+                    if filename[-8:] == '.changes':
+                        continue
+                    # for spec files, we try to ignore the irrelevant stuff
+                    elif filename[-5:] == '.spec':
+                        spec = os.path.join(self.path, filename)
+                        parent_spec = os.path.join(parent_project_dir, filename)
+                        if self._specs_are_different_lenient(spec, parent_spec):
+                            print filename
+                            self.has_delta = 2
+                            break
+                else:
+                    self.has_delta = 2
+                    break
+            del parent_files[filename]
+
+    def _specs_are_different_lenient(self, spec_a, spec_b):
+        '''
+            Compare two spec files, but ignore some useless changes:
+             - ignore space changes
+             - ignore blank lines
+             - ignore comments
+             - ignore Release tag
+             - ignore %changelog
+        '''
+
+        def strip_useless_spaces(s):
+            return ' '.join(s.split())
+
+        def get_next_line(file):
+            while True:
+                line = file.readline()
+                if len(line) == 0:
+                    return None
+                line = line[:-1]
+                line = strip_useless_spaces(line)
+                if not line:
+                    continue
+                if line[0] == '#':
+                    continue
+                if line.startswith('Release:'):
+                    continue
+                if line == '%changelog':
+                    return None
+                return line
+
+        if not os.path.exists(spec_a) or not os.path.exists(spec_b):
+            return True
+
+        file_a = open(spec_a)
+        file_b = open(spec_b)
+
+        diff = False
+
+        while True:
+            line_a = get_next_line(file_a)
+            line_b = get_next_line(file_b)
+            if line_a is None:
+                if line_b is not None:
+                    diff = True
+                break
+            if line_b is None:
+                diff = True
+                break
+            if line_a != line_b:
+                diff = True
+                break
+
+        file_a.close()
+        file_b.close()
+
+        return diff
+
     def _analyze_specs(self):
         if not self.path:
 #FIXME verbose
@@ -814,7 +944,7 @@ class SrcPackage(Base):
                     bestfile = file.filename
 
         if bestfile:
-            self._analyze_spec(os.path.join(os.sep, self.path, bestfile))
+            self._analyze_spec(os.path.join(self.path, bestfile))
 
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
@@ -1013,7 +1143,22 @@ class Project(Base):
         self.parent = ''
         self.versionfile = ''
         self.meta_devel = {}
+
+        # Should we ignore fallback upstream versions for packages in this
+        # project?
         self.ignore_fallback = False
+        # Should we ignore the project/package a link points to and always use
+        # the configured parent project of this project as parent for the
+        # packages?
+        # This is useful for projects that are kept in sync with copypac
+        # instead of linkpac (and when the devel project links to another
+        # parent project). Eg: parent is openSUSE:Published, but package is
+        # openSUSE:Devel/test and links to openSUSE:11.1/test
+        self.force_project_parent = False
+        # When comparing non-link packages to find a delta, should we ignore
+        # changes in .changes or useless changes in .spec?
+        self.lenient_delta = False
+
         self._read_config()
 
     def sql_add(self, cursor):
@@ -1055,6 +1200,14 @@ class Project(Base):
             elif line.startswith('ignore-fallback='):
                 ignore_fallback = line[len('ignore-fallback='):]
                 self.ignore_fallback = ignore_fallback.lower() in [ '1', 'true' ]
+
+            elif line.startswith('force-project-parent='):
+                force_project_parent = line[len('force-project-parent='):]
+                self.force_project_parent = force_project_parent.lower() in [ '1', 'true' ]
+
+            elif line.startswith('lenient-delta='):
+                lenient_delta = line[len('lenient-delta='):]
+                self.lenient_delta = lenient_delta.lower() in [ '1', 'true' ]
 
             else:
                 print >> sys.stderr, 'Unknown config option in %s: %s' % (config_file, line)
