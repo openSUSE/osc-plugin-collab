@@ -302,6 +302,10 @@ class OscGnomePackage:
                 if link.get('delta') == 'true':
                     self.has_delta = True
 
+            delta = node.find('delta')
+            if delta is not None:
+                self.has_delta = True
+
             error = node.find('error')
             if error is not None:
                 self.error = error.get('type')
@@ -1174,7 +1178,9 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
         if package.has_delta:
             # FIXME: we should check the request is to the parent project
             if not self._gnome_has_request_from(package.name, requests_from):
-                if not package.project.is_toplevel():
+                if not package.is_link:
+                    message = 'Is not a link to %s and has a delta (synchronize the packages)' % package.project.parent
+                elif not package.project.is_toplevel():
                     message = 'Needs to be submitted to %s' % package.parent_project
                 else:
                     # packages in a toplevel project don't necessarily have to
@@ -1187,7 +1193,9 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
 
         if package.error:
             if package.error == 'not-link':
-                message = 'Is not a link to %s (check for delta and make link)' % package.project.parent
+                # if package has a delta, then we already set a message above
+                if not package.has_delta:
+                    message = 'Is not a link to %s (make link)' % package.project.parent
             elif package.error == 'not-link-not-in-parent':
                 message = 'Is not a link, and is not in %s (maybe submit it)' % package.project.parent
             elif package.error == 'not-in-parent':
