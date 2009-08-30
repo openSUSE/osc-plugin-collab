@@ -348,7 +348,8 @@ xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
 
 ## GNOME:Contrib
 UPnP-Inspector:httpls:http://coherence.beebits.net/download/
-byzanz:httpls:http://people.freedesktop.org/~company/byzanz/
+# Moved to fgo
+#byzanz:httpls:http://people.freedesktop.org/~company/byzanz/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 computertemp:httpls:http://computertemp.berlios.de/download.php
 dopi:httpls:http://www.snorp.net/files/dopi/
