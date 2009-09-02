@@ -3027,6 +3027,8 @@ def _collab_get_config(self, apiurl, key, default = None):
     apiurl = self._collab_get_compatible_apiurl_for_config(config, apiurl)
     if apiurl and config.has_option(apiurl, key):
         return config.get(apiurl, key)
+    elif config.has_option('general', key):
+        return config.get('general', key)
     else:
         return default
 
