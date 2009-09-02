@@ -43,7 +43,7 @@ except:
     exclude_stuff.append('osc-gnome.*')
 
 
-class OscGnomeError(Exception):
+class OscCollabError(Exception):
     def __init__(self, value):
         self.msg = value
 
@@ -51,20 +51,20 @@ class OscGnomeError(Exception):
         return repr(self.msg)
 
 
-class OscGnomeWebError(OscGnomeError):
+class OscCollabWebError(OscCollabError):
     pass
 
-class OscGnomeDownloadError(OscGnomeError):
+class OscCollabDownloadError(OscCollabError):
     pass
 
-class OscGnomeNewsError(OscGnomeError):
+class OscCollabNewsError(OscCollabError):
     pass
 
-class OscGnomeCompressError(OscGnomeError):
+class OscCollabCompressError(OscCollabError):
     pass
 
 
-def _gnome_exception_print(self, e, message = ''):
+def _collab_exception_print(self, e, message = ''):
     if message == None:
         message = ''
 
@@ -79,7 +79,7 @@ def _gnome_exception_print(self, e, message = ''):
 #######################################################################
 
 
-class OscGnomeImport:
+class OscCollabImport:
 
     _imported_modules = {}
 
@@ -97,7 +97,7 @@ class OscGnomeImport:
 #######################################################################
 
 
-class OscGnomeReservation:
+class OscCollabReservation:
 
     project = None
     package = None
@@ -143,7 +143,7 @@ class OscGnomeReservation:
 #######################################################################
 
 
-class OscGnomeRequest():
+class OscCollabRequest():
 
     req_id = -1
     type = None
@@ -192,7 +192,7 @@ class OscGnomeRequest():
 #######################################################################
 
 
-class OscGnomeProject(dict):
+class OscCollabProject(dict):
 
     def __init__(self, node):
         self.name = node.get('name')
@@ -241,13 +241,13 @@ class OscGnomeProject(dict):
 #######################################################################
 
 
-class OscGnomePackage:
+class OscCollabPackage:
 
     _import = None
 
     @classmethod
     def init(cls, parent):
-        cls._import = parent.OscGnomeImport.m_import
+        cls._import = parent.OscCollabImport.m_import
 
 
     def __init__(self, node, project):
@@ -409,7 +409,7 @@ class OscGnomePackage:
 #######################################################################
 
 
-class OscGnomeObs:
+class OscCollabObs:
 
     Cache = None
     Request = None
@@ -419,9 +419,9 @@ class OscGnomeObs:
 
     @classmethod
     def init(cls, parent, apiurl):
-        cls.Cache = parent.GnomeCache
-        cls.Request = parent.OscGnomeRequest
-        cls._import = parent.OscGnomeImport.m_import
+        cls.Cache = parent.OscCollabCache
+        cls.Request = parent.OscCollabRequest
+        cls._import = parent.OscCollabImport.m_import
         cls.apiurl = apiurl
 
 
@@ -537,13 +537,13 @@ class OscGnomeObs:
     @classmethod
     def change_request_state(cls, id, new_state, message):
         try:
-            _gnome_change_request_state = change_request_state
+            _collab_change_request_state = change_request_state
         except NameError, e:
             # in osc <= 0.120, change_request_state was named
             # change_submit_request_state
-            _gnome_change_request_state = change_submit_request_state
+            _collab_change_request_state = change_submit_request_state
 
-        result = _gnome_change_request_state(cls.apiurl, id, new_state, message)
+        result = _collab_change_request_state(cls.apiurl, id, new_state, message)
 
         root = ET.fromstring(result)
         if not 'code' in root.keys() or root.get('code') != 'ok':
@@ -556,18 +556,18 @@ class OscGnomeObs:
 #######################################################################
 
 
-class OscGnomeApi:
+class OscCollabApi:
 
     _api_url = 'http://tmp.vuntz.net/opensuse-packages/api'
     _supported_api = '0.1'
     _supported_api_major = '0'
 
     def __init__(self, parent, apiurl = None):
-        self.Error = parent.OscGnomeWebError
-        self.Cache = parent.GnomeCache
-        self.Reservation = parent.OscGnomeReservation
-        self.Project = parent.OscGnomeProject
-        self.Package = parent.OscGnomePackage
+        self.Error = parent.OscCollabWebError
+        self.Cache = parent.OscCollabCache
+        self.Reservation = parent.OscCollabReservation
+        self.Project = parent.OscCollabProject
+        self.Package = parent.OscCollabPackage
         if apiurl:
             self._api_url = apiurl
 
@@ -790,7 +790,7 @@ class OscGnomeApi:
 #######################################################################
 
 
-class GnomeCache:
+class OscCollabCache:
 
     _cache_dir = None
     _format_str = '# osc-gnome-format: '
@@ -800,7 +800,7 @@ class GnomeCache:
 
     @classmethod
     def init(cls, parent, ignore_cache):
-        cls._import = parent.OscGnomeImport.m_import
+        cls._import = parent.OscCollabImport.m_import
         cls._ignore_cache = ignore_cache
         cls._cleanup_old_cache()
 
@@ -960,7 +960,7 @@ class GnomeCache:
 #######################################################################
 
 
-def _gnome_is_program_in_path(self, program):
+def _collab_is_program_in_path(self, program):
     if not os.environ.has_key('PATH'):
         return False
 
@@ -974,14 +974,14 @@ def _gnome_is_program_in_path(self, program):
 #######################################################################
 
 
-def _gnome_find_request_to(self, package, requests):
+def _collab_find_request_to(self, package, requests):
     for request in requests:
         if request.target_package == package:
             return request
     return None
 
 
-def _gnome_has_request_from(self, package, requests):
+def _collab_has_request_from(self, package, requests):
     for request in requests:
         if request.source_package == package:
             return True
@@ -991,7 +991,7 @@ def _gnome_has_request_from(self, package, requests):
 #######################################################################
 
 
-def _gnome_table_get_maxs(self, init, list):
+def _collab_table_get_maxs(self, init, list):
     if len(list) == 0:
         return ()
 
@@ -1007,7 +1007,7 @@ def _gnome_table_get_maxs(self, init, list):
     return tuple(maxs)
 
 
-def _gnome_table_get_template(self, *args):
+def _collab_table_get_template(self, *args):
     if len(args) == 0:
         return ''
 
@@ -1021,7 +1021,7 @@ def _gnome_table_get_template(self, *args):
     return template
 
 
-def _gnome_table_print_header(self, template, title):
+def _collab_table_print_header(self, template, title):
     if len(title) == 0:
         return
 
@@ -1039,24 +1039,24 @@ def _gnome_table_print_header(self, template, title):
 #######################################################################
 
 
-def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
+def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
     # get all versions of packages
     try:
-        prj = self._gnome_api.get_project_details(project)
+        prj = self._collab_api.get_project_details(project)
         prj.strip_internal_links()
-    except self.OscGnomeWebError, e:
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
 
     # get the list of reserved package
     try:
-        reserved = self._gnome_api.get_reserved_packages((project,))
+        reserved = self._collab_api.get_reserved_packages((project,))
         reserved_packages = [ reservation.package for reservation in reserved ]
-    except self.OscGnomeWebError, e:
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
 
     # get the packages submitted
-    requests_to = self.OscGnomeObs.get_request_list_to(project)
+    requests_to = self.OscCollabObs.get_request_list_to(project)
 
     parent_project = None
     packages = []
@@ -1085,7 +1085,7 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 
         package.upstream_version_print = package.upstream_version
 
-        if self._gnome_find_request_to(package.name, requests_to) != None:
+        if self._collab_find_request_to(package.name, requests_to) != None:
             if exclude_submitted:
                 continue
             package.version_print += ' (s)'
@@ -1110,12 +1110,12 @@ def _gnome_todo_internal(self, apiurl, project, exclude_reserved, exclude_submit
 #######################################################################
 
 
-def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
+def _collab_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     packages = []
     parent_project = None
 
     for project in projects:
-        (new_parent_project, project_packages) = self._gnome_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
+        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
         if not project_packages:
             continue
         packages.extend(project_packages)
@@ -1143,10 +1143,10 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     # print headers
     if parent_project:
         title = ('Package', parent_project, project_header, 'Upstream')
-        (max_package, max_parent, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
+        (max_package, max_parent, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
     else:
         title = ('Package', project_header, 'Upstream')
-        (max_package, max_devel, max_upstream) = self._gnome_table_get_maxs(title, lines)
+        (max_package, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
         max_parent = 0
 
     # trim to a reasonable max
@@ -1154,10 +1154,10 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
     max_version = min(max(max(max_parent, max_devel), max_upstream), 20)
 
     if parent_project:
-        print_line = self._gnome_table_get_template(max_package, max_version, max_version, max_version)
+        print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version)
     else:
-        print_line = self._gnome_table_get_template(max_package, max_version, max_version)
-    self._gnome_table_print_header(print_line, title)
+        print_line = self._collab_table_get_template(max_package, max_version, max_version)
+    self._collab_table_print_header(print_line, title)
     for line in lines:
         if not parent_project:
             (package, parent_version, devel_version, upstream_version) = line
@@ -1168,18 +1168,18 @@ def _gnome_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
 #######################################################################
 
 
-def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
+def _collab_todoadmin_internal(self, apiurl, project, include_upstream):
 
     try:
-        prj = self._gnome_api.get_project_details(project)
+        prj = self._collab_api.get_project_details(project)
         prj.strip_internal_links()
-    except self.OscGnomeWebError, e:
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return []
 
     # get the packages submitted to/from
-    requests_to = self.OscGnomeObs.get_request_list_to(project)
-    requests_from = self.OscGnomeObs.get_request_list_from(project)
+    requests_to = self.OscCollabObs.get_request_list_to(project)
+    requests_from = self.OscCollabObs.get_request_list_from(project)
 
     lines = []
 
@@ -1197,7 +1197,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
 
         if package.has_delta:
             # FIXME: we should check the request is to the parent project
-            if not self._gnome_has_request_from(package.name, requests_from):
+            if not self._collab_has_request_from(package.name, requests_from):
                 if not package.is_link:
                     message = 'Is not a link to %s and has a delta (synchronize the packages)' % package.project.parent
                 elif not package.project.is_toplevel():
@@ -1207,7 +1207,7 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
                     # be submitted
                     message = 'Is a link with delta (maybe submit changes to %s)' % package.parent_project
 
-        request = self._gnome_find_request_to(package.name, requests_to)
+        request = self._collab_find_request_to(package.name, requests_to)
         if request is not None:
             message = 'Needs to be reviewed (request id: %s)' % request.req_id
 
@@ -1249,11 +1249,11 @@ def _gnome_todoadmin_internal(self, apiurl, project, include_upstream):
 #######################################################################
 
 
-def _gnome_todoadmin(self, apiurl, projects, include_upstream):
+def _collab_todoadmin(self, apiurl, projects, include_upstream):
     lines = []
 
     for project in projects:
-        project_lines = self._gnome_todoadmin_internal(apiurl, project, include_upstream)
+        project_lines = self._collab_todoadmin_internal(apiurl, project, include_upstream)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -1266,14 +1266,14 @@ def _gnome_todoadmin(self, apiurl, projects, include_upstream):
 
     # print headers
     title = ('Project', 'Package', 'Details')
-    (max_project, max_package, max_details) = self._gnome_table_get_maxs(title, lines)
+    (max_project, max_package, max_details) = self._collab_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_details = min(max_details, 65)
 
-    print_line = self._gnome_table_get_template(max_project, max_package, max_details)
-    self._gnome_table_print_header(print_line, title)
+    print_line = self._collab_table_get_template(max_project, max_package, max_details)
+    self._collab_table_print_header(print_line, title)
     for line in lines:
         print print_line % line
 
@@ -1281,10 +1281,10 @@ def _gnome_todoadmin(self, apiurl, projects, include_upstream):
 #######################################################################
 
 
-def _gnome_listreserved(self, projects):
+def _collab_listreserved(self, projects):
     try:
-        reserved_packages = self._gnome_api.get_reserved_packages(projects)
-    except self.OscGnomeWebError, e:
+        reserved_packages = self._collab_api.get_reserved_packages(projects)
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -1296,14 +1296,14 @@ def _gnome_listreserved(self, projects):
     # if changing the order here, then we need to change __getitem__ of
     # Reservation in the same way
     title = ('Project', 'Package', 'Reserved by')
-    (max_project, max_package, max_username) = self._gnome_table_get_maxs(title, reserved_packages)
+    (max_project, max_package, max_username) = self._collab_table_get_maxs(title, reserved_packages)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_username = min(max_username, 28)
 
-    print_line = self._gnome_table_get_template(max_project, max_package, max_username)
-    self._gnome_table_print_header(print_line, title)
+    print_line = self._collab_table_get_template(max_project, max_package, max_username)
+    self._collab_table_print_header(print_line, title)
 
     for reservation in reserved_packages:
         if reservation.user:
@@ -1313,10 +1313,10 @@ def _gnome_listreserved(self, projects):
 #######################################################################
 
 
-def _gnome_isreserved(self, projects, package):
+def _collab_isreserved(self, projects, package):
     try:
-        reservation = self._gnome_api.is_package_reserved(projects, package)
-    except self.OscGnomeWebError, e:
+        reservation = self._collab_api.is_package_reserved(projects, package)
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -1329,11 +1329,11 @@ def _gnome_isreserved(self, projects, package):
 #######################################################################
 
 
-def _gnome_reserve(self, projects, packages, username):
+def _collab_reserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_api.reserve_package(projects, package, username)
-        except self.OscGnomeWebError, e:
+            self._collab_api.reserve_package(projects, package, username)
+        except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1345,11 +1345,11 @@ def _gnome_reserve(self, projects, packages, username):
 #######################################################################
 
 
-def _gnome_unreserve(self, projects, packages, username):
+def _collab_unreserve(self, projects, packages, username):
     for package in packages:
         try:
-            self._gnome_api.unreserve_package(projects, package, username)
-        except self.OscGnomeWebError, e:
+            self._collab_api.unreserve_package(projects, package, username)
+        except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1359,15 +1359,15 @@ def _gnome_unreserve(self, projects, packages, username):
 #######################################################################
 
 
-def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+def _collab_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
     # is it reserved?
     try:
-        reservation = self._gnome_api.is_package_reserved((project,), package)
+        reservation = self._collab_api.is_package_reserved((project,), package)
         if reservation:
             reserved_by = reservation.user
         else:
             reserved_by = None
-    except self.OscGnomeWebError, e:
+    except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return False
 
@@ -1381,11 +1381,11 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
     # package not reserved
     elif not reserved_by and not no_reserve:
         try:
-            self._gnome_api.reserve_package((project,), package, username)
+            self._collab_api.reserve_package((project,), package, username)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
             print '    osc gnome unreserve %s' % package
-        except self.OscGnomeWebError, e:
+        except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             if not ignore_reserved:
                 return False
@@ -1423,7 +1423,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
             print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (package, obs_package.name, obs_package.prjname)
             return False
 
-        if self._gnome_osc_package_pending_commit(obs_package):
+        if self._collab_osc_package_pending_commit(obs_package):
             print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (package,)
             return False
 
@@ -1441,7 +1441,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
             print 'Package %s has been updated.' % package
         except Exception, e:
             message = 'Error while updating package %s: ' % package
-            self._gnome_exception_print(e, message)
+            self._collab_exception_print(e, message)
             return False
 
     else:
@@ -1456,7 +1456,7 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
             print 'Package %s has been checked out.' % package
         except Exception, e:
             message = 'Error while checking out package %s: ' % package
-            self._gnome_exception_print(e, message)
+            self._collab_exception_print(e, message)
             return False
 
     return True
@@ -1465,10 +1465,10 @@ def _gnome_setup_internal(self, apiurl, username, project, package, ignore_reser
 #######################################################################
 
 
-def _gnome_get_package_with_valid_project(self, projects, package):
+def _collab_get_package_with_valid_project(self, projects, package):
     try:
-        pkg = self._gnome_api.get_package_details(projects, package)
-    except self.OscGnomeWebError, e:
+        pkg = self._collab_api.get_package_details(projects, package)
+    except self.OscCollabWebError, e:
         pkg = None
 
     if pkg is None or pkg.project is None or not pkg.project.name:
@@ -1481,16 +1481,16 @@ def _gnome_get_package_with_valid_project(self, projects, package):
 #######################################################################
 
 
-def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
+def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
     if len(projects) == 1:
         project = projects[0]
     else:
-        pkg = self._gnome_get_package_with_valid_project(projects, package)
+        pkg = self._collab_get_package_with_valid_project(projects, package)
         if not pkg:
             return
         project = pkg.project.name
 
-    if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
+    if not self._collab_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
     print 'Package %s has been prepared for work.' % package
 
@@ -1498,13 +1498,13 @@ def _gnome_setup(self, apiurl, username, projects, package, ignore_reserved = Fa
 #######################################################################
 
 
-def _gnome_download_internal(self, url, dest_dir):
+def _collab_download_internal(self, url, dest_dir):
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
-    urlparse = self.OscGnomeImport.m_import('urlparse')
+    urlparse = self.OscCollabImport.m_import('urlparse')
     if not urlparse:
-        raise self.OscGnomeDownloadError('Cannot download %s: incomplete python installation.' % url)
+        raise self.OscCollabDownloadError('Cannot download %s: incomplete python installation.' % url)
 
     parsed_url = urlparse.urlparse(url)
     basename = os.path.basename(parsed_url.path)
@@ -1521,7 +1521,7 @@ def _gnome_download_internal(self, url, dest_dir):
                 basename = os.path.basename(value)
 
     if not basename:
-        raise self.OscGnomeDownloadError('Cannot download %s: no basename in URL.' % url)
+        raise self.OscCollabDownloadError('Cannot download %s: no basename in URL.' % url)
 
     dest_file = os.path.join(dest_dir, basename)
     # we download the file again if it already exists. Maybe the upstream
@@ -1533,7 +1533,7 @@ def _gnome_download_internal(self, url, dest_dir):
     try:
         fin = urllib2.urlopen(url)
     except urllib2.HTTPError, e:
-        raise self.OscGnomeDownloadError('Cannot download %s: %s' % (url, e.msg))
+        raise self.OscCollabDownloadError('Cannot download %s: %s' % (url, e.msg))
 
     fout = open(dest_file, 'wb')
 
@@ -1547,7 +1547,7 @@ def _gnome_download_internal(self, url, dest_dir):
             fin.close()
             fout.close()
             os.unlink(dest_file)
-            raise self.OscGnomeDownloadError('Error while downloading %s: %s' % (url, e.msg))
+            raise self.OscCollabDownloadError('Error while downloading %s: %s' % (url, e.msg))
 
     fin.close()
     fout.close()
@@ -1558,7 +1558,7 @@ def _gnome_download_internal(self, url, dest_dir):
 #######################################################################
 
 
-def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
+def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     def _cleanup(old, new, tmpdir):
         if old:
             old.close()
@@ -1597,8 +1597,8 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
             tar.extract(tarinfo, path)
 
     def _diff_files(old, new, dest):
-        difflib = self.OscGnomeImport.m_import('difflib')
-        shutil = self.OscGnomeImport.m_import('shutil')
+        difflib = self.OscCollabImport.m_import('difflib')
+        shutil = self.OscCollabImport.m_import('shutil')
 
         if not new:
             return (False, False)
@@ -1663,13 +1663,13 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
         return (True, True)
 
 
-    tempfile = self.OscGnomeImport.m_import('tempfile')
-    shutil = self.OscGnomeImport.m_import('shutil')
-    tarfile = self.OscGnomeImport.m_import('tarfile')
-    difflib = self.OscGnomeImport.m_import('difflib')
+    tempfile = self.OscCollabImport.m_import('tempfile')
+    shutil = self.OscCollabImport.m_import('shutil')
+    tarfile = self.OscCollabImport.m_import('tarfile')
+    difflib = self.OscCollabImport.m_import('difflib')
 
     if not tempfile or not shutil or not tarfile or not difflib:
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: incomplete python installation.')
+        raise self.OscCollabNewsError('Cannot extract NEWS information: incomplete python installation.')
 
     tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
 
@@ -1692,10 +1692,10 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
             new = tarfile.open(new_tarball)
         except tarfile.TarError, e:
             _cleanup(old, new, tmpdir)
-            raise self.OscGnomeNewsError('Error when opening %s: %s' % (new_tarball_basename, e))
+            raise self.OscCollabNewsError('Error when opening %s: %s' % (new_tarball_basename, e))
     else:
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: no new tarball.')
+        raise self.OscCollabNewsError('Cannot extract NEWS information: no new tarball.')
 
     # make sure we have at least a subdirectory in tmpdir, since we'll extract
     # files from two tarballs that might conflict
@@ -1711,7 +1711,7 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
         _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
     except (tarfile.ReadError, EOFError):
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: %s is not a valid tarball.' % err_tarball)
+        raise self.OscCollabNewsError('Cannot extract NEWS information: %s is not a valid tarball.' % err_tarball)
 
     if old:
         old.close()
@@ -1723,17 +1723,17 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
     # find toplevel NEWS & ChangeLog in the new tarball
     if not os.path.exists(new_dir):
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+        raise self.OscCollabNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
 
     new_dir_files = os.listdir(new_dir)
     if len(new_dir_files) != 1:
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise self.OscCollabNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_subdir = os.path.join(new_dir, new_dir_files[0])
     if not os.path.isdir(new_subdir):
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise self.OscCollabNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_news = os.path.join(new_subdir, 'NEWS')
     if not os.path.exists(new_news) or not os.path.isfile(new_news):
@@ -1744,7 +1744,7 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
 
     if not new_news and not new_changelog:
         _cleanup(old, new, tmpdir)
-        raise self.OscGnomeNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+        raise self.OscCollabNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
 
     # find toplevel NEWS & ChangeLog in the old tarball
     # not fatal
@@ -1783,19 +1783,19 @@ def _gnome_extract_news_internal(self, directory, old_tarball, new_tarball):
 #######################################################################
 
 
-def _gnome_gz_to_bz2_internal(self, file):
+def _collab_gz_to_bz2_internal(self, file):
     if file.endswith('.gz'):
         dest_file = file[:-3] + '.bz2'
     elif file.endswith('.tgz'):
         dest_file = file[:-4] + '.tar.bz2'
     else:
-        raise self.OscGnomeCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
+        raise self.OscCollabCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
 
-    gzip = self.OscGnomeImport.m_import('gzip')
-    bz2 = self.OscGnomeImport.m_import('bz2')
+    gzip = self.OscCollabImport.m_import('gzip')
+    bz2 = self.OscCollabImport.m_import('bz2')
 
     if not gzip or not bz2:
-        raise self.OscGnomeCompressError('Cannot recompress %s as bz2: incomplete python installation.' % os.path.basename(file))
+        raise self.OscCollabCompressError('Cannot recompress %s as bz2: incomplete python installation.' % os.path.basename(file))
 
     if os.path.exists(dest_file):
         os.unlink(dest_file)
@@ -1819,7 +1819,7 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
-def _gnome_subst_defines(self, s, defines):
+def _collab_subst_defines(self, s, defines):
     '''Replace macros like %{version} and %{name} in strings. Useful
        for sources and patches '''
     for key in defines.keys():
@@ -1830,7 +1830,7 @@ def _gnome_subst_defines(self, s, defines):
     return s
 
 
-def _gnome_update_spec(self, spec_file, upstream_version):
+def _collab_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
         return (False, None, None, False)
@@ -1838,8 +1838,8 @@ def _gnome_update_spec(self, spec_file, upstream_version):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
         return (False, None, None, False)
 
-    tempfile = self.OscGnomeImport.m_import('tempfile')
-    re = self.OscGnomeImport.m_import('re')
+    tempfile = self.OscCollabImport.m_import('tempfile')
+    re = self.OscCollabImport.m_import('re')
 
     if not tempfile or not re:
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
@@ -1879,7 +1879,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 
         match = re_spec_define.match(line)
         if match:
-            defines[match.group(1)] = self._gnome_subst_defines(match.group(2), defines)
+            defines[match.group(1)] = self._collab_subst_defines(match.group(2), defines)
             os.write(fdout, line)
             continue
 
@@ -1892,7 +1892,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
         match = re_spec_version.match(line)
         if match:
             defines['version'] = match.group(2)
-            old_version = self._gnome_subst_defines(match.group(2), defines)
+            old_version = self._collab_subst_defines(match.group(2), defines)
             os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
@@ -1935,7 +1935,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 #######################################################################
 
 
-def _gnome_update_changes(self, changes_file, upstream_version, email):
+def _collab_update_changes(self, changes_file, upstream_version, email):
     if not os.path.exists(changes_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(changes_file)
         return False
@@ -1943,9 +1943,9 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(changes_file)
         return False
 
-    tempfile = self.OscGnomeImport.m_import('tempfile')
-    time = self.OscGnomeImport.m_import('time')
-    locale = self.OscGnomeImport.m_import('locale')
+    tempfile = self.OscCollabImport.m_import('tempfile')
+    time = self.OscCollabImport.m_import('time')
+    locale = self.OscCollabImport.m_import('locale')
 
     if not tempfile or not time or not locale:
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(changes_file)
@@ -1988,14 +1988,14 @@ def _gnome_update_changes(self, changes_file, upstream_version, email):
 #######################################################################
 
 
-def _gnome_quilt_package(self, package, spec_file):
+def _collab_quilt_package(self, package, spec_file):
     def _cleanup(null, tmpdir):
         null.close()
         shutil.rmtree(tmpdir)
 
-    subprocess = self.OscGnomeImport.m_import('subprocess')
-    shutil = self.OscGnomeImport.m_import('shutil')
-    tempfile = self.OscGnomeImport.m_import('tempfile')
+    subprocess = self.OscCollabImport.m_import('subprocess')
+    shutil = self.OscCollabImport.m_import('shutil')
+    tempfile = self.OscCollabImport.m_import('tempfile')
 
     if not subprocess or not shutil or not tempfile:
         print >>sys.stderr, 'Cannot try to apply patches: incomplete python installation.'
@@ -2044,17 +2044,17 @@ def _gnome_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _gnome_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False):
+def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False):
     if len(projects) == 1:
         project = projects[0]
 
         try:
-            pkg = self._gnome_api.get_package_details(project, package)
-        except self.OscGnomeWebError, e:
+            pkg = self._collab_api.get_package_details(project, package)
+        except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             return
     else:
-        pkg = self._gnome_get_package_with_valid_project(projects, package)
+        pkg = self._collab_get_package_with_valid_project(projects, package)
         if not pkg:
             return
         project = pkg.project.name
@@ -2074,7 +2074,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
         print 'Package %s is already up-to-date.' % package
         return
 
-    if not self._gnome_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
+    if not self._collab_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
         return
 
     package_dir = package
@@ -2082,7 +2082,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
-    (updated, old_tarball, old_version, define_in_source) = self._gnome_update_spec(spec_file, pkg.upstream_version)
+    (updated, old_tarball, old_version, define_in_source) = self._collab_update_spec(spec_file, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
@@ -2106,7 +2106,7 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # start adding an entry to .changes
     # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
-    if self._gnome_update_changes(changes_file, pkg.upstream_version, email):
+    if self._collab_update_changes(changes_file, pkg.upstream_version, email):
         print '%s has been prepared.' % os.path.basename(changes_file)
 
     # warn if there are other spec files which might need an update
@@ -2123,8 +2123,8 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
 
     print 'Looking for the upstream tarball...'
     try:
-        upstream_tarball = self._gnome_download_internal(pkg.upstream_url, package_dir)
-    except self.OscGnomeDownloadError, e:
+        upstream_tarball = self._collab_download_internal(pkg.upstream_url, package_dir)
+    except self.OscCollabDownloadError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -2150,8 +2150,8 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     # not fatal if fails
     print 'Finding NEWS and ChangeLog information...'
     try:
-        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff) = self._gnome_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
-    except self.OscGnomeNewsError, e:
+        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff) = self._collab_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+    except self.OscCollabNewsError, e:
         print >>sys.stderr, e.msg
     else:
         if news_created:
@@ -2178,18 +2178,18 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
     if upstream_tarball.endswith('.gz') or upstream_tarball.endswith('.tgz'):
         try:
             old_upstream_tarball_basename = os.path.basename(upstream_tarball)
-            upstream_tarball = self._gnome_gz_to_bz2_internal(upstream_tarball)
+            upstream_tarball = self._collab_gz_to_bz2_internal(upstream_tarball)
             print '%s has been recompressed to bz2.' % old_upstream_tarball_basename
             upstream_tarball_basename = os.path.basename(upstream_tarball)
-        except self.OscGnomeCompressError, e:
+        except self.OscCollabCompressError, e:
             print >>sys.stderr, e.msg
 
 
     # try applying the patches with rpm quilt
     # not fatal if fails
-    if self._gnome_is_program_in_path('quilt'):
+    if self._collab_is_program_in_path('quilt'):
         print 'Running quilt...'
-        if self._gnome_quilt_package(package, spec_file):
+        if self._collab_quilt_package(package, spec_file):
             print 'Patches still apply.'
         else:
             print 'WARNING: make sure that all patches apply before submitting.'
@@ -2227,14 +2227,14 @@ def _gnome_update(self, apiurl, username, email, projects, package, ignore_reser
 #######################################################################
 
 
-def _gnome_forward(self, apiurl, projects, request_id):
+def _collab_forward(self, apiurl, projects, request_id):
     try:
         int_request_id = int(request_id)
     except ValueError:
         print >>sys.stderr, '%s is not a valid request id.' % (request_id)
         return
 
-    request = self.OscGnomeObs.get_request(request_id)
+    request = self.OscCollabObs.get_request(request_id)
     if request is None:
         return
 
@@ -2253,11 +2253,11 @@ def _gnome_forward(self, apiurl, projects, request_id):
         return
 
     try:
-        pkg = self._gnome_api.get_package_details((dest_project,), dest_package)
+        pkg = self._collab_api.get_package_details((dest_project,), dest_package)
         if not pkg or not pkg.parent_project:
             print >>sys.stderr, 'No parent project for %s/%s.' % (dest_project, dest_package)
             return
-    except self.OscGnomeWebError, e:
+    except self.OscCollabWebError, e:
         print >>sys.stderr, 'Cannot get parent project of %s/%s.' % (dest_project, dest_package)
         return
 
@@ -2271,7 +2271,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
         print >>sys.stderr, 'Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project)
         return
 
-    if not self.OscGnomeObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
+    if not self.OscCollabObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
         return
 
     # TODO: cancel old requests from request.dst_project to parent project
@@ -2287,7 +2287,7 @@ def _gnome_forward(self, apiurl, projects, request_id):
 #######################################################################
 
 
-def _gnome_osc_package_pending_commit(self, osc_package):
+def _collab_osc_package_pending_commit(self, osc_package):
     # ideally, we could use osc_package.todo, but it's not set by default.
     # So we just look at all files.
     for filename in osc_package.filenamelist + osc_package.filenamelist_unvers:
@@ -2298,7 +2298,7 @@ def _gnome_osc_package_pending_commit(self, osc_package):
     return False
 
 
-def _gnome_osc_package_commit(self, osc_package, msg):
+def _collab_osc_package_commit(self, osc_package, msg):
     osc_package.commit(msg)
     # See bug #436932: Package.commit() leads to outdated internal data.
     osc_package.update_datastructs()
@@ -2307,13 +2307,13 @@ def _gnome_osc_package_commit(self, osc_package, msg):
 #######################################################################
 
 
-def _gnome_package_set_meta(self, apiurl, project, package, meta, error_msg_prefix = ''):
+def _collab_package_set_meta(self, apiurl, project, package, meta, error_msg_prefix = ''):
     if error_msg_prefix:
         error_str = error_msg_prefix + ': %s'
     else:
         error_str = 'Cannot set metadata for %s in %s: %%s' % (package, project)
 
-    tempfile = self.OscGnomeImport.m_import('tempfile')
+    tempfile = self.OscCollabImport.m_import('tempfile')
     if not tempfile:
         print >>sys.stderr, error_str % 'incomplete python installation.'
         return False
@@ -2335,7 +2335,7 @@ def _gnome_package_set_meta(self, apiurl, project, package, meta, error_msg_pref
     return not failed
 
 
-def _gnome_enable_build(self, apiurl, project, package, meta, repo, archs):
+def _collab_enable_build(self, apiurl, project, package, meta, repo, archs):
     if len(archs) == 0:
         return (True, False)
 
@@ -2380,13 +2380,13 @@ def _gnome_enable_build(self, apiurl, project, package, meta, repo, archs):
     meta_xml.write(buf)
     meta = buf.getvalue()
 
-    if self._gnome_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
+    if self._collab_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
         return (True, True)
     else:
         return (False, False)
 
 
-def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, package, verbose_error = True):
+def _collab_get_latest_package_rev_built(self, apiurl, project, repo, arch, package, verbose_error = True):
     url = makeurl(apiurl, ['build', project, repo, arch, package, '_history'])
 
     try:
@@ -2419,7 +2419,7 @@ def _gnome_get_latest_package_rev_built(self, apiurl, project, repo, arch, packa
     return (True, srcmd5, rev)
 
 
-def _gnome_print_build_status(self, repo, build_state, header, error_line, hint = False):
+def _collab_print_build_status(self, repo, build_state, header, error_line, hint = False):
     print '%s:' % header
 
     keys = build_state.keys()
@@ -2455,8 +2455,8 @@ def _gnome_print_build_status(self, repo, build_state, header, error_line, hint 
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
 
 
-def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
-    time = self.OscGnomeImport.m_import('time')
+def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
+    time = self.OscCollabImport.m_import('time')
 
     try:
         results = show_results_meta(apiurl, project, package=package)
@@ -2562,7 +2562,7 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
         # build is done, but is it for the latest version?
         elif value in ['succeeded']:
             # check that the build is for the version we have
-            (success, built_srcmd5, built_rev) = self._gnome_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
+            (success, built_srcmd5, built_rev) = self._collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
 
             if not success:
                 results_per_arch[key]['status'] = 'succeeded, but maybe not up-to-date'
@@ -2641,13 +2641,13 @@ def _gnome_build_get_results(self, apiurl, project, repo, package, archs, srcmd5
     return (bs_not_ready, build_successful, error_counter, state)
 
 
-def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
+def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
 
-    select = self.OscGnomeImport.m_import('select')
-    time = self.OscGnomeImport.m_import('time')
+    select = self.OscCollabImport.m_import('select')
+    time = self.OscCollabImport.m_import('time')
     if not select or not time:
         print >>sys.stderr, 'Cannot monitor build for package in the build service: incomplete python installation.'
         return (False, {})
@@ -2690,7 +2690,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, error_counter, state) = self._gnome_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
+                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
                 # make sure we don't ignore errors anymore
                 ignore_initial_errors = False
 
@@ -2705,7 +2705,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 
             if print_status:
                 header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-                self._gnome_print_build_status(repo, state, header, 'no results returned by the build service')
+                self._collab_print_build_status(repo, state, header, 'no results returned by the build service')
 
             if not need_to_continue:
                 break
@@ -2741,7 +2741,7 @@ def _gnome_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, 
 #######################################################################
 
 
-def _gnome_build_internal(self, apiurl, osc_package, repo, archs, recently_changed):
+def _collab_build_internal(self, apiurl, osc_package, repo, archs, recently_changed):
     project = osc_package.prjname
     package = osc_package.name
 
@@ -2754,21 +2754,21 @@ def _gnome_build_internal(self, apiurl, osc_package, repo, archs, recently_chang
         return False
 
     meta = ''.join(meta_lines)
-    (success, changed_meta) = self._gnome_enable_build(apiurl, project, package, meta, repo, archs)
+    (success, changed_meta) = self._collab_enable_build(apiurl, project, package, meta, repo, archs)
     if not success:
         return False
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_state) = self._gnome_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
+    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
 
     if not build_success:
-        self._gnome_print_build_status(repo, build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
+        self._collab_print_build_status(repo, build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
     if changed_meta:
-        self._gnome_package_set_meta(apiurl, project, package, meta, 'Error while resetting build settings of package on the build service')
+        self._collab_package_set_meta(apiurl, project, package, meta, 'Error while resetting build settings of package on the build service')
 
     return build_success
 
@@ -2776,7 +2776,7 @@ def _gnome_build_internal(self, apiurl, osc_package, repo, archs, recently_chang
 #######################################################################
 
 
-def _gnome_build(self, apiurl, user, projects, msg, repo, archs):
+def _collab_build(self, apiurl, user, projects, msg, repo, archs):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2789,13 +2789,13 @@ def _gnome_build(self, apiurl, user, projects, msg, repo, archs):
     committed = False
 
     # commit if there are local changes
-    if self._gnome_osc_package_pending_commit(osc_package):
+    if self._collab_osc_package_pending_commit(osc_package):
         if not msg:
             msg = edit_message()
-        self._gnome_osc_package_commit(osc_package, msg)
+        self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package, repo, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repo, archs, committed)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -2804,7 +2804,7 @@ def _gnome_build(self, apiurl, user, projects, msg, repo, archs):
 #######################################################################
 
 
-def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward = False):
+def _collab_build_submit(self, apiurl, user, projects, msg, repo, archs, forward = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2844,11 +2844,11 @@ def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward 
     committed = False
 
     # commit if there are local changes
-    if self._gnome_osc_package_pending_commit(osc_package):
-        self._gnome_osc_package_commit(osc_package, msg)
+    if self._collab_osc_package_pending_commit(osc_package):
+        self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._gnome_build_internal(apiurl, osc_package, repo, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repo, archs, committed)
 
     # if build successful, submit
     if build_success:
@@ -2861,7 +2861,7 @@ def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward 
         if forward:
             # we volunteerly restrict the project list to parent_project for
             # self-consistency and more safety
-            self._gnome_forward(apiurl, [ parent_project ], result)
+            self._collab_forward(apiurl, [ parent_project ], result)
     else:
         print 'Package was not submitted to %s' % parent_project
 
@@ -2887,8 +2887,8 @@ def _gnome_build_submit(self, apiurl, user, projects, msg, repo, archs, forward 
 # Unfortunately, as of Python 2.5, ConfigParser does not know how to
 # preserve a config file: it removes comments and reorders stuff.
 # This is a dumb function to append a value to a section in a config file.
-def _gnome_add_config_option(self, section, key, value):
-    tempfile = self.OscGnomeImport.m_import('tempfile')
+def _collab_add_config_option(self, section, key, value):
+    tempfile = self.OscCollabImport.m_import('tempfile')
     if not tempfile:
         print >>sys.stderr, 'Cannot update your configuration: incomplete python installation.'
         return
@@ -2947,11 +2947,11 @@ def _gnome_add_config_option(self, section, key, value):
 #######################################################################
 
 
-def _gnome_ensure_email(self, apiurl):
+def _collab_ensure_email(self, apiurl):
     if not conf.config['api_host_options'].has_key(apiurl):
         # old osc (0.110) was adding the host to the tuple without the http
         # part, ie just the host
-        urlparse = self.OscGnomeImport.m_import('urlparse')
+        urlparse = self.OscCollabImport.m_import('urlparse')
         if urlparse:
             apiurl = urlparse.urlparse(apiurl).netloc
         else:
@@ -2965,7 +2965,7 @@ def _gnome_ensure_email(self, apiurl):
         if conf.config['gnome_email'] == '':
             return 'EMAIL@DOMAIN'
 
-        self._gnome_add_config_option('general', 'gnome_email', conf.config['gnome_email'])
+        self._collab_add_config_option('general', 'gnome_email', conf.config['gnome_email'])
 
     return conf.config['gnome_email']
 
@@ -3010,7 +3010,7 @@ def _gnome_ensure_email(self, apiurl):
               dest='no_cache',
               help='ignore data from the cache')
 def do_gnome(self, subcmd, opts, *args):
-    """${cmd_name}: Various commands to ease collaboration within the openSUSE GNOME Team.
+    """${cmd_name}: Various commands to ease collaboration on the openSUSE Build Service.
 
     "todo" (or "t") will list the packages that need some action.
 
@@ -3065,7 +3065,7 @@ def do_gnome(self, subcmd, opts, *args):
     """
 
     # uncomment this when profiling is needed
-    #self.gtime = self.OscGnomeImport.m_import('time')
+    #self.gtime = self.OscCollabImport.m_import('time')
     #self.gref = self.gtime.time()
     #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
 
@@ -3093,11 +3093,11 @@ def do_gnome(self, subcmd, opts, *args):
         raise oscerr.WrongArgs('Too many arguments.')
 
     if opts.apiurl:
-        gnome_apiurl = opts.apiurl
+        collab_apiurl = opts.apiurl
     elif conf.config.has_key('gnome_apiurl'):
-        gnome_apiurl = conf.config['gnome_apiurl']
+        collab_apiurl = conf.config['gnome_apiurl']
     else:
-        gnome_apiurl = None
+        collab_apiurl = None
 
     if len(opts.projects) != 0:
         projects = opts.projects
@@ -3136,52 +3136,52 @@ def do_gnome(self, subcmd, opts, *args):
 
     apiurl = conf.config['apiurl']
     user = conf.config['user']
-    email = self._gnome_ensure_email(apiurl)
+    email = self._collab_ensure_email(apiurl)
 
-    self._gnome_api = self.OscGnomeApi(self, gnome_apiurl)
-    self.GnomeCache.init(self, opts.no_cache)
-    self.OscGnomeObs.init(self, apiurl)
-    self.OscGnomePackage.init(self)
+    self._collab_api = self.OscCollabApi(self, collab_apiurl)
+    self.OscCollabCache.init(self, opts.no_cache)
+    self.OscCollabObs.init(self, apiurl)
+    self.OscCollabPackage.init(self)
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._gnome_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
+        self._collab_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._gnome_todoadmin(apiurl, projects, opts.include_upstream)
+        self._collab_todoadmin(apiurl, projects, opts.include_upstream)
 
     elif cmd in ['listreserved', 'lr']:
-        self._gnome_listreserved(projects)
+        self._collab_listreserved(projects)
 
     elif cmd in ['isreserved', 'ir']:
         package = args[1]
-        self._gnome_isreserved(projects, package)
+        self._collab_isreserved(projects, package)
 
     elif cmd in ['reserve', 'r']:
         packages = args[1:]
-        self._gnome_reserve(projects, packages, user)
+        self._collab_reserve(projects, packages, user)
 
     elif cmd in ['unreserve', 'u']:
         packages = args[1:]
-        self._gnome_unreserve(projects, packages, user)
+        self._collab_unreserve(projects, packages, user)
 
     elif cmd in ['setup', 's']:
         package = args[1]
-        self._gnome_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
         package = args[1]
-        self._gnome_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._gnome_forward(apiurl, projects, request_id)
+        self._collab_forward(apiurl, projects, request_id)
 
     elif cmd in ['build', 'b']:
-        self._gnome_build(apiurl, user, projects, opts.msg, repo, archs)
+        self._collab_build(apiurl, user, projects, opts.msg, repo, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._gnome_build_submit(apiurl, user, projects, opts.msg, repo, archs, forward = opts.forward)
+        self._collab_build_submit(apiurl, user, projects, opts.msg, repo, archs, forward = opts.forward)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
