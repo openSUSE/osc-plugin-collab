@@ -3221,7 +3221,7 @@ def _collab_parse_arg_packages(self, packages):
               help='do not reserve the package')
 @cmdln.option('--nodevelproject', action='store_true',
               dest='no_devel_project',
-              help='do not follow a defined devel project (primary project where a package is developed)')
+              help='do not use development project of the packages')
 @cmdln.option('-m', '--message', metavar='TEXT',
               dest='msg',
               help='specify log message TEXT')
