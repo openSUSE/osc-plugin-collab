@@ -1368,7 +1368,29 @@ def _collab_unreserve(self, projects, packages, username):
 #######################################################################
 
 
-def _collab_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False, no_reserve = False, no_devel_project = False):
+    if not no_devel_project:
+        initial_pkg = pkg
+        while pkg.devel_project:
+            previous_pkg = pkg
+            try:
+                pkg = self._collab_api.get_package_details(pkg.devel_project, pkg.devel_package or pkg.name)
+            except self.OscCollabWebError, e:
+                pkg = None
+
+            if not pkg:
+                print >>sys.stderr, 'Cannot find information on %s/%s (development package for %s/%s). You can use --nodevelproject to ignore the development package.' % (previous_pkg.project.name, previous_pkg.name, initial_pkg.project.name, initial_pkg.name)
+                break
+
+        if not pkg:
+            return (False, None, None)
+
+        if initial_pkg != pkg:
+            print 'Using development package %s/%s for %s/%s.' % (pkg.project.name, pkg.name, initial_pkg.project.name, initial_pkg.name)
+
+    project = pkg.project.name
+    package = pkg.name
+
     checkout_dir = package
 
     # is it reserved?
@@ -1380,13 +1402,13 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             reserved_by = None
     except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
-        return False
+        return (False, None, None)
 
     # package already reserved, but not by us
     if reserved_by and reserved_by != username:
         if not ignore_reserved:
             print 'Package %s is already reserved by %s.' % (package, reserved_by)
-            return False
+            return (False, None, None)
         else:
             print 'WARNING: package %s is already reserved by %s.' % (package, reserved_by)
     # package not reserved
@@ -1399,44 +1421,51 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             if not ignore_reserved:
-                return False
+                return (False, None, None)
 
     # look if we already have a branch, and if not branch the package
     try:
         expected_branch_project = 'home:%s:branches:%s' % (username, project)
         show_package_meta(apiurl, expected_branch_project, package)
         branch_project = expected_branch_project
+        branch_package = package
         # it worked, we already have the branch
     except urllib2.HTTPError, e:
         if e.code != 404:
             print >>sys.stderr, 'Error while checking if package %s was already branched: %s' % (package, e.msg)
-            return False
+            return (False, None, None)
         # We had a 404: it means the branched package doesn't exist yet
         try:
-            branch_project = branch_pkg(apiurl, project, package, nodevelproject = True)
-            print 'Package %s has been branched in project %s.' % (package, branch_project)
+            branch_project = branch_pkg(apiurl, project, package, nodevelproject = no_devel_project)
+            branch_package = package
+            checkout_dir = branch_package
+
+            if package != branch_package:
+                print 'Package %s has been branched in %s/%s.' % (package, branch_project, branch_package)
+            else:
+                print 'Package %s has been branched in project %s.' % (branch_package, branch_project)
         except urllib2.HTTPError, e:
             print >>sys.stderr, 'Error while branching package %s: %s' % (package, e.msg)
-            return False
+            return (False, None, None)
 
     # check out the branched package
     if os.path.exists(checkout_dir):
         # maybe we already checked it out before?
         if not os.path.isdir(checkout_dir):
             print >>sys.stderr, 'File %s already exists but is not a directory.' % checkout_dir
-            return False
+            return (False, None, None)
         elif not is_package_dir(checkout_dir):
             print >>sys.stderr, 'Directory %s already exists but is not a checkout of a Build Service package.' % checkout_dir
-            return False
+            return (False, None, None)
 
         obs_package = filedir_to_pac(checkout_dir)
-        if obs_package.name != package or obs_package.prjname != branch_project:
+        if obs_package.name != branch_package or obs_package.prjname != branch_project:
             print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (checkout_dir, obs_package.name, obs_package.prjname)
-            return False
+            return (False, None, None)
 
         if self._collab_osc_package_pending_commit(obs_package):
             print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (checkout_dir,)
-            return False
+            return (False, None, None)
 
         # update the package
         try:
@@ -1446,14 +1475,14 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             if obs_package.islink() and not obs_package.isexpanded():
                 rev = obs_package.linkinfo.xsrcmd5
             elif obs_package.islink() and obs_package.isexpanded():
-                rev = show_upstream_xsrcmd5(apiurl, branch_project, package)
+                rev = show_upstream_xsrcmd5(apiurl, branch_project, branch_package)
 
             obs_package.update(rev)
-            print 'Package %s has been updated.' % package
+            print 'Package %s has been updated.' % branch_package
         except Exception, e:
-            message = 'Error while updating package %s: ' % package
+            message = 'Error while updating package %s: ' % branch_package
             self._collab_exception_print(e, message)
-            return False
+            return (False, None, None)
 
     else:
         # check out the branched package
@@ -1462,13 +1491,13 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             # project directory
             old_tracking = conf.config['do_package_tracking']
             conf.config['do_package_tracking'] = 0
-            checkout_package(apiurl, branch_project, package, expand_link=True)
+            checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
-            print 'Package %s has been checked out.' % package
+            print 'Package %s has been checked out.' % branch_package
         except Exception, e:
-            message = 'Error while checking out package %s: ' % package
+            message = 'Error while checking out package %s: ' % branch_package
             self._collab_exception_print(e, message)
-            return False
+            return (False, None, None)
 
     # remove old osc-gnome.* files
     for file in os.listdir(checkout_dir):
@@ -1476,7 +1505,7 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             path = os.path.join(checkout_dir, file)
             os.unlink(path)
 
-    return True
+    return (True, branch_project, branch_package)
 
 
 #######################################################################
@@ -1498,18 +1527,16 @@ def _collab_get_package_with_valid_project(self, projects, package):
 #######################################################################
 
 
-def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False):
-    if len(projects) == 1:
-        project = projects[0]
-    else:
-        pkg = self._collab_get_package_with_valid_project(projects, package)
-        if not pkg:
-            return
-        project = pkg.project.name
-
-    if not self._collab_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
+def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False, no_devel_project = False):
+    pkg = self._collab_get_package_with_valid_project(projects, package)
+    if not pkg:
         return
-    print 'Package %s has been prepared for work.' % package
+    project = pkg.project.name
+
+    (setup, branch_project, branch_package) = self._collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project)
+    if not setup:
+        return
+    print 'Package %s has been prepared for work.' % branch_package
 
 
 #######################################################################
@@ -2005,7 +2032,7 @@ def _collab_update_changes(self, changes_file, upstream_version, email):
 #######################################################################
 
 
-def _collab_quilt_package(self, package, spec_file):
+def _collab_quilt_package(self, spec_file):
     def _cleanup(null, tmpdir):
         null.close()
         shutil.rmtree(tmpdir)
@@ -2061,7 +2088,7 @@ def _collab_quilt_package(self, package, spec_file):
 #######################################################################
 
 
-def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False):
+def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False, no_devel_project = False):
     if len(projects) == 1:
         project = projects[0]
 
@@ -2091,14 +2118,17 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
         print 'Package %s is already up-to-date.' % package
         return
 
-    if not self._collab_setup_internal(apiurl, username, project, package, ignore_reserved, no_reserve):
+    (setup, branch_project, branch_package) = self._collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project)
+    if not setup:
         return
 
-    package_dir = package
+    package_dir = branch_package
 
     # edit the version tag in the .spec files
     # not fatal if fails
     spec_file = os.path.join(package_dir, package + '.spec')
+    if not os.path.exists(spec_file) and package != branch_package:
+        spec_file = os.path.join(package_dir, branch_package + '.spec')
     (updated, old_tarball, old_version, define_in_source) = self._collab_update_spec(spec_file, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
@@ -2106,7 +2136,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
         old_tarball_with_dir = None
 
     if old_version and old_version == pkg.upstream_version:
-        print 'Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % package
+        print 'Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % branch_package
         return
 
     if define_in_source:
@@ -2123,6 +2153,8 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     # start adding an entry to .changes
     # not fatal if fails
     changes_file = os.path.join(package_dir, package + '.changes')
+    if not os.path.exists(changes_file) and package != branch_package:
+        changes_file = os.path.join(package_dir, branch_package + '.changes')
     if self._collab_update_changes(changes_file, pkg.upstream_version, email):
         print '%s has been prepared.' % os.path.basename(changes_file)
 
@@ -2206,7 +2238,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     # not fatal if fails
     if self._collab_is_program_in_path('quilt'):
         print 'Running quilt...'
-        if self._collab_quilt_package(package, spec_file):
+        if self._collab_quilt_package(spec_file):
             print 'Patches still apply.'
         else:
             print 'WARNING: make sure that all patches apply before submitting.'
@@ -2234,7 +2266,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     print '%s has been added to the package.' % upstream_tarball_basename
 
 
-    print 'Package %s has been prepared for the update.' % package
+    print 'Package %s has been prepared for the update.' % branch_package
     print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc collab build\' to start a build on the build service.' % os.path.basename(changes_file)
 
     # TODO add a note about checking if patches are still needed, buildrequires
@@ -3187,6 +3219,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
+@cmdln.option('--nodevelproject', action='store_true',
+              dest='no_devel_project',
+              help='do not follow a defined devel project (primary project where a package is developed)')
 @cmdln.option('-m', '--message', metavar='TEXT',
               dest='msg',
               help='specify log message TEXT')
@@ -3250,8 +3285,8 @@ def do_collab(self, subcmd, opts, *args):
         osc collab reserve PKG [...]
         osc collab unreserve PKG [...]
 
-        osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
-        osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
+        osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
+        osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
 
         osc collab forward [--project=PROJECT] ID
 
@@ -3343,11 +3378,11 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = self._collab_parse_arg_packages(args[1])
-        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['update', 'up']:
         package = self._collab_parse_arg_packages(args[1])
-        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
+        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
