@@ -2899,6 +2899,16 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repo, archs, forward
 #######################################################################
 
 
+def _collab_get_conf_file(self):
+    # See get_config() in osc/conf.py and postoptparse() in
+    # osc/commandline.py
+    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
+    return os.path.expanduser(conffile)
+
+
+#######################################################################
+
+
 # Unfortunately, as of Python 2.5, ConfigParser does not know how to
 # preserve a config file: it removes comments and reorders stuff.
 # This is a dumb function to append a value to a section in a config file.
@@ -2908,10 +2918,7 @@ def _collab_add_config_option(self, section, key, value):
         print >>sys.stderr, 'Cannot update your configuration: incomplete python installation.'
         return
 
-    # See get_config() in osc/conf.py and postoptparse() in
-    # osc/commandline.py
-    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
-    conffile = os.path.expanduser(conffile)
+    conffile = self._collab_get_conf_file()
 
     if not os.path.exists(conffile):
         lines = [ ]
@@ -2926,8 +2933,15 @@ def _collab_add_config_option(self, section, key, value):
     added = False
     empty_line = False
 
+    valid_sections = [ '[' + section + ']' ]
+    if section.startswith('http'):
+        if section.endswith('/'):
+            valid_sections.append('[' + section[:-1] + ']')
+        else:
+            valid_sections.append('[' + section + '/]')
+
     for line in lines:
-        if line.rstrip() == '[' + section + ']':
+        if line.rstrip() in valid_sections:
             in_section = True
         # key was not in the section: let's add it
         elif line[0] == '[' and in_section and not added:
@@ -2953,7 +2967,9 @@ def _collab_add_config_option(self, section, key, value):
     if not added:
         if not empty_line:
             os.write(fdout, '\n')
-        os.write(fdout, '[%s]\n%s = %s\n' % (section, key, value))
+        if not in_section:
+            os.write(fdout, '[%s]\n' % (section,))
+        os.write(fdout, '%s = %s\n' % (key, value))
 
     os.close(fdout)
     os.rename(tmp, conffile)
@@ -2962,39 +2978,89 @@ def _collab_add_config_option(self, section, key, value):
 #######################################################################
 
 
-def _collab_migrate_gnome_config(self):
+def _collab_get_compatible_apiurl_for_config(self, config, apiurl):
+    if config.has_section(apiurl):
+        return apiurl
+
+    # first try adding/removing a trailing slash to the API url
+    if apiurl.endswith('/'):
+        apiurl = apiurl[:-1]
+    else:
+        apiurl = apiurl + '/'
+
+    if config.has_section(apiurl):
+        return apiurl
+
+    # old osc (0.110) was adding the host to the tuple without the http
+    # part, ie just the host
+    urlparse = self.OscCollabImport.m_import('urlparse')
+    if urlparse:
+        apiurl = urlparse.urlparse(apiurl).netloc
+    else:
+        apiurl = None
+
+    if apiurl and config.has_section(apiurl):
+        return apiurl
+
+    return None
+
+
+def _collab_get_config_parser(self):
+    if self.__dict__.has_key('_collab_config_parser'):
+        return self._collab_config_parser
+
+    ConfigParser = self.OscCollabImport.m_import('ConfigParser')
+    if not ConfigParser:
+        return None
+
+    conffile = self._collab_get_conf_file()
+    self._collab_config_parser = ConfigParser.SafeConfigParser()
+    self._collab_config_parser.read(conffile)
+    return self._collab_config_parser
+
+
+def _collab_get_config(self, apiurl, key, default = None):
+    config = self._collab_get_config_parser()
+    if not config:
+        return default
+
+    apiurl = self._collab_get_compatible_apiurl_for_config(config, apiurl)
+    if apiurl and config.has_option(apiurl, key):
+        return config.get(apiurl, key)
+    else:
+        return default
+
+
+#######################################################################
+
+
+def _collab_migrate_gnome_config(self, apiurl):
     for key in [ 'archs', 'apiurl', 'email', 'projects', 'repo' ]:
-        if conf.config.has_key('collab_' + key):
+        if self._collab_get_config(apiurl, 'collab_' + key) is not None:
             continue
         elif not conf.config.has_key('gnome_' + key):
             continue
-        self._collab_add_config_option('general', 'collab_' + key, conf.config['gnome_' + key])
+        self._collab_add_config_option(apiurl, 'collab_' + key, conf.config['gnome_' + key])
 
 
 #######################################################################
 
 
 def _collab_ensure_email(self, apiurl):
-    if not conf.config['api_host_options'].has_key(apiurl):
-        # old osc (0.110) was adding the host to the tuple without the http
-        # part, ie just the host
-        urlparse = self.OscCollabImport.m_import('urlparse')
-        if urlparse:
-            apiurl = urlparse.urlparse(apiurl).netloc
-        else:
-            apiurl = None
+    email = self._collab_get_config(apiurl, 'email')
+    if email:
+        return email
+    email = self._collab_get_config(apiurl, 'collab_email')
+    if email:
+        return email
 
-    if apiurl and conf.config['api_host_options'][apiurl].has_key('email'):
-        return conf.config['api_host_options'][apiurl]['email']
+    email =  raw_input('E-mail address to use for .changes entries: ')
+    if email == '':
+        return 'EMAIL@DOMAIN'
 
-    if not conf.config.has_key('collab_email'):
-        conf.config['collab_email'] = raw_input('E-mail address to use for .changes entries: ')
-        if conf.config['collab_email'] == '':
-            return 'EMAIL@DOMAIN'
+    self._collab_add_config_option(apiurl, 'collab_email', email)
 
-        self._collab_add_config_option('general', 'collab_email', conf.config['collab_email'])
-
-    return conf.config['collab_email']
+    return email
 
 
 #######################################################################
@@ -3137,19 +3203,21 @@ def do_collab(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
-    self._collab_migrate_gnome_config()
+    apiurl = conf.config['apiurl']
+    user = conf.config['user']
+
+    self._collab_migrate_gnome_config(apiurl)
+    email = self._collab_ensure_email(apiurl)
 
     if opts.apiurl:
         collab_apiurl = opts.apiurl
-    elif conf.config.has_key('collab_apiurl'):
-        collab_apiurl = conf.config['collab_apiurl']
     else:
-        collab_apiurl = None
+        collab_apiurl = self._collab_get_config(apiurl, 'collab_apiurl')
 
     if len(opts.projects) != 0:
         projects = opts.projects
-    elif conf.config.has_key('collab_projects'):
-        projects_line = conf.config['collab_projects']
+    else:
+        projects_line = self._collab_get_config(apiurl, 'collab_projects', 'GNOME:Factory')
         projects = projects_line.split(';')
         # remove all empty projects
         while True:
@@ -3157,33 +3225,23 @@ def do_collab(self, subcmd, opts, *args):
                 projects.remove('')
             except ValueError:
                 break
-    else:
-        projects = ['GNOME:Factory']
 
     if opts.repo:
         repo = opts.repo
-    elif conf.config.has_key('collab_repo'):
-        repo = conf.config['collab_repo']
     else:
-        repo = 'openSUSE_Factory'
+        repo = self._collab_get_config(apiurl, 'collab_repo', 'openSUSE_Factory')
 
     if len(opts.archs) != 0:
         archs = opts.archs
-    elif conf.config.has_key('collab_archs'):
-        archs_line = conf.config['collab_archs']
-        archs = projects_line.split(';')
+    else:
+        archs_line = self._collab_get_config(apiurl, 'collab_archs', 'i586;x86_64;')
+        archs = archs_line.split(';')
         # remove all empty architectures
         while True:
             try:
                 archs.remove('')
             except ValueError:
                 break
-    else:
-        archs = ['i586', 'x86_64']
-
-    apiurl = conf.config['apiurl']
-    user = conf.config['user']
-    email = self._collab_ensure_email(apiurl)
 
     self._collab_api = self.OscCollabApi(self, collab_apiurl)
     self.OscCollabCache.init(self, opts.no_cache)
