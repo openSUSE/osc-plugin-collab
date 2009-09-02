@@ -2955,6 +2955,18 @@ def _collab_add_config_option(self, section, key, value):
 #######################################################################
 
 
+def _collab_migrate_gnome_config(self):
+    for key in [ 'archs', 'apiurl', 'email', 'projects', 'repo' ]:
+        if conf.config.has_key('collab_' + key):
+            continue
+        elif not conf.config.has_key('gnome_' + key):
+            continue
+        self._collab_add_config_option('general', 'collab_' + key, conf.config['gnome_' + key])
+
+
+#######################################################################
+
+
 def _collab_ensure_email(self, apiurl):
     if not conf.config['api_host_options'].has_key(apiurl):
         # old osc (0.110) was adding the host to the tuple without the http
@@ -2968,14 +2980,14 @@ def _collab_ensure_email(self, apiurl):
     if apiurl and conf.config['api_host_options'][apiurl].has_key('email'):
         return conf.config['api_host_options'][apiurl]['email']
 
-    if not conf.config.has_key('gnome_email'):
-        conf.config['gnome_email'] = raw_input('E-mail address to use for .changes entries: ')
-        if conf.config['gnome_email'] == '':
+    if not conf.config.has_key('collab_email'):
+        conf.config['collab_email'] = raw_input('E-mail address to use for .changes entries: ')
+        if conf.config['collab_email'] == '':
             return 'EMAIL@DOMAIN'
 
-        self._collab_add_config_option('general', 'gnome_email', conf.config['gnome_email'])
+        self._collab_add_config_option('general', 'collab_email', conf.config['collab_email'])
 
-    return conf.config['gnome_email']
+    return conf.config['collab_email']
 
 
 #######################################################################
@@ -3100,17 +3112,19 @@ def do_gnome(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
+    self._collab_migrate_gnome_config()
+
     if opts.apiurl:
         collab_apiurl = opts.apiurl
-    elif conf.config.has_key('gnome_apiurl'):
-        collab_apiurl = conf.config['gnome_apiurl']
+    elif conf.config.has_key('collab_apiurl'):
+        collab_apiurl = conf.config['collab_apiurl']
     else:
         collab_apiurl = None
 
     if len(opts.projects) != 0:
         projects = opts.projects
-    elif conf.config.has_key('gnome_projects'):
-        projects_line = conf.config['gnome_projects']
+    elif conf.config.has_key('collab_projects'):
+        projects_line = conf.config['collab_projects']
         projects = projects_line.split(';')
         # remove all empty projects
         while True:
@@ -3123,15 +3137,15 @@ def do_gnome(self, subcmd, opts, *args):
 
     if opts.repo:
         repo = opts.repo
-    elif conf.config.has_key('gnome_repo'):
-        repo = conf.config['gnome_repo']
+    elif conf.config.has_key('collab_repo'):
+        repo = conf.config['collab_repo']
     else:
         repo = 'openSUSE_Factory'
 
     if len(opts.archs) != 0:
         archs = opts.archs
-    elif conf.config.has_key('gnome_archs'):
-        archs_line = conf.config['gnome_archs']
+    elif conf.config.has_key('collab_archs'):
+        archs_line = conf.config['collab_archs']
         archs = projects_line.split(';')
         # remove all empty architectures
         while True:
