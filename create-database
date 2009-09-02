@@ -800,7 +800,7 @@ class SrcPackage(Base):
         # if we want to force the parent to the project parent, then we do it
         # only if the package is a link and there's no error in the link
         # package
-        if self.project.force_project_parent and self.is_link and not self.error and (self.link_project != self.project.name or self.link_package != self.name):
+        if self.project.force_project_parent and self.is_link and not self.error and (self.link_project not in [ self.project.parent, self.project.name ] or self.link_package != self.name):
             self.is_link = 0
             self.has_delta = 0
             self.link_project = None
