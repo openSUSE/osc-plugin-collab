@@ -7,9 +7,7 @@
   - prefill the .changes with "Updated translations"?
     (Magnus has a patch)
   - check integrity with md5sum/sha1sum
-  - clean the spec file (?):
-    . one BuildRequires/Requires per line and alphabetically sorted
-    . correctly order Name, License, Group, BuildRequires, etc.
+  - integrate with spec-cleaner
 + 'osc gnome todoadmin':
   - use get_obs_build_results
   - handle the case where there's already a submission to oS:F but the
