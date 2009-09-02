@@ -1369,6 +1369,8 @@ def _collab_unreserve(self, projects, packages, username):
 
 
 def _collab_setup_internal(self, apiurl, username, project, package, ignore_reserved = False, no_reserve = False):
+    checkout_dir = package
+
     # is it reserved?
     try:
         reservation = self._collab_api.is_package_reserved((project,), package)
@@ -1418,22 +1420,22 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             return False
 
     # check out the branched package
-    if os.path.exists(package):
+    if os.path.exists(checkout_dir):
         # maybe we already checked it out before?
-        if not os.path.isdir(package):
-            print >>sys.stderr, 'File %s already exists but is not a directory.' % package
+        if not os.path.isdir(checkout_dir):
+            print >>sys.stderr, 'File %s already exists but is not a directory.' % checkout_dir
             return False
-        elif not is_package_dir(package):
-            print >>sys.stderr, 'Directory %s already exists but is not a checkout of a Build Service package.' % package
+        elif not is_package_dir(checkout_dir):
+            print >>sys.stderr, 'Directory %s already exists but is not a checkout of a Build Service package.' % checkout_dir
             return False
 
-        obs_package = filedir_to_pac(package)
+        obs_package = filedir_to_pac(checkout_dir)
         if obs_package.name != package or obs_package.prjname != branch_project:
-            print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (package, obs_package.name, obs_package.prjname)
+            print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (checkout_dir, obs_package.name, obs_package.prjname)
             return False
 
         if self._collab_osc_package_pending_commit(obs_package):
-            print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (package,)
+            print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (checkout_dir,)
             return False
 
         # update the package
@@ -1469,9 +1471,9 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             return False
 
     # remove old osc-gnome.* files
-    for file in os.listdir(package):
+    for file in os.listdir(checkout_dir):
         if file.startswith('osc-gnome.'):
-            path = os.path.join(package, file)
+            path = os.path.join(checkout_dir, file)
             os.unlink(path)
 
     return True
