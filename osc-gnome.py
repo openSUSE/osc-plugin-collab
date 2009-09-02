@@ -812,18 +812,23 @@ class OscCollabCache:
 
 
     @classmethod
+    def _get_xdg_cache_home(cls):
+        dir = None
+        if os.environ.has_key('XDG_CACHE_HOME'):
+            dir = os.environ['XDG_CACHE_HOME']
+            if dir == '':
+                dir = None
+
+        if not dir:
+            dir = '~/.cache'
+
+        return os.path.expanduser(dir)
+
+
+    @classmethod
     def _get_xdg_cache_dir(cls):
         if not cls._cache_dir:
-            dir = None
-            if os.environ.has_key('XDG_CACHE_HOME'):
-                dir = os.environ['XDG_CACHE_HOME']
-                if dir == '':
-                    dir = None
-
-            if not dir:
-                dir = '~/.cache'
-
-            cls._cache_dir = os.path.join(os.path.expanduser(dir), 'osc', 'gnome')
+            cls._cache_dir = os.path.join(cls._get_xdg_cache_home(), 'osc', 'collab')
 
         return cls._cache_dir
 
@@ -834,6 +839,10 @@ class OscCollabCache:
             Remove old cache files, when they're old (and therefore obsolete
             anyway).
         '''
+        gnome_cache_dir = os.path.join(cls._get_xdg_cache_home(), 'osc', 'gnome')
+        if os.path.exists(gnome_cache_dir):
+            shutil.rmtree(gnome_cache_dir)
+
         cache_dir = cls._get_xdg_cache_dir()
         if not os.path.exists(cache_dir):
             return
