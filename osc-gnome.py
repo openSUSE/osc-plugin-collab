@@ -3000,6 +3000,23 @@ def _collab_ensure_email(self, apiurl):
 #######################################################################
 
 
+def _collab_parse_arg_packages(self, packages):
+    def remove_trailing_slash(s):
+        if s.endswith('/'):
+            return s[:-1]
+        return s
+
+    if type(packages) == str:
+        return remove_trailing_slash(packages)
+    elif type(packages) in [ list, tuple ]:
+        return [ remove_trailing_slash(package) for package in packages ]
+    else:
+        return packages
+
+
+#######################################################################
+
+
 @cmdln.alias('gnome')
 @cmdln.option('-A', '--apiurl', metavar='URL',
               dest='apiurl',
@@ -3184,23 +3201,23 @@ def do_collab(self, subcmd, opts, *args):
         self._collab_listreserved(projects)
 
     elif cmd in ['isreserved', 'ir']:
-        package = args[1]
+        package = self._collab_parse_arg_packages(args[1])
         self._collab_isreserved(projects, package)
 
     elif cmd in ['reserve', 'r']:
-        packages = args[1:]
+        packages = self._collab_parse_arg_packages(args[1:])
         self._collab_reserve(projects, packages, user)
 
     elif cmd in ['unreserve', 'u']:
-        packages = args[1:]
+        packages = self._collab_parse_arg_packages(args[1:])
         self._collab_unreserve(projects, packages, user)
 
     elif cmd in ['setup', 's']:
-        package = args[1]
+        package = self._collab_parse_arg_packages(args[1])
         self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['update', 'up']:
-        package = args[1]
+        package = self._collab_parse_arg_packages(args[1])
         self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve)
 
     elif cmd in ['forward', 'f']:
