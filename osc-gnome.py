@@ -802,12 +802,15 @@ class GnomeCache:
     def init(cls, parent, ignore_cache):
         cls._import = parent.OscGnomeImport.m_import
         cls._ignore_cache = ignore_cache
+        cls._cleanup_old_cache()
+
 
     @classmethod
     def _print_message(cls):
         if not cls._printed:
             cls._printed = True
             print 'Downloading data in a cache. It might take a few seconds...'
+
 
     @classmethod
     def _get_xdg_cache_dir(cls):
@@ -824,6 +827,23 @@ class GnomeCache:
             cls._cache_dir = os.path.join(os.path.expanduser(dir), 'osc', 'gnome')
 
         return cls._cache_dir
+
+
+    @classmethod
+    def _cleanup_old_cache(cls):
+        '''
+            Remove old cache files, when they're old (and therefore obsolete
+            anyway).
+        '''
+        cache_dir = cls._get_xdg_cache_dir()
+        if not os.path.exists(cache_dir):
+            return
+
+        for file in os.listdir(cache_dir):
+            # remove if it's more than 5 days old
+            if cls._need_update(file, 60 * 60 * 24 * 5):
+                cache = os.path.join(cache_dir, file)
+                os.unlink(cache)
 
 
     @classmethod
