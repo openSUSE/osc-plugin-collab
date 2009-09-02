@@ -1347,7 +1347,7 @@ def _collab_reserve(self, projects, packages, username):
 
         print 'Package %s reserved for 36 hours.' % package
         print 'Do not forget to unreserve the package when done with it:'
-        print '    osc gnome unreserve %s' % package
+        print '    osc collab unreserve %s' % package
 
 
 #######################################################################
@@ -1392,7 +1392,7 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             self._collab_api.reserve_package((project,), package, username)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
-            print '    osc gnome unreserve %s' % package
+            print '    osc collab unreserve %s' % package
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             if not ignore_reserved:
@@ -2226,7 +2226,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
 
     print 'Package %s has been prepared for the update.' % package
-    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc gnome build\' to start a build on the build service.' % os.path.basename(changes_file)
+    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc collab build\' to start a build on the build service.' % os.path.basename(changes_file)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
@@ -2993,6 +2993,7 @@ def _collab_ensure_email(self, apiurl):
 #######################################################################
 
 
+@cmdln.alias('gnome')
 @cmdln.option('-A', '--apiurl', metavar='URL',
               dest='apiurl',
               help='url to use to connect to the database (different from the build service server)')
@@ -3029,7 +3030,7 @@ def _collab_ensure_email(self, apiurl):
 @cmdln.option('--nc', '--no-cache', action='store_true',
               dest='no_cache',
               help='ignore data from the cache')
-def do_gnome(self, subcmd, opts, *args):
+def do_collab(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration on the openSUSE Build Service.
 
     "todo" (or "t") will list the packages that need some action.
@@ -3066,21 +3067,21 @@ def do_gnome(self, subcmd, opts, *args):
     and if the build succeeds, submit the package to the development project.
 
     Usage:
-        osc gnome todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
-        osc gnome todoadmin [--include-upstream|--iu] [--project=PROJECT]
+        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
+        osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
-        osc gnome listreserved
-        osc gnome isreserved PKG
-        osc gnome reserve PKG [...]
-        osc gnome unreserve PKG [...]
+        osc collab listreserved
+        osc collab isreserved PKG
+        osc collab reserve PKG [...]
+        osc collab unreserve PKG [...]
 
-        osc gnome setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
-        osc gnome update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
+        osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
+        osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--project=PROJECT] PKG
 
-        osc gnome forward [--project=PROJECT] ID
+        osc collab forward [--project=PROJECT] ID
 
-        osc gnome build [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
-        osc gnome buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
+        osc collab build [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
+        osc collab buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
     ${cmd_option_list}
     """
 
@@ -3091,7 +3092,7 @@ def do_gnome(self, subcmd, opts, *args):
 
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
-        raise oscerr.WrongArgs('Unknown gnome action. Choose one of %s.' \
+        raise oscerr.WrongArgs('Unknown collab action. Choose one of %s.' \
                                            % ', '.join(cmds))
 
     cmd = args[0]
