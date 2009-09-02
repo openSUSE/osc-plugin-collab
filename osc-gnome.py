@@ -2741,7 +2741,8 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
     # the build service reevaluate the situation
     ignore_initial_errors = recently_changed
 
-    print "Waiting for the build to finish..."
+    repos.sort()
+    print "Building on %s..." % ', '.join(repos)
     print "You can press enter to get the current status of the build."
 
     # It's important to start the loop by downloading results since we might
