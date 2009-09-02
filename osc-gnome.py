@@ -370,6 +370,19 @@ class OscCollabPackage:
         return self._compare_versions_a_gt_b(self.upstream_version, self.parent_version) and self._compare_versions_a_gt_b(self.upstream_version, self.version)
 
 
+    def devel_needs_update(self):
+        # if there's no devel project, then it's as if it were needing an update
+        if not self.devel_project:
+            return True
+
+        # empty upstream version, or upstream version meaning openSUSE is
+        # upstream
+        if self.upstream_version in [ None, '', '--' ]:
+            return False
+
+        return self._compare_versions_a_gt_b(self.upstream_version, self.devel_version)
+
+
     def is_broken_link(self):
         return self.error in [ 'not-in-parent', 'need-merge-with-parent' ]
 
@@ -1048,7 +1061,7 @@ def _collab_table_print_header(self, template, title):
 #######################################################################
 
 
-def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted):
+def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted, exclude_devel):
     # get all versions of packages
     try:
         prj = self._collab_api.get_project_details(project)
@@ -1094,6 +1107,12 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
 
         package.upstream_version_print = package.upstream_version
 
+        if not package.devel_needs_update():
+            if exclude_devel:
+                continue
+            package.version_print += ' (d)'
+            package.upstream_version_print += ' (d)'
+
         if self._collab_find_request_to(package.name, requests_to) != None:
             if exclude_submitted:
                 continue
@@ -1119,12 +1138,12 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
 #######################################################################
 
 
-def _collab_todo(self, apiurl, projects, exclude_reserved, exclude_submitted):
+def _collab_todo(self, apiurl, projects, exclude_reserved, exclude_submitted, exclude_devel):
     packages = []
     parent_project = None
 
     for project in projects:
-        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, exclude_reserved, exclude_submitted)
+        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, exclude_reserved, exclude_submitted, exclude_devel)
         if not project_packages:
             continue
         packages.extend(project_packages)
@@ -2113,6 +2132,12 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
         print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
     elif pkg.upstream_version == '--':
         print 'Package %s has no upstream.' % package
+        return
+    elif pkg.devel_project and pkg.needs_update() and not no_devel_project and not pkg.devel_needs_update():
+        if not pkg.devel_package or pkg.devel_package == package:
+            print 'Package %s is already up-to-date in its development project (%s).' % (package, pkg.devel_project)
+        else:
+            print 'Package %s is already up-to-date in its development project (%s/%s).' % (package, pkg.devel_project, pkg.devel_package)
         return
     elif not pkg.needs_update():
         print 'Package %s is already up-to-date.' % package
@@ -3210,6 +3235,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--xr', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
+@cmdln.option('--xd', '--exclude-devel', action='store_true',
+              dest='exclude_devel',
+              help='do not show packages that are up-to-date in their development project in the output')
 @cmdln.option('--ir', '--ignore-reserved', action='store_true',
               dest='ignore_reserved',
               help='ignore the reservation state of the package if necessary')
@@ -3277,7 +3305,7 @@ def do_collab(self, subcmd, opts, *args):
     and if the build succeeds, submit the package to the development project.
 
     Usage:
-        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--project=PROJECT]
+        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-devel|--xd] [--project=PROJECT]
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
@@ -3356,7 +3384,7 @@ def do_collab(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._collab_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted)
+        self._collab_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
 
     elif cmd in ['todoadmin', 'ta']:
         self._collab_todoadmin(apiurl, projects, opts.include_upstream)
