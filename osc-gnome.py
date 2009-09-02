@@ -3296,7 +3296,7 @@ def _collab_parse_arg_packages(self, packages):
               help='automatically forward to parent project if successful')
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
-              help='project to work on (default: GNOME:Factory)')
+              help='project to work on (default: openSUSE:Factory)')
 @cmdln.option('--repo', metavar='REPOSITORY', action='append',
               dest='repos', default=[],
               help='build repositories to build on (default: openSUSE_Factory)')
@@ -3403,7 +3403,7 @@ def do_collab(self, subcmd, opts, *args):
     if len(opts.projects) != 0:
         projects = opts.projects
     else:
-        projects = self._collab_get_config_list(apiurl, 'collab_projects', 'GNOME:Factory')
+        projects = self._collab_get_config_list(apiurl, 'collab_projects', 'openSUSE:Factory')
 
     if len(opts.repos) != 0:
         repos = opts.repos
