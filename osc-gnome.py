@@ -793,7 +793,6 @@ class OscCollabApi:
 class OscCollabCache:
 
     _cache_dir = None
-    _format_str = '# osc-gnome-format: '
     _import = None
     _ignore_cache = False
     _printed = False
