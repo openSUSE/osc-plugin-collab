@@ -1799,6 +1799,17 @@ def _gnome_gz_to_bz2_internal(self, file):
 #######################################################################
 
 
+def _gnome_subst_defines(self, s, defines):
+    '''Replace macros like %{version} and %{name} in strings. Useful
+       for sources and patches '''
+    for key in defines.keys():
+        if s.find(key) != -1:
+            value = defines[key]
+            s = s.replace('%%{%s}' % key, value)
+            s = s.replace('%%%s' % key, value)
+    return s
+
+
 def _gnome_update_spec(self, spec_file, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
@@ -1848,7 +1859,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
 
         match = re_spec_define.match(line)
         if match:
-            defines[match.group(1)] = match.group(2)
+            defines[match.group(1)] = self._gnome_subst_defines(match.group(2), defines)
             os.write(fdout, line)
             continue
 
@@ -1861,7 +1872,7 @@ def _gnome_update_spec(self, spec_file, upstream_version):
         match = re_spec_version.match(line)
         if match:
             defines['version'] = match.group(2)
-            old_version = match.group(2)
+            old_version = self._gnome_subst_defines(match.group(2), defines)
             os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
@@ -1897,13 +1908,6 @@ def _gnome_update_spec(self, spec_file, upstream_version):
                 old_source = old_source.replace('%%%s' % key, defines[key])
                 if key not in [ 'name', '_name', 'version' ]:
                     define_in_source = True
-
-    if old_version and old_version.find('%') != -1:
-        for key in defines.keys():
-            if old_version.find(key) != -1:
-                old_version = old_version.replace('%%{%s}' % key, defines[key])
-                old_version = old_version.replace('%%%s' % key, defines[key])
-
 
     return (True, old_source, old_version, define_in_source)
 
