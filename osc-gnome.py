@@ -2741,7 +2741,6 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
     # the build service reevaluate the situation
     ignore_initial_errors = recently_changed
 
-    repos.sort()
     print "Building on %s..." % ', '.join(repos)
     print "You can press enter to get the current status of the build."
 
@@ -2812,6 +2811,9 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
 def _collab_build_internal(self, apiurl, osc_package, repos, archs, recently_changed):
     project = osc_package.prjname
     package = osc_package.name
+
+    repos.sort()
+    archs.sort()
 
     # check that build is enabled for this package in this project, and if this
     # is not the case, enable it
