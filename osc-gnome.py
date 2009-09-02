@@ -2905,9 +2905,67 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
 #######################################################################
 
 
+def _collab_autodetect_repo(self, apiurl, project):
+    try:
+        meta_lines = show_project_meta(apiurl, project)
+        meta = ''.join(meta_lines)
+    except urllib2.HTTPError:
+        return None
+
+    try:
+        root = ET.XML(meta)
+    except SyntaxError:
+        return None
+
+    repos = []
+    for node in root.findall('repository'):
+        name = node.get('name')
+        if name:
+            repos.append(name)
+
+    if not repos:
+        return None
+
+    # This is the list of repositories we prefer, the first one being the
+    # preferred one.
+    #  + snapshot/standard is what openSUSE:Factory uses, and some other
+    #    projects might use this too (snapshot is like standard, except that
+    #    packages won't block before getting built).
+    #  + openSUSE_Factory is the usual repository for devel projects.
+    #  + openSUSE-Factory is a variant of the one above (typo in some project
+    #    config?)
+    for repo in [ 'snapshot', 'standard', 'openSUSE_Factory', 'openSUSE-Factory' ]:
+        if repo in repos:
+            return repo
+
+    # No known repository? We try to use the last one named openSUSE* (last
+    # one because we want the most recent version of openSUSE).
+    opensuse_repos = [ repo for repo in repos if repo.startswith('openSUSE') ]
+    if len(opensuse_repos) > 0:
+        opensuse_repos.sort(reverse = True)
+        return opensuse_repos[0]
+
+    # Still no solution? Let's just take the first one...
+    return repos[0]
+
+
+#######################################################################
+
+
 def _collab_build_internal(self, apiurl, osc_package, repos, archs, recently_changed):
     project = osc_package.prjname
     package = osc_package.name
+
+    if '!autodetect!' in repos:
+        print 'Autodetecting the most appropriate repository for the build...'
+        repos.remove('!autodetect!')
+        repo = self._collab_autodetect_repo(apiurl, project)
+        if repo:
+            repos.append(repo)
+
+    if len(repos) == 0:
+        print >>sys.stderr, 'Error while setting up the build: no usable repository.'
+        return False
 
     repos.sort()
     archs.sort()
@@ -3299,7 +3357,7 @@ def _collab_parse_arg_packages(self, packages):
               help='project to work on (default: openSUSE:Factory)')
 @cmdln.option('--repo', metavar='REPOSITORY', action='append',
               dest='repos', default=[],
-              help='build repositories to build on (default: openSUSE_Factory)')
+              help='build repositories to build on (default: automatic detection)')
 @cmdln.option('--arch', metavar='ARCH', action='append',
               dest='archs', default=[],
               help='architectures to build on (default: i586 and x86_64)')
@@ -3408,7 +3466,7 @@ def do_collab(self, subcmd, opts, *args):
     if len(opts.repos) != 0:
         repos = opts.repos
     else:
-        repos = self._collab_get_config_list(apiurl, 'collab_repos', 'openSUSE_Factory;')
+        repos = self._collab_get_config_list(apiurl, 'collab_repos', '!autodetect!')
 
     if len(opts.archs) != 0:
         archs = opts.archs
