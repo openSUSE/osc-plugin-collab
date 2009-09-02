@@ -37,9 +37,10 @@
 # This is a hack to have osc ignore the file we create in a package directory.
 try:
     import conf
-    conf.DEFAULTS['exclude_glob'] += ' osc-gnome.*'
+    conf.DEFAULTS['exclude_glob'] += ' osc-collab.* osc-gnome.*'
 except:
     # compatibility with osc <= 0.121
+    exclude_stuff.append('osc-collab.*')
     exclude_stuff.append('osc-gnome.*')
 
 
@@ -1657,7 +1658,7 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
                 pass_one_done = True
                 dest_f.write('\n')
                 dest_f.write('#############################################################\n')
-                dest_f.write('# Note by osc gnome: here is the complete diff for reference.\n')
+                dest_f.write('# Note by osc collab: here is the complete diff for reference.\n')
                 dest_f.write('#############################################################\n')
                 dest_f.write('\n')
                 for cached_line in cached:
@@ -1679,7 +1680,7 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     if not tempfile or not shutil or not tarfile or not difflib:
         raise self.OscCollabNewsError('Cannot extract NEWS information: incomplete python installation.')
 
-    tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
+    tmpdir = tempfile.mkdtemp(prefix = 'osc-collab-')
 
     old = None
     new = None
@@ -1775,12 +1776,12 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
                 old_changelog = None
 
     # do the diff
-    news = os.path.join(directory, 'osc-gnome.NEWS')
+    news = os.path.join(directory, 'osc-collab.NEWS')
     (news_created, news_is_diff) = _diff_files(old_news, new_news, news)
-    changelog = os.path.join(directory, 'osc-gnome.ChangeLog')
+    changelog = os.path.join(directory, 'osc-collab.ChangeLog')
     (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
 
-    # Note: we make osc ignore those osc-gnome.* file we created by modifying
+    # Note: we make osc ignore those osc-collab.* file we created by modifying
     # the exclude list of osc.core. See the top of this file.
 
     _cleanup(old, new, tmpdir)
@@ -2010,7 +2011,7 @@ def _collab_quilt_package(self, package, spec_file):
         return False
 
     null = open('/dev/null', 'w')
-    tmpdir = tempfile.mkdtemp(prefix = 'osc-gnome-')
+    tmpdir = tempfile.mkdtemp(prefix = 'osc-collab-')
 
 
     # setup with quilt
