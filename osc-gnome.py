@@ -567,6 +567,44 @@ class OscCollabObs:
         return True
 
 
+    @classmethod
+    def branch_package(cls, project, package, no_devel_project = False):
+        query = { 'cmd': 'branch' }
+        if no_devel_project:
+            query['ignoredevel'] = '1'
+
+        url = makeurl(cls.apiurl, ['source', project, package], query = query)
+
+        try:
+            fin = http_POST(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot branch package %s: %s' % (package, e.msg)
+            return (None, None)
+
+        try:
+            node = ET.parse(fin).getroot()
+        except SyntaxError, e:
+            fin.close()
+            print >>sys.stderr, 'Cannot branch package %s: %s' % (package, e.msg)
+            return (None, None)
+
+        fin.close()
+
+        branch_project = None
+        branch_package = None
+
+        for data in node.findall('data'):
+            name = data.get('name')
+            if not name:
+                continue
+            if name == 'targetproject' and data.text:
+                branch_project = data.text
+            elif name == 'targetpackage' and data.text:
+                branch_package = data.text
+
+        return (branch_project, branch_package)
+
+
 #######################################################################
 
 
@@ -1453,19 +1491,19 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
         if e.code != 404:
             print >>sys.stderr, 'Error while checking if package %s was already branched: %s' % (package, e.msg)
             return (False, None, None)
-        # We had a 404: it means the branched package doesn't exist yet
-        try:
-            branch_project = branch_pkg(apiurl, project, package, nodevelproject = no_devel_project)
-            branch_package = package
-            checkout_dir = branch_package
 
-            if package != branch_package:
-                print 'Package %s has been branched in %s/%s.' % (package, branch_project, branch_package)
-            else:
-                print 'Package %s has been branched in project %s.' % (branch_package, branch_project)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Error while branching package %s: %s' % (package, e.msg)
+        # We had a 404: it means the branched package doesn't exist yet
+        (branch_project, branch_package) = self.OscCollabObs.branch_package(project, package, no_devel_project)
+        if not branch_project or not branch_package:
+            print >>sys.stderr, 'Error while branching package %s: incomplete reply from build service' % (package,)
             return (False, None, None)
+
+        checkout_dir = branch_package
+
+        if package != branch_package:
+            print 'Package %s has been branched in %s/%s.' % (package, branch_project, branch_package)
+        else:
+            print 'Package %s has been branched in project %s.' % (branch_package, branch_project)
 
     # check out the branched package
     if os.path.exists(checkout_dir):
