@@ -986,7 +986,8 @@ class SrcPackage(Base):
 
             match = SrcPackage.re_spec_define.match(line)
             if match:
-                defines[match.group(1)] = match.group(2)
+                value = subst_defines(match.group(2), defines)
+                defines[match.group(1)] = value
                 continue
 
             match = SrcPackage.re_spec_name.match(line)
