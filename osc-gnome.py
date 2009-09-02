@@ -579,7 +579,7 @@ class OscGnomeApi:
             return '%s?%s' % (url, data)
 
 
-    def _get_api_url_for(self, api, project = None, projects = None, package = None):
+    def _get_api_url_for(self, api, project = None, projects = None, package = None, need_package_for_multiple_projects = True):
         if not project and len(projects) == 1:
             project = projects[0]
 
@@ -590,7 +590,7 @@ class OscGnomeApi:
             items.append(package)
         url = '/'.join(items)
 
-        if not project and package and projects:
+        if not project and (not need_package_for_multiple_projects or package) and projects:
             data = urlencode({'version': self._supported_api, 'project': projects}, True)
             url = self._append_data_to_url(url, data)
         else:
@@ -601,11 +601,11 @@ class OscGnomeApi:
 
 
     def _get_info_url(self, project = None, projects = None, package = None):
-        return self._get_api_url_for('info', project, projects, package)
+        return self._get_api_url_for('info', project, projects, package, True)
 
 
     def _get_reserve_url(self, project = None, projects = None, package = None):
-        return self._get_api_url_for('reserve', project, projects, package)
+        return self._get_api_url_for('reserve', project, projects, package, False)
 
 
     def _get_root_for_url(self, url, error_prefix, cache_file = None, cache_age = 10):
