@@ -1468,6 +1468,12 @@ def _collab_setup_internal(self, apiurl, username, project, package, ignore_rese
             self._collab_exception_print(e, message)
             return False
 
+    # remove old osc-gnome.* files
+    for file in os.listdir(package):
+        if file.startswith('osc-gnome.'):
+            path = os.path.join(package, file)
+            os.unlink(path)
+
     return True
 
 
