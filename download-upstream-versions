@@ -406,70 +406,46 @@ def _get_version_from_sf_rss(modulename, id, limit):
     (limit, limit_data) = _setup_limit(limit)
 
     ids = id.split('|')
-    url = 'http://sourceforge.net/export/rss2_projfiles.php?group_id=%s' % ids[0]
+    url = 'http://sourceforge.net/api/file/index/project-id/%s/rss' % ids[0]
     if len(ids) > 1:
-        url += '&package_id=%s' % ids[1]
-
-    ## New sourceforge scheme. But it doesn't work: some feeds are broken, and
-    ## we need to do some recursive feed retrieval.
-    ## Example of broken feed:
-    ##     http://sourceforge.net/api/file/index/project-id/87005/rss?path=/Liferea%20Stable
-    #url = 'http://sourceforge.net/api/file/index/project-id/%s/rss' % ids[0]
-    #if len(ids) > 1:
-    #    # we do not want urlencode since spaces are %20 and not +
-    #    url += '?path=/%s' % urllib.quote(ids[1])
+        # we do not want urlencode since spaces are %20 and not +
+        url += '?path=/%s' % urllib.quote(ids[1])
 
     feed = feedparser.parse(url)
 
-    version_re = re.compile('.* ((?:[0-9]+\.)*)([0-9]+) (\([^\)]*\) )?released.*')
-    download_re = re.compile('<a href="([^"]*)">\[Download\]</a>')
+    re_tarball = re.compile(r'^.*%2F'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(tar.*|t[bg]z2?)/')
 
     biggest = '0'
     location = None
+    best_ext = None
 
     for entry in feed['entries']:
-        version = version_re.sub(r'\1\2', entry.title)
-        if version == entry.title:
-            # could not apply regexp
+        match = re_tarball.match(entry.link)
+        if not match:
             continue
+
+        version = match.group(1)
+        ext = match.group(2)
         if not version == _bigger_version(version, biggest):
             continue
         if not _respect_limit(version, limit, limit_data):
             continue
 
-        tarball_re = re.compile('%s-%s\.tar' % (modulename, version))
-        match = tarball_re.search(entry.summary)
-        if not match:
-            continue
-
-        match = download_re.search(entry.summary)
-        if match:
-            download_url = match.group(1)
-        biggest = version
-        location = download_url
-
-    # if we have a link to the sf download page, look at this page
-    if location:
-        (location, files) = _get_files_from_http(location)
-
-        good_files = [file for file in files if file.endswith('/download') and biggest in file]
-
-        tarballs = None
-        if not tarballs:
-            tarballs = [file for file in good_files if '.tar.bz2' in file]
-        if not tarballs:
-            tarballs = [file for file in good_files if '.tar.gz' in file]
-
-        if tarballs:
-            # let's take the first tarball
-            url = urlparse.urlparse(tarballs[0])
-            if url.path[0] == '/':
-                path = url.path[1:]
+        if biggest == version:
+            if best_ext in [ '.tar.bz2', '.tbz2' ]:
+                continue
+            elif ext in [ '.tar.bz2', '.tbz2' ]:
+                pass
+            elif best_ext in [ '.tar.gz', '.tgz' ]:
+                continue
+            elif ext in [ '.tar.gz', '.tgz' ]:
+                pass
             else:
-                path = url.path
-            if url.query:
-                path = '%s?%s' % (path, url.query)
-            location = 'http://sourceforge.net/%s' % path
+                continue
+
+        biggest = version
+        location = entry.link
+        best_ext = ext
 
     if biggest == '0' and location == None:
         biggest = None

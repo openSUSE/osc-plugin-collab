@@ -15,6 +15,8 @@ aqbanking:max|3
 gwenhywfar:max|3
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
+# libofx used 0.11 as 0.1.1...
+libofx:max|0.10
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable

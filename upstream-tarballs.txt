@@ -42,9 +42,9 @@
 # sf:
 #   + use this when the upstream tarballs are hosted on sourceforge
 #   + the info field should be the project id in sourceforge
-#     It can also contain the package id for sourceforge projects using
+#     It can also contain the path for sourceforge projects using
 #     packages. In this case, the ids should be separated by a pipe:
-#     project_id|package_id
+#     project_id|path
 #
 # google:
 #   + use this when the upstream tarballs are hosted on code.google.com
@@ -78,36 +78,36 @@ webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 # note that we still use aqbanking 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
-aqbanking:sf:115695|125492
-asio:sf:122478|134200
+aqbanking:sf:115695|aqbanking
+asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
-bakefile:sf:83016|85308
+bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
 banshee-1:subdirhttpls:http://download.banshee-project.org/banshee/stable/
 beagle-index:upstream:
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
-bombermaze:sf:8614|8751
+bombermaze:sf:8614|bombermaze
 boot-mode-ui:google:loolixbodes|boot-mode-ui
 bundle-lang-gnome:upstream:
 bundle-lang-gnome-extras:upstream:
 build-compare:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-check:sf:28255|20116
+check:sf:28255|check
 chmsee:google:chmsee
-claws-mail:sf:25528
-claws-mail-extra-plugins:sf:25528
+claws-mail:sf:25528|Claws Mail
+claws-mail-extra-plugins:sf:25528|extra plugins
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
-conglomerate:sf:82766|85066
+conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
@@ -140,9 +140,9 @@ gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 gimp-save-for-web:httpls:http://registry.gimp.org/node/33
 giver:google:giver
 gkrellm:httpls:http://members.dslextreme.com/users/billw/gkrellm/gkrellm.html
-glabels:sf:46122
+glabels:sf:46122|glabels
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-gmetadom:sf:40627|32815
+gmetadom:sf:40627|gmetadom
 gnome-disk-utility:httpls:http://hal.freedesktop.org/releases/
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
@@ -152,16 +152,17 @@ gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 # gnucash is also hosted on sf...
-# gnucash:sf:192|202
+# gnucash:sf:192|gnucash
 gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 # gnucash is also hosted on sf...
-# gnucash-docs:sf:192|93259
+# gnucash-docs:sf:192|gnucash-docs
 gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
-gq:sf:3805|3771
-gqview:sf:4050|4056
+gq:sf:3805|GQ LDAP Client
+# we don't care about stable vs unstable for gqview
+gqview:sf:4050
 gssdp:httpls:http://www.gupnp.org/sources/gssdp/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
@@ -172,7 +173,7 @@ gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk2-themes:upstream:
-gtkglext:sf:54333|48997
+gtkglext:sf:54333|gtkglext
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gupnp:httpls:http://www.gupnp.org/sources/gupnp/
 gupnp-av:httpls:http://www.gupnp.org/sources/gupnp-av/
@@ -181,12 +182,12 @@ gupnp-tools:httpls:http://www.gupnp.org/sources/gupnp-tools/
 gupnp-ui:httpls:http://www.gupnp.org/sources/gupnp-ui/
 # note that we still use gwenhywfar 2.x. The 3.x version is available from
 # http://www.aquamaniac.de/sites/download/packages.php
-gwenhywfar:sf:88769|171330
+gwenhywfar:sf:88769|gwenhywfar2
 # There's no upstream tarball for gwibber, though
 gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
-inkscape:sf:93438|99112
+inkscape:sf:93438|inkscape
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
@@ -203,15 +204,15 @@ libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
-libiptcdata:sf:130582|143234
+libiptcdata:sf:130582|libiptcdata
 libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
 liblouis:google:liblouis
 libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
-libnjb:sf:32528|24667
+libnjb:sf:32528|libnjb
 libnl:httpls:http://www.infradead.org/~tgr/libnl/
 libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
-libofx:sf:61170|57485
+libofx:sf:61170|libofx
 liboil:httpls:http://liboil.freedesktop.org/download/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
 libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
@@ -220,17 +221,16 @@ libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
-libxklavier:sf:319|49313
-liferea:sf:87005|90495
+libxklavier:sf:319|libxklavier
+liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 metacity-themes:upstream:
 metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
 metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
-mission-control:sf:190214|224579
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
-nautilus-search-tool:sf:149158|165906
+nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
@@ -249,7 +249,7 @@ paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
 papyon:httpls:http://telepathy.freedesktop.org/releases/papyon/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
-pidgin:sf:235|230234
+pidgin:sf:235|Pidgin
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
@@ -258,17 +258,17 @@ psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 #FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-pygtkglext:sf:54333|76105
+pygtkglext:sf:54333|pygtkglext
 pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
-python-xlib:sf:10350|10058
+python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 sobby:httpls:http://releases.0x539.de/sobby/
-sofia-sip:sf:143636|157769
+sofia-sip:sf:143636|sofia-sip
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
@@ -281,6 +281,7 @@ telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabb
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
+# The 4.x branch: telepathy-mission-control:sf:190214|mission-control
 telepathy-mission-control:httpls:http://telepathy.freedesktop.org/releases/telepathy-mission-control/
 telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
@@ -290,8 +291,8 @@ telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-so
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
-tsclient:sf:192483|226432
-twitux:sf:198704|235460
+tsclient:sf:192483|tsclient
+twitux:sf:198704|twitux
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
@@ -353,22 +354,22 @@ UPnP-Inspector:httpls:http://coherence.beebits.net/download/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 computertemp:httpls:http://computertemp.berlios.de/download.php
 dopi:httpls:http://www.snorp.net/files/dopi/
-glipper:sf:167085|190045
-gnome-color-chooser:sf:211146|253676
+glipper:sf:167085|glipper
+gnome-color-chooser:sf:211146|gnome-color-chooser
 gnome-colors:google:gnome-colors
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
-gtk-engines-cleanice:sf:57808|61114
-gtk-recordmydesktop:sf:172357|202906
+gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
+gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
 last-exit:httpls:http://lastexit-player.org/releases/
-librep:sf:580|590
+librep:sf:580|librep
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 pidgin-guifications:trac:http://plugins.guifications.org/trac/downloads
-recordmydesktop:sf:172357|197132
-rep-gtk:sf:581|591
-sawfish:sf:32|17
+recordmydesktop:sf:172357|recordmydesktop
+rep-gtk:sf:581|rep-gtk
+sawfish:sf:32|sawfish
 specto:httpls:http://specto.sourceforge.net/?go=download
-spheres-and-crystals:sf:64400|72957
+spheres-and-crystals:sf:64400|spherecrystal
 tangerine:lp:tangerine
 
 
