@@ -2350,7 +2350,7 @@ def _collab_package_set_meta(self, apiurl, project, package, meta, error_msg_pre
     return not failed
 
 
-def _collab_enable_build(self, apiurl, project, package, meta, repo, archs):
+def _collab_enable_build(self, apiurl, project, package, meta, repos, archs):
     if len(archs) == 0:
         return (True, False)
 
@@ -2363,30 +2363,57 @@ def _collab_enable_build(self, apiurl, project, package, meta, repo, archs):
         package_node.append(build_node)
 
     enable_found = {}
-    for arch in archs:
-        enable_found[arch] = False
+    for repo in repos:
+        enable_found[repo] = {}
+        for arch in archs:
+            enable_found[repo][arch] = False
 
     # remove disable before adding enable
     for node in build_node.findall('disable'):
+        repo = node.get('repository')
         arch = node.get('arch')
-        if arch in archs:
-            build_node.remove(node)
+
+        if repo and repo not in repos:
+            continue
+        if arch and arch not in archs:
+            continue
+
+        build_node.remove(node)
 
     for node in build_node.findall('enable'):
+        repo = node.get('repository')
         arch = node.get('arch')
-        if enable_found.has_key(arch):
-            enable_found[arch] = True
 
-    for arch in archs:
-        if not enable_found[arch]:
-            node = ET.Element('enable', { 'repository': repo, 'arch': arch})
-            build_node.append(node)
+        if repo and repo not in repos:
+            continue
+        if arch and arch not in archs:
+            continue
+
+        if repo and arch:
+            enable_found[repo][arch] = True
+        elif repo:
+            for arch in enable_found[repo].keys():
+                enable_found[repo][arch] = True
+        elif arch:
+            for repo in enable_found.keys():
+                enable_found[repo][arch] = True
+        else:
+            for repo in enable_found.keys():
+                for arch in enable_found[repo].keys():
+                    enable_found[repo][arch] = True
+
+    for repo in repos:
+        for arch in archs:
+            if not enable_found[repo][arch]:
+                node = ET.Element('enable', { 'repository': repo, 'arch': arch})
+                build_node.append(node)
 
     all_true = True
-    for value in enable_found.values():
-        if not value:
-            all_true = False
-            break
+    for repo in enable_found.keys():
+        for value in enable_found[repo].values():
+            if not value:
+                all_true = False
+                break
 
     if all_true:
         return (True, False)
@@ -2434,43 +2461,63 @@ def _collab_get_latest_package_rev_built(self, apiurl, project, repo, arch, pack
     return (True, srcmd5, rev)
 
 
-def _collab_print_build_status(self, repo, build_state, header, error_line, hint = False):
+def _collab_print_build_status(self, build_state, header, error_line, hint = False):
+    def get_str_repo_arch(repo, arch, show_repos):
+        if show_repos:
+            return '%s/%s' % (repo, arch)
+        else:
+            return arch
+
     print '%s:' % header
 
-    keys = build_state.keys()
-    if not keys or len(keys) == 0:
+    repos = build_state.keys()
+    if not repos or len(repos) == 0:
+        print '  %s' % error_line
+        return
+
+    repos_archs = []
+
+    for repo in repos:
+        archs = build_state[repo].keys()
+        for arch in archs:
+            repos_archs.append((repo, arch))
+            one_result = True
+
+    if len(repos_archs) == 0:
         print '  %s' % error_line
         return
 
     show_hint = False
-    keys.sort()
+    show_repos = len(repos) > 1
+    repos_archs.sort()
 
     max_len = 0
-    for key in keys:
-        if len(key) > max_len:
-            max_len = len(key)
+    for (repo, arch) in repos_archs:
+        l = len(get_str_repo_arch(repo, arch, show_repos))
+        if l > max_len:
+            max_len = l
 
     # 4: because we also have a few other characters (see left variable)
     format = '%-' + str(max_len + 4) + 's%s'
-    for key in keys:
-        if build_state[key]['result'] in ['failed']:
+    for (repo, arch) in repos_archs:
+        if build_state[repo][arch]['result'] in ['failed']:
             show_hint = True
 
-        left = '  %s: ' % key
-        if build_state[key]['result'] in ['expansion error', 'broken', 'blocked', 'finished'] and build_state[key]['details']:
-            status = '%s (%s)' % (build_state[key]['result'], build_state[key]['details'])
+        left = '  %s: ' % get_str_repo_arch(repo, arch, show_repos)
+        if build_state[repo][arch]['result'] in ['expansion error', 'broken', 'blocked', 'finished'] and build_state[repo][arch]['details']:
+            status = '%s (%s)' % (build_state[repo][arch]['result'], build_state[repo][arch]['details'])
         else:
-            status = build_state[key]['result']
+            status = build_state[repo][arch]['result']
 
         print format % (left, status)
 
     if show_hint and hint:
-        for key in keys:
-            if build_state[key]['result'] == 'failed':
-                print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, key)
+        for (repo, arch) in repos_archs:
+            if build_state[repo][arch]['result'] == 'failed':
+                print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, arch)
 
 
-def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
+def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
     time = self.OscCollabImport.m_import('time')
 
     try:
@@ -2490,13 +2537,14 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
         return (True, False, error_counter, state)
 
     res_root = ET.XML(''.join(results))
-    results_per_arch = {}
+    detailed_results = {}
+    repos_archs = []
 
     for node in res_root.findall('result'):
 
-        buildrepo = node.get('repository')
-        # ignore the repo if it's not the one we explicitly use
-        if not buildrepo == repo:
+        repo = node.get('repository')
+        # ignore the repo if it's not one we explicitly use
+        if not repo in repos:
            continue
 
         arch = node.get('arch')
@@ -2517,9 +2565,12 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
         except:
             details = None
 
-        results_per_arch[arch] = {}
-        results_per_arch[arch]['status'] = status
-        results_per_arch[arch]['details'] = details
+        if not detailed_results.has_key(repo):
+            detailed_results[repo] = {}
+        detailed_results[repo][arch] = {}
+        detailed_results[repo][arch]['status'] = status
+        detailed_results[repo][arch]['details'] = details
+        repos_archs.append((repo, arch))
 
     # evaluate the status: do we need to give more time to the build service?
     # Was the build successful?
@@ -2528,21 +2579,20 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
     build_successful = True
 
     # A bit paranoid, but it seems it happened to me once...
-    if len(results_per_arch) == 0:
+    if len(repos_archs) == 0:
         bs_not_ready = True
         build_successful = False
         if verbose_error:
             print >>sys.stderr, 'Build service did not return any information.'
         error_counter += 1
 
-    for key in results_per_arch.keys():
-        arch_need_rebuild = False
-        arch = key
-        value = results_per_arch[key]['status']
+    for (repo, arch) in repos_archs:
+        need_rebuild = False
+        value = detailed_results[repo][arch]['status']
 
         # the result has changed since last time, so we won't trigger a rebuild
-        if state[arch]['result'] != value:
-            state[arch]['rebuild'] = -1
+        if state[repo][arch]['result'] != value:
+            state[repo][arch]['rebuild'] = -1
 
         # build is done, but not successful
         if value not in ['succeeded', 'excluded']:
@@ -2556,7 +2606,7 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
         # so we have to force a rebuild
         if value in ['blocked']:
             bs_not_ready = True
-            arch_need_rebuild = True
+            need_rebuild = True
 
         # build has failed for an architecture: no need to wait for other
         # architectures to know that there's a problem
@@ -2566,13 +2616,13 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
                 do_not_wait_for_bs = True
             else:
                 bs_not_ready = True
-                results_per_arch[key]['status'] = 'rebuild needed'
+                detailed_results[repo][arch]['status'] = 'rebuild needed'
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
         elif value in ['unknown', 'disabled']:
             bs_not_ready = True
-            arch_need_rebuild = True
+            need_rebuild = True
 
         # build is done, but is it for the latest version?
         elif value in ['succeeded']:
@@ -2580,7 +2630,7 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
             (success, built_srcmd5, built_rev) = self._collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
 
             if not success:
-                results_per_arch[key]['status'] = 'succeeded, but maybe not up-to-date'
+                detailed_results[repo][arch]['status'] = 'succeeded, but maybe not up-to-date'
                 error_counter += 1
                 # we don't know what's going on, so we'll contact the build
                 # service again
@@ -2594,10 +2644,10 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
                 # (bnc). So, we just ignore the revision for now.
                 #if (built_srcmd5, built_rev) != (srcmd5, rev):
                 if built_srcmd5 != srcmd5:
-                    arch_need_rebuild = True
-                    results_per_arch[key]['status'] = 'rebuild needed'
+                    need_rebuild = True
+                    detailed_results[repo][arch]['status'] = 'rebuild needed'
 
-        if arch_need_rebuild and state[arch]['rebuild'] == 0:
+        if need_rebuild and state[repo][arch]['rebuild'] == 0:
             bs_not_ready = True
 
             if not time:
@@ -2614,41 +2664,41 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
 
-        state[arch]['result'] = results_per_arch[key]['status']
-        state[arch]['details'] = results_per_arch[key]['details']
+        state[repo][arch]['result'] = detailed_results[repo][arch]['status']
+        state[repo][arch]['details'] = detailed_results[repo][arch]['details']
 
-        if state[arch]['result'] in ['blocked']:
+        if state[repo][arch]['result'] in ['blocked']:
             # if we're blocked, maybe the scheduler forgot about us, so
             # schedule a rebuild every 60 minutes. The main use case is when
             # you leave the plugin running for a whole night.
-            if state[arch]['rebuild'] <= 0:
-                state[arch]['rebuild-timeout'] = 60
-                state[arch]['rebuild'] = state[arch]['rebuild-timeout']
+            if state[repo][arch]['rebuild'] <= 0:
+                state[repo][arch]['rebuild-timeout'] = 60
+                state[repo][arch]['rebuild'] = state[repo][arch]['rebuild-timeout']
 
             # note: it's correct to decrement even if we start with a new value
             # of timeout, since if we don't, it adds 1 minute (ie, 5 minutes
             # instead of 4, eg)
-            state[arch]['rebuild'] = state[arch]['rebuild'] - 1
-        elif state[arch]['result'] in ['unknown', 'disabled', 'rebuild needed']:
+            state[repo][arch]['rebuild'] = state[repo][arch]['rebuild'] - 1
+        elif state[repo][arch]['result'] in ['unknown', 'disabled', 'rebuild needed']:
             # if we're in this unexpected state, force the scheduler to do
             # something
-            if state[arch]['rebuild'] <= 0:
+            if state[repo][arch]['rebuild'] <= 0:
                 # we do some exponential timeout until 60 minutes. We skip
                 # timeouts of 1 and 2 minutes since they're quite short.
-                if state[arch]['rebuild-timeout'] > 0:
-                    state[arch]['rebuild-timeout'] = min(60, state[arch]['rebuild-timeout'] * 2)
+                if state[repo][arch]['rebuild-timeout'] > 0:
+                    state[repo][arch]['rebuild-timeout'] = min(60, state[repo][arch]['rebuild-timeout'] * 2)
                 else:
-                    state[arch]['rebuild-timeout'] = 4
-                state[arch]['rebuild'] = state[arch]['rebuild-timeout']
+                    state[repo][arch]['rebuild-timeout'] = 4
+                state[repo][arch]['rebuild'] = state[repo][arch]['rebuild-timeout']
 
             # note: it's correct to decrement even if we start with a new value
             # of timeout, since if we don't, it adds 1 minute (ie, 5 minutes
             # instead of 4, eg)
-            state[arch]['rebuild'] = state[arch]['rebuild'] - 1
+            state[repo][arch]['rebuild'] = state[repo][arch]['rebuild'] - 1
         else:
             # else, we make sure we won't manually trigger a rebuild
-            state[arch]['rebuild'] = -1
-            state[arch]['rebuild-timeout'] = -1
+            state[repo][arch]['rebuild'] = -1
+            state[repo][arch]['rebuild-timeout'] = -1
 
     if do_not_wait_for_bs:
         bs_not_ready = False
@@ -2656,7 +2706,7 @@ def _collab_build_get_results(self, apiurl, project, repo, package, archs, srcmd
     return (bs_not_ready, build_successful, error_counter, state)
 
 
-def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5, rev, recently_changed):
+def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5, rev, recently_changed):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
@@ -2674,16 +2724,18 @@ def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5,
     last_check = 0
 
     state = {}
-    # When we want to trigger a rebuild for this arch.
+    # When we want to trigger a rebuild for this repo/arch.
     # The initial value is 1 since we don't want to trigger a rebuild the first
     # time when the state is 'disabled' since the state might have changed very
     # recently (if we updated the metadata ourselves), and the build service
     # might have an old build that it can re-use instead of building again.
-    for arch in archs:
-        state[arch] = {}
-        state[arch]['rebuild'] = -1
-        state[arch]['rebuild-timeout'] = -1
-        state[arch]['result'] = 'unknown'
+    for repo in repos:
+        state[repo] = {}
+        for arch in archs:
+            state[repo][arch] = {}
+            state[repo][arch]['rebuild'] = -1
+            state[repo][arch]['rebuild-timeout'] = -1
+            state[repo][arch]['result'] = 'unknown'
 
     # if we just committed a change, we want to ignore the first error to let
     # the build service reevaluate the situation
@@ -2705,7 +2757,7 @@ def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5,
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repo, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
+                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
                 # make sure we don't ignore errors anymore
                 ignore_initial_errors = False
 
@@ -2720,7 +2772,7 @@ def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5,
 
             if print_status:
                 header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-                self._collab_print_build_status(repo, state, header, 'no results returned by the build service')
+                self._collab_print_build_status(state, header, 'no results returned by the build service')
 
             if not need_to_continue:
                 break
@@ -2756,7 +2808,7 @@ def _collab_build_wait_loop(self, apiurl, project, repo, package, archs, srcmd5,
 #######################################################################
 
 
-def _collab_build_internal(self, apiurl, osc_package, repo, archs, recently_changed):
+def _collab_build_internal(self, apiurl, osc_package, repos, archs, recently_changed):
     project = osc_package.prjname
     package = osc_package.name
 
@@ -2769,16 +2821,16 @@ def _collab_build_internal(self, apiurl, osc_package, repo, archs, recently_chan
         return False
 
     meta = ''.join(meta_lines)
-    (success, changed_meta) = self._collab_enable_build(apiurl, project, package, meta, repo, archs)
+    (success, changed_meta) = self._collab_enable_build(apiurl, project, package, meta, repos, archs)
     if not success:
         return False
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repo, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
+    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repos, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
 
     if not build_success:
-        self._collab_print_build_status(repo, build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
+        self._collab_print_build_status(build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
@@ -2791,7 +2843,7 @@ def _collab_build_internal(self, apiurl, osc_package, repo, archs, recently_chan
 #######################################################################
 
 
-def _collab_build(self, apiurl, user, projects, msg, repo, archs):
+def _collab_build(self, apiurl, user, projects, msg, repos, archs):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2810,7 +2862,7 @@ def _collab_build(self, apiurl, user, projects, msg, repo, archs):
         self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repo, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs, committed)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -2819,7 +2871,7 @@ def _collab_build(self, apiurl, user, projects, msg, repo, archs):
 #######################################################################
 
 
-def _collab_build_submit(self, apiurl, user, projects, msg, repo, archs, forward = False):
+def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -2863,7 +2915,7 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repo, archs, forward
         self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repo, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs, committed)
 
     # if build successful, submit
     if build_success:
@@ -3037,12 +3089,16 @@ def _collab_get_config(self, apiurl, key, default = None):
 
 
 def _collab_migrate_gnome_config(self, apiurl):
-    for key in [ 'archs', 'apiurl', 'email', 'projects', 'repo' ]:
+    for key in [ 'archs', 'apiurl', 'email', 'projects' ]:
         if self._collab_get_config(apiurl, 'collab_' + key) is not None:
             continue
         elif not conf.config.has_key('gnome_' + key):
             continue
         self._collab_add_config_option(apiurl, 'collab_' + key, conf.config['gnome_' + key])
+
+    # migrate repo to repos
+    if self._collab_get_config(apiurl, 'collab_repos') is None and conf.config.has_key('gnome_repo'):
+        self._collab_add_config_option(apiurl, 'collab_repos', conf.config['gnome_repo'] + ';')
 
 
 #######################################################################
@@ -3113,9 +3169,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
               help='project to work on (default: GNOME:Factory)')
-@cmdln.option('--repo', metavar='REPOSITORY',
-              dest='repo',
-              help='build repository to build on (default: openSUSE_Factory)')
+@cmdln.option('--repo', metavar='REPOSITORY', action='append',
+              dest='repos', default=[],
+              help='build repositories to build on (default: openSUSE_Factory)')
 @cmdln.option('--arch', metavar='ARCH', action='append',
               dest='archs', default=[],
               help='architectures to build on (default: i586 and x86_64)')
@@ -3228,10 +3284,17 @@ def do_collab(self, subcmd, opts, *args):
             except ValueError:
                 break
 
-    if opts.repo:
-        repo = opts.repo
+    if len(opts.repos) != 0:
+        repos = opts.repos
     else:
-        repo = self._collab_get_config(apiurl, 'collab_repo', 'openSUSE_Factory')
+        repos_line = self._collab_get_config(apiurl, 'collab_repos', 'openSUSE_Factory;')
+        repos = repos_line.split(';')
+        # remove all empty repositories
+        while True:
+            try:
+                repos.remove('')
+            except ValueError:
+                break
 
     if len(opts.archs) != 0:
         archs = opts.archs
@@ -3285,10 +3348,10 @@ def do_collab(self, subcmd, opts, *args):
         self._collab_forward(apiurl, projects, request_id)
 
     elif cmd in ['build', 'b']:
-        self._collab_build(apiurl, user, projects, opts.msg, repo, archs)
+        self._collab_build(apiurl, user, projects, opts.msg, repos, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._collab_build_submit(apiurl, user, projects, opts.msg, repo, archs, forward = opts.forward)
+        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
