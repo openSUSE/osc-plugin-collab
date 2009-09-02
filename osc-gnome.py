@@ -3088,6 +3088,28 @@ def _collab_get_config(self, apiurl, key, default = None):
         return default
 
 
+def _collab_get_config_list(self, apiurl, key, default = None):
+    def split_items(line):
+        items = line.split(';')
+        # remove all empty items
+        while True:
+            try:
+                items.remove('')
+            except ValueError:
+                break
+        return items
+
+    line = self._collab_get_config(apiurl, key, default)
+
+    items = split_items(line)
+    if not items and default:
+        if type(default) == str:
+            items = split_items(default)
+        else:
+            items = default
+    return items
+
+
 #######################################################################
 
 
@@ -3278,38 +3300,17 @@ def do_collab(self, subcmd, opts, *args):
     if len(opts.projects) != 0:
         projects = opts.projects
     else:
-        projects_line = self._collab_get_config(apiurl, 'collab_projects', 'GNOME:Factory')
-        projects = projects_line.split(';')
-        # remove all empty projects
-        while True:
-            try:
-                projects.remove('')
-            except ValueError:
-                break
+        projects = self._collab_get_config_list(apiurl, 'collab_projects', 'GNOME:Factory')
 
     if len(opts.repos) != 0:
         repos = opts.repos
     else:
-        repos_line = self._collab_get_config(apiurl, 'collab_repos', 'openSUSE_Factory;')
-        repos = repos_line.split(';')
-        # remove all empty repositories
-        while True:
-            try:
-                repos.remove('')
-            except ValueError:
-                break
+        repos = self._collab_get_config_list(apiurl, 'collab_repos', 'openSUSE_Factory;')
 
     if len(opts.archs) != 0:
         archs = opts.archs
     else:
-        archs_line = self._collab_get_config(apiurl, 'collab_archs', 'i586;x86_64;')
-        archs = archs_line.split(';')
-        # remove all empty architectures
-        while True:
-            try:
-                archs.remove('')
-            except ValueError:
-                break
+        archs = self._collab_get_config_list(apiurl, 'collab_archs', 'i586;x86_64;')
 
     self._collab_api = self.OscCollabApi(self, collab_apiurl)
     self.OscCollabCache.init(self, opts.no_cache)
