@@ -723,11 +723,20 @@ class OscCollabApi:
         return reserved_packages
 
 
-    def is_package_reserved(self, projects, package):
+    def _reserve_append_no_devel_project(self, url, no_devel_project):
+        if not no_devel_project:
+            return url
+
+        data = urlencode({'ignoredevel': 'true'})
+        return self._append_data_to_url(url, data)
+
+
+    def is_package_reserved(self, projects, package, no_devel_project = False):
         '''
             Only returns something if the package is really reserved.
         '''
         url = self._get_reserve_url(projects = projects, package = package)
+        url = self._reserve_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot look if package %s is reserved' % package)
 
         for reservation in root.findall('reservation'):
@@ -742,10 +751,11 @@ class OscCollabApi:
         return None
 
 
-    def reserve_package(self, projects, package, username):
+    def reserve_package(self, projects, package, username, no_devel_project = False):
         url = self._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'set', 'user': username})
         url = self._append_data_to_url(url, data)
+        url = self._reserve_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot reserve package %s' % package)
 
         for reservation in root.findall('reservation'):
@@ -758,10 +768,11 @@ class OscCollabApi:
                 raise self.Error('Cannot reserve package %s: already reserved by %s' % (package, item.user))
 
 
-    def unreserve_package(self, projects, package, username):
+    def unreserve_package(self, projects, package, username, no_devel_project = False):
         url = self._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'unset', 'user': username})
         url = self._append_data_to_url(url, data)
+        url = self._reserve_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot unreserve package %s' % package)
 
         for reservation in root.findall('reservation'):
@@ -1379,9 +1390,9 @@ def _collab_listreserved(self, projects):
 #######################################################################
 
 
-def _collab_isreserved(self, projects, package):
+def _collab_isreserved(self, projects, package, no_devel_project = False):
     try:
-        reservation = self._collab_api.is_package_reserved(projects, package)
+        reservation = self._collab_api.is_package_reserved(projects, package, no_devel_project = no_devel_project)
     except self.OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
@@ -1395,10 +1406,10 @@ def _collab_isreserved(self, projects, package):
 #######################################################################
 
 
-def _collab_reserve(self, projects, packages, username):
+def _collab_reserve(self, projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            self._collab_api.reserve_package(projects, package, username)
+            self._collab_api.reserve_package(projects, package, username, no_devel_project = no_devel_project)
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1411,10 +1422,10 @@ def _collab_reserve(self, projects, packages, username):
 #######################################################################
 
 
-def _collab_unreserve(self, projects, packages, username):
+def _collab_unreserve(self, projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            self._collab_api.unreserve_package(projects, package, username)
+            self._collab_api.unreserve_package(projects, package, username, no_devel_project = no_devel_project)
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
@@ -1450,9 +1461,10 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
 
     checkout_dir = package
 
-    # is it reserved?
+    # Is it reserved? Note that we have already looked for the devel project,
+    # so we force the project/package here.
     try:
-        reservation = self._collab_api.is_package_reserved((project,), package)
+        reservation = self._collab_api.is_package_reserved((project,), package, no_devel_project = True)
         if reservation:
             reserved_by = reservation.user
         else:
@@ -1471,7 +1483,9 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
     # package not reserved
     elif not reserved_by and not no_reserve:
         try:
-            self._collab_api.reserve_package((project,), package, username)
+            # Note that we have already looked for the devel project, so we
+            # force the project/package here.
+            self._collab_api.reserve_package((project,), package, username, no_devel_project = True)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
             print '    osc collab unreserve %s' % package
@@ -3405,9 +3419,9 @@ def do_collab(self, subcmd, opts, *args):
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
-        osc collab isreserved PKG
-        osc collab reserve PKG [...]
-        osc collab unreserve PKG [...]
+        osc collab isreserved [--nodevelproject] [--project=PROJECT] PKG
+        osc collab reserve [--nodevelproject] [--project=PROJECT] PKG [...]
+        osc collab unreserve [--nodevelproject] [--project=PROJECT] PKG [...]
 
         osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
         osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
@@ -3490,15 +3504,15 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['isreserved', 'ir']:
         package = self._collab_parse_arg_packages(args[1])
-        self._collab_isreserved(projects, package)
+        self._collab_isreserved(projects, package, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['reserve', 'r']:
         packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_reserve(projects, packages, user)
+        self._collab_reserve(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['unreserve', 'u']:
         packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_unreserve(projects, packages, user)
+        self._collab_unreserve(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['setup', 's']:
         package = self._collab_parse_arg_packages(args[1])
