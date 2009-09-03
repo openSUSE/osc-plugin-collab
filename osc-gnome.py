@@ -741,7 +741,7 @@ class OscCollabApi:
 
         for reservation in root.findall('reservation'):
             item = self._parse_reservation_node(reservation)
-            if not item or not item.is_relevant(projects, package):
+            if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
                 # We continue to make sure there are no other relevant entries
@@ -760,12 +760,13 @@ class OscCollabApi:
 
         for reservation in root.findall('reservation'):
             item = self._parse_reservation_node(reservation)
-            if not item or not item.is_relevant(projects, package):
+            if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
                 raise self.Error('Cannot reserve package %s: unknown error' % package)
             if item.user != username:
                 raise self.Error('Cannot reserve package %s: already reserved by %s' % (package, item.user))
+            return item
 
 
     def unreserve_package(self, projects, package, username, no_devel_project = False):
@@ -777,10 +778,11 @@ class OscCollabApi:
 
         for reservation in root.findall('reservation'):
             item = self._parse_reservation_node(reservation)
-            if not item or not item.is_relevant(projects, package):
+            if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if item.user:
                 raise self.Error('Cannot unreserve package %s: reserved by %s' % (package, item.user))
+            return item
 
 
     def _parse_package_node(self, node, project):
@@ -1400,7 +1402,10 @@ def _collab_isreserved(self, projects, package, no_devel_project = False):
     if not reservation:
         print 'Package is not reserved.'
     else:
-        print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
+        if reservation.project not in projects or reservation.package != package:
+            print 'Package %s in %s (devel package for %s) is reserved by %s.' % (reservation.package, reservation.project, package, reservation.user)
+        else:
+            print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
 
 
 #######################################################################
@@ -1409,12 +1414,15 @@ def _collab_isreserved(self, projects, package, no_devel_project = False):
 def _collab_reserve(self, projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            self._collab_api.reserve_package(projects, package, username, no_devel_project = no_devel_project)
+            reservation = self._collab_api.reserve_package(projects, package, username, no_devel_project = no_devel_project)
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
-        print 'Package %s reserved for 36 hours.' % package
+        if reservation.project not in projects or reservation.package != package:
+            print 'Package %s in %s (devel package for %s) reserved for 36 hours.' % (reservation.package, reservation.project, package)
+        else:
+            print 'Package %s reserved for 36 hours.' % package
         print 'Do not forget to unreserve the package when done with it:'
         print '    osc collab unreserve %s' % package
 
