@@ -34,6 +34,8 @@
 # Authors: Vincent Untz <vuntz@novell.com>
 #
 
+OSC_COLLAB_VERSION = '0.90'
+
 # This is a hack to have osc ignore the file we create in a package directory.
 try:
     import conf
@@ -3386,6 +3388,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--nc', '--no-cache', action='store_true',
               dest='no_cache',
               help='ignore data from the cache')
+@cmdln.option('-v', '--version', action='store_true',
+              dest='version',
+              help='show version of the plugin')
 def do_collab(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration on the openSUSE Build Service.
 
@@ -3445,6 +3450,10 @@ def do_collab(self, subcmd, opts, *args):
     #self.gtime = self.OscCollabImport.m_import('time')
     #self.gref = self.gtime.time()
     #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
+
+    if opts.version:
+        print self.OSC_COLLAB_VERSION
+        return
 
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
