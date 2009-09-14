@@ -74,13 +74,13 @@ download_gnome_version extras
 GNOME_FACTORY_VERSION=unstable
 
 test -f $OBS_DISSECTOR_DIR/tmp/versions-upstream && cp $OBS_DISSECTOR_DIR/tmp/versions-upstream $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak
-$basedir/download-upstream-versions \
-    --upstream-tarballs=$basedir/upstream-tarballs.txt \
-    --upstream-limits=$basedir/upstream-limits.txt \
+$basedir/upstream/download-upstream-versions \
+    --upstream-tarballs=$basedir/upstream/upstream-tarballs.txt \
+    --upstream-limits=$basedir/upstream/upstream-limits.txt \
     --save-file=$OBS_DISSECTOR_DIR/tmp/versions-upstream \
     --only-if-old --use-old-as-fallback
 if test $? -ne 0; then
-    test -f cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak && cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak $OBS_DISSECTOR_DIR/tmp/versions-upstream
+    test -f $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak && cp $OBS_DISSECTOR_DIR/tmp/versions-upstream.bak $OBS_DISSECTOR_DIR/tmp/versions-upstream
     echo "Error while checking for new upstream versions"
 fi
 cat $OBS_DISSECTOR_DIR/tmp/versions-gnome-$GNOME_FACTORY_VERSION \
@@ -91,9 +91,9 @@ cat $OBS_DISSECTOR_DIR/tmp/versions-gnome-$GNOME_FACTORY_VERSION \
 # Check that we have everything in the match database
 for i in `grep -v '^#' $OBS_DISSECTOR_DIR/tmp/versions-latest | grep ':' | cut -d ':' -f 2`; do
     re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
-    grep -q -E "^(# ?)?$re_i:" $basedir/upstream-packages-match.txt
+    grep -q -E "^(# ?)?$re_i:" $basedir/upstream/upstream-packages-match.txt
     if test $? -ne 0; then
-        echo $i not in $basedir/upstream-packages-match.txt
+        echo $i not in $basedir/upstream/upstream-packages-match.txt
     fi
 done
 
@@ -112,12 +112,12 @@ fi
 # At the end, we'll symlink this directory to the stable directory, and
 # remove the old checkout. This way, we always have a valid & working
 # stable checkout.
-CACHE_CO=`$basedir/obs-checkout --get-stable-directory`
-DEST_CO=`$basedir/obs-checkout --get-new-directory`
+CACHE_CO=`$basedir/obs-db/obs-checkout --get-stable-directory`
+DEST_CO=`$basedir/obs-db/obs-checkout --get-new-directory`
 
 OBS_CHECKOUT_ARGS="--cache-directory $CACHE_CO --destination-directory $DEST_CO"
 
-$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project openSUSE:Factory \
     --devel-projects-of openSUSE:Factory \
     --metadata "parent=openSUSE:Factory" \
@@ -127,29 +127,29 @@ $basedir/obs-checkout $OBS_CHECKOUT_ARGS \
 #  + no version file as we don't care about upstream there
 #  + what's in devel projects should always be links to M:F. If not, then we
 #    ignore their real parent projects.
-$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project Moblin:Factory \
     --devel-projects-of Moblin:Factory \
     --metadata "parent=Moblin:Factory" \
     --metadata "force-project-parent=1" \
     || (echo "Error in obs-checkout."; exit 1)
-$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project openSUSE:Factory:Contrib \
     --metadata "parent=openSUSE:Factory:Contrib" \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
     || (echo "Error in obs-checkout."; exit 1)
-$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:Contrib \
     --metadata "parent=openSUSE:Factory:Contrib" \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-latest" \
     || (echo "Error in obs-checkout."; exit 1)
-$basedir/obs-checkout $OBS_CHECKOUT_ARGS \
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:STABLE:2.26 \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.26" \
     --metadata "ignore-fallback=true" \
     || (echo "Error in obs-checkout."; exit 1)
 
-$basedir/obs-checkout --make-directory-stable "$DEST_CO"
+$basedir/obs-db/obs-checkout --make-directory-stable "$DEST_CO"
 
 
 ######################################
@@ -195,10 +195,10 @@ popd > /dev/null
 ######################################
 # Create the databases
 
-$basedir/create-database --force \
+$basedir/obs-db/create-database --force \
     --output-database $OBS_DISSECTOR_DIR/obs.db \
     --checkout-dir $DEST_CO \
-    --upstream-name $basedir/upstream-packages-match.txt \
+    --upstream-name $basedir/upstream/upstream-packages-match.txt \
     --upstream-versions-fallback $OBS_DISSECTOR_DIR/tmp/versions-fallback
 
-$basedir/list-packages --output-database $OBS_DISSECTOR_DIR/packagelist.db
+$basedir/obs-db/list-packages --output-database $OBS_DISSECTOR_DIR/packagelist.db

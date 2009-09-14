@@ -1,0 +1,58 @@
+This directory contains the script used to create the server-side
+database used by the osc-collab plugin.
+
+All data created will be created in /tmp/obs-dissector unless the
+OBS_DISSECTOR_DIR environment variable is set.
+
+
+runme:
+    Small helper to show how to use everything, and get some data from
+    scratch.
+
+
+obs-db/
+    create-database:
+	Based on a checkout of packages (made with obs-checkout, eg),
+	this script gathers data from all packages in a database so that
+	it's easy to analyze.
+	See also 'create-database --help'.
+
+    dissector_util.py:
+	Miscellaneous functions that make life easier.
+
+    feedparser.py:
+	Universal feed parser: http://www.feedparser.org/
+	Put here for convenience, so you don't have to install it.
+
+    list-packages:
+	Create a small database containing the list of packages in
+	various Build Service projects. This is needed by the browse.py
+	web script.
+
+    obs-checkout:
+	Check out packages from specified project.
+	By default, it just uses $OBS_DISSECTOR_DIR/obs-co-stable as
+	destination directory, but there are some options to use various
+	directories. See how it's being used in runme, for example.
+	There are various options to select what to check out, and how
+	to check out.
+	This script should not be run too frequently because it does
+	many requests on the Build Service servers.
+	See also 'obs-checkout --help'.
+
+
+upstream/
+    download-upstream-versions:
+	Download information about the latest versions of various
+	modules that are not hosted on ftp.gnome.org.
+
+    upstream-limits.txt:
+	Information about limits for upstream versions. We might not
+	want to look for unstable versions of a module, eg.
+
+    upstream-packages-match.txt:
+	Data file that matches upstream GNOME module names to openSUSE
+	source package names.
+
+    upstream-tarballs.txt:
+	Information about where to find the latest upstream tarballs.
