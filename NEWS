@@ -1,0 +1,33 @@
+Version 0.90
+============
+
+This is the first version of the osc collab plugin. It has been renamed from
+osc gnome. Here are a list of changes since the last release of osc gnome.
+
++ Features:
+  - Rename to osc collab and do not refer to anything GNOME specific anywhere
+  - Support delta in non-link packages
+  - Remove potential trailing slash from packages passed as args for
+    convenience when used with autocompletion
+  - Make the config options work per apiurl
+  - Make it possible to use more than one repo at the same time
+  - Display against which repo the build is done
+  - Make setup/update branch from the devel project
+  - Take into account the version in devel project for todo/update
+  - Use openSUSE:Factory by default instead of GNOME:Factory
+  - Autodetect default repository for builds
+  - Add --nodevelproject option for the relevant commands
+  - Add --version command
+
++ Fixes:
+  - Improve upstream tarball basename detection in when the basename of the
+    upstream tarball is not in the URL, but in the query fields
+  - Fix warning about tag in Source always appearing
+  - Do not crash with osc from trunk
+  - Better handling of update when package is already updated
+  - Fix listreserved to not list reservations from all projects
+  - Substitute macros in %define lines too
+  - Remove old cache files
+  - Fix parsing of empty list options in ~/.oscrc
+  - Improve help message
+  - Code cleanups
