@@ -1426,7 +1426,7 @@ def _collab_reserve(self, projects, packages, username, no_devel_project = False
         else:
             print 'Package %s reserved for 36 hours.' % package
         print 'Do not forget to unreserve the package when done with it:'
-        print '    osc collab unreserve %s' % package
+        print '    osc %s unreserve %s' % (self._osc_collab_alias, package)
 
 
 #######################################################################
@@ -1498,7 +1498,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             self._collab_api.reserve_package((project,), package, username, no_devel_project = True)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
-            print '    osc collab unreserve %s' % package
+            print '    osc %s unreserve %s' % (self._osc_collab_alias, package)
         except self.OscCollabWebError, e:
             print >>sys.stderr, e.msg
             if not ignore_reserved:
@@ -1772,10 +1772,16 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
                 # end of pass one: we write a note to help the user, and then
                 # write the cache
                 pass_one_done = True
+
+                note = '# Note by osc %s: here is the complete diff for reference.' % self._osc_collab_alias
+                header = ''
+                for i in range(len(note)):
+                    header += '#'
+
                 dest_f.write('\n')
-                dest_f.write('#############################################################\n')
-                dest_f.write('# Note by osc collab: here is the complete diff for reference.\n')
-                dest_f.write('#############################################################\n')
+                dest_f.write('%s\n' % header)
+                dest_f.write('%s\n' % note)
+                dest_f.write('%s\n' % header)
                 dest_f.write('\n')
                 for cached_line in cached:
                     dest_f.write(cached_line)
@@ -2354,7 +2360,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
 
     print 'Package %s has been prepared for the update.' % branch_package
-    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc collab build\' to start a build on the build service.' % os.path.basename(changes_file)
+    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), self._osc_collab_alias)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
@@ -3451,14 +3457,15 @@ def do_collab(self, subcmd, opts, *args):
     #self.gref = self.gtime.time()
     #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
 
+    self._osc_collab_alias = self.lastcmd[0]
+
     if opts.version:
         print self.OSC_COLLAB_VERSION
         return
 
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
-        raise oscerr.WrongArgs('Unknown collab action. Choose one of %s.' \
-                                           % ', '.join(cmds))
+        raise oscerr.WrongArgs('Unknown %s action. Choose one of %s.' % (self._osc_collab_alias, ', '.join(cmds)))
 
     cmd = args[0]
 
