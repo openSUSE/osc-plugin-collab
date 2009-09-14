@@ -37,13 +37,15 @@
 OSC_COLLAB_VERSION = '0.90'
 
 # This is a hack to have osc ignore the file we create in a package directory.
+_osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
 try:
     import conf
-    conf.DEFAULTS['exclude_glob'] += ' osc-collab.* osc-gnome.*'
+    for prefix in _osc_collab_helper_prefixes:
+        conf.DEFAULTS['exclude_glob'] += ' ' + prefix + '*'
 except:
     # compatibility with osc <= 0.121
-    exclude_stuff.append('osc-collab.*')
-    exclude_stuff.append('osc-gnome.*')
+    for prefix in _osc_collab_helper_prefixes:
+        exclude_stuff.append(prefix + '*')
 
 
 class OscCollabError(Exception):
@@ -1580,11 +1582,12 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             self._collab_exception_print(e, message)
             return (False, None, None)
 
-    # remove old osc-gnome.* files
+    # remove old helper files
     for file in os.listdir(checkout_dir):
-        if file.startswith('osc-gnome.'):
-            path = os.path.join(checkout_dir, file)
-            os.unlink(path)
+        for prefix in self._osc_collab_helper_prefixes:
+            if file.startswith(prefix):
+                path = os.path.join(checkout_dir, file)
+                os.unlink(path)
 
     return (True, branch_project, branch_package)
 
@@ -1897,13 +1900,21 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
             if not os.path.exists(old_changelog) or not os.path.isfile(old_changelog):
                 old_changelog = None
 
+    # Choose the most appropriate prefix for helper files, based on the alias
+    # that was used by the user
+    helper_prefix = self._osc_collab_helper_prefixes[0]
+    for prefix in self._osc_collab_helper_prefixes:
+        if self._osc_collab_alias in prefix:
+            helper_prefix = prefix
+            break
+
     # do the diff
-    news = os.path.join(directory, 'osc-collab.NEWS')
+    news = os.path.join(directory, helper_prefix + 'NEWS')
     (news_created, news_is_diff) = _diff_files(old_news, new_news, news)
-    changelog = os.path.join(directory, 'osc-collab.ChangeLog')
+    changelog = os.path.join(directory, helper_prefix + 'ChangeLog')
     (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
 
-    # Note: we make osc ignore those osc-collab.* file we created by modifying
+    # Note: we make osc ignore those helper file we created by modifying
     # the exclude list of osc.core. See the top of this file.
 
     _cleanup(old, new, tmpdir)
