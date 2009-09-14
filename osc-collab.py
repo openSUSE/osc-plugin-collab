@@ -38,14 +38,19 @@ OSC_COLLAB_VERSION = '0.90'
 
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
+_osc_collab_helpers = []
+for suffix in [ 'NEWS', 'ChangeLog' ]:
+    for prefix in _osc_collab_helper_prefixes:
+        _osc_collab_helpers.append(prefix + suffix)
+
 try:
     import conf
-    for prefix in _osc_collab_helper_prefixes:
-        conf.DEFAULTS['exclude_glob'] += ' ' + prefix + '*'
+    for helper in _osc_collab_helpers:
+        conf.DEFAULTS['exclude_glob'] += helper
 except:
     # compatibility with osc <= 0.121
-    for prefix in _osc_collab_helper_prefixes:
-        exclude_stuff.append(prefix + '*')
+    for helper in _osc_collab_helpers:
+        exclude_stuff.append(helper)
 
 
 class OscCollabError(Exception):
@@ -1584,10 +1589,11 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
 
     # remove old helper files
     for file in os.listdir(checkout_dir):
-        for prefix in self._osc_collab_helper_prefixes:
-            if file.startswith(prefix):
+        for helper in self._osc_collab_helpers:
+            if file == helper:
                 path = os.path.join(checkout_dir, file)
                 os.unlink(path)
+                break
 
     return (True, branch_project, branch_package)
 
