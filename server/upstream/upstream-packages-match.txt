@@ -150,6 +150,8 @@ libgnomemm:
 libgnomeuimm:
 libsigc++:libsigc++2
 libxml++:
+# No package in openSUSE
+#mm-common:
 pangomm:
 
 # Java
