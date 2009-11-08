@@ -67,6 +67,7 @@ download_gnome_version () {
 }
 
 download_gnome_version 2.26
+download_gnome_version 2.28
 download_gnome_version stable
 download_gnome_version unstable
 download_gnome_version extras
@@ -146,6 +147,11 @@ $basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
 $basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
     --project GNOME:STABLE:2.26 \
     --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.26" \
+    --metadata "ignore-fallback=true" \
+    || (echo "Error in obs-checkout."; exit 1)
+$basedir/obs-db/obs-checkout $OBS_CHECKOUT_ARGS \
+    --project GNOME:STABLE:2.28 \
+    --metadata "versionfile=$OBS_DISSECTOR_DIR/tmp/versions-gnome-2.28" \
     --metadata "ignore-fallback=true" \
     || (echo "Error in obs-checkout."; exit 1)
 
