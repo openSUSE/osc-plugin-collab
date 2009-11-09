@@ -182,8 +182,8 @@ def main(args):
 #FIXME error
         return
 
-    # 'DISCONTINUED:openSUSE:10.2', 'DISCONTINUED:openSUSE:10.2:Update', 'openSUSE:10.3:Update', 'openSUSE:11.0:Update'
-    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Contrib', 'GNOME:STABLE:2.26', 'GNOME:STABLE:2.28', 'openSUSE:10.3', 'openSUSE:11.0', 'openSUSE:11.1', 'openSUSE:11.1:Update', 'openSUSE:11.2', 'openSUSE:11.2:Update', 'openSUSE:11.2:Contrib' ]
+    # 'DISCONTINUED:openSUSE:10.2', 'DISCONTINUED:openSUSE:10.2:Update', 'openSUSE:10.3:Update', 'openSUSE:11.0:Update', 'openSUSE:10.3'
+    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Contrib', 'GNOME:STABLE:2.26', 'GNOME:STABLE:2.28', 'openSUSE:11.0', 'openSUSE:11.1', 'openSUSE:11.1:Update', 'openSUSE:11.2', 'openSUSE:11.2:Update', 'openSUSE:11.2:Contrib' ]
 
     osc_conf_init()
 
