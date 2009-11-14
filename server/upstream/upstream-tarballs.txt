@@ -304,6 +304,10 @@ yast2-control-center-gnome:upstream:
 # libsvg-cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 # pysqlite:subdirhttpls:http://oss.itsystementwicklung.de/download/pysqlite/
 
+
+## Base:System
+dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
+
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/
 compiz:subdirhttpls:http://releases.compiz-fusion.org/core/

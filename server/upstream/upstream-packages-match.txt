@@ -565,6 +565,11 @@ yast2-control-center-gnome:
 # pysqlite:python-sqlite2
 
 
+#### Base:System
+
+dbus-glib:dbus-1-glib
+
+
 #### X11:Compiz
 
 ccsm:compizconfig-settings-manager
