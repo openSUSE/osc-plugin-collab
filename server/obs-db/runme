@@ -37,10 +37,14 @@
 
 basedir=`dirname $0`
 
+## Options
+# Do the rpmlint stuff
+OBS_DO_RPMLINT=0
+
 ## Basic setup
 
 if test "x$OBS_OPTIONS" = "x"; then
-    OBS_OPTIONS="$basedir/obs-db/obs.conf"
+    OBS_OPTIONS="$basedir/obs.conf"
 fi
 
 test -f $OBS_OPTIONS || (echo "Configuration file '$OBS_OPTIONS' does not exist."; exit 1)
@@ -52,6 +56,59 @@ mkdir -p $CACHE_DIR
 
 
 ##############################################################
-# Create database containing list of packages
+# Copy the upstream name / package name match database
 
-$basedir/list-packages --output-database $CACHE_DIR/db/packagelist.db
+mkdir -p $CACHE_DIR/upstream
+
+cmp --quiet $basedir/../upstream/upstream-packages-match.txt $CACHE_DIR/upstream/upstream-packages-match.txt
+if test $? -ne 0; then
+    cp -a $basedir/../upstream/upstream-packages-match.txt $CACHE_DIR/upstream/
+fi
+
+
+##############################################################
+# Get the rpmlint data
+# GNOME:Factory only
+
+# We download the rpmlint data. We keep the old version around until we're sure
+# the new version is fine.
+get_rpmlint () {
+    PROJECT=$1
+    if test "x$1" = "x"; then
+        return
+    fi
+
+    if test -f rpmlint.tar.bz2; then
+        rm -f rpmlint.tar.bz2
+    fi
+    wget -q ftp://ftp.coolice.org/rpmlint/$PROJECT/rpmlint.tar.bz2
+    if test $? -eq 0; then
+        if test -d $PROJECT; then
+            mv $PROJECT $PROJECT.old
+        fi
+        tar jxf rpmlint.tar.bz2
+        if test $? -ne 0 -a -d $PROJECT.old; then
+            mv $PROJECT.old $PROJECT
+        fi
+        if test -d $PROJECT.old; then
+            rm -rf $PROJECT.old
+        fi
+
+        rm -f rpmlint.tar.bz2
+    fi
+}
+
+if test "x$OBS_DO_RPMLINT" = "x1"; then
+    mkdir -p $CACHE_DIR/rpmlint
+    pushd $CACHE_DIR/rpmlint > /dev/null
+    get_rpmlint openSUSE:Factory
+    get_rpmlint GNOME:Factory
+    get_rpmlint GNOME:Contrib
+    popd > /dev/null
+fi
+
+
+##############################################################
+# Check out everything and create the databases
+
+$basedir/obs-db --config $OBS_OPTIONS

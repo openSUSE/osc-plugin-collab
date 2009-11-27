@@ -1,0 +1,195 @@
+#!/bin/sh
+# vim: set ts=4 sw=4 et:
+
+#
+# Copyright (c) 2008-2009, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@novell.com>
+#
+
+basedir=`dirname $0`
+
+## Options
+# What's the current GNOME version in Factory
+GNOME_FACTORY_VERSION=unstable
+
+
+## Basic setup
+
+if test "x$OBS_OPTIONS" = "x"; then
+    OBS_OPTIONS="$basedir/../obs-db/obs.conf"
+fi
+
+test -f $OBS_OPTIONS || (echo "Configuration file '$OBS_OPTIONS' does not exist."; exit 1)
+
+CACHE_DIR=`grep "^ *cache-dir =" $OBS_OPTIONS | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
+
+test "x$CACHE_DIR" != "x" || CACHE_DIR=./cache
+mkdir -p $CACHE_DIR
+
+
+##############################################################
+# Download latest upstream versions
+# For non-GNOME:Factory, we only care about the official GNOME modules.
+
+concatenate_all_versions () {
+    DESTFILE=$CACHE_DIR/upstream/latest
+
+    rm -f $DESTFILE.new
+
+    for file in $CACHE_DIR/upstream/gnome-$GNOME_FACTORY_VERSION \
+                $CACHE_DIR/upstream/gnome-extras \
+                $CACHE_DIR/upstream/upstream; do
+        if test -f $file; then
+            cat $file >> $DESTFILE.new
+        fi
+    done
+
+    if test $? -ne 0; then
+        echo "Error while creating the merged latest upstream versions file"
+        return 1
+    fi
+
+    # we do everything above in a temporary file so that errors are safely
+    # ignored, and so that we can compare the result (and keep the old file
+    # with the old mtime if there's no change)
+    cmp --quiet $DESTFILE.new $DESTFILE
+    if test $? -ne 0; then
+        mv $DESTFILE.new $DESTFILE
+    else
+        rm $DESTFILE.new
+    fi
+}
+
+download_gnome_version () {
+    VERSION=$1
+    if test "x$1" = "x"; then
+        return 1
+    fi
+
+    DESTFILE=$CACHE_DIR/upstream/gnome-$VERSION
+    rm $DESTFILE.new
+
+    wget -q -nc -O $DESTFILE.new http://www.gnome.org/~vuntz/tmp/versions/versions-$VERSION
+
+    if test $? -ne 0; then
+        echo "Error while checking for new GNOME upstream versions ($VERSION)"
+        return 1
+    fi
+
+    # Don't use gstreamer from ftp.gnome.org -- it can be outdated
+    sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g" $DESTFILE.new
+    # We don't care about mobile stuff
+    sed -i "s/^\(mobile:.*\)$/# \1/g" $DESTFILE.new
+
+    cmp --quiet $DESTFILE.new $DESTFILE
+    if test $? -ne 0; then
+        mv $DESTFILE.new $DESTFILE
+    else
+        rm $DESTFILE.new
+    fi
+}
+
+download_fallback_version () {
+    DESTFILE=$CACHE_DIR/upstream/fallback
+    rm $DESTFILE.new
+
+    wget -q -nc -O $DESTFILE.new http://www.suse.de/~meissner/factory.upstream.lst
+
+    if test $? -ne 0; then
+        echo "Error while checking for fallback of new upstream versions"
+        return 1
+    fi
+
+    cmp --quiet $DESTFILE.new $DESTFILE
+    if test $? -ne 0; then
+        mv $DESTFILE.new $DESTFILE
+    else
+        rm $DESTFILE.new
+    fi
+}
+
+download_upstream_version () {
+    DESTFILE=$CACHE_DIR/upstream/upstream
+
+    # -a will keep the mtime
+    test -f $DESTFILE && cp -a $DESTFILE $DESTFILE.new
+
+    $basedir/download-upstream-versions \
+        --upstream-tarballs=$basedir/upstream-tarballs.txt \
+        --upstream-limits=$basedir/upstream-limits.txt \
+        --save-file=$DESTFILE.new \
+        --only-if-old --use-old-as-fallback
+
+    if test $? -eq 2; then
+        # No update was done (old file was not old enough)
+        return 2
+    fi
+
+    if test $? -ne 0; then
+        echo "Error while checking for new upstream versions"
+        return 1
+    fi
+
+    cmp --quiet $DESTFILE.new $DESTFILE
+    if test $? -ne 0; then
+        mv $DESTFILE.new $DESTFILE
+    else
+        rm $DESTFILE.new
+    fi
+}
+
+mkdir -p $CACHE_DIR/upstream
+
+download_gnome_version 2.26
+download_gnome_version 2.28
+download_gnome_version stable
+download_gnome_version unstable
+download_gnome_version extras
+
+# Do this once, before the slow step
+concatenate_all_versions
+
+download_fallback_version
+
+download_upstream_version
+if test $? -eq 0; then
+    concatenate_all_versions
+fi
+
+# Check that we have everything in the match database
+for i in `grep -v '^#' $CACHE_DIR/upstream/latest | grep ':' | cut -d ':' -f 2`; do
+    re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
+    grep -q -E "^(# ?)?$re_i:" $basedir/upstream-packages-match.txt
+    if test $? -ne 0; then
+        echo $i not in $basedir/upstream-packages-match.txt
+    fi
+done
