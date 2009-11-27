@@ -235,7 +235,7 @@ class Source(Base):
 
     def sql_update_from(self, cursor, new_source):
         if self.sql_id < 0:
-            raise ObsDbException('Source %s of %s used for update does not have a SQL id.' % (self.filename, self.srcpackage.name))
+            raise ObsDbException('Source %s of %s used for update does not have a SQL id.' % (self.filename, self.src_package.name))
         cursor.execute('''UPDATE %s SET
             nb_in_pack = ?
             WHERE id = ?
@@ -438,7 +438,7 @@ class Patch(Base):
 
     def sql_update_from(self, cursor, new_patch):
         if self.sql_id < 0:
-            raise ObsDbException('Patch %s of %s used for update does not have a SQL id.' % (self.filename, self.srcpackage.name))
+            raise ObsDbException('Patch %s of %s used for update does not have a SQL id.' % (self.filename, self.src_package.name))
         cursor.execute('''UPDATE %s SET
             nb_in_pack = ?,
             apply_order = ?,
@@ -652,10 +652,10 @@ class RpmlintReport(Base):
 
         return rpmlints
 
-    def __init__(self, srcpackage, level, type, detail):
+    def __init__(self, src_package, level, type, detail):
         self.sql_id = -1
 
-        self.srcpackage = srcpackage
+        self.src_package = src_package
         self.level = level
         self.type = type
         self.detail = detail
@@ -768,7 +768,7 @@ class Package(Base):
 
     def sql_update_from(self, cursor, new_package):
         if self.sql_id < 0:
-            raise ObsDbException('Package %s of %s used for update does not have a SQL id.' % (self.name, self.srcpackage.name))
+            raise ObsDbException('Package %s of %s used for update does not have a SQL id.' % (self.name, self.src_package.name))
         cursor.execute('''UPDATE %s SET
             summary = ?,
             description = ?
@@ -1924,7 +1924,7 @@ class ObsDb:
 
     def _add_package_internal(self, prj_object, package):
         """ Internal helper to add a package. """
-        self._debug_print('Adding %s/%s' % (project, package))
+        self._debug_print('Adding %s/%s' % (prj_object.name, package))
 
         project_dir = os.path.join(self.mirror_dir, prj_object.name)
         srcpackage_dir = os.path.join(project_dir, package)
@@ -1938,7 +1938,7 @@ class ObsDb:
             # In theory, this shouldn't be needed since added packages
             # should have a _meta file. Since it's unlikely to happen, it's
             # okay to parse a big project-wide file.
-            self._debug_print('No meta during addition of %s/%s' % (project, package))
+            self._debug_print('No meta during addition of %s/%s' % (prj_object.name, package))
             (pkg_object.devel_project, pkg_object.devel_package) = prj_object.get_meta(self.mirror_dir, package)
 
         pkg_object.sql_add(self._cursor)
