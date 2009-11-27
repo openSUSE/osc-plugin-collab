@@ -42,7 +42,10 @@ basedir=`dirname $0`
 CACHE_DIR=./cache
 
 usage() {
-    echo "Usage: $0 [-o conf-file]"
+    echo "Usage: $0 [-o CONF-FILE]"
+    echo ""
+    echo "Options:"
+    echo "   -o CONF-FILE     Use CONF-FILE as configuration file"
 }
 
 while getopts o:h option; do

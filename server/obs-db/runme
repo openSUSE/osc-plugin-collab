@@ -47,7 +47,11 @@ CACHE_DIR=./cache
 USE_OPENSUSE=
 
 usage() {
-    echo "Usage: $0 [-o conf-file] [-s]"
+    echo "Usage: $0 [-o CONF-FILE] [-s]"
+    echo ""
+    echo "Options:"
+    echo "   -o CONF-FILE     Use CONF-FILE as configuration file"
+    echo "   -s               Use the openSUSE configuration file as a basis"
 }
 
 while getopts o:sh option; do
