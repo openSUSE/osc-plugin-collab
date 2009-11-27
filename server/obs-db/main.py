@@ -365,7 +365,7 @@ def main(args):
     parser = optparse.OptionParser()
 
     parser.add_option('--config', dest='config',
-                      help='configuration file to use (defaults to obs.conf in the current directory)')
+                      help='configuration file to use')
 
     (options, args) = parser.parse_args()
 

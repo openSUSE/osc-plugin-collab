@@ -130,9 +130,9 @@ class ConfigProject:
 
 class Config:
 
-    def __init__(self, file = 'obs.conf'):
+    def __init__(self, file = ''):
         """ Arguments:
-            file -- configuration file to use (obs.conf, in the current directory)
+            file -- configuration file to use
 
         """
         self.filename = file
@@ -207,6 +207,9 @@ class Config:
 
     def _parse(self):
         """ Parse the configuration file. """
+        if not self.filename:
+            return
+
         if not os.path.exists(self.filename):
             raise ConfigException('Configuration file %s does not exist.' % self.filename)
 
