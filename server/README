@@ -5,7 +5,7 @@ All data created will be created in ./cache/ unless the cache-dir option
 in a configuration file is set. You can choose the configuration file
 via the -o command-line option, or via the OBS_OPTIONS environment
 variable. The format of the file is the one described in
-obs-db/obs.conf.
+obs-db/data/defaults.conf.
 
 There are runme scripts that should help people get started. Ideally,
 those scripts would be run in cron jobs:
@@ -25,9 +25,9 @@ runme:
     Small helper to call list-packages.
 
 list-packages:
-	Create a small database containing the list of packages in
-	various Build Service projects. This is needed by the browse.py
-	web script.
+        Create a small database containing the list of packages in
+        various Build Service projects. This is needed by the browse.py
+        web script.
 
 
 obs-db/
@@ -36,16 +36,25 @@ obs-db/
     designed to not be too expensive in resources for the build service,
     by using hermes to know what has changed in the past.
 
-    The configuration file obs.conf is a good introduction on how to use
-    this script (what to check out, eg). Note that the default
-    configuration is the one needed for the osc collab openSUSE
-    database, which means it will check out a lot of projects.
+    The default configuration file data/defaults.conf is a good
+    introduction on how to use this script (what to check out, eg). An
+    example configuration, data/opensuse.conf, is available: it is the
+    one used to create the osc collab openSUSE database, which means it
+    will check out a lot of projects.
 
     All the data will be put in a cache subdirectory, unless the
-    cache-dir option is set in obs.conf.
+    cache-dir option is set in a configuration file.
 
 
     Here is a quick overview of the structure of the code:
+
+        data/defaults.conf:
+        Configuration file documenting the configuration format and the
+        defaults value.
+
+        data/opensuse.conf:
+        Configuration file used to create the database for the osc
+        collab openSUSE database.
 
         buildservice.py:
         Checks out data from the build service.
@@ -65,9 +74,6 @@ obs-db/
 
         main.py:
         Shell part of the script.
-
-        obs.conf:
-        Configuration file.
 
         obs-db:
         Executable script that will call main.py.
@@ -90,19 +96,19 @@ obs-db/
 
 upstream/
     download-upstream-versions:
-	Download information about the latest versions of various
-	modules that are not hosted on ftp.gnome.org.
+        Download information about the latest versions of various
+        modules that are not hosted on ftp.gnome.org.
 
     runme:
     Small helper to update the upstream data.
 
     upstream-limits.txt:
-	Information about limits for upstream versions. We might not
-	want to look for unstable versions of a module, eg.
+        Information about limits for upstream versions. We might not
+        want to look for unstable versions of a module, eg.
 
     upstream-packages-match.txt:
-	Data file that matches upstream GNOME module names to openSUSE
-	source package names.
+        Data file that matches upstream GNOME module names to openSUSE
+        source package names.
 
     upstream-tarballs.txt:
-	Information about where to find the latest upstream tarballs.
+        Information about where to find the latest upstream tarballs.
