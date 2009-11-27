@@ -1,0 +1,15 @@
+buildservice:
+ + if we queue something twice, then we will really do it twice. We should have
+   a way to queue, and then strip the useless elements to minimize data.
+
+database:
+ + only do one update call if there was a commit and meta change for a package
+ + the errors set in _not_real_devel_package() cannot be "reverted" if the
+   parent is updated but not the package itself
+!+ database::add_project(): if there's no config for the project, then there's
+   no parent, so there'll be really no config
+
+general:
+ + if one day, we inherit checkout-devel-projects, then we will have to make
+   sure the settings are also inherited recursively
+ + add command-line options to force checkout of a project or a package

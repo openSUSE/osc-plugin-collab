@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
-# Copyright (c) 2008, Novell, Inc.
+# Copyright (c) 2008-2009, Novell, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,10 +36,26 @@
 
 import os
 
+import errno
+
 def safe_mkdir(dir):
-    if not os.path.exists(dir):
+    try:
         os.mkdir(dir)
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise e
 
 def safe_mkdir_p(dir):
-    if not os.path.exists(dir):
+    try:
         os.makedirs(dir)
+    except OSError, e:
+        if e.errno != errno.EEXIST:
+            raise e
+
+def safe_unlink(filename):
+    """ Unlink a file, but ignores the exception if the file doesn't exist. """
+    try:
+        os.unlink(filename)
+    except OSError, e:
+        if e.errno != errno.ENOENT:
+            raise e
