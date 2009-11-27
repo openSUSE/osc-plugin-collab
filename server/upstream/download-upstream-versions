@@ -42,6 +42,9 @@ import urllib
 import urllib2
 import urlparse
 
+import Queue
+import threading
+
 try:
     from lxml import etree as ET
 except ImportError:
@@ -53,6 +56,9 @@ except ImportError:
 import feedparser
 
 from util import *
+
+USE_DEBUG = False
+MAX_THREADS = 10
 
 
 #######################################################################
@@ -793,6 +799,105 @@ def parse_data(data_file):
 #######################################################################
 
 
+def do_task(modulename, method, additional_info, fast_update, limits, fallback_data):
+    (location, version) = (None, None)
+
+    if fast_update and fallback_data.has_key(modulename) and fallback_data[modulename][0]:
+        # fast update: we don't download data if we have something in cache
+        pass
+    else:
+        if limits.has_key(modulename):
+            limit = limits[modulename]
+        else:
+            limit = None
+
+        try:
+            (location, version) = get_upstream_version(modulename, method, additional_info, limit)
+        except urllib2.URLError, e:
+            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
+        except ftplib.all_errors, e:
+            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
+        except UpstreamDownloadError, e:
+            print >>sys.stderr, 'No matching tarball found for %s: %s' % (modulename, e.msg)
+
+    if fallback_data.has_key(modulename):
+        fallback_version = fallback_data[modulename][0]
+        fallback_location = fallback_data[modulename][1]
+
+        if not version and not location:
+            version = fallback_version
+            location = fallback_location
+        elif not version and location == fallback_location:
+            version = fallback_version
+        elif not location and version == fallback_version:
+            location = fallback_location
+
+    if version == '--':
+        cat = 'upstream'
+    else:
+        cat = 'nonfgo'
+
+    if location:
+        location = _location_fix(location)
+
+    return (cat, version, location)
+
+
+#######################################################################
+
+
+def debug_thread(s):
+    global USE_DEBUG
+
+    if not USE_DEBUG:
+        return
+
+    # compatibility with old versions of python (< 2.6)
+    if hasattr(threading.currentThread(), 'name'):
+        name = threading.currentThread().name
+    else:
+        name = threading.currentThread().getName()
+
+    print '%s: %s' % (name, s)
+
+
+def thread_upstream(task, result, fast_update, limits, fallback_data):
+    try:
+        while True:
+            if task.empty():
+                break
+
+            (modulename, method, additional_info) = task.get()
+            debug_thread('starting %s' % modulename)
+
+            try:
+                (cat, version, location) = do_task(modulename, method, additional_info, fast_update, limits, fallback_data)
+                result.put((cat, modulename, version, location))
+            except Exception, e:
+                print >>sys.stderr, 'Exception in worker thread for %s: %s' % (modulename, e)
+
+            task.task_done()
+
+    except Queue.Empty:
+        pass
+
+
+#######################################################################
+
+
+def start_threads(task, result, fast_update, limits, fallback_data):
+    for i in range(min(MAX_THREADS, task.qsize())):
+        t = threading.Thread(target=thread_upstream, args=(task, result, fast_update, limits, fallback_data))
+        t.start()
+
+    task.join()
+
+
+#######################################################################
+
+
 def main(args):
     parser = optparse.OptionParser()
 
@@ -875,53 +980,20 @@ def main(args):
     # The default timeout is just too long. Use 10 seconds instead.
     socket.setdefaulttimeout(10)
 
+    task = Queue.Queue()
+    result = Queue.Queue()
+
     for line in lines:
         if _line_is_comment(line):
             continue
 
-        (location, version) = (None, None)
-
         (modulename, method, additional_info) = line[:-1].split(':', 2)
+        task.put((modulename, method, additional_info))
 
-        if options.fast_update and fallback_data.has_key(modulename) and fallback_data[modulename][0]:
-            # fast update: we don't download data if we have something in cache
-            pass
-        else:
-            if limits.has_key(modulename):
-                limit = limits[modulename]
-            else:
-                limit = None
+    start_threads(task, result, options.fast_update, limits, fallback_data)
 
-            try:
-                (location, version) = get_upstream_version(modulename, method, additional_info, limit)
-            except urllib2.URLError, e:
-                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
-            except urllib2.HTTPError, e:
-                print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
-            except ftplib.all_errors, e:
-                print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
-            except UpstreamDownloadError, e:
-                print >>sys.stderr, 'No matching tarball found for %s: %s' % (modulename, e.msg)
-
-        if fallback_data.has_key(modulename):
-            fallback_version = fallback_data[modulename][0]
-            fallback_location = fallback_data[modulename][1]
-
-            if not version and not location:
-                version = fallback_version
-                location = fallback_location
-            elif not version and location == fallback_location:
-                version = fallback_version
-            elif not location and version == fallback_version:
-                location = fallback_location
-
-        if version == '--':
-            cat = 'upstream'
-        else:
-            cat = 'nonfgo'
-
-        if location:
-            location = _location_fix(location)
+    while not result.empty():
+        (cat, modulename, version, location) = result.get()
 
         if version and location:
             out.write('%s:%s:%s:%s\n' % (cat, modulename, version, location))
@@ -931,6 +1003,8 @@ def main(args):
             out.write('%s:%s::%s\n' % (cat, modulename, location))
         else:
             out.write('%s:%s::\n' % (cat, modulename))
+
+        result.task_done()
 
     if not options.debug:
         out.close()
