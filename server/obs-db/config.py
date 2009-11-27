@@ -147,6 +147,7 @@ class Config:
         self.debug = False
         self.mirror_only_new = False
         self.force_hermes = False
+        self.force_db = False
         self.skip_hermes = False
         self.skip_mirror = False
         self.skip_db = False
@@ -242,6 +243,7 @@ class Config:
         self.debug = cp.safe_getboolean('Debug', 'debug', self.debug)
         self.mirror_only_new = cp.safe_getboolean('Debug', 'mirror-only-new', self.mirror_only_new)
         self.force_hermes = cp.safe_getboolean('Debug', 'force-hermes', self.force_hermes)
+        self.force_db = cp.safe_getboolean('Debug', 'force-db', self.force_db)
         self.skip_hermes = cp.safe_getboolean('Debug', 'skip-hermes', self.skip_hermes)
         self.skip_mirror = cp.safe_getboolean('Debug', 'skip-mirror', self.skip_mirror)
         self.skip_db = cp.safe_getboolean('Debug', 'skip-db', self.skip_db)

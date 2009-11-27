@@ -234,7 +234,7 @@ class Runner:
         if self.conf.skip_db:
             return (False, False)
 
-        if (not self.db.exists() or mtime_changed or
+        if (self.conf.force_db or not self.db.exists() or mtime_changed or
             last_db_id < last_mirror_id or last_db_id == -1):
             # The database doesn't exist, the configuration has changed, or
             # we don't have the whole list of events that have happened since
