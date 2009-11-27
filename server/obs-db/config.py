@@ -130,7 +130,7 @@ class ConfigProject:
 
 class Config:
 
-    def __init__(self, file = ''):
+    def __init__(self, file = '', use_opensuse = False):
         """ Arguments:
             file -- configuration file to use
 
@@ -153,6 +153,9 @@ class Config:
         self.skip_db = False
 
         self.projects = {}
+
+        if use_opensuse:
+            self._parse_opensuse()
 
         self._parse()
 
@@ -205,6 +208,14 @@ class Config:
             ignore_empty = False
             print >>sys.stderr, line[:-1]
 
+    def _parse_opensuse(self):
+        """ Parse the openSUSE configuration file. """
+        opensuse_conf = os.path.join(os.path.dirname(globals()['__file__']), 'data', 'opensuse.conf')
+        if os.path.exists(opensuse_conf):
+            self._parse_file(opensuse_conf)
+        else:
+            raise ConfigException('openSUSE configuration file does not exist.')
+
     def _parse(self):
         """ Parse the configuration file. """
         if not self.filename:
@@ -213,8 +224,11 @@ class Config:
         if not os.path.exists(self.filename):
             raise ConfigException('Configuration file %s does not exist.' % self.filename)
 
+        self._parse_file(self.filename)
+
+    def _parse_file(self, filename):
         cp = EasyConfigParser()
-        cp.read(self.filename)
+        cp.read(filename)
 
         self._parse_general(cp)
         self._parse_debug(cp)

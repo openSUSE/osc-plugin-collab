@@ -54,7 +54,8 @@ obs-db/
 
         data/opensuse.conf:
         Configuration file used to create the database for the osc
-        collab openSUSE database.
+        collab openSUSE database. It can be used with the --opensuse
+        option of obs-db, or with the -s option of runme.
 
         buildservice.py:
         Checks out data from the build service.

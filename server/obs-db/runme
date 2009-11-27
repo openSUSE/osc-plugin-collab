@@ -44,14 +44,16 @@ OBS_DO_RPMLINT=0
 ## Basic setup
 
 CACHE_DIR=./cache
+USE_OPENSUSE=
 
 usage() {
-    echo "Usage: $0 [-o conf-file]"
+    echo "Usage: $0 [-o conf-file] [-s]"
 }
 
-while getopts o:h option; do
+while getopts o:sh option; do
     case $option in
     o) OBS_OPTIONS=$OPTARG;;
+    s) USE_OPENSUSE=--opensuse;;
     h|help) usage; exit 0;;
     *) usage; exit 1;;
     esac
@@ -126,4 +128,4 @@ fi
 ##############################################################
 # Check out everything and create the databases
 
-$basedir/obs-db --config $OBS_OPTIONS
+$basedir/obs-db --config $OBS_OPTIONS $USE_OPENSUSE

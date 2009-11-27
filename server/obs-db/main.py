@@ -366,14 +366,14 @@ def main(args):
 
     parser.add_option('--config', dest='config',
                       help='configuration file to use')
+    parser.add_option('--opensuse', dest='opensuse',
+                      action='store_true', default=False,
+                      help='use the openSUSE config as a basis')
 
     (options, args) = parser.parse_args()
 
     try:
-        if options.config:
-            conf = config.Config(options.config)
-        else:
-            conf = config.Config()
+        conf = config.Config(options.config, use_opensuse = options.opensuse)
     except config.ConfigException, e:
         print >>sys.stderr, e
         return 1
