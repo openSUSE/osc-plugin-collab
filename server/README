@@ -1,50 +1,97 @@
 This directory contains the script used to create the server-side
-database used by the osc-collab plugin.
+database used by the osc collab plugin.
 
-All data created will be created in /tmp/obs-dissector unless the
-OBS_DISSECTOR_DIR environment variable is set.
+All data created will be created in ./cache/ unless the cache-dir option
+in obs-db/obs.conf is set.
+
+There are runme scripts that should help people get started. Ideally,
+those scripts would be run in cron jobs:
+
+ ./runme: a good period would be every 12 hours or every day
+
+ ./obs-db/runme: a good period should be between every 10 minutes and
+                 every 30 minutes (it has to be tweaked)
+
+ ./upstream/runme: a good period should be every 30 minutes
+
+
+#######################################################################
 
 
 runme:
-    Small helper to show how to use everything, and get some data from
-    scratch.
+    Small helper to call list-packages.
 
-
-obs-db/
-    create-database:
-	Based on a checkout of packages (made with obs-checkout, eg),
-	this script gathers data from all packages in a database so that
-	it's easy to analyze.
-	See also 'create-database --help'.
-
-    dissector_util.py:
-	Miscellaneous functions that make life easier.
-
-    feedparser.py:
-	Universal feed parser: http://www.feedparser.org/
-	Put here for convenience, so you don't have to install it.
-
-    list-packages:
+list-packages:
 	Create a small database containing the list of packages in
 	various Build Service projects. This is needed by the browse.py
 	web script.
 
-    obs-checkout:
-	Check out packages from specified project.
-	By default, it just uses $OBS_DISSECTOR_DIR/obs-co-stable as
-	destination directory, but there are some options to use various
-	directories. See how it's being used in runme, for example.
-	There are various options to select what to check out, and how
-	to check out.
-	This script should not be run too frequently because it does
-	many requests on the Build Service servers.
-	See also 'obs-checkout --help'.
+
+obs-db/
+    Contains a script that will checks out the relevant data from the
+    build service, and creates a database for osc collab. It was
+    designed to not be too expensive in resources for the build service,
+    by using hermes to know what has changed in the past.
+
+    The configuration file obs.conf is a good introduction on how to use
+    this script (what to check out, eg). Note that the default
+    configuration is the one needed for the osc collab openSUSE
+    database, which means it will check out a lot of projects.
+
+    All the data will be put in a cache subdirectory, unless the
+    cache-dir option is set in obs.conf.
+
+
+    Here is a quick overview of the structure of the code:
+
+        buildservice.py:
+        Checks out data from the build service.
+
+        config.py:
+        Handles the configuration.
+
+        database.py:
+        Creates a database based on the checkout and the upstream data.
+
+        feedparser.py:
+        Universal feed parser: http://www.feedparser.org/
+        Put here for convenience, so you don't have to install it.
+
+        hermes.py:
+        Looks at hermes feeds to know what has changed.
+
+        main.py:
+        Shell part of the script.
+
+        obs.conf:
+        Configuration file.
+
+        obs-db:
+        Executable script that will call main.py.
+
+        osc_copy.py:
+        Some convenience functions copied from osc.
+
+        runme:
+        Small helper to launch the script.
+
+        TODO:
+        List of things to do :-)
+
+        upstream.py:
+        Creates a database about upstream data.
+
+        util.py:
+        Miscellaneous functions that make life easier.
 
 
 upstream/
     download-upstream-versions:
 	Download information about the latest versions of various
 	modules that are not hosted on ftp.gnome.org.
+
+    runme:
+    Small helper to update the upstream data.
 
     upstream-limits.txt:
 	Information about limits for upstream versions. We might not
