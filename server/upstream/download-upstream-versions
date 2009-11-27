@@ -868,7 +868,7 @@ def main(args):
                 stats = os.stat(save_file)
                 # Quit if it's less than 10-hours old
                 if time.time() - stats.st_mtime < 3600 * 10:
-                    sys.exit(0)
+                    sys.exit(2)
 
             if options.fallback or options.fast_update:
                 fallback_data = parse_data(save_file)
