@@ -153,7 +153,8 @@ class File(Base):
         self._sql_update_last_id(cursor)
 
     def sql_update_from(self, cursor, new_file):
-        raise ObsDbException('Filenames cannot be updated since nothing can change (%s in %s).' % (self.filename, self.srcpackage.name))
+        # Nothing can be changed, so nothing to do
+        pass
 
     def sql_remove(self, cursor):
         if self.src_package.sql_id == -1:
