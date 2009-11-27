@@ -2,7 +2,10 @@ This directory contains the script used to create the server-side
 database used by the osc collab plugin.
 
 All data created will be created in ./cache/ unless the cache-dir option
-in obs-db/obs.conf is set.
+in a configuration file is set. You can choose the configuration file
+via the -o command-line option, or via the OBS_OPTIONS environment
+variable. The format of the file is the one described in
+obs-db/obs.conf.
 
 There are runme scripts that should help people get started. Ideally,
 those scripts would be run in cron jobs:
