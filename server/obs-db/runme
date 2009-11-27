@@ -43,15 +43,30 @@ OBS_DO_RPMLINT=0
 
 ## Basic setup
 
-if test "x$OBS_OPTIONS" = "x"; then
-    OBS_OPTIONS="$basedir/obs.conf"
+CACHE_DIR=./cache
+
+usage() {
+    echo "Usage: $0 [-o conf-file]"
+}
+
+while getopts o:h option; do
+    case $option in
+    o) OBS_OPTIONS=$OPTARG;;
+    h|help) usage; exit 0;;
+    *) usage; exit 1;;
+    esac
+done
+
+if test "x$OBS_OPTIONS" != "x"; then
+    if test ! -f $OBS_OPTIONS; then
+        echo >&2 "Configuration file $OBS_OPTIONS does not exit."
+        exit 1
+    else
+        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $OBS_OPTIONS | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
+        test "x$OBS_OPTIONS_CACHE_DIR" != "x" && CACHE_DIR=$OBS_OPTIONS_CACHE_DIR
+    fi
 fi
 
-test -f $OBS_OPTIONS || (echo "Configuration file '$OBS_OPTIONS' does not exist."; exit 1)
-
-CACHE_DIR=`grep "^ *cache-dir =" $OBS_OPTIONS | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
-
-test "x$CACHE_DIR" != "x" || CACHE_DIR=./cache
 mkdir -p $CACHE_DIR
 
 
