@@ -51,7 +51,8 @@ class HermesException(Exception):
 #######################################################################
 
 
-class HermesEvent:
+# Note: we subclass object because we need super
+class HermesEvent(object):
 
     regexp = None
 
@@ -91,7 +92,7 @@ class HermesEvent:
 
 class HermesEventCommit(HermesEvent):
 
-    regexp = re.compile('OBS ([^/\s]+)/([^/\s]+) r\d+ commited')
+    regexp = re.compile('OBS ([^/\s]*)/([^/\s]*) r\d+ commited')
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
@@ -115,7 +116,7 @@ class HermesEventCommit(HermesEvent):
 
 class HermesEventProjectDeleted(HermesEvent):
 
-    regexp = re.compile('\[obs del\] Project ([^/\s]+) deleted')
+    regexp = re.compile('\[obs del\] Project ([^/\s]*) deleted')
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
@@ -133,7 +134,7 @@ class HermesEventProjectDeleted(HermesEvent):
 
 class HermesEventPackageMeta(HermesEvent):
 
-    regexp = re.compile('\[obs update\] Package ([^/\s]+) in ([^/\s]+) updated')
+    regexp = re.compile('\[obs update\] Package ([^/\s]*) in ([^/\s]*) updated')
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
@@ -152,14 +153,29 @@ class HermesEventPackageMeta(HermesEvent):
 
 class HermesEventPackageAdded(HermesEvent):
 
-    regexp = re.compile('\[obs new\] New Package ([^/\s]+) in ([^/\s]+)')
+    regexp = re.compile('\[obs new\] New Package ([^/\s]*) in ([^/\s]*)')
+    # Workaround again buggy messages
+    workaround = '[obs new] New Package  in'
+
+    @classmethod
+    def is_type_for_title(cls, title):
+        if super(HermesEventPackageAdded, cls).is_type_for_title(title):
+            return True
+        else:
+            return title == cls.workaround
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
         match = self.regexp.match(title)
 
-        self.project = str(match.group(2))
-        self.package = str(match.group(1))
+        if match:
+            self.project = str(match.group(2))
+            self.package = str(match.group(1))
+        elif title == self.workaround:
+            self.project = ''
+            self.package = ''
+        else:
+            raise HermesException('Event should not be in PackagedAdded: %s' % title)
 
 
     def is_package_event(self):
@@ -171,7 +187,7 @@ class HermesEventPackageAdded(HermesEvent):
 
 class HermesEventPackageDeleted(HermesEvent):
 
-    regexp = re.compile('\[obs del\] Package ([^/\s]+) from ([^/\s]+) deleted')
+    regexp = re.compile('\[obs del\] Package ([^/\s]*) from ([^/\s]*) deleted')
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
@@ -243,6 +259,10 @@ class HermesReader:
             if type.is_type_for_title(title):
                 return type(id, title, entry['summary'])
 
+        # work around some weird hermes bug
+        if title == 'Notification  arrived!':
+            return None
+
         raise HermesException('Cannot get event type from: %s' % title)
 
 
@@ -263,7 +283,13 @@ class HermesReader:
                 return True
 
             event = self._parse_entry(id, entry)
-            if event:
+            # Note that hermes can be buggy and give events without the proper
+            # project/package. If it's '' and not None, then it means it has
+            # been changed to something empty (and therefore it's a bug from
+            # hermes).
+            if (event and
+                event.project != '' and
+                not (event.is_package_event() and event.package == '')):
                 # put the id in the tuple so we can sort the list later
                 self.events.append((id, event))
 
