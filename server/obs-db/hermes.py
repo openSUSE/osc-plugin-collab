@@ -218,7 +218,7 @@ class HermesReader:
             conf -- configuration object
 
         """
-        self.events = []
+        self._events = []
         self.last_known_id = last_known_id
 
         self._previous_last_known_id = last_known_id
@@ -291,7 +291,7 @@ class HermesReader:
                 event.project != '' and
                 not (event.is_package_event() and event.package == '')):
                 # put the id in the tuple so we can sort the list later
-                self.events.append((id, event))
+                self._events.append((id, event))
 
             if id > self.last_known_id:
                 self.last_known_id = id
@@ -348,26 +348,23 @@ class HermesReader:
     def read(self):
         """ Read events from hermes, and populates the events item. """
         # Make sure we don't append events to some old values
-        self.events = []
+        self._events = []
 
         for base_url in self._base_urls:
             self._read_feed(base_url)
 
         # Sort to make sure events are in the reverse chronological order
-        self.events.sort(reverse = True)
+        self._events.sort(reverse = True)
 
-        self._debug_print('Number of events: %d' % len(self.events))
-        if len(self.events) == 0:
+        self._debug_print('Number of events: %d' % len(self._events))
+        if len(self._events) == 0:
             return
 
-        self._debug_print('Events (reverse sorted): %s' % [ id for (id, event) in self.events ])
-
-        # Remove the id of events for easier consumption
-        self.events = [ event for (id, event) in self.events ]
+        self._debug_print('Events (reverse sorted): %s' % [ id for (id, event) in self._events ])
 
         self._strip()
 
-        self._debug_print('Number of events after strip: %d' % len(self.events))
+        self._debug_print('Number of events after strip: %d' % len(self._events))
 
 
     def _strip(self):
@@ -385,7 +382,7 @@ class HermesReader:
 
         # Note: the event list has the most recent event first
 
-        for event in self.events:
+        for (id, event) in self._events:
             # Ignore event if the project was deleted after this event
             if (event.project, None) in deleted:
                 continue
@@ -399,11 +396,11 @@ class HermesReader:
                 if (event.project, event.package) in changed:
                     continue
                 changed.append((event.project, event.package))
-                new_events.append(event)
+                new_events.append((id, event))
 
             elif isinstance(event, HermesEventProjectDeleted):
                 deleted.append((event.project, None))
-                new_events.append(event)
+                new_events.append((id, event))
 
             elif isinstance(event, HermesEventPackageMeta):
                 # Ignore meta event if the meta of the package was changed
@@ -411,7 +408,7 @@ class HermesReader:
                 if (event.project, event.package) in meta_changed:
                     continue
                 meta_changed.append((event.project, event.package))
-                new_events.append(event)
+                new_events.append((id, event))
 
             elif isinstance(event, HermesEventPackageAdded):
                 # Ignore added event if the package was re-committed
@@ -420,7 +417,7 @@ class HermesReader:
                     continue
                 changed.append((event.project, event.package))
                 meta_changed.append((event.project, event.package))
-                new_events.append(event)
+                new_events.append((id, event))
 
             elif isinstance(event, HermesEventPackageDeleted):
                 # Ignore deleted event if the package was re-committed
@@ -430,24 +427,41 @@ class HermesReader:
                 if (event.project, event.package) in changed:
                     continue
                 deleted.append((event.project, event.package))
-                new_events.append(event)
+                new_events.append((id, event))
 
-        self.events = new_events
+        self._events = new_events
 
+
+    def get_events(self, last_known_id = -1, reverse = False):
+        """ Return the list of events that are more recent than last_known_id. """
+        result = []
+
+        for (id, event) in self._events:
+            if id <= last_known_id:
+                break
+            result.append(event)
+
+        if reverse:
+            result.reverse()
+
+        return result
 
 #######################################################################
 
 
 def main(args):
-    #url = '25547.rdf'
-    #last_known_id = 2049567
-    url = 'https://hermes.opensuse.org/feeds/25547.rdf'
-    last_known_id = 2049168
+    class Conf:
+        def __init__(self):
+            self.debug = True
+            self.skip_hermes = False
 
-    reader = HermesReader(last_known_id, [ url ], debug = True)
+    url = 'https://hermes.opensuse.org/feeds/25547.rdf'
+    last_known_id = 2093541
+
+    reader = HermesReader(last_known_id, [ url ], Conf())
     reader.read()
 
-    print 'Number of events: %d' % len(reader.events)
+    print 'Number of events: %d' % len(reader.get_events(2094133))
     print 'Last known event: %d' % reader.last_known_id
 
 

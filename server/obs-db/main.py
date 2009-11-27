@@ -189,8 +189,7 @@ class Runner:
             self.hermes.read()
 
             # reverse to have chronological order
-            events = list(self.hermes.events)
-            events.reverse()
+            events = self.hermes.get_events(last_mirror_id, reverse = True)
 
             for event in events:
                 # ignore events that belong to a project we do not monitor
@@ -234,8 +233,8 @@ class Runner:
         if self.conf.skip_db:
             return (False, False)
 
-        if (self.conf.force_db or not self.db.exists() or mtime_changed or
-            last_db_id < last_mirror_id or last_db_id == -1):
+        if (self.conf.force_db or not self.db.exists() or
+            mtime_changed or last_db_id == -1):
             # The database doesn't exist, the configuration has changed, or
             # we don't have the whole list of events that have happened since
             # the last database update. So we just rebuild it from scratch.
@@ -246,8 +245,7 @@ class Runner:
             # update the relevant parts of the db
 
             # reverse to have chronological order
-            events = list(self.hermes.events)
-            events.reverse()
+            events = self.hermes.get_events(last_db_id, reverse = True)
 
             if len(events) == 0:
                 return (False, False)
@@ -324,7 +322,7 @@ class Runner:
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
-        self.hermes = hermes.HermesReader(last_mirror_id, self.conf.hermes_urls, self.conf)
+        self.hermes = hermes.HermesReader(min(last_mirror_id, last_db_id), self.conf.hermes_urls, self.conf)
 
         # Run the mirror update, and make sure to update the status afterwards
         # in case we crash later
