@@ -71,7 +71,7 @@ class UpstreamDb:
             self._sql_setup()
 
         self._update_upstream_pkg_name_match('upstream-packages-match.txt')
-        self._update_upstream_data('versions-fallback', True)
+        self._update_upstream_data('fallback', True)
 
         branches = set([ project_configs[project].branch for project in project_configs.keys() ])
         for branch in branches:
