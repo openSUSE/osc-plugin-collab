@@ -55,12 +55,6 @@ import feedparser
 from dissector_util import *
 
 
-DIR_PARENT = '/tmp/obs-dissector'
-
-if os.getenv('OBS_DISSECTOR_DIR') and os.getenv('OBS_DISSECTOR_DIR') != '':
-    DIR_PARENT=os.getenv('OBS_DISSECTOR_DIR')
-
-
 #######################################################################
 
 
@@ -804,7 +798,7 @@ def main(args):
 
     parser.add_option('--debug', dest='debug',
                       help='only handle the argument as input and output the result')
-    parser.add_option('--directory', dest='dir',
+    parser.add_option('--directory', dest='dir', default='.',
                       help='directory where to find data and save data')
     parser.add_option('--save-file', dest='save',
                       help='path to the file where the results will be written')
@@ -826,10 +820,7 @@ def main(args):
 
     fallback_data = {}
 
-    if options.dir:
-        directory = options.dir
-    else:
-        directory = DIR_PARENT
+    directory = options.dir
 
     if options.upstream_limits:
         limit_file = options.upstream_limits
