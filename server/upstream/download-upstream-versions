@@ -25,7 +25,7 @@
 # svn module), which has the same license.
 #
 #
-# Authors: Vincent Untz <vuntz@novell.com>
+# Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
 import os

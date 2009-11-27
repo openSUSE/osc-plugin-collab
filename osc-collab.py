@@ -31,7 +31,7 @@
 #
 # (Licensed under the simplified BSD license)
 #
-# Authors: Vincent Untz <vuntz@novell.com>
+# Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
 OSC_COLLAB_VERSION = '0.91'
