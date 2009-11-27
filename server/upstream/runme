@@ -85,7 +85,7 @@ concatenate_all_versions () {
     if test $? -ne 0; then
         mv $DESTFILE.new $DESTFILE
     else
-        rm $DESTFILE.new
+        rm -f $DESTFILE.new
     fi
 }
 
@@ -96,7 +96,7 @@ download_gnome_version () {
     fi
 
     DESTFILE=$CACHE_DIR/upstream/gnome-$VERSION
-    rm $DESTFILE.new
+    rm -f $DESTFILE.new
 
     wget -q -nc -O $DESTFILE.new http://www.gnome.org/~vuntz/tmp/versions/versions-$VERSION
 
@@ -114,13 +114,13 @@ download_gnome_version () {
     if test $? -ne 0; then
         mv $DESTFILE.new $DESTFILE
     else
-        rm $DESTFILE.new
+        rm -f $DESTFILE.new
     fi
 }
 
 download_fallback_version () {
     DESTFILE=$CACHE_DIR/upstream/fallback
-    rm $DESTFILE.new
+    rm -f $DESTFILE.new
 
     wget -q -nc -O $DESTFILE.new http://www.suse.de/~meissner/factory.upstream.lst
 
@@ -133,7 +133,7 @@ download_fallback_version () {
     if test $? -ne 0; then
         mv $DESTFILE.new $DESTFILE
     else
-        rm $DESTFILE.new
+        rm -f $DESTFILE.new
     fi
 }
 
@@ -163,7 +163,7 @@ download_upstream_version () {
     if test $? -ne 0; then
         mv $DESTFILE.new $DESTFILE
     else
-        rm $DESTFILE.new
+        rm -f $DESTFILE.new
     fi
 }
 
