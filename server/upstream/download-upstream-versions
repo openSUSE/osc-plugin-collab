@@ -376,7 +376,7 @@ def _get_version_from_files(modulename, location, files, limit):
         tarballs = [file for file in latest if file.endswith('.tgz')]
 
     if not tarballs:
-        raise UpstreamDownloadError('No tarballs found for version %s' % version)
+        raise UpstreamDownloadError('No tarball found for version %s' % version)
 
     # at this point, all the tarballs we have are relevant, so just take the
     # first one
@@ -654,7 +654,7 @@ def _get_version_from_trac(modulename, url, limit):
         tarballs = [file for file in latest if file[1].endswith('.tgz')]
 
     if not tarballs:
-        raise UpstreamDownloadError('No tarballs found for version %s' % version)
+        raise UpstreamDownloadError('No tarball found for version %s' % version)
 
     # first tarball is fine
     tarball = tarballs[0]
