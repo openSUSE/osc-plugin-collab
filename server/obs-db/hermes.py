@@ -92,7 +92,7 @@ class HermesEvent(object):
 
 class HermesEventCommit(HermesEvent):
 
-    regexp = re.compile('OBS ([^/\s]*)/([^/\s]*) r\d+ commited')
+    regexp = re.compile('OBS ([^/\s]*)/([^/\s]*) r\d* commited')
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
