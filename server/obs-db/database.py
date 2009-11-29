@@ -1156,7 +1156,7 @@ class SrcPackage(Base):
         if upstream_db and self.project.branch:
             (self.upstream_name, self.upstream_version, self.upstream_url) = upstream_db.get_upstream_data(self.project.branch, self.name, self.project.ignore_fallback)
 
-        if self.project.parent and not self.is_link and not self.error:
+        if self.project.parent and self.project.parent != self.project.name and not self.is_link and not self.error:
             self.error = 'not-link'
 
         self._ready_for_sql = True
@@ -1229,7 +1229,7 @@ class SrcPackage(Base):
         '''
         if root is None:
             return
-        if not self.project.parent:
+        if not self.project.parent or self.project.parent == self.project.name:
             return
 
         parent_project_dir = os.path.join(srcpackage_dir, '..', '..', self.project.parent, self.name)
@@ -1689,7 +1689,7 @@ class Project(Base):
 
         project_config = projects_config[name]
 
-        if not override_project_name:
+        if not override_project_name and project_config.parent != self.name:
             self.parent = project_config.parent
         self.branch = project_config.branch
         self.ignore_fallback = project_config.ignore_fallback
