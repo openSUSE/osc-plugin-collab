@@ -5,6 +5,8 @@ buildservice:
    devel project for two different projects). This should be avoided since we
    probably expect the first write to win (assuming the first write matches the
    first project in obs.conf).
+ + in check_project(), we should probably also look at files that are checked
+   out for a package and remove the ones that shouldn't be there.
 
 database:
  + only do one update call if there was a commit and meta change for a package
