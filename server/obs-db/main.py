@@ -343,7 +343,7 @@ class Runner:
         self.db = database.ObsDb(self.conf, self._db_dir, self._mirror_dir, self.upstream)
         (db_full_rebuild, db_changed) = self._run_db(conf_changed)
 
-        if not db_full_rebuild:
+        if not self.conf.skip_db and not db_full_rebuild:
             upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])
         else:
             upstream_changed = False
@@ -351,7 +351,7 @@ class Runner:
         # Post-analysis to remove stale data, or enhance the database
         self._remove_stale_data()
 
-        if db_changed or upstream_changed:
+        if not self.conf.skip_db and (db_changed or upstream_changed):
             self.db.post_analyze()
         else:
             self._debug_print('No need to run the post-analysis')
