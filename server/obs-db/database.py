@@ -2108,6 +2108,8 @@ class ObsDb:
         for project in projects:
             project.read_config(self.conf.projects, self.mirror_dir)
 
+        update = False
+
         for branch in branches.keys():
             if not branches[branch]:
                 continue
@@ -2138,8 +2140,9 @@ class ObsDb:
                             upstream_name = ?, upstream_version = ?, upstream_url = ?
                             WHERE name = ? AND project = ?;''' % SrcPackage.sql_table,
                             (upstream_name, upstream_version, upstream_url, srcpackage, project.sql_id))
+                    update = True
 
-        return True
+        return update
 
     def post_analyze(self):
         """
