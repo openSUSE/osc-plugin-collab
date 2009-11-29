@@ -239,12 +239,16 @@ class Runner:
             if len(events) == 0:
                 return (False, False)
 
+            changed = False
+
             for event in events:
                 # ignore events that belong to a project we do not monitor
                 # (ie, there's no checkout)
                 project_dir = os.path.join(self._mirror_dir, event.project)
                 if not os.path.exists(project_dir):
                     continue
+
+                changed = True
 
                 if isinstance(event, hermes.HermesEventCommit):
                     self.db.update_package(event.project, event.package)
@@ -263,7 +267,7 @@ class Runner:
                 elif isinstance(event, hermes.HermesEventPackageDeleted):
                     self.db.remove_package(event.project, event.package)
 
-            return (False, True)
+            return (False, changed)
 
     def _remove_stale_data(self):
         if self.conf.skip_mirror and self.conf.skip_db:
