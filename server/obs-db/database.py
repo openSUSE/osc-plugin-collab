@@ -2102,8 +2102,12 @@ class ObsDb:
         """ Return the list of devel projects used by packages in project. """
         self._open_existing_db_if_necessary()
 
-        self._cursor.execute('''SELECT devel_project FROM %s GROUP BY devel_project;''' % SrcPackage.sql_table)
-        return [ devel_project for (devel_project,) in self._cursor.fetchall() ]
+        self._cursor.execute('''SELECT A.devel_project FROM %s as A, %s AS B
+                                WHERE A.project = B.id AND B.name = ?
+                                GROUP BY devel_project
+                                ;''' % (SrcPackage.sql_table, Project.sql_table),
+                                (project,))
+        return [ devel_project for (devel_project,) in self._cursor.fetchall() if devel_project ]
 
     def get_projects(self):
         """ Return the list of projects in the database. """
