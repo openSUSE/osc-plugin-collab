@@ -285,12 +285,8 @@ class Runner:
                 needed.extend(self.db.get_devel_projects(project))
         needed = set(needed)
 
-        unneeded = []
-        db_projects = self.db.get_projects()
-        for project in db_projects:
-            if not project in needed:
-                unneeded.append(project)
-
+        db_projects = set(self.db.get_projects())
+        unneeded = db_projects.difference(needed)
         for project in unneeded:
             if not self.conf.skip_xml:
                 self.xml.remove_project(project)
@@ -302,23 +298,24 @@ class Runner:
         if self.conf.skip_mirror and self.conf.skip_xml:
             return
 
-        db_projects = self.db.get_projects()
+        # We now have "projects in the db" = needed
+        db_projects = needed
 
         if not self.conf.skip_mirror:
             # If one project exists in the mirror but not in the db, then it's
             # stale data from the mirror that we can remove.
-            mirror_projects = [ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ]
-            for project in mirror_projects:
-                if project not in db_projects:
-                    self.obs.remove_checkout_project(project)
+            mirror_projects = set([ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ])
+            unneeded = mirror_projects.difference(db_projects)
+            for project in unneeded:
+                self.obs.remove_checkout_project(project)
 
         if not self.conf.skip_xml:
             # If one project exists in the xml but not in the db, then it's
             # stale data that we can remove.
-            xml_projects = [ file for file in os.listdir(self._xml_dir) if file.endswith('.xml') ]
-            for project in xml_projects:
-                if project not in db_projects:
-                    self.xml.remove_project(project)
+            xml_projects = set([ file for file in os.listdir(self._xml_dir) if file.endswith('.xml') ])
+            unneeded = xml_projects.difference(db_projects)
+            for project in unneeded:
+                self.xml.remove_project(project)
 
 
     def run(self):
