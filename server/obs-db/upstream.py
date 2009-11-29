@@ -321,10 +321,6 @@ class UpstreamDb:
                 self.cursor.execute('''DELETE FROM upstream WHERE branch = ?;''', (id,))
                 self.cursor.execute('''DELETE FROM branches WHERE id = ?;''', (id,))
 
-    def __del__(self):
-        self.cursor.close()
-        self.db.close()
-
     def _is_without_upstream(self, name):
         index = name.rfind('branding')
         if index > 0:
