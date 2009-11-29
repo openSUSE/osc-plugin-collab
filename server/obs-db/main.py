@@ -305,7 +305,10 @@ class Runner:
         else:
             new_conf_mtime = -1
 
-        new_opensuse_mtime = self.conf.get_opensuse_mtime()
+        if self.conf.use_opensuse:
+            new_opensuse_mtime = self.conf.get_opensuse_mtime()
+        else:
+            new_opensuse_mtime = -1
 
         conf_changed = ((self._status['conf-mtime'] != new_conf_mtime
                          or (self.conf.use_opensuse and self._status['opensuse-mtime'] != new_opensuse_mtime))
