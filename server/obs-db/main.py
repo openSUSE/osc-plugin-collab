@@ -78,6 +78,16 @@ class Runner:
         self._upstream_dir = os.path.join(self.conf.cache_dir, 'upstream')
         self._db_dir = os.path.join(self.conf.cache_dir, 'db')
 
+        self._status = {}
+        # Last hermes event handled by mirror
+        self._status['mirror'] = -1
+        # Last hermes event handled by db
+        self._status['db'] = -1
+        # mtime of the configuration that was last known
+        self._status['conf-mtime'] = -1
+        # mtime of the upstream database
+        self._status['upstream-mtime'] = -1
+
 
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
@@ -88,86 +98,58 @@ class Runner:
     def _read_status(self):
         """ Read the last known status of the script. """
         if not os.path.exists(self._status_file):
-            return (-1, -1, -1, -1)
+            return
 
         file = open(self._status_file)
         lines = file.readlines()
         file.close()
 
-        last_mirror_id = -1
-        last_db_id = -1
-        conf_mtime = -1
-        upstream_mtime = -1
-
         for line in lines:
             line = line[:-1]
-            if line.startswith('mirror='):
-                value = line[len('mirror='):]
-                try:
-                    last_mirror_id = int(value)
-                except ValueError:
-                    raise HRunnnerException('Cannot parse last event id handled by mirror: %s' % value)
+            handled = False
 
-            elif line.startswith('db='):
-                value = line[len('db='):]
-                try:
-                    last_db_id = int(value)
-                except ValueError:
-                    raise HRunnnerException('Cannot parse last event id handled by db: %s' % value)
+            for key in self._status.keys():
+                if line.startswith(key + '='):
+                    value = line[len(key + '='):]
+                    try:
+                        self._status[key] = int(value)
+                    except ValueError:
+                        raise RunnnerException('Cannot parse status value for %s: %s' % (key, value))
 
-            elif line.startswith('conf-mtime='):
-                value = line[len('conf-mtime='):]
-                try:
-                    conf_mtime = int(value)
-                except ValueError:
-                    raise HRunnnerException('Cannot parse configuration file mtime: %s' % value)
+                handled = True
 
-            elif line.startswith('upstream-mtime='):
-                value = line[len('upstream-mtime='):]
-                try:
-                    upstream_mtime = int(value)
-                except ValueError:
-                    raise HRunnnerException('Cannot parse upstream database mtime: %s' % value)
-
-            else:
+            if not handled:
                 raise RunnnerException('Unknown status line: %s' % (line,))
 
-        return (last_mirror_id, last_db_id, conf_mtime, upstream_mtime)
 
-
-    def _write_status(self, last_mirror_id, last_db_id, conf_mtime, upstream_mtime):
-        """ Save the last known status of the script.
-
-            Arguments:
-            last_mirror_id -- id of the last event handled by the mirror cache
-            last_db_id -- id if the last event used to create the database
-            conf_mtime -- mtime of the configuration file
-            upstream_mtime -- mtime of the last write to the upstream database
-        
-        """
+    def _write_status(self):
+        """ Save the last known status of the script. """
         if not os.path.exists(self._status_dir):
             os.makedirs(self._status_dir)
 
         tmpfilename = self._status_file + '.new'
 
+        # it's always better to have things sorted, since it'll be predictable
+        # (so better for human eyes ;-))
+        items = self._status.items()
+        items.sort()
+
         file = open(tmpfilename, 'w')
-        file.write('mirror=%d\n' % last_mirror_id)
-        file.write('db=%d\n' % last_db_id)
-        file.write('conf-mtime=%d\n' % conf_mtime)
-        file.write('upstream-mtime=%d\n' % upstream_mtime)
+        for (key, value) in items:
+            file.write('%s=%d\n' % (key, self._status[key]))
         file.close()
 
         os.rename(tmpfilename, self._status_file)
 
 
-    def _run_mirror(self, last_mirror_id, mtime_changed):
+    def _run_mirror(self, conf_changed):
         if not os.path.exists(self._mirror_dir):
             os.makedirs(self._mirror_dir)
 
         if self.conf.skip_mirror:
             return
 
-        if last_mirror_id == -1 or mtime_changed:
+        if self._status['mirror'] == -1 or conf_changed:
             # we don't know how old our mirror is, or the configuration has
             # changed
 
@@ -189,7 +171,7 @@ class Runner:
             self.hermes.read()
 
             # reverse to have chronological order
-            events = self.hermes.get_events(last_mirror_id, reverse = True)
+            events = self.hermes.get_events(self._status['mirror'], reverse = True)
 
             for event in events:
                 # ignore events that belong to a project we do not monitor
@@ -228,13 +210,13 @@ class Runner:
         self.obs.run()
 
 
-    def _run_db(self, last_mirror_id, last_db_id, mtime_changed):
+    def _run_db(self, conf_changed):
         """ Return if a full rebuild was done, and if anything has been updated. """
         if self.conf.skip_db:
             return (False, False)
 
         if (self.conf.force_db or not self.db.exists() or
-            mtime_changed or last_db_id == -1):
+            conf_changed or self._status['db'] == -1):
             # The database doesn't exist, the configuration has changed, or
             # we don't have the whole list of events that have happened since
             # the last database update. So we just rebuild it from scratch.
@@ -245,7 +227,7 @@ class Runner:
             # update the relevant parts of the db
 
             # reverse to have chronological order
-            events = self.hermes.get_events(last_db_id, reverse = True)
+            events = self.hermes.get_events(self._status['db'], reverse = True)
 
             if len(events) == 0:
                 return (False, False)
@@ -313,35 +295,39 @@ class Runner:
     def run(self):
         """ Run the various steps of the script."""
         # Get the previous status, and some info about what will be the new one
+        self._read_status()
+
         if self.conf.filename:
             stats = os.stat(self.conf.filename)
             new_conf_mtime = stats.st_mtime
         else:
             new_conf_mtime = -1
 
-        (last_mirror_id, last_db_id, conf_mtime, upstream_mtime) = self._read_status()
-
-        mtime_changed = (conf_mtime != new_conf_mtime) and not self.conf.force_hermes
+        conf_changed = (self._status['conf-mtime'] != new_conf_mtime) and not self.conf.force_hermes
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
-        self.hermes = hermes.HermesReader(min(last_mirror_id, last_db_id), self.conf.hermes_urls, self.conf)
+        self.hermes = hermes.HermesReader(min(self._status['mirror'], self._status['db']), self.conf.hermes_urls, self.conf)
 
         # Run the mirror update, and make sure to update the status afterwards
         # in case we crash later
         self.obs = buildservice.ObsCheckout(self.conf, self._mirror_dir)
-        self._run_mirror(last_mirror_id, mtime_changed)
-        self._write_status(self.hermes.last_known_id, last_db_id, conf_mtime, upstream_mtime)
+        self._run_mirror(conf_changed)
+
+        if not self.conf.mirror_only_new:
+            # we don't want to lose events if we went to fast mode once
+            self._status['mirror'] = self.hermes.last_known_id
+        self._write_status()
 
         # Setup the upstream database, and update/create the package database
         self.upstream = upstream.UpstreamDb(self.conf.projects, self._upstream_dir, self._db_dir, self.conf.debug)
         new_upstream_mtime = self.upstream.get_mtime()
 
         self.db = database.ObsDb(self.conf, self._db_dir, self._mirror_dir, self.upstream)
-        (db_full_rebuild, db_changed) = self._run_db(last_mirror_id, last_db_id, mtime_changed)
+        (db_full_rebuild, db_changed) = self._run_db(conf_changed)
 
         if not db_full_rebuild:
-            upstream_changed = self.db.upstream_changes(upstream_mtime)
+            upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])
         else:
             upstream_changed = False
 
@@ -355,10 +341,12 @@ class Runner:
         # TODO
 
         if not self.conf.mirror_only_new:
-            self._write_status(self.hermes.last_known_id, self.hermes.last_known_id, new_conf_mtime, new_upstream_mtime)
-        else:
             # we don't want to lose events if we went to fast mode once
-            self._write_status(last_mirror_id, last_db_id, new_conf_mtime, new_upstream_mtime)
+            self._status['db'] = self.hermes.last_known_id
+        self._status['conf-mtime'] = new_conf_mtime
+        self._status['upstream-mtime'] = new_upstream_mtime
+
+        self._write_status()
 
 
 #######################################################################
