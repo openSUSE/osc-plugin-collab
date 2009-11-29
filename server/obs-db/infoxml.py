@@ -285,6 +285,9 @@ class InfoXml:
 
     def run(self, cursor):
         """ Creates the XML files for all projects. """
+        if not cursor:
+            raise InfoXmlException('Database needed to create XML files is not available.')
+
         util.safe_mkdir_p(self.dest_dir)
 
         cursor.execute('''SELECT name FROM %(Project)s;''' % SQL_TABLES)

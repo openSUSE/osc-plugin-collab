@@ -273,6 +273,10 @@ class Runner:
         if self.conf.skip_mirror and self.conf.skip_db and self.conf.skip_xml:
             return
 
+        if self.conf.skip_db and not self.db.exists():
+            # If there's no database, but we skip its creation, it's not a bug
+            return
+
         # If one project exists in the database, but it's not an explicitly
         # requested project, nor a devel project that we should have, then we
         # can safely remove it from the mirror and from the database
