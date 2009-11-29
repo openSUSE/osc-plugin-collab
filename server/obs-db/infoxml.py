@@ -76,10 +76,9 @@ class InfoXmlException(Exception):
 
 class InfoXml:
 
-    def __init__(self, dest_dir, cursor, debug = False):
+    def __init__(self, dest_dir, debug = False):
         self.dest_dir = dest_dir
         self._debug = debug
-        self._cursor = cursor
 
         self._version_cache = None
 
@@ -168,10 +167,10 @@ class InfoXml:
 
         return package
 
-    def _get_project_node(self, project):
+    def _get_project_node(self, cursor, project):
         """ Get the XML node for project. """
-        self._cursor.execute('''SELECT * FROM %(Project)s WHERE name = ?;''' % SQL_TABLES, (project,))
-        row = self._cursor.fetchone()
+        cursor.execute('''SELECT * FROM %(Project)s WHERE name = ?;''' % SQL_TABLES, (project,))
+        row = cursor.fetchone()
 
         if not row:
             raise InfoXmlException('Non-existing project: %s' % project)
@@ -191,20 +190,20 @@ class InfoXml:
             prj_node.set('ignore_upstream', 'true')
 
         should_exist = {}
-        self._cursor.execute('''SELECT A.name AS parent_project, B.name AS parent_package, B.devel_package
-                               FROM %(Project)s AS A, %(SrcPackage)s AS B
-                               WHERE A.id = B.project AND devel_project = ?
-                               ORDER BY A.name, B.name;''' % SQL_TABLES, (project,))
-        for row in self._cursor:
+        cursor.execute('''SELECT A.name AS parent_project, B.name AS parent_package, B.devel_package
+                          FROM %(Project)s AS A, %(SrcPackage)s AS B
+                          WHERE A.id = B.project AND devel_project = ?
+                          ORDER BY A.name, B.name;''' % SQL_TABLES, (project,))
+        for row in cursor:
             should_parent_project = row['parent_project']
             should_parent_package = row['parent_package']
             should_devel_package = row['devel_package'] or should_parent_package
             should_exist[should_devel_package] = (should_parent_project, should_parent_package)
 
-        self._cursor.execute('''SELECT * FROM %(SrcPackage)s
-                               WHERE project = ?
-                               ORDER BY name;''' % SQL_TABLES, (project_id,))
-        for row in self._cursor:
+        cursor.execute('''SELECT * FROM %(SrcPackage)s
+                          WHERE project = ?
+                          ORDER BY name;''' % SQL_TABLES, (project_id,))
+        for row in cursor:
             pkg_node = self._get_package_node_from_row(row, ignore_upstream, parent_project)
             prj_node.append(pkg_node)
             try:
@@ -228,7 +227,7 @@ class InfoXml:
 
         return prj_node
 
-    def _create_version_cache(self, projects = None):
+    def _create_version_cache(self, cursor, projects = None):
         """ Creates a cache containing version of all packages. """
         # This helps us avoid doing many small SQL queries, which is really
         # slow.
@@ -240,27 +239,27 @@ class InfoXml:
         self._version_cache = {}
 
         if not projects:
-            self._cursor.execute('''SELECT name FROM %(Project)s;''' % SQL_TABLES)
-            projects = [ row['name'] for row in self._cursor ]
+            cursor.execute('''SELECT name FROM %(Project)s;''' % SQL_TABLES)
+            projects = [ row['name'] for row in cursor ]
 
         for project in projects:
             self._version_cache[project] = {}
 
-        self._cursor.execute('''SELECT A.name, A.version, B.name AS project
-                               FROM %(SrcPackage)s AS A, %(Project)s AS B
-                               WHERE A.project = B.id;''' % SQL_TABLES)
+        cursor.execute('''SELECT A.name, A.version, B.name AS project
+                          FROM %(SrcPackage)s AS A, %(Project)s AS B
+                          WHERE A.project = B.id;''' % SQL_TABLES)
 
-        for row in self._cursor:
+        for row in cursor:
             self._version_cache[row['project']][row['name']] = row['version']
 
-    def _write_xml_for_project(self, project):
+    def _write_xml_for_project(self, cursor, project):
         """ Writes the XML file for a project.
 
             Note that we don't touch the old file if the result is the same.
             This can be useful for browser cache.
 
         """
-        node = self._get_project_node(project)
+        node = self._get_project_node(cursor, project)
 
         filename = os.path.join(self.dest_dir, project + '.xml')
         tmpfilename = filename + '.tmp'
@@ -284,18 +283,18 @@ class InfoXml:
                 os.unlink(tmpfilename)
             raise e
 
-    def run(self):
+    def run(self, cursor):
         """ Creates the XML files for all projects. """
         util.safe_mkdir_p(self.dest_dir)
 
-        self._cursor.execute('''SELECT name FROM %(Project)s;''' % SQL_TABLES)
-        projects = [ row['name'] for row in self._cursor ]
+        cursor.execute('''SELECT name FROM %(Project)s;''' % SQL_TABLES)
+        projects = [ row['name'] for row in cursor ]
 
-        self._create_version_cache(projects)
+        self._create_version_cache(cursor, projects)
 
         for project in projects:
             self._debug_print('Writing XML for %s' % project)
-            self._write_xml_for_project(project)
+            self._write_xml_for_project(cursor, project)
 
 
 #######################################################################
@@ -325,11 +324,11 @@ def main(args):
     db.text_factory = sqlite3.OptimizedUnicode
     cursor = db.cursor()
 
-    info = InfoXml('.', cursor, True)
+    info = InfoXml('.', True)
 
     try:
-        info._create_version_cache()
-        node = info._get_project_node(project)
+        info._create_version_cache(cursor)
+        node = info._get_project_node(cursor, project)
     except InfoXmlException, e:
         print >> sys.stderr, 'Error while creating the XML for %s: %s' % (project, e)
         sys.exit(1)

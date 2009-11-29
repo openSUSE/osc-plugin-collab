@@ -354,6 +354,8 @@ class Runner:
         else:
             upstream_changed = False
 
+        self.xml = infoxml.InfoXml(self._xml_dir, self.conf.debug)
+
         # Post-analysis to remove stale data, or enhance the database
         self._remove_stale_data()
 
@@ -370,8 +372,7 @@ class Runner:
             if (self.conf.force_xml or
                 db_changed or upstream_changed or
                 self._status['xml'] != self._status['db']):
-                self.xml = infoxml.InfoXml(self._xml_dir, self.db.get_cursor(), self.conf.debug)
-                self.xml.run()
+                self.xml.run(self.db.get_cursor())
             else:
                 self._debug_print('No need to generate XML files')
 
