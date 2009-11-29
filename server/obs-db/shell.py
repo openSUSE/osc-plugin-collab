@@ -408,7 +408,7 @@ def get_conf(args):
         conf = config.Config(options.config, use_opensuse = options.opensuse)
     except config.ConfigException, e:
         print >>sys.stderr, e
-        return None
+        return (args, None)
 
     if conf.sockettimeout > 0:
         # we have a setting for the default socket timeout to not hang forever
@@ -419,9 +419,9 @@ def get_conf(args):
     except OSError, e:
         if e.errno != errno.EEXIST:
             print >>sys.stderr, 'Cannot create cache directory.'
-            return None
+            return (args, None)
 
-    return conf
+    return (args, conf)
 
 
 #######################################################################
@@ -449,7 +449,7 @@ def unlock_run(conf):
 
 
 def main(args):
-    conf = get_conf(args)
+    (args, conf) = get_conf(args)
     if not conf:
         return 1
 
