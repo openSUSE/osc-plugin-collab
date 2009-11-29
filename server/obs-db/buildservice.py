@@ -649,7 +649,7 @@ class ObsCheckout:
             return
 
         try:
-            root = ET.parse(filename).getroot()
+            packages_node = ET.parse(filename).getroot()
         except SyntaxError, e:
             util.safe_unlink(filename)
 
@@ -658,11 +658,6 @@ class ObsCheckout:
             else:
                 print >>sys.stderr, 'Cannot parse status of %s: %s' % (project, e.msg)
 
-            return
-
-        packages_node = root.find('packages')
-        if packages_node is None:
-            print >>sys.stderr, 'Cannot parse status of %s: %s' % (project, e.msg)
             return
 
         # We will have to remove all subdirectories that just don't belong to
@@ -716,9 +711,18 @@ class ObsCheckout:
                 self.queue_checkout_package(project, name, primary = False)
                 continue
 
+            try:
+                root = ET.parse(files).getroot()
+            except SyntaxError:
+                root = None
+
+            if root is None:
+                self.queue_checkout_package(project, name, primary = False)
+                continue
+
             cont = False
-            for node in root.findall('entry'):
-                filename = node.get('name')
+            for entry in root.findall('entry'):
+                filename = entry.get('name')
                 if filename.endswith('.spec'):
                     specfile = os.path.join(project_dir, name, filename)
                     if not os.path.exists(specfile):
