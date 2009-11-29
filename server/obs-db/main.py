@@ -46,6 +46,7 @@ import buildservice
 import config
 import database
 import hermes
+import infoxml
 import upstream
 
 
@@ -71,12 +72,14 @@ class Runner:
         self.obs = None
         self.upstream = None
         self.db = None
+        self.xml = None
 
         self._status_dir = os.path.join(self.conf.cache_dir, 'status')
         self._status_file = os.path.join(self._status_dir, 'last')
         self._mirror_dir = os.path.join(self.conf.cache_dir, 'obs-mirror')
         self._upstream_dir = os.path.join(self.conf.cache_dir, 'upstream')
         self._db_dir = os.path.join(self.conf.cache_dir, 'db')
+        self._xml_dir = os.path.join(self.conf.cache_dir, 'xml')
 
         self._status = {}
         # Last hermes event handled by mirror
@@ -345,8 +348,10 @@ class Runner:
         else:
             self._debug_print('No need to run the post-analysis')
 
-        # create xml
-        # TODO
+        # Create xml last, after we have all the right data
+        if not self.conf.skip_xml and (self.conf.force_xml or db_changed or upstream_changed):
+            self.xml = infoxml.InfoXml(self._xml_dir, self.db.get_cursor(), self.conf.debug)
+            self.xml.run()
 
         if not self.conf.mirror_only_new and not self.conf.skip_db:
             # we don't want to lose events if we went to fast mode once

@@ -1859,6 +1859,11 @@ class ObsDb:
         # needed for the commit
         self._close_db()
 
+    def get_cursor(self):
+        """ Return a cursor to the database. """
+        self._open_existing_db_if_necessary()
+        return self._dbconn.cursor()
+
     def exists(self):
         """ Return True if a database already exists. """
         if not os.path.exists(self._filename):
