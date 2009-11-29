@@ -14,4 +14,3 @@ database:
 general:
  + if one day, we inherit checkout-devel-projects, then we will have to make
    sure the settings are also inherited recursively
- + add command-line options to force checkout of a project or a package

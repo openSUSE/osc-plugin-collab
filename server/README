@@ -74,7 +74,11 @@ obs-db/
         Looks at hermes feeds to know what has changed.
 
         obs-db:
-        Executable script that will call main.py.
+        Executable script that will call shell.py.
+
+        obs-manual-checkout:
+        Executable script to manually download a project or package,
+        in the same way as obs-db does.
 
         osc_copy.py:
         Some convenience functions copied from osc.
