@@ -76,13 +76,25 @@ class UpstreamDb:
         # needed for the commit
         self._close_db()
 
-    def _open_db(self):
+    def _open_db(self, create_if_needed = False):
         """ Open a database file, and sets up everything. """
         if self.db:
-            return
+            return True
+
+        create = False
+        if not os.path.exists(self._dbfile):
+            if not create_if_needed:
+                return False
+            else:
+                util.safe_mkdir_p(os.path.dirname(self._dbfile))
+                create = True
+
         self.db = sqlite3.connect(self._dbfile)
         self.db.row_factory = sqlite3.Row
         self.cursor = self.db.cursor()
+
+        if create:
+            self._sql_setup()
 
     def _close_db(self):
         """ Closes the currently open database. """
@@ -343,7 +355,8 @@ class UpstreamDb:
             return ('', '')
 
     def get_upstream_data(self, branch, srcpackage, ignore_fallback):
-        self._open_db()
+        if not self._open_db():
+            return ('', '', '')
 
         name = self._get_upstream_name(srcpackage)
 
@@ -363,7 +376,8 @@ class UpstreamDb:
         return (name, version, url)
 
     def get_mtime(self):
-        self._open_db()
+        if not self._open_db():
+            return -1
 
         self.cursor.execute('''SELECT MAX(updated) FROM upstream_pkg_name_match;''')
         max_match = self.cursor.fetchone()[0]
@@ -372,7 +386,8 @@ class UpstreamDb:
         return max(max_match, max_data)
 
     def get_changed_packages(self, old_mtime):
-        self._open_db()
+        if not self._open_db():
+            return {}
 
         changed = {}
 
@@ -426,13 +441,7 @@ class UpstreamDb:
             if os.path.exists(self._dbfile):
                 os.unlink(self._dbfile)
 
-        do_setup = not os.path.exists(self._dbfile)
-        util.safe_mkdir_p(os.path.dirname(self._dbfile))
-
-        self._open_db()
-
-        if do_setup:
-            self._sql_setup()
+        self._open_db(create_if_needed = True)
 
         self._update_upstream_pkg_name_match('upstream-packages-match.txt')
         self._update_upstream_data('fallback', True)
