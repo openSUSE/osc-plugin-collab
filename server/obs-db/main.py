@@ -314,7 +314,7 @@ class Runner:
         self.obs = buildservice.ObsCheckout(self.conf, self._mirror_dir)
         self._run_mirror(conf_changed)
 
-        if not self.conf.mirror_only_new:
+        if not self.conf.mirror_only_new and not self.conf.skip_mirror:
             # we don't want to lose events if we went to fast mode once
             self._status['mirror'] = self.hermes.last_known_id
         self._write_status()
@@ -340,7 +340,7 @@ class Runner:
         # create xml
         # TODO
 
-        if not self.conf.mirror_only_new:
+        if not self.conf.mirror_only_new and not self.conf.skip_db:
             # we don't want to lose events if we went to fast mode once
             self._status['db'] = self.hermes.last_known_id
         self._status['conf-mtime'] = new_conf_mtime
