@@ -10,7 +10,3 @@ database:
  + only do one update call if there was a commit and meta change for a package
  + the errors set in _not_real_devel_package() cannot be "reverted" if the
    parent is updated but not the package itself
-
-general:
- + if one day, we inherit checkout-devel-projects, then we will have to make
-   sure the settings are also inherited recursively
