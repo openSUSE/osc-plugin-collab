@@ -270,9 +270,7 @@ class Runner:
             return (False, changed)
 
     def _remove_stale_data(self):
-        if self.conf.skip_mirror and self.conf.skip_db:
-            # This only affects the mirror and the database, so there's nothing
-            # to do if we skip both.
+        if self.conf.skip_mirror and self.conf.skip_db and self.conf.skip_xml:
             return
 
         # If one project exists in the database, but it's not an explicitly
@@ -294,19 +292,33 @@ class Runner:
                 unneeded.append(project)
 
         for project in unneeded:
+            if not self.conf.skip_xml:
+                self.xml.remove_project(project)
             if not self.conf.skip_db:
                 self.db.remove_project(project)
             if not self.conf.skip_mirror:
                 self.obs.remove_checkout_project(project)
 
+        if self.conf.skip_mirror and self.conf.skip_xml:
+            return
+
+        db_projects = self.db.get_projects()
+
         if not self.conf.skip_mirror:
             # If one project exists in the mirror but not in the db, then it's
             # stale data from the mirror that we can remove.
-            db_projects = self.db.get_projects()
             mirror_projects = [ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ]
             for project in mirror_projects:
                 if project not in db_projects:
                     self.obs.remove_checkout_project(project)
+
+        if not self.conf.skip_xml:
+            # If one project exists in the xml but not in the db, then it's
+            # stale data that we can remove.
+            xml_projects = [ file for file in os.listdir(self._xml_dir) if file.endswith('.xml') ]
+            for project in xml_projects:
+                if project not in db_projects:
+                    self.xml.remove_project(project)
 
 
     def run(self):

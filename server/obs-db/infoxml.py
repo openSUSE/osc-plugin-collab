@@ -296,6 +296,11 @@ class InfoXml:
             self._debug_print('Writing XML for %s' % project)
             self._write_xml_for_project(cursor, project)
 
+    def remove_project(self, project):
+        filename = os.path.join(self.dest_dir, project + '.xml')
+        if os.path.exists(filename):
+            os.unlink(filename)
+
 
 #######################################################################
 
