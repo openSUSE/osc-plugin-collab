@@ -753,7 +753,7 @@ class Package(Base):
         self.name = name
         self.src_package = src
         self.summary = ''
-#FIXME
+#FIXME we don't parse the descriptions right now
         self.description = ''
 
     def sql_add(self, cursor):
