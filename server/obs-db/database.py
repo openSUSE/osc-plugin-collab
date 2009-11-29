@@ -2140,7 +2140,6 @@ class ObsDb:
                             (upstream_name, upstream_version, upstream_url, srcpackage, project.sql_id))
 
         return True
-#TODO
 
     def post_analyze(self):
         """
