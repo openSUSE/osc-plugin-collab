@@ -283,8 +283,13 @@ class InfoXml:
                 os.unlink(tmpfilename)
             raise e
 
-    def run(self, cursor):
-        """ Creates the XML files for all projects. """
+    def run(self, cursor, changed_projects = None):
+        """ Creates the XML files for all projects.
+
+            changed_projects -- The list of projects for which we need to
+                                generate a XML file. "None" means all projects.
+
+        """
         if not cursor:
             raise InfoXmlException('Database needed to create XML files is not available.')
 
@@ -294,6 +299,34 @@ class InfoXml:
         projects = [ row['name'] for row in cursor ]
 
         self._create_version_cache(cursor, projects)
+
+        if changed_projects is not None:
+            # We have a specific list of projects for which we need to create
+            # the XML. Note that None and [] don't have the same meaning.
+            if not changed_projects:
+                return
+
+            # Get the list of projects containing a package which links to a
+            # changed project, or which has a a devel project that has changed
+            where = ' OR '.join([ 'B.link_project = ? OR B.devel_project = ?' for i in range(len(changed_projects)) ])
+            where_args = []
+            for changed_project in changed_projects:
+                where_args.append(changed_project)
+                where_args.append(changed_project)
+
+            mapping = SQL_TABLES.copy()
+            mapping['where'] = where
+
+            cursor.execute('''SELECT A.name FROM %(Project)s as A, %(SrcPackage)s as B
+                              WHERE A.id = B.project AND (%(where)s)
+                              GROUP BY A.name
+                              ;''' % mapping, where_args)
+
+            changed_projects = set(changed_projects)
+            for (project,) in cursor:
+                changed_projects.add(project)
+
+            projects = changed_projects
 
         for project in projects:
             self._debug_print('Writing XML for %s' % project)

@@ -269,6 +269,56 @@ class Runner:
 
             return (False, changed)
 
+
+    def _run_xml(self, changed_projects = None):
+        """ Update XML files.
+
+            changed_projects -- List of projects that we know will need an
+                                update
+
+        """
+        if self.conf.skip_xml:
+            return
+
+        if self.conf.force_xml:
+            changed_projects = None
+        else:
+            # adds projects that have changed, according to hermes
+
+            if changed_projects is None:
+                changed_projects = set()
+            else:
+                changed_projects = set(changed_projects)
+
+            # Order of events does not matter here
+            events = self.hermes.get_events(self._status['xml'])
+
+            for event in events:
+                # ignore events that belong to a project we do not monitor
+                # (ie, there's no checkout)
+                project_dir = os.path.join(self._mirror_dir, event.project)
+                if not os.path.exists(project_dir):
+                    continue
+
+                if isinstance(event, hermes.HermesEventCommit):
+                    changed_projects.add(event.project)
+
+                elif isinstance(event, hermes.HermesEventProjectDeleted):
+                    # this will have been removed already, as stale data
+                    pass
+
+                elif isinstance(event, hermes.HermesEventPackageMeta):
+                    changed_projects.add(event.project)
+
+                elif isinstance(event, hermes.HermesEventPackageAdded):
+                    changed_projects.add(event.project)
+
+                elif isinstance(event, hermes.HermesEventPackageDeleted):
+                    changed_projects.add(event.project)
+
+        self.xml.run(self.db.get_cursor(), changed_projects)
+
+
     def _remove_stale_data(self):
         if self.conf.skip_mirror and self.conf.skip_db and self.conf.skip_xml:
             return
@@ -372,10 +422,10 @@ class Runner:
         if not self.conf.skip_db and not self.conf.skip_upstream and not db_full_rebuild:
             # There's no point a looking at the upstream changes if we did a
             # full rebuild anyway
-            upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])
+            projects_changed_upstream = self.db.upstream_changes(self._status['upstream-mtime'])
             self._status['upstream-mtime'] = new_upstream_mtime
         else:
-            upstream_changed = False
+            projects_changed_upstream = []
 
         # Prepare the creation of xml files
         self.xml = infoxml.InfoXml(self._xml_dir, self.conf.debug)
@@ -384,21 +434,17 @@ class Runner:
         self._remove_stale_data()
 
         if not self.conf.skip_db:
-            if db_changed or upstream_changed:
+            if db_changed or projects_changed_upstream:
                 self.db.post_analyze()
             else:
                 self._debug_print('No need to run the post-analysis')
 
         # Create xml last, after we have all the right data
-        if not self.conf.skip_xml:
-            # Note that if the xml id is not in sync with the db one, then it means
-            # we have to regenerate the xml.
-            if (self.conf.force_xml or
-                db_changed or upstream_changed or
-                self._status['xml'] != self._status['db']):
-                self.xml.run(self.db.get_cursor())
-            else:
-                self._debug_print('No need to generate XML files')
+        if db_full_rebuild:
+            # we want to generate all XML files for full rebuilds
+            self._run_xml()
+        else:
+            self._run_xml(projects_changed_upstream)
 
         if not self.conf.skip_xml:
             # if we didn't skip the xml step, then we are at the same point as

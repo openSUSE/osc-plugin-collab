@@ -2119,13 +2119,13 @@ class ObsDb:
     def upstream_changes(self, upstream_mtime):
         """ Updates the upstream data that has changed since last time.
         
-            Return True if something has changed.
+            Return a list of projects that have been updated.
         
         """
         branches = self.upstream.get_changed_packages(upstream_mtime)
 
         if not branches:
-            return False
+            return []
 
         self._open_existing_db_if_necessary()
 
@@ -2135,7 +2135,7 @@ class ObsDb:
         for project in projects:
             project.read_config(self.conf.projects, self.mirror_dir)
 
-        update = False
+        updated_projects = set()
 
         for branch in branches.keys():
             if not branches[branch]:
@@ -2159,6 +2159,8 @@ class ObsDb:
                 if not affected_srcpackages:
                     continue
 
+                updated_projects.add(project.name)
+
                 self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))
 
                 for srcpackage in affected_srcpackages:
@@ -2167,9 +2169,8 @@ class ObsDb:
                             upstream_name = ?, upstream_version = ?, upstream_url = ?
                             WHERE name = ? AND project = ?;''' % SrcPackage.sql_table,
                             (upstream_name, upstream_version, upstream_url, srcpackage, project.sql_id))
-                    update = True
 
-        return update
+        return list(updated_projects)
 
     def post_analyze(self):
         """
