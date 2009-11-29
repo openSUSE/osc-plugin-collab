@@ -389,7 +389,7 @@ class Runner:
 #######################################################################
 
 
-def main(args):
+def get_conf(args):
     parser = optparse.OptionParser()
 
     parser.add_option('--config', dest='config',
@@ -404,7 +404,7 @@ def main(args):
         conf = config.Config(options.config, use_opensuse = options.opensuse)
     except config.ConfigException, e:
         print >>sys.stderr, e
-        return 1
+        return None
 
     if conf.sockettimeout > 0:
         # we have a setting for the default socket timeout to not hang forever
@@ -415,16 +415,42 @@ def main(args):
     except OSError, e:
         if e.errno != errno.EEXIST:
             print >>sys.stderr, 'Cannot create cache directory.'
-            return 1
+            return None
 
+    return conf
+
+
+#######################################################################
+
+
+def lock_run(conf):
     # FIXME: this is racy, we need a real lock file. Or use an atomic operation
     # like mkdir instead
     running_file = os.path.join(conf.cache_dir, 'running')
     if os.path.exists(running_file):
         print >>sys.stderr, 'Another instance of the script is running.'
-        return 1
+        return False
 
     open(running_file, 'w').write('')
+
+    return True
+
+
+def unlock_run(conf):
+    running_file = os.path.join(conf.cache_dir, 'running')
+    os.unlink(running_file)
+
+
+#######################################################################
+
+
+def main(args):
+    conf = get_conf(args)
+    if not conf:
+        return 1
+
+    if not lock_run(conf):
+        return 1
 
     runner = Runner(conf)
 
@@ -439,7 +465,7 @@ def main(args):
         else:
             traceback.print_exc()
 
-    os.unlink(running_file)
+    unlock_run(conf)
 
     return retval
 
