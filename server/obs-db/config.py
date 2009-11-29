@@ -136,6 +136,7 @@ class Config:
 
         """
         self.filename = file
+        self.use_opensuse = use_opensuse
         self.apiurl = None
         self.hermes_urls = []
         self._hermes_urls_helper = ''
@@ -208,9 +209,13 @@ class Config:
             ignore_empty = False
             print >>sys.stderr, line[:-1]
 
+    def _get_opensuse_conf_path(self):
+        """ Return the path to the openSUSE configuration file. """
+        return os.path.join(os.path.dirname(globals()['__file__']), 'data', 'opensuse.conf')
+
     def _parse_opensuse(self):
         """ Parse the openSUSE configuration file. """
-        opensuse_conf = os.path.join(os.path.dirname(globals()['__file__']), 'data', 'opensuse.conf')
+        opensuse_conf = self._get_opensuse_conf_path()
         if os.path.exists(opensuse_conf):
             self._parse_file(opensuse_conf)
         else:
@@ -286,3 +291,8 @@ class Config:
 
             project = ConfigProject(cp, section, name)
             self.projects[name] = project
+
+    def get_opensuse_mtime(self):
+        """ Return the mtime of the openSUSE configuration file. """
+        stats = os.stat(self._get_opensuse_conf_path())
+        return stats.st_mtime

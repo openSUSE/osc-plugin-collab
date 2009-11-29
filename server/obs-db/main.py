@@ -85,6 +85,8 @@ class Runner:
         self._status['db'] = -1
         # mtime of the configuration that was last known
         self._status['conf-mtime'] = -1
+        # mtime of the openSUSE configuration that was last known
+        self._status['opensuse-mtime'] = -1
         # mtime of the upstream database
         self._status['upstream-mtime'] = -1
 
@@ -303,7 +305,11 @@ class Runner:
         else:
             new_conf_mtime = -1
 
-        conf_changed = (self._status['conf-mtime'] != new_conf_mtime) and not self.conf.force_hermes
+        new_opensuse_mtime = self.conf.get_opensuse_mtime()
+
+        conf_changed = ((self._status['conf-mtime'] != new_conf_mtime
+                         or (self.conf.use_opensuse and self._status['opensuse-mtime'] != new_opensuse_mtime))
+                        and not self.conf.force_hermes)
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
@@ -344,6 +350,7 @@ class Runner:
             # we don't want to lose events if we went to fast mode once
             self._status['db'] = self.hermes.last_known_id
         self._status['conf-mtime'] = new_conf_mtime
+        self._status['opensuse-mtime'] = new_opensuse_mtime
         self._status['upstream-mtime'] = new_upstream_mtime
 
         self._write_status()
