@@ -37,10 +37,10 @@
 
 import sys
 
-import main
+import shell
 
 try:
-    ret = main.main(sys.argv)
+    ret = shell.main(sys.argv)
     sys.exit(ret)
 except KeyboardInterrupt:
     pass

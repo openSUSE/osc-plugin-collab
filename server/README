@@ -73,9 +73,6 @@ obs-db/
         hermes.py:
         Looks at hermes feeds to know what has changed.
 
-        main.py:
-        Shell part of the script.
-
         obs-db:
         Executable script that will call main.py.
 
@@ -84,6 +81,9 @@ obs-db/
 
         runme:
         Small helper to launch the script.
+
+        shell.py:
+        Shell part of the script.
 
         TODO:
         List of things to do :-)
