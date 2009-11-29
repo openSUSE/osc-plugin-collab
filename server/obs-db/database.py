@@ -2029,6 +2029,8 @@ class ObsDb:
             print >> sys.stderr, 'Updated package %s in %s does not exist in mirror.' % (package, prj_object.name)
             return
 
+        update_children = False
+
         pkg_object = SrcPackage(package, prj_object)
         pkg_object.read_from_disk(project_dir, self.upstream)
         if not pkg_object.has_meta:
@@ -2038,8 +2040,24 @@ class ObsDb:
             # parsing a big project-wide file).
             pkg_object.devel_project = oldpkg_object.devel_project
             pkg_object.devel_package = oldpkg_object.devel_package
+        else:
+            if (pkg_object.devel_project != oldpkg_object.devel_project or
+                pkg_object.devel_package != oldpkg_object.devel_package):
+                update_children = True
 
         oldpkg_object.sql_update_from(self._cursor, pkg_object)
+
+        # If the devel package has changed, then "children" packages might have
+        # a different error now. See _not_real_devel_package().
+        if update_children:
+            self._cursor.execute('''SELECT A.name, B.name
+                                    FROM %s AS A, %s AS B
+                                    WHERE B.project = A.id AND B.link_project = ? AND (B.link_package = ? OR B.name = ?)
+                                    ;''' % (Project.sql_table, SrcPackage.sql_table),
+                                    (prj_object.name, package, package))
+            children = [ (child_project, child_package) for (child_project, child_package) in self._cursor ]
+            for (child_project, child_package) in children:
+                self.update_package(child_project, child_package)
 
         # Make sure we also have the devel project
         if pkg_object.has_meta and pkg_object.devel_project:
@@ -2195,6 +2213,10 @@ class ObsDb:
                 Look if the link package should really exist there (ie, is it
                 the devel package of the parent?)
             """
+            # Note: the errors created here can disappear when the devel
+            # package of the link package changes, without the current package
+            # changing. This is handled in _update_package_internal().
+
             # the errors here are not relevant to toplevel projects (ie,
             # projects without a parent)
             if row['project_parent'] == '':
