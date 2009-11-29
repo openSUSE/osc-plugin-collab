@@ -313,8 +313,11 @@ class Runner:
     def run(self):
         """ Run the various steps of the script."""
         # Get the previous status, and some info about what will be the new one
-        stats = os.stat(self.conf.filename)
-        new_conf_mtime = stats.st_mtime
+        if self.conf.filename:
+            stats = os.stat(self.conf.filename)
+            new_conf_mtime = stats.st_mtime
+        else:
+            new_conf_mtime = -1
 
         (last_mirror_id, last_db_id, conf_mtime, upstream_mtime) = self._read_status()
 
