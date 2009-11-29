@@ -263,7 +263,12 @@ class Runner:
 
             return (False, True)
 
-    def _run_post_analysis(self):
+    def _remove_stale_data(self):
+        if self.conf.skip_mirror and self.conf.skip_db:
+            # This only affects the mirror and the database, so there's nothing
+            # to do if we skip both.
+            return
+
         # If one project exists in the database, but it's not an explicitly
         # requested project, nor a devel project that we should have, then we
         # can safely remove it from the mirror and from the database
@@ -283,18 +288,19 @@ class Runner:
                 unneeded.append(project)
 
         for project in unneeded:
-            self.db.remove_project(project)
-            self.obs.remove_checkout_project(project)
-
-        # If one project exists in the mirror but not in the db, then it's
-        # stale data from the mirror that we can remove.
-        db_projects = self.db.get_projects()
-        mirror_projects = [ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ]
-        for project in mirror_projects:
-            if project not in db_projects:
+            if not self.conf.skip_db:
+                self.db.remove_project(project)
+            if not self.conf.skip_mirror:
                 self.obs.remove_checkout_project(project)
 
-        self.db.post_analyze()
+        if not self.conf.skip_mirror:
+            # If one project exists in the mirror but not in the db, then it's
+            # stale data from the mirror that we can remove.
+            db_projects = self.db.get_projects()
+            mirror_projects = [ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ]
+            for project in mirror_projects:
+                if project not in db_projects:
+                    self.obs.remove_checkout_project(project)
 
 
     def run(self):
@@ -342,9 +348,11 @@ class Runner:
         else:
             upstream_changed = False
 
-        # Post-analysis to remove stale data
+        # Post-analysis to remove stale data, or enhance the database
+        self._remove_stale_data()
+
         if db_changed or upstream_changed:
-            self._run_post_analysis()
+            self.db.post_analyze()
         else:
             self._debug_print('No need to run the post-analysis')
 
