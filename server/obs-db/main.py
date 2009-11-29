@@ -86,6 +86,8 @@ class Runner:
         self._status['mirror'] = -1
         # Last hermes event handled by db
         self._status['db'] = -1
+        # Last hermes event recorded in xml (it cannot be greater than the db one)
+        self._status['xml'] = -1
         # mtime of the configuration that was last known
         self._status['conf-mtime'] = -1
         # mtime of the openSUSE configuration that was last known
@@ -357,13 +359,23 @@ class Runner:
             self._debug_print('No need to run the post-analysis')
 
         # Create xml last, after we have all the right data
-        if not self.conf.skip_xml and (self.conf.force_xml or db_changed or upstream_changed):
+        # Note that if the xml id is not in sync with the db one, then it means
+        # we have to regenerate the xml.
+        if (not self.conf.skip_xml and
+            (self.conf.force_xml or
+             db_changed or upstream_changed or
+             self._status['xml'] != self._status['db'])):
             self.xml = infoxml.InfoXml(self._xml_dir, self.db.get_cursor(), self.conf.debug)
             self.xml.run()
 
         if not self.conf.mirror_only_new and not self.conf.skip_db:
             # we don't want to lose events if we went to fast mode once
             self._status['db'] = self.hermes.last_known_id
+        if not self.conf.skip_xml:
+            # if we didn't skip the xml step, then we are at the same point as
+            # the db
+            self._status['xml'] = self._status['db']
+
         self._status['conf-mtime'] = new_conf_mtime
         self._status['opensuse-mtime'] = new_opensuse_mtime
         self._status['upstream-mtime'] = new_upstream_mtime
