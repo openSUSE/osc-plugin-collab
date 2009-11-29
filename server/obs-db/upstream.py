@@ -41,6 +41,8 @@ import re
 import sqlite3
 import time
 
+import util
+
 FALLBACK_BRANCH_NAME = '__fallback__'
 MATCH_CHANGE_NAME = ''
 
@@ -48,7 +50,7 @@ MATCH_CHANGE_NAME = ''
 
 class UpstreamDb:
 
-    def __init__(self, project_configs, dest_dir, db_dir, debug):
+    def __init__(self, dest_dir, db_dir, debug = False):
         self.dest_dir = dest_dir
         self._debug = debug
 
@@ -60,29 +62,10 @@ class UpstreamDb:
         # this is by branch
         self._removed_upstream = {}
 
-        dbfile = os.path.join(db_dir, 'upstream.db')
-        do_setup = not os.path.exists(dbfile)
+        self._dbfile = os.path.join(db_dir, 'upstream.db')
 
-        self.db = sqlite3.connect(dbfile)
-        self.db.row_factory = sqlite3.Row
-        self.cursor = self.db.cursor()
-
-        if do_setup:
-            self._sql_setup()
-
-        self._update_upstream_pkg_name_match('upstream-packages-match.txt')
-        self._update_upstream_data('fallback', True)
-
-        branches = set([ project_configs[project].branch for project in project_configs.keys() ])
-        for branch in branches:
-            if branch:
-                self._update_upstream_data(branch)
-
-        # add fallback branch
-        branches.add(FALLBACK_BRANCH_NAME)
-        self._remove_old_branches(branches)
-
-        self.db.commit()
+        self.db = None
+        self.cursor = None
 
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
@@ -92,6 +75,14 @@ class UpstreamDb:
     def __del__(self):
         # needed for the commit
         self._close_db()
+
+    def _open_db(self):
+        """ Open a database file, and sets up everything. """
+        if self.db:
+            return
+        self.db = sqlite3.connect(self._dbfile)
+        self.db.row_factory = sqlite3.Row
+        self.cursor = self.db.cursor()
 
     def _close_db(self):
         """ Closes the currently open database. """
@@ -352,6 +343,8 @@ class UpstreamDb:
             return ('', '')
 
     def get_upstream_data(self, branch, srcpackage, ignore_fallback):
+        self._open_db()
+
         name = self._get_upstream_name(srcpackage)
 
         if branch:
@@ -370,6 +363,8 @@ class UpstreamDb:
         return (name, version, url)
 
     def get_mtime(self):
+        self._open_db()
+
         self.cursor.execute('''SELECT MAX(updated) FROM upstream_pkg_name_match;''')
         max_match = self.cursor.fetchone()[0]
         self.cursor.execute('''SELECT MAX(updated) FROM upstream;''')
@@ -377,6 +372,8 @@ class UpstreamDb:
         return max(max_match, max_data)
 
     def get_changed_packages(self, old_mtime):
+        self._open_db()
+
         changed = {}
 
         self.cursor.execute('''SELECT srcpackage FROM upstream_pkg_name_match
@@ -423,6 +420,29 @@ class UpstreamDb:
 
         return changed
 
+    def update(self, project_configs):
+        do_setup = not os.path.exists(self._dbfile)
+        util.safe_mkdir_p(os.path.dirname(self._dbfile))
+
+        self._open_db()
+
+        if do_setup:
+            self._sql_setup()
+
+        self._update_upstream_pkg_name_match('upstream-packages-match.txt')
+        self._update_upstream_data('fallback', True)
+
+        branches = set([ project_configs[project].branch for project in project_configs.keys() ])
+        for branch in branches:
+            if branch:
+                self._update_upstream_data(branch)
+
+        # add fallback branch
+        branches.add(FALLBACK_BRANCH_NAME)
+        self._remove_old_branches(branches)
+
+        self.db.commit()
+
 #######################################################################
 
 
@@ -432,14 +452,15 @@ def main(args):
             self.branch = branch
 
     configs = {}
-    configs['2.26'] = ProjectConfig('versions-gnome-2.26')
-    configs['latest'] = ProjectConfig('versions-latest')
+    configs['gnome-2.26'] = ProjectConfig('gnome-2.26')
+    configs['latest'] = ProjectConfig('latest')
 
-    upstream = UpstreamDb(configs, '/tmp/obs-dissector/tmp')
+    upstream = UpstreamDb('/tmp/obs-dissector/cache/upstream', '/tmp/obs-dissector/tmp')
+    upstream.update(configs)
 
-    print 'gtk2 (2.26): %s' % (upstream.get_upstream_data('versions-gnome-2.26', 'gtk2', True),)
-    print 'gtk2 (latest): %s' % (upstream.get_upstream_data('versions-latest', 'gtk2', True),)
-    print 'OpenOffice_org (latest, fallback): %s' % (upstream.get_upstream_data('versions-latest', 'OpenOffice_org', False),)
+    print 'gtk2 (2.26): %s' % (upstream.get_upstream_data('gnome-2.26', 'gtk2', True),)
+    print 'gtk2 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk2', True),)
+    print 'OpenOffice_org (latest, fallback): %s' % (upstream.get_upstream_data('latest', 'OpenOffice_org', False),)
 
 
 if __name__ == '__main__':

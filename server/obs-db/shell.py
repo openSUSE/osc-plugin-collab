@@ -351,10 +351,12 @@ class Runner:
             self._status['mirror'] = self.hermes.last_known_id
         self._write_status()
 
-        # Setup the upstream database, and update/create the package database
-        self.upstream = upstream.UpstreamDb(self.conf.projects, self._upstream_dir, self._db_dir, self.conf.debug)
+        # Update/create the upstream database
+        self.upstream = upstream.UpstreamDb(self._upstream_dir, self._db_dir, self.conf.debug)
+        self.upstream.update(self.conf.projects)
         new_upstream_mtime = self.upstream.get_mtime()
 
+        # Update/create the package database
         self.db = database.ObsDb(self.conf, self._db_dir, self._mirror_dir, self.upstream)
         (db_full_rebuild, db_changed) = self._run_db(conf_changed)
 
@@ -363,6 +365,8 @@ class Runner:
             self._status['db'] = self.hermes.last_known_id
 
         if not self.conf.skip_db and not db_full_rebuild:
+            # There's no point a looking at the upstream changes if we did a
+            # full rebuild anyway
             upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])
             self._status['upstream-mtime'] = new_upstream_mtime
         else:
