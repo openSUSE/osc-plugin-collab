@@ -311,6 +311,12 @@ class HermesReader:
         """ Read the first feed just to get a last known id. """
         self._debug_print('Fetching new last known id')
 
+        # we don't ignore self._conf.skip_hermes if we don't have a lst known
+        # id, since it can only harm by creating a later check for all projects
+        # on the build service, which is expensive
+        if self._conf.skip_hermes and self.last_known_id != -1:
+            return self.last_known_id
+
         if len(self._base_urls) == 0:
             return
 
