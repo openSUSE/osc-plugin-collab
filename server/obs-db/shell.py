@@ -361,11 +361,17 @@ class Runner:
         self.db = database.ObsDb(self.conf, self._db_dir, self._mirror_dir, self.upstream)
         (db_full_rebuild, db_changed) = self._run_db(conf_changed)
 
+        if not self.conf.mirror_only_new and not self.conf.skip_db:
+            # we don't want to lose events if we went to fast mode once
+            self._status['db'] = self.hermes.last_known_id
+
         if not self.conf.skip_db and not db_full_rebuild:
             upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])
+            self._status['upstream-mtime'] = new_upstream_mtime
         else:
             upstream_changed = False
 
+        # Prepare the creation of xml files
         self.xml = infoxml.InfoXml(self._xml_dir, self.conf.debug)
 
         # Post-analysis to remove stale data, or enhance the database
@@ -388,9 +394,6 @@ class Runner:
             else:
                 self._debug_print('No need to generate XML files')
 
-        if not self.conf.mirror_only_new and not self.conf.skip_db:
-            # we don't want to lose events if we went to fast mode once
-            self._status['db'] = self.hermes.last_known_id
         if not self.conf.skip_xml:
             # if we didn't skip the xml step, then we are at the same point as
             # the db
@@ -398,7 +401,6 @@ class Runner:
 
         self._status['conf-mtime'] = new_conf_mtime
         self._status['opensuse-mtime'] = new_opensuse_mtime
-        self._status['upstream-mtime'] = new_upstream_mtime
 
         self._write_status()
 
