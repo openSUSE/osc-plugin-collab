@@ -1357,7 +1357,7 @@ class SrcPackage(Base):
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
         if not os.path.exists(filename):
-            # FIXME: print warning?
+            print >> sys.stderr, 'Spec file %s of %s/%s does not exist' % (os.path.basename(filename), self.project.name, self.name)
             return
 
         spec = open(filename)
