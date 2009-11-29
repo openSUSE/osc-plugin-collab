@@ -420,7 +420,12 @@ class UpstreamDb:
 
         return changed
 
-    def update(self, project_configs):
+    def update(self, project_configs, rebuild = False):
+        if rebuild:
+            self._db_close()
+            if os.path.exists(self._dbfile):
+                os.unlink(self._dbfile)
+
         do_setup = not os.path.exists(self._dbfile)
         util.safe_mkdir_p(os.path.dirname(self._dbfile))
 

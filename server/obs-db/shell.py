@@ -353,7 +353,8 @@ class Runner:
 
         # Update/create the upstream database
         self.upstream = upstream.UpstreamDb(self._upstream_dir, self._db_dir, self.conf.debug)
-        self.upstream.update(self.conf.projects)
+        if not self.conf.skip_upstream:
+            self.upstream.update(self.conf.projects, self.conf.force_upstream)
         new_upstream_mtime = self.upstream.get_mtime()
 
         # Update/create the package database
@@ -364,7 +365,7 @@ class Runner:
             # we don't want to lose events if we went to fast mode once
             self._status['db'] = self.hermes.last_known_id
 
-        if not self.conf.skip_db and not db_full_rebuild:
+        if not self.conf.skip_db and not self.conf.skip_upstream and not db_full_rebuild:
             # There's no point a looking at the upstream changes if we did a
             # full rebuild anyway
             upstream_changed = self.db.upstream_changes(self._status['upstream-mtime'])

@@ -148,10 +148,12 @@ class Config:
         self.debug = False
         self.mirror_only_new = False
         self.force_hermes = False
+        self.force_upstream = False
         self.force_db = False
         self.force_xml = False
         self.skip_hermes = False
         self.skip_mirror = False
+        self.skip_upstream = False
         self.skip_db = False
         self.skip_xml = False
 
@@ -266,11 +268,15 @@ class Config:
 
         self.debug = cp.safe_getboolean('Debug', 'debug', self.debug)
         self.mirror_only_new = cp.safe_getboolean('Debug', 'mirror-only-new', self.mirror_only_new)
+
         self.force_hermes = cp.safe_getboolean('Debug', 'force-hermes', self.force_hermes)
+        self.force_upstream = cp.safe_getboolean('Debug', 'force-upstream', self.force_upstream)
         self.force_db = cp.safe_getboolean('Debug', 'force-db', self.force_db)
         self.force_xml = cp.safe_getboolean('Debug', 'force-xml', self.force_xml)
+
         self.skip_hermes = cp.safe_getboolean('Debug', 'skip-hermes', self.skip_hermes)
         self.skip_mirror = cp.safe_getboolean('Debug', 'skip-mirror', self.skip_mirror)
+        self.skip_upstream = cp.safe_getboolean('Debug', 'skip-upstream', self.skip_upstream)
         self.skip_db = cp.safe_getboolean('Debug', 'skip-db', self.skip_db)
         self.skip_xml = cp.safe_getboolean('Debug', 'skip-xml', self.skip_xml)
 
