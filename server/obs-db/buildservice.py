@@ -605,7 +605,7 @@ class ObsCheckout:
         devel_project = devel_node.get('project')
         project_dir = os.path.join(self.dest_dir, devel_project)
         if not os.path.exists(project_dir):
-            self.queue_checkout_project(devel_project, primary = False)
+            self.queue_checkout_project(devel_project, parent = project, primary = False)
 
 
     def check_project(self, project, try_again = True):
@@ -633,7 +633,7 @@ class ObsCheckout:
                     print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
                 elif e.code == 400:
                     # the status page doesn't always work :/
-                    self.queue_checkout_project(project, primary = False, no_check = True)
+                    self.queue_checkout_project(project, primary = False, no_check = True, no_config = True)
             elif try_again:
                 self.check_project(project, False)
             else:
@@ -852,6 +852,40 @@ class ObsCheckout:
             self.run()
 
 
+    def _write_project_config(self, project):
+        """ We need to write the project config to a file, because nothing
+            remembers if a project is a devel project, and from which project
+            it is, so it's impossible to know what settings should apply
+            without such a file. """
+        if not self.conf.projects.has_key(project):
+            return
+
+        project_dir = os.path.join(self.dest_dir, project)
+        util.safe_mkdir_p(project_dir)
+
+        filename = os.path.join(project_dir, '_obs-db-options')
+
+        fout = open(filename, 'w')
+        fout.write('parent=%s\n' % self.conf.projects[project].parent)
+        fout.write('branch=%s\n' % self.conf.projects[project].branch)
+        fout.write('ignore-fallback=%d\n' % self.conf.projects[project].ignore_fallback)
+        fout.write('force-project-parent=%d\n' % self.conf.projects[project].force_project_parent)
+        fout.write('lenient-delta=%d\n' % self.conf.projects[project].lenient_delta)
+        fout.close()
+
+
+    def _copy_project_config(self, project, copy_from):
+        from_file = os.path.join(self, self.dest_dir, copy_from, '_obs-db-options')
+        if not os.path.exists(from_file):
+            return
+
+        project_dir = os.path.join(self.dest_dir, project)
+        util.safe_mkdir_p(project_dir)
+
+        filename = os.path.join(project_dir, '_obs-db-options')
+        shutil.copy(from_file, filename)
+
+
     def _get_packages_in_project(self, project, try_again = True):
         project_dir = os.path.join(self.dest_dir, project)
         util.safe_mkdir_p(project_dir)
@@ -946,7 +980,7 @@ class ObsCheckout:
             q.put((project, package, False))
 
 
-    def queue_checkout_project(self, project, primary = True, no_check = False):
+    def queue_checkout_project(self, project, parent = None, primary = True, no_check = False, no_config = False):
         """ Queue a checkout of a project.
 
             If there's already a checkout for this project, instead of a full
@@ -955,6 +989,12 @@ class ObsCheckout:
 
         """
         project_dir = os.path.join(self.dest_dir, project)
+
+        if not no_config:
+            if parent:
+                self._copy_project_config(project, parent)
+            else:
+                self._write_project_config(project)
 
         if os.path.exists(project_dir) and not no_check:
             debug_thread('main', 'Queuing check for %s' % (project,))
@@ -1009,7 +1049,7 @@ class ObsCheckout:
             return
 
         for devel_project in devel_projects:
-            self.queue_checkout_project(devel_project, primary = primary)
+            self.queue_checkout_project(devel_project, parent = project, primary = primary)
 
 
     def remove_checkout_package(self, project, package):

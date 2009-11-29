@@ -6,8 +6,6 @@ database:
  + only do one update call if there was a commit and meta change for a package
  + the errors set in _not_real_devel_package() cannot be "reverted" if the
    parent is updated but not the package itself
-!+ database::add_project(): if there's no config for the project, then there's
-   no parent, so there'll be really no config
 
 general:
  + if one day, we inherit checkout-devel-projects, then we will have to make

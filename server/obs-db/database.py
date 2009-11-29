@@ -1670,13 +1670,80 @@ class Project(Base):
             ;''' % self.sql_table,
             (self.sql_id,))
 
-    def sync_config(self, project_config, parent_config = False):
-        if not parent_config:
+    def _sync_config(self, projects_config, override_project_name = None):
+        """
+            When override_project_name is not None, then it means we are using
+            the parent configuration.
+
+        """
+        if not projects_config:
+            return False
+
+        name = override_project_name or self.name
+
+        if not projects_config.has_key(name):
+            if not override_project_name and self.parent:
+                return self._sync_config(projects_config, override_project_name = self.parent)
+
+            return False
+
+        project_config = projects_config[name]
+
+        if not override_project_name:
             self.parent = project_config.parent
         self.branch = project_config.branch
         self.ignore_fallback = project_config.ignore_fallback
         self.force_project_parent = project_config.force_project_parent
         self.lenient_delta = project_config.lenient_delta
+
+        return True
+
+    def read_config(self, projects_config, parent_directory):
+        """ Gets the config option for this project, saved in the _obs-db-options file. """
+        # We first try to get the project configuration from the global
+        # configuration
+        if self._sync_config(projects_config):
+            return
+
+        # We failed, so let's use the special configuration cache
+        config_file = os.path.join(parent_directory, self.name, '_obs-db-options')
+
+        if not os.path.exists(config_file):
+            return
+
+        file = open(config_file)
+        lines = file.readlines()
+        file.close()
+
+        for line in lines:
+            line = line[:-1]
+            if line.startswith('parent='):
+                parent = line[len('parent='):]
+                if parent == self.name:
+                    parent = ''
+                self.parent = parent
+
+            elif line.startswith('branch='):
+                branch = line[len('branch='):]
+                if not branch:
+                    self.branch = ''
+                    continue
+                self.branch = branch
+
+            elif line.startswith('ignore-fallback='):
+                ignore_fallback = line[len('ignore-fallback='):]
+                self.ignore_fallback = ignore_fallback.lower() in [ '1', 'true' ]
+
+            elif line.startswith('force-project-parent='):
+                force_project_parent = line[len('force-project-parent='):]
+                self.force_project_parent = force_project_parent.lower() in [ '1', 'true' ]
+
+            elif line.startswith('lenient-delta='):
+                lenient_delta = line[len('lenient-delta='):]
+                self.lenient_delta = lenient_delta.lower() in [ '1', 'true' ]
+
+            else:
+                raise ObsDbException('Unknown project config option for %s: %s' % (self.name, line))
 
     def get_meta(self, parent_directory, package_name):
         """ Get the devel package for a specific package. """
@@ -1743,7 +1810,7 @@ class Project(Base):
 
     def read_from_disk(self, parent_directory, upstream_db):
         """
-            Note: sync_config() has to be called before.
+            Note: read_config() has to be called before.
 
         """
         project_dir = os.path.join(parent_directory, self.name)
@@ -1896,10 +1963,7 @@ class ObsDb:
         self._debug_print('Adding project %s' % project)
 
         prj_object = Project(project)
-        if self.conf.projects.has_key(project):
-            prj_object.sync_config(self.conf.projects[project])
-        elif self.conf.projects.has_key(prj_object.parent):
-            prj_object.sync_config(self.conf.projects[prj_object.parent], True)
+        prj_object.read_config(self.conf.projects, self.mirror_dir)
         prj_object.read_from_disk(self.mirror_dir, self.upstream)
 
         prj_object.sql_add(self._cursor)
@@ -1990,10 +2054,7 @@ class ObsDb:
             self.add_project(project)
             return
 
-        if self.conf.projects.has_key(project):
-            prj_object.sync_config(self.conf.projects[project])
-        elif self.conf.projects.has_key(prj_object.parent):
-            prj_object.sync_config(self.conf.projects[prj_object.parent], True)
+        prj_object.read_config(self.conf.projects, self.mirror_dir)
 
         pkg_object = SrcPackage.sql_get(self._cursor, prj_object, package, True)
         if pkg_object:
@@ -2045,10 +2106,7 @@ class ObsDb:
         # packages if needed
         projects = Project.sql_get_all(self._cursor, recursive = False)
         for project in projects:
-            if self.conf.projects.has_key(project.name):
-                project.sync_config(self.conf.projects[project.name])
-            elif self.conf.projects.has_key(project.parent):
-                project.sync_config(self.conf.projects[project.parent], True)
+            project.read_config(self.conf.projects, self.mirror_dir)
 
         for branch in branches.keys():
             if not branches[branch]:
