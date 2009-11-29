@@ -353,20 +353,23 @@ class Runner:
         # Post-analysis to remove stale data, or enhance the database
         self._remove_stale_data()
 
-        if not self.conf.skip_db and (db_changed or upstream_changed):
-            self.db.post_analyze()
-        else:
-            self._debug_print('No need to run the post-analysis')
+        if not self.conf.skip_db:
+            if db_changed or upstream_changed:
+                self.db.post_analyze()
+            else:
+                self._debug_print('No need to run the post-analysis')
 
         # Create xml last, after we have all the right data
-        # Note that if the xml id is not in sync with the db one, then it means
-        # we have to regenerate the xml.
-        if (not self.conf.skip_xml and
-            (self.conf.force_xml or
-             db_changed or upstream_changed or
-             self._status['xml'] != self._status['db'])):
-            self.xml = infoxml.InfoXml(self._xml_dir, self.db.get_cursor(), self.conf.debug)
-            self.xml.run()
+        if not self.conf.skip_xml:
+            # Note that if the xml id is not in sync with the db one, then it means
+            # we have to regenerate the xml.
+            if (self.conf.force_xml or
+                db_changed or upstream_changed or
+                self._status['xml'] != self._status['db']):
+                self.xml = infoxml.InfoXml(self._xml_dir, self.db.get_cursor(), self.conf.debug)
+                self.xml.run()
+            else:
+                self._debug_print('No need to generate XML files')
 
         if not self.conf.mirror_only_new and not self.conf.skip_db:
             # we don't want to lose events if we went to fast mode once
