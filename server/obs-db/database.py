@@ -1072,7 +1072,7 @@ class SrcPackage(Base):
             obs_error_details = ?
             WHERE id = ?
             ;''' % self.sql_table,
-            (self.srcmd5, self.version, self.link_project, self.link_package, self.devel_project, self.devel_package, self.upstream_name, self.upstream_version, self.upstream_url, self.is_link, self.has_delta, self.error, self.error_details, self.sql_id))
+            (new_srcpackage.srcmd5, new_srcpackage.version, new_srcpackage.link_project, new_srcpackage.link_package, new_srcpackage.devel_project, new_srcpackage.devel_package, new_srcpackage.upstream_name, new_srcpackage.upstream_version, new_srcpackage.upstream_url, new_srcpackage.is_link, new_srcpackage.has_delta, new_srcpackage.error, new_srcpackage.error_details, self.sql_id))
 
         def pop_first(list):
             try:
