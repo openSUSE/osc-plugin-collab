@@ -151,7 +151,7 @@ class Runner:
         if self.conf.skip_mirror:
             return
 
-        if self._status['mirror'] == -1 or conf_changed:
+        if not self.conf.force_hermes and (self._status['mirror'] == -1 or conf_changed):
             # we don't know how old our mirror is, or the configuration has
             # changed
 
@@ -218,7 +218,7 @@ class Runner:
             return (False, False)
 
         if (self.conf.force_db or not self.db.exists() or
-            conf_changed or self._status['db'] == -1):
+            (not self.conf.force_hermes and (conf_changed or self._status['db'] == -1))):
             # The database doesn't exist, the configuration has changed, or
             # we don't have the whole list of events that have happened since
             # the last database update. So we just rebuild it from scratch.
@@ -310,9 +310,8 @@ class Runner:
         else:
             new_opensuse_mtime = -1
 
-        conf_changed = ((self._status['conf-mtime'] != new_conf_mtime
-                         or (self.conf.use_opensuse and self._status['opensuse-mtime'] != new_opensuse_mtime))
-                        and not self.conf.force_hermes)
+        conf_changed = (self._status['conf-mtime'] != new_conf_mtime or
+                        self._status['opensuse-mtime'] != new_opensuse_mtime)
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
