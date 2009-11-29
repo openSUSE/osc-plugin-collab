@@ -460,7 +460,7 @@ def main(args):
         runner.run()
         retval = 0
     except Exception, e:
-        if isinstance(e, hermes.HermesException) or isinstance(e, RunnerException):
+        if isinstance(e, (RunnerException, config.ConfigException, hermes.HermesException, database.ObsDbException, infoxml.InfoXmlException)):
             print >>sys.stderr, e
         else:
             traceback.print_exc()
