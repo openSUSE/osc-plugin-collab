@@ -72,7 +72,7 @@ def main(args):
             obs.queue_checkout_project(project)
         else:
             obs.queue_checkout_package(project, package)
-            obs.queue_checkout_package(project, package)
+            obs.queue_checkout_package_meta(project, package)
 
         obs.run()
 
