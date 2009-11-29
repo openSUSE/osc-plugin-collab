@@ -1,6 +1,10 @@
 buildservice:
  + if we queue something twice, then we will really do it twice. We should have
    a way to queue, and then strip the useless elements to minimize data.
+ + a project configiguration cache can be written twice (eg, when a project is
+   devel project for two different projects). This should be avoided since we
+   probably expect the first write to win (assuming the first write matches the
+   first project in obs.conf).
 
 database:
  + only do one update call if there was a commit and meta change for a package
