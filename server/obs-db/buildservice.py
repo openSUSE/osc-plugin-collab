@@ -633,7 +633,7 @@ class ObsCheckout:
                     print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
                 elif e.code == 400:
                     # the status page doesn't always work :/
-                    self.queue_checkout_project(project, primary = False, no_check = True, no_config = True)
+                    self.queue_checkout_project(project, primary = False, force_simple_checkout = True, no_config = True)
             elif try_again:
                 self.check_project(project, False)
             else:
@@ -984,12 +984,16 @@ class ObsCheckout:
             q.put((project, package, False))
 
 
-    def queue_checkout_project(self, project, parent = None, primary = True, no_check = False, no_config = False):
+    def queue_checkout_project(self, project, parent = None, primary = True, force_simple_checkout = False, no_config = False):
         """ Queue a checkout of a project.
 
             If there's already a checkout for this project, instead of a full
             checkout, a check of what is locally on disk and what should be
             there will be done to only update what is necessary.
+
+            force_simple_checkout is used when what is needed is really just a
+            checkout of this project, and nothing else (no metadata for all
+            packages, and no devel projects).
 
         """
         project_dir = os.path.join(self.dest_dir, project)
@@ -1000,7 +1004,7 @@ class ObsCheckout:
             else:
                 self._write_project_config(project)
 
-        if os.path.exists(project_dir) and not no_check:
+        if os.path.exists(project_dir) and not force_simple_checkout:
             debug_thread('main', 'Queuing check for %s' % (project,))
             self.queue_check_project(project, primary)
         else:
@@ -1013,13 +1017,14 @@ class ObsCheckout:
 
             self.queue_checkout_packages(project, packages, primary)
 
-        if (not self.conf.projects.has_key(project) or
-            not self.conf.projects[project].checkout_devel_projects):
-            # the pkgmeta of the project is automatically downloaded when
-            # looking for devel projects
-            self.queue_pkgmeta_project(project, primary)
-        else:
-            self._queue_checkout_devel_projects(project, primary)
+        if not force_simple_checkout:
+            if (not self.conf.projects.has_key(project) or
+                not self.conf.projects[project].checkout_devel_projects):
+                # the pkgmeta of the project is automatically downloaded when
+                # looking for devel projects
+                self.queue_pkgmeta_project(project, primary)
+            else:
+                self._queue_checkout_devel_projects(project, primary)
 
 
     def _queue_checkout_devel_projects(self, project, primary = True):
