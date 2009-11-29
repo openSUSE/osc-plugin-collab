@@ -2145,7 +2145,7 @@ class ObsDb:
                     if project.branch != branch:
                         continue
 
-                self._cursor.execute('''SELECT name FROM %s;''' % SrcPackage.sql_table, )
+                self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
                 srcpackages = [ name for (name,) in self._cursor ]
 
                 # so we're only interested in the intersection of the two sets
