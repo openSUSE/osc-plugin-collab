@@ -173,7 +173,7 @@ class Config:
         try:
             oscconf.get_config(override_apiurl = self.apiurl)
         except oscerr.NoConfigfile, e:
-            raise ConfigException(e.msg)
+            raise ConfigException(e)
 
         # Workaround to remove warning coming from osc.conf when we don't use
         # SSL checks

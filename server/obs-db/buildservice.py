@@ -332,13 +332,7 @@ class ObsCheckout:
             elif try_again:
                 self._get_file(project, package, filename, size, revision, False)
             else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                elif hasattr(e, 'message'):
-                    detail = e.message
-                else:
-                    detail = e
-                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, detail)
+                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, e)
 
             return
 
@@ -368,21 +362,14 @@ class ObsCheckout:
         except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
             util.safe_unlink(tmpfilename)
 
-            if hasattr(e, 'msg'):
-                detail = e.msg
-            elif hasattr(e, 'message'):
-                detail = e.message
-            else:
-                detail = e
-
             if type(e) == urllib2.HTTPError and e.code == 404:
                 print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
             elif try_again:
                 return self._get_files_metadata(project, package, save_basename, revision, False)
             elif revision:
-                print >>sys.stderr, 'Cannot download file list of %s from %s with specified revision: %s' % (package, project, detail)
+                print >>sys.stderr, 'Cannot download file list of %s from %s with specified revision: %s' % (package, project, e)
             else:
-                print >>sys.stderr, 'Cannot download file list of %s from %s: %s' % (package, project, detail)
+                print >>sys.stderr, 'Cannot download file list of %s from %s: %s' % (package, project, e)
 
             return None
 
@@ -393,9 +380,9 @@ class ObsCheckout:
                 os.unlink(filename)
                 return self._get_files_metadata(project, package, save_basename, revision, False)
             elif revision:
-                print >>sys.stderr, 'Cannot parse file list of %s from %s with specified revision: %s' % (package, project, e.msg)
+                print >>sys.stderr, 'Cannot parse file list of %s from %s with specified revision: %s' % (package, project, e)
             else:
-                print >>sys.stderr, 'Cannot parse file list of %s from %s: %s' % (package, project, e.msg)
+                print >>sys.stderr, 'Cannot parse file list of %s from %s: %s' % (package, project, e)
             return None
 
 
@@ -607,14 +594,7 @@ class ObsCheckout:
             elif try_again:
                 self.checkout_package_meta(project, package, False)
             else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                elif hasattr(e, 'message'):
-                    detail = e.message
-                else:
-                    detail = e
-
-                print >>sys.stderr, 'Cannot get metadata of package %s in %s: %s' % (package, project, detail)
+                print >>sys.stderr, 'Cannot get metadata of package %s in %s: %s' % (package, project, e)
 
             return
 
@@ -669,14 +649,7 @@ class ObsCheckout:
             elif try_again:
                 self.check_project(project, False)
             else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                elif hasattr(e, 'message'):
-                    detail = e.message
-                else:
-                    detail = e
-
-                print >>sys.stderr, 'Cannot get status of %s: %s' % (project, detail)
+                print >>sys.stderr, 'Cannot get status of %s: %s' % (project, e)
 
             return
 
@@ -688,7 +661,7 @@ class ObsCheckout:
             if try_again:
                 return self.check_project(project, False)
             else:
-                print >>sys.stderr, 'Cannot parse status of %s: %s' % (project, e.msg)
+                print >>sys.stderr, 'Cannot parse status of %s: %s' % (project, e)
 
             return
 
@@ -796,14 +769,7 @@ class ObsCheckout:
             elif try_again:
                 self.checkout_project_pkgmeta(project, False)
             else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                elif hasattr(e, 'message'):
-                    detail = e.message
-                else:
-                    detail = e
-
-                print >>sys.stderr, 'Cannot get packages metadata of %s: %s' % (project, detail)
+                print >>sys.stderr, 'Cannot get packages metadata of %s: %s' % (project, e)
 
             return
 
@@ -943,13 +909,7 @@ class ObsCheckout:
             elif try_again:
                 return self._get_packages_in_project(project, False)
             else:
-                if hasattr(e, 'msg'):
-                    detail = e.msg
-                elif hasattr(e, 'message'):
-                    detail = e.message
-                else:
-                    detail = e
-                return (None, str(detail))
+                return (None, str(e))
 
         try:
             root = ET.parse(filename).getroot()
@@ -959,7 +919,7 @@ class ObsCheckout:
             if try_again:
                 return self._get_packages_in_project(project, False)
             else:
-                return (None, 'Cannot parse list of packages in %s: %s' % (project, e.msg))
+                return (None, 'Cannot parse list of packages in %s: %s' % (project, e))
 
         packages = [ node.get('name') for node in root.findall('entry') ]
         util.safe_unlink(filename)
@@ -1083,7 +1043,7 @@ class ObsCheckout:
                     devel_projects.add(devel_project)
 
         except SyntaxError, e:
-            print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, e.msg)
+            print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, e)
             return
 
         for devel_project in devel_projects:

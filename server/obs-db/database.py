@@ -1169,7 +1169,7 @@ class SrcPackage(Base):
             try:
                 root = ET.parse(linkfile).getroot()
             except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse %s: %s' % (linkfile, e.msg)
+                print >> sys.stderr, 'Cannot parse %s: %s' % (linkfile, e)
             else:
                 node = root.find('patches')
                 if node is not None:
@@ -1184,7 +1184,7 @@ class SrcPackage(Base):
             try:
                 root = ET.parse(files).getroot()
             except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse %s: %s' % (files, e.msg)
+                print >> sys.stderr, 'Cannot parse %s: %s' % (files, e)
             else:
                 self.srcmd5 = root.get('srcmd5')
                 linkinfo = root.find('linkinfo')
@@ -1243,7 +1243,7 @@ class SrcPackage(Base):
         try:
             parent_root = ET.parse(files).getroot()
         except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (files, e.msg)
+            print >> sys.stderr, 'Cannot parse %s: %s' % (files, e)
             return
 
         parent_files = {}
@@ -1510,7 +1510,7 @@ class SrcPackage(Base):
         try:
             package = ET.parse(meta_file).getroot()
         except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e.msg)
+            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
 
         self.has_meta = True
 
@@ -1754,7 +1754,7 @@ class Project(Base):
         try:
             collection = ET.parse(meta_file).getroot()
         except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e.msg)
+            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
             return ('', '')
 
         for package in collection.findall('package'):
@@ -1786,7 +1786,7 @@ class Project(Base):
         try:
             collection = ET.parse(meta_file).getroot()
         except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e.msg)
+            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
             return meta_devel
 
         for package in collection.findall('package'):
