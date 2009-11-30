@@ -39,6 +39,7 @@ import sys
 
 import bisect
 import errno
+import hashlib
 import optparse
 import shutil
 import socket
@@ -432,13 +433,32 @@ class ObsCheckout:
         return cache
 
 
+    def _get_hash_from_file(self, algo, path):
+        """ Return the hash of a file, using the specified algorithm. """
+        if not os.path.exists(path):
+            return None
+
+        hash = hashlib.new('md5')
+        file = open(path, 'rb')
+        while True:
+            data = file.read(32768)
+            if not data:
+                break
+            hash.update(data)
+        file.close()
+        return hash.hexdigest()
+
+
     def _get_package_file_checked_out(self, project, package, filename, cache, md5, mtime):
         """ Tells if a file of the package is already checked out. """
         if not cache.has_key(filename):
             return False
         if cache[filename] != (md5, mtime):
             return False
-        return os.path.exists(os.path.join(self.dest_dir, project, package, filename))
+
+        path = os.path.join(self.dest_dir, project, package, filename)
+        file_md5 = self._get_hash_from_file('md5', path)
+        return file_md5 != None and file_md5 == md5
 
 
     def _cleanup_package_old_files(self, project, package, downloaded_files):

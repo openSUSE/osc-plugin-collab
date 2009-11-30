@@ -7,18 +7,6 @@ buildservice:
    first project in obs.conf).
  + in check_project(), we should probably also look at files that are checked
    out for a package and remove the ones that shouldn't be there.
-!+ in _get_package_file_checked_out(), we do not check that the md5sum of the
-   file itself is okay. So assuming that we had a file, and we then fail to
-   download an update of it, we will never download the update anymore (since
-   the old file is still present).
-   Solution:
-    - remove the file in case of error? (but the database will be incomplete
-      for this package)
-    - compute the md5 of the file and compare it (expensive)
-    - check that the size of the file on disk is the same (cheap, but can be
-      wrong)
-    - save the metadata of the downloaded files somewhere, so we can easily
-      compare them
 
 database:
  + only do one update call if there was a commit and meta change for a package
