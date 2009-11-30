@@ -18,6 +18,12 @@ those scripts would be run in cron jobs:
  ./upstream/runme: a good period should be every 30 minutes
 
 
+Note: if the script seems to be hanging forever, then it's likely the
+following python bug: http://bugs.python.org/issue5103
+See the analysis at https://bugzilla.novell.com/show_bug.cgi?id=525295
+The solution is to edit ssl.py, as mentioned in the above bugs.
+
+
 #######################################################################
 
 
