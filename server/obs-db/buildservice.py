@@ -415,6 +415,9 @@ class ObsCheckout:
             except SyntaxError:
                 return
 
+            # also get the md5 of the directory
+            cache[os.path.basename(file)] = (root.get('srcmd5'), '')
+
             for node in root.findall('entry'):
                 cache[node.get('name')] = (node.get('md5'), node.get('mtime'))
 
@@ -429,7 +432,7 @@ class ObsCheckout:
         return cache
 
 
-    def _get_package_file_checked_out(self, project, package, cache, filename, md5, mtime):
+    def _get_package_file_checked_out(self, project, package, filename, cache, md5, mtime):
         """ Tells if a file of the package is already checked out. """
         if not cache.has_key(filename):
             return False
@@ -487,7 +490,7 @@ class ObsCheckout:
         is_link = False
         link_error = False
         # revision to expand a link
-        revision = None
+        link_md5 = None
 
         # detect if the package is a link package
         linkinfos_nb = len(root.findall('linkinfo'))
@@ -496,7 +499,7 @@ class ObsCheckout:
             # The logic is taken from islink() in osc/core.py
             is_link = link_node.get('xsrcmd5') not in [ None, '' ] or link_node.get('lsrcmd5') not in [ None, '' ]
             link_error = link_node.get('error') not in [ None, '' ]
-            revision = link_node.get('xsrcmd5')
+            link_md5 = link_node.get('xsrcmd5')
         elif linkinfos_nb > 1:
             print >>sys.stderr, 'Ignoring link in %s from %s: more than one <linkinfo>' % (package, project)
 
@@ -509,7 +512,7 @@ class ObsCheckout:
                 mtime = node.get('mtime')
                 size = node.get('size')
                 if filename == '_link':
-                    if not self._get_package_file_checked_out(project, package, metadata_cache, filename, md5, mtime):
+                    if not self._get_package_file_checked_out(project, package, filename, metadata_cache, md5, mtime):
                         self._get_file(project, package, filename, size)
                     downloaded_files.append(filename)
 
@@ -519,12 +522,21 @@ class ObsCheckout:
                 self._cleanup_package_old_files(project, package, downloaded_files)
                 return
 
-            # download the metadata of the expanded package
-            root = self._get_files_metadata(project, package, '_files-expanded', revision)
-            downloaded_files.append('_files-expanded')
+            # look if we need to download the metadata of the expanded package
+            if metadata_cache.has_key('_files-expanded') and metadata_cache['_files-expanded'][0] == link_md5:
+                files = os.path.join(self.dest_dir, project, package, '_files-expanded')
+                try:
+                    root = ET.parse(files).getroot()
+                except SyntaxError:
+                    root = None
+            else:
+                root = self._get_files_metadata(project, package, '_files-expanded', link_md5)
+
             if root is None:
                 self._cleanup_package_old_files(project, package, downloaded_files)
                 return
+
+            downloaded_files.append('_files-expanded')
 
         # look at all files and download what might be interesting
         for node in root.findall('entry'):
@@ -534,8 +546,8 @@ class ObsCheckout:
             size = node.get('size')
             # download .spec files
             if filename.endswith('.spec'):
-                if not self._get_package_file_checked_out(project, package, metadata_cache, filename, md5, mtime):
-                    self._get_file(project, package, filename, size, revision)
+                if not self._get_package_file_checked_out(project, package, filename, metadata_cache, md5, mtime):
+                    self._get_file(project, package, filename, size, link_md5)
                 downloaded_files.append(filename)
 
         self._cleanup_package_old_files(project, package, downloaded_files)
