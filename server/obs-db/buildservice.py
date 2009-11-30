@@ -702,26 +702,23 @@ class ObsCheckout:
             if srcmd5 != previous_srcmd5:
                 self.queue_checkout_package(project, name, primary = False)
 
-            if not is_link:
-                continue
+            # make sure we have all spec files
 
-            # Only for links...
-            files = os.path.join(project_dir, name, '_files-expanded')
-            if not os.path.exists(files):
-                self.queue_checkout_package(project, name, primary = False)
-                continue
+            if is_link:
+                # for links, we open the list of files when expanded
+                files = os.path.join(project_dir, name, '_files-expanded')
+                if not os.path.exists(files):
+                    self.queue_checkout_package(project, name, primary = False)
+                    continue
 
-            try:
-                root = ET.parse(files).getroot()
-            except SyntaxError:
-                root = None
-
-            if root is None:
-                self.queue_checkout_package(project, name, primary = False)
-                continue
+                try:
+                    files_root = ET.parse(files).getroot()
+                except SyntaxError:
+                    self.queue_checkout_package(project, name, primary = False)
+                    continue
 
             cont = False
-            for entry in root.findall('entry'):
+            for entry in files_root.findall('entry'):
                 filename = entry.get('name')
                 if filename.endswith('.spec'):
                     specfile = os.path.join(project_dir, name, filename)
