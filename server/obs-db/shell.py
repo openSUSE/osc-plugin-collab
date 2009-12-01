@@ -364,7 +364,7 @@ class Runner:
         # We now have "projects in the db" = needed
         db_projects = needed
 
-        if not self.conf.skip_mirror:
+        if not self.conf.skip_mirror and os.path.exists(self._mirror_dir):
             # If one project exists in the mirror but not in the db, then it's
             # stale data from the mirror that we can remove.
             mirror_projects = set([ subdir for subdir in os.listdir(self._mirror_dir) if os.path.isdir(subdir) ])
@@ -372,7 +372,7 @@ class Runner:
             for project in unneeded:
                 self.obs.remove_checkout_project(project)
 
-        if not self.conf.skip_xml:
+        if not self.conf.skip_xml and os.path.exists(self._xml_dir):
             # If one project exists in the xml but not in the db, then it's
             # stale data that we can remove.
             xml_projects = set([ file for file in os.listdir(self._xml_dir) if file.endswith('.xml') ])
