@@ -22,3 +22,7 @@ general:
    data since it will be done in various threads.
    We will need to make sure the database updates those packages on the next
    run too, even if there's no hermes event.
+!+ add a --deep-check mode. It would use the buildservice.py infrastructure to
+   browse all packages of all projects, and check that the files all have the
+   right md5. If not, it would queue packages for the next run. Or create tool
+   called obs-offline-check.
