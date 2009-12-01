@@ -397,7 +397,8 @@ class Runner:
         else:
             new_opensuse_mtime = -1
 
-        conf_changed = (self._status['conf-mtime'] != new_conf_mtime or
+        conf_changed = ((not self.conf.ignore_conf_mtime and
+                         self._status['conf-mtime'] != new_conf_mtime) or
                         self._status['opensuse-mtime'] != new_opensuse_mtime)
 
         # Setup hermes, it will be call before the mirror update, depending on
