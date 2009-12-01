@@ -903,6 +903,8 @@ def main(args):
 
     parser.add_option('--debug', dest='debug',
                       help='only handle the argument as input and output the result')
+    parser.add_option('--log', dest='log',
+                      help='log file to use (default: stderr)')
     parser.add_option('--directory', dest='dir', default='.',
                       help='directory where to find data and save data')
     parser.add_option('--save-file', dest='save',
@@ -926,6 +928,11 @@ def main(args):
     fallback_data = {}
 
     directory = options.dir
+
+    if options.log:
+        path = os.path.realpath(options.log)
+        safe_mkdir_p(os.path.dirname(path))
+        sys.stderr = open(options.log, 'a')
 
     if options.upstream_limits:
         limit_file = options.upstream_limits
