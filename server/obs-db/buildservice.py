@@ -1052,8 +1052,12 @@ class ObsCheckout:
 
     def remove_checkout_package(self, project, package):
         """ Remove the checkout of a package. """
-        shutil.rmtree(os.path.join(self.dest_dir, project, package))
+        path = os.path.join(self.dest_dir, project, package)
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
     def remove_checkout_project(self, project):
         """ Remove the checkout of a project. """
-        shutil.rmtree(os.path.join(self.dest_dir, project))
+        path = os.path.join(self.dest_dir, project)
+        if os.path.exists(path):
+            shutil.rmtree(path)

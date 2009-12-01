@@ -387,6 +387,9 @@ class HermesReader:
         new_events = []
 
         # Note: the event list has the most recent event first
+        # FIXME: we should do a first pass in the reverse order to know which
+        # packages were added, and then later removed, so we can also strip the
+        # remove event below.
 
         for (id, event) in self._events:
             # Ignore event if the project was deleted after this event
