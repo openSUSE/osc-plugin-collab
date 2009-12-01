@@ -1272,7 +1272,6 @@ class SrcPackage(Base):
                         spec = os.path.join(srcpackage_dir, filename)
                         parent_spec = os.path.join(parent_project_dir, filename)
                         if self._specs_are_different_lenient(spec, parent_spec):
-                            print filename
                             self.has_delta = 2
                             break
                 else:
