@@ -143,6 +143,7 @@ class Config:
 
         self.cache_dir = os.path.realpath('cache')
         self.ignore_conf_mtime = False
+        self.no_full_check = False
         self.threads = 10
         self.sockettimeout = 30
         self.threads_sockettimeout = 30
@@ -256,6 +257,7 @@ class Config:
         self._hermes_urls_helper = cp.safe_get('General', 'hermes-urls', self._hermes_urls_helper)
         self.cache_dir = os.path.realpath(cp.safe_get('General', 'cache-dir', self.cache_dir))
         self.ignore_conf_mtime = cp.safe_getboolean('General', 'ignore-conf-mtime', self.ignore_conf_mtime)
+        self.no_full_check = cp.safe_getboolean('General', 'no-full-check', self.no_full_check)
         self.threads = cp.safe_getint('General', 'threads', self.threads)
         self.sockettimeout = cp.safe_getint('General', 'sockettimeout', self.sockettimeout)
         self.threads_sockettimeout = cp.safe_getint('General', 'threads-sockettimeout', self.threads_sockettimeout)

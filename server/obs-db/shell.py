@@ -156,6 +156,7 @@ class Runner:
         if self.conf.skip_mirror:
             return
 
+        # keep in sync this boolean expression and the one used for no_full_check
         if not self.conf.force_hermes and (self._status['mirror'] == -1 or conf_changed):
             # we don't know how old our mirror is, or the configuration has
             # changed
@@ -400,6 +401,11 @@ class Runner:
         conf_changed = ((not self.conf.ignore_conf_mtime and
                          self._status['conf-mtime'] != new_conf_mtime) or
                         self._status['opensuse-mtime'] != new_opensuse_mtime)
+
+        # keep in sync this boolean expression and the one used in _run_mirror
+        if self.conf.no_full_check and (self._status['mirror'] == -1 or conf_changed):
+            print 'Full checkout check needed, but disabled by config.'
+            return
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
