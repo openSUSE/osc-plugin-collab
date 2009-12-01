@@ -286,7 +286,7 @@ class Runner:
         if self.conf.skip_xml:
             return
 
-        if self.conf.force_xml:
+        if self.conf.force_xml or self._status['xml'] == -1:
             changed_projects = None
         else:
             # adds projects that have changed, according to hermes
@@ -402,7 +402,18 @@ class Runner:
 
         # Setup hermes, it will be call before the mirror update, depending on
         # what we need
-        self.hermes = hermes.HermesReader(min(self._status['mirror'], self._status['db']), self.conf.hermes_urls, self.conf)
+
+        # We need at least what the mirror have, and we might need something a
+        # bit older for the database or the xml (note that if we have no status
+        # for them, we will just rebuild everything anyway)
+        ids = [ self._status['mirror'] ]
+        if self._status['db'] != -1:
+            ids.append(self._status['db'])
+        if self._status['xml'] != -1:
+            ids.append(self._status['xml'])
+        min_last_known_id = min(ids)
+
+        self.hermes = hermes.HermesReader(min_last_known_id, self.conf.hermes_urls, self.conf)
 
         # Run the mirror update, and make sure to update the status afterwards
         # in case we crash later
