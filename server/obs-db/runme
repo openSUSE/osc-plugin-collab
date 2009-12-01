@@ -45,30 +45,34 @@ OBS_DO_RPMLINT=0
 
 CACHE_DIR=./cache
 USE_OPENSUSE=
+CONFIG_FILE=
+LOG_FILE=
 
 usage() {
-    echo "Usage: $0 [-o CONF-FILE] [-s]"
+    echo "Usage: $0 [-o CONF-FILE] [-l LOG-FILE] [-s]"
     echo ""
     echo "Options:"
     echo "   -o CONF-FILE     Use CONF-FILE as configuration file"
+    echo "   -l LOG-FILE      Use LOG-FILE to log errors"
     echo "   -s               Use the openSUSE configuration file as a basis"
 }
 
-while getopts o:sh option; do
+while getopts o:l:sh option; do
     case $option in
-    o) OBS_OPTIONS=$OPTARG;;
+    o) CONFIG_FILE=$OPTARG;;
+    l) LOG_FILE=$OPTARG;;
     s) USE_OPENSUSE=--opensuse;;
     h|help) usage; exit 0;;
     *) usage; exit 1;;
     esac
 done
 
-if test "x$OBS_OPTIONS" != "x"; then
-    if test ! -f $OBS_OPTIONS; then
-        echo >&2 "Configuration file $OBS_OPTIONS does not exit."
+if test "x$CONFIG_FILE" != "x"; then
+    if test ! -f $CONFIG_FILE; then
+        echo >&2 "Configuration file $CONFIG_FILE does not exit."
         exit 1
     else
-        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $OBS_OPTIONS | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
+        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $CONFIG_FILE | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
         test "x$OBS_OPTIONS_CACHE_DIR" != "x" && CACHE_DIR=$OBS_OPTIONS_CACHE_DIR
     fi
 fi
@@ -132,4 +136,14 @@ fi
 ##############################################################
 # Check out everything and create the databases
 
-$basedir/obs-db --config $OBS_OPTIONS $USE_OPENSUSE
+CONFIG_OPTION=
+if test "x$CONFIG_FILE" != "x"; then
+    CONFIG_OPTION="--config $CONFIG_FILE"
+fi
+
+LOG_OPTION=
+if test "x$LOG_FILE" != "x"; then
+    LOG_OPTION="--log $LOG_FILE"
+fi
+
+$basedir/obs-db $CONFIG_OPTION $LOG_OPTION $USE_OPENSUSE

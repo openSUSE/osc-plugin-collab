@@ -45,28 +45,32 @@ GNOME_FACTORY_VERSION=unstable
 ## Basic setup
 
 CACHE_DIR=./cache
+CONFIG_FILE=
+LOG_FILE=
 
 usage() {
-    echo "Usage: $0 [-o CONF-FILE]"
+    echo "Usage: $0 [-o CONF-FILE] [-l LOG-FILE]"
     echo ""
     echo "Options:"
     echo "   -o CONF-FILE     Use CONF-FILE as configuration file"
+    echo "   -l LOG-FILE      Use LOG-FILE to log errors"
 }
 
-while getopts o:h option; do
+while getopts o:l:h option; do
     case $option in
-    o) OBS_OPTIONS=$OPTARG;;
+    o) CONFIG_FILE=$OPTARG;;
+    l) LOG_FILE=$OPTARG;;
     h|help) usage; exit 0;;
     *) usage; exit 1;;
     esac
 done
 
-if test "x$OBS_OPTIONS" != "x"; then
-    if test ! -f $OBS_OPTIONS; then
-        echo >&2 "Configuration file $OBS_OPTIONS does not exit."
+if test "x$CONFIG_FILE" != "x"; then
+    if test ! -f $CONFIG_FILE; then
+        echo >&2 "Configuration file $CONFIG_FILE does not exit."
         exit 1
     else
-        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $OBS_OPTIONS | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
+        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $CONFIG_FILE | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
         test "x$OBS_OPTIONS_CACHE_DIR" != "x" && CACHE_DIR=$OBS_OPTIONS_CACHE_DIR
     fi
 fi
@@ -161,7 +165,12 @@ download_upstream_version () {
     # -a will keep the mtime
     test -f $DESTFILE && cp -a $DESTFILE $DESTFILE.new
 
-    $basedir/download-upstream-versions \
+    LOG_OPTION=
+    if test "x$LOG_FILE" != "x"; then
+        LOG_OPTION="--log $LOG_FILE"
+    fi
+
+    $basedir/download-upstream-versions $LOG_OPTION \
         --upstream-tarballs=$basedir/upstream-tarballs.txt \
         --upstream-limits=$basedir/upstream-limits.txt \
         --save-file=$DESTFILE.new \
