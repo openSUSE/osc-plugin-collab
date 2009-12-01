@@ -48,6 +48,7 @@ import database
 import hermes
 import infoxml
 import upstream
+import util
 
 
 #######################################################################
@@ -495,8 +496,15 @@ def get_conf(args):
     parser.add_option('--opensuse', dest='opensuse',
                       action='store_true', default=False,
                       help='use the openSUSE config as a basis')
+    parser.add_option('--log', dest='log',
+                      help='log file to use (default: stderr)')
 
     (options, args) = parser.parse_args()
+
+    if options.log:
+        path = os.path.realpath(options.log)
+        util.safe_mkdir_p(os.path.dirname(path))
+        sys.stderr = open(options.log, 'a')
 
     try:
         conf = config.Config(options.config, use_opensuse = options.opensuse)
