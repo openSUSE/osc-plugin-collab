@@ -197,6 +197,8 @@ NetworkManager-openvpn:
 NetworkManager-pptp:
 NetworkManager-vpnc:
 anjuta-extras:
+at-spi2-atk:
+at-spi2-core:
 # No package in openSUSE
 #atomix:
 bakery:
@@ -306,6 +308,7 @@ ORBit:orbit
 #pitivi:
 planner:
 ptlib:libpt2
+pyatspi:python-atspi
 rhythmbox:
 scrollkeeper:
 seed:
