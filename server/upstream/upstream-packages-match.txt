@@ -81,7 +81,7 @@ gnome-system-monitor:
 #gnome-system-tools:
 gnome-terminal:
 gnome-themes:
-gnome-user-docs:gnome2-user-docs
+gnome-user-docs:
 gnome-user-share:
 gnome-utils:
 gok:
