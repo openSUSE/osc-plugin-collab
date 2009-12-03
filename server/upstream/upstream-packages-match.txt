@@ -569,6 +569,7 @@ yast2-control-center-gnome:
 #### Base:System
 
 dbus-glib:dbus-1-glib
+libedit:
 
 
 #### X11:Compiz

@@ -307,6 +307,7 @@ yast2-control-center-gnome:upstream:
 
 ## Base:System
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
+libedit:httpls:http://thrysoee.dk/editline/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/
