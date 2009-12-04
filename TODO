@@ -2,6 +2,8 @@
 + Make --xs the default for 'osc gnome t'
   For t: maybe check the version in the home project?
 + add 'osc gnome validate/check': make sure that committing is fine
++ osc collab todo:
+  - list build failures (with the status api)
 + 'osc gnome update':
   - print information about rpmlint of this package
   - prefill the .changes with "Updated translations"?
