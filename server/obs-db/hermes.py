@@ -263,7 +263,7 @@ class HermesReader:
         if title == 'Notification  arrived!':
             return None
 
-        raise HermesException('Cannot get event type from: %s' % title)
+        raise HermesException('Cannot get event type from message %d: "%s"' % (id, title))
 
 
     def _parse_feed(self, url):
