@@ -292,6 +292,11 @@ class HermesReader:
                 not (event.is_package_event() and event.package == '')):
                 # put the id in the tuple so we can sort the list later
                 self._events.append((id, event))
+            else:
+                print >> sys.stderr, 'Buggy hermes message %d (%s): "%s".' % (id, entry['updated'], entry['title'])
+                print >> sys.stderr, '----------'
+                print >> sys.stderr, '%s' % entry['summary']
+                print >> sys.stderr, '----------'
 
             if id > self.last_known_id:
                 self.last_known_id = id
