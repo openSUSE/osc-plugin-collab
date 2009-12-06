@@ -155,14 +155,15 @@ class HermesEventPackageAdded(HermesEvent):
 
     regexp = re.compile('\[obs new\] New Package ([^/\s]*) in ([^/\s]*)')
     # Workaround again buggy messages
-    workaround = '[obs new] New Package  in'
+    workaround_regexp = re.compile('\[obs new\] New Package ([^/\s]*) in')
 
     @classmethod
     def is_type_for_title(cls, title):
         if super(HermesEventPackageAdded, cls).is_type_for_title(title):
             return True
         else:
-            return title == cls.workaround
+            match = cls.workaround_regexp.match(title)
+            return match != None
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
@@ -171,11 +172,13 @@ class HermesEventPackageAdded(HermesEvent):
         if match:
             self.project = str(match.group(2))
             self.package = str(match.group(1))
-        elif title == self.workaround:
-            self.project = ''
-            self.package = ''
         else:
-            raise HermesException('Event should not be in PackagedAdded: %s' % title)
+            match = self.workaround_regexp.match(title)
+            if match != None:
+                self.project = ''
+                self.package = ''
+            else:
+                raise HermesException('Event should not be in PackagedAdded: %s' % title)
 
 
     def is_package_event(self):
