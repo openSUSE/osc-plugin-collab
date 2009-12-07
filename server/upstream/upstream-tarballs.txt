@@ -237,7 +237,7 @@ njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
-ntfs-3g:httpls:http://www.ntfs-3g.org/
+ntfs-3g:httpls:http://www.tuxera.com/community/ntfs-3g-download/
 ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 #FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
