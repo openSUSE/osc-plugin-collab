@@ -490,6 +490,7 @@ pavucontrol:
 pavumeter:
 pidgin:
 pidgin-guifications:
+pidgin-sipe:
 pixman:
 pkg-config:
 poppler:
