@@ -2192,7 +2192,7 @@ class ObsDb:
             # therefore still a link. But the parent might have been created in
             # the meantime, so it's possible to go back to 'not-link'.
 
-            if row['obs_error'] != [ 'not-link', 'not-link-not-in-parent' ]:
+            if row['obs_error'] not in [ 'not-link', 'not-link-not-in-parent' ]:
                 return False
 
             project_parent = row['project_parent']
