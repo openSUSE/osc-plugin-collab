@@ -76,9 +76,7 @@ PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
-# note that we still use aqbanking 2.x. The 3.x version is available from
-# http://www.aquamaniac.de/sites/download/packages.php
-aqbanking:sf:115695|aqbanking
+aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php
 asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
@@ -180,9 +178,7 @@ gupnp-av:httpls:http://www.gupnp.org/sources/gupnp-av/
 gupnp-igd:httpls:http://www.gupnp.org/sources/gupnp-igd/
 gupnp-tools:httpls:http://www.gupnp.org/sources/gupnp-tools/
 gupnp-ui:httpls:http://www.gupnp.org/sources/gupnp-ui/
-# note that we still use gwenhywfar 2.x. The 3.x version is available from
-# http://www.aquamaniac.de/sites/download/packages.php
-gwenhywfar:sf:88769|gwenhywfar2
+gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php
 # There's no upstream tarball for gwibber, though
 gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/

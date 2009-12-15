@@ -10,9 +10,6 @@
 #    Use the "max|x.y" instruction for this behavior.
 #
 
-# this is needed for the current gnucash
-aqbanking:max|3
-gwenhywfar:max|3
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
 # libofx used 0.11 as 0.1.1...
