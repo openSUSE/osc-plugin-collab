@@ -96,6 +96,7 @@ gucharmap:
 gvfs:
 hamster-applet:
 libgail-gnome:
+libgnome-keyring:
 libgnomekbd:
 libgnomeprint:
 libgnomeprintui:
