@@ -2012,8 +2012,8 @@ class ObsDb:
 
         pkg_object.sql_add(self._cursor)
 
-        # Make sure we also have the devel project
-        if pkg_object.has_meta and pkg_object.devel_project:
+        # Make sure we also have the devel project if we're interested in that
+        if pkg_object.has_meta and pkg_object.devel_project and self.conf.projects.has_key(prj_object.name) and self.conf.projects[prj_object.name].checkout_devel_projects:
             devel_prj_object = Project.sql_get(self._cursor, pkg_object.devel_project)
             if not devel_prj_object:
                 self.add_project(pkg_object.devel_project)
@@ -2058,8 +2058,8 @@ class ObsDb:
             for (child_project, child_package) in children:
                 self.update_package(child_project, child_package)
 
-        # Make sure we also have the devel project
-        if pkg_object.has_meta and pkg_object.devel_project:
+        # Make sure we also have the devel project if we're interested in that
+        if pkg_object.has_meta and pkg_object.devel_project and self.conf.projects.has_key(prj_object.name) and self.conf.projects[prj_object.name].checkout_devel_projects:
             self._debug_print('Looking at meta during update of %s/%s' % (prj_object.name, package))
             devel_prj_object = Project.sql_get(self._cursor, pkg_object.devel_project)
             if not devel_prj_object:
