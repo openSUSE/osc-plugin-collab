@@ -490,6 +490,7 @@ papyon:
 pavucontrol:
 pavumeter:
 pidgin:
+pidgin-facebookchat:
 pidgin-guifications:
 pidgin-sipe:
 pixman:

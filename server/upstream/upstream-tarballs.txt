@@ -245,6 +245,7 @@ papyon:httpls:http://telepathy.freedesktop.org/releases/papyon/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|Pidgin
+pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
 pidgin-sipe:sf:194563|sipe
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
