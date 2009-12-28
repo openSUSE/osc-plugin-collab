@@ -629,4 +629,5 @@ libmatroska:
 mkvtoolnix:
 qiv:
 usbview:
+wmakerconf:
 xzgv:
