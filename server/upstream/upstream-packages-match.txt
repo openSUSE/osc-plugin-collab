@@ -627,5 +627,6 @@ xesam-tools:
 libebml:
 libmatroska:
 mkvtoolnix:
+qiv:
 usbview:
 xzgv:
