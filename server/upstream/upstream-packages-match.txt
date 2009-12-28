@@ -499,6 +499,7 @@ pixman:
 pkg-config:
 poppler:
 poppler-data:
+procmeter3:procmeter
 psiconv:
 pulseaudio:
 pycairo:python-cairo

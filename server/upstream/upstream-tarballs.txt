@@ -253,6 +253,7 @@ pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/r
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 poppler-data:httpls:http://poppler.freedesktop.org/
+procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 #FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
