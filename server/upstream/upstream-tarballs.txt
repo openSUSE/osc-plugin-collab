@@ -173,6 +173,7 @@ gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk2-themes:upstream:
 gtkglext:sf:54333|gtkglext
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
+gtkpbbuttons:sf:47862|gtkpbbuttons
 gupnp:httpls:http://www.gupnp.org/sources/gupnp/
 gupnp-av:httpls:http://www.gupnp.org/sources/gupnp-av/
 gupnp-igd:httpls:http://www.gupnp.org/sources/gupnp-igd/

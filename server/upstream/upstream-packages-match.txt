@@ -418,6 +418,7 @@ gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
 gtkglext:
 gtkmathview:
+gtkpbbuttons:
 gupnp:
 gupnp-av:
 gupnp-igd:
