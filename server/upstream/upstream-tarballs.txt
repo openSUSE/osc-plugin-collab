@@ -383,3 +383,4 @@ libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 usbview:httpls:http://www.kroah.com/linux-usb/
+xzgv:sf:203093|xzgv

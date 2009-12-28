@@ -628,3 +628,4 @@ libebml:
 libmatroska:
 mkvtoolnix:
 usbview:
+xzgv:
