@@ -216,6 +216,7 @@ libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
 libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
+libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libxklavier:sf:319|libxklavier
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
