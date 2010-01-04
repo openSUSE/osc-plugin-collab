@@ -389,4 +389,5 @@ usbview:httpls:http://www.kroah.com/linux-usb/
 wmakerconf:sf:196469|wmakerconf
 # FIXME: tarball names are not standard
 xdelta:google:xdelta|xdelta
+xosd:sf:124390|libxosd
 xzgv:sf:203093|xzgv

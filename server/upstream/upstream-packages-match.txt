@@ -633,4 +633,5 @@ traffic-vis:
 usbview:
 wmakerconf:
 xdelta:
+xosd:
 xzgv:
