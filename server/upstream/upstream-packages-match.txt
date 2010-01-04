@@ -632,4 +632,5 @@ qiv:
 traffic-vis:
 usbview:
 wmakerconf:
+xdelta:
 xzgv:

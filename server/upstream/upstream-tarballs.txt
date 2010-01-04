@@ -387,4 +387,6 @@ qiv:httpls:http://spiegl.de/qiv/download/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 usbview:httpls:http://www.kroah.com/linux-usb/
 wmakerconf:sf:196469|wmakerconf
+# FIXME: tarball names are not standard
+xdelta:google:xdelta|xdelta
 xzgv:sf:203093|xzgv
