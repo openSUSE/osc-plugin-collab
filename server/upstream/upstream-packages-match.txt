@@ -628,6 +628,7 @@ libdatrie:libdatrie0
 libebml:
 libmatroska:
 mkvtoolnix:
+mtr:
 qiv:
 traffic-vis:
 usbview:

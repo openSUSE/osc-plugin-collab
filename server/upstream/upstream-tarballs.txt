@@ -383,6 +383,7 @@ libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
+mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
 qiv:httpls:http://spiegl.de/qiv/download/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 usbview:httpls:http://www.kroah.com/linux-usb/
