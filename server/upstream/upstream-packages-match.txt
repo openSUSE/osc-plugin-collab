@@ -629,6 +629,7 @@ libebml:
 libmatroska:
 mkvtoolnix:
 qiv:
+traffic-vis:
 usbview:
 wmakerconf:
 xzgv:
