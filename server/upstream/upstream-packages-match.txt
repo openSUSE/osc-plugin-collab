@@ -624,6 +624,7 @@ xesam-tools:
 
 
 #### Stuff from various other places:
+libdatrie:libdatrie0
 libebml:
 libmatroska:
 mkvtoolnix:
