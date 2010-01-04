@@ -172,6 +172,7 @@ gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtk2-themes:upstream:
 gtkglext:sf:54333|gtkglext
+gtkimageview:httpls:http://trac.bjourne.webfactional.com/chrome/common/releases/
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gtkpbbuttons:sf:47862|gtkpbbuttons
 gupnp:httpls:http://www.gupnp.org/sources/gupnp/
@@ -379,11 +380,16 @@ tangerine:lp:tangerine
 
 
 #### Stuff from various other places:
+csmash:sf:4179|CannonSmash
+gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
+irda-utils:sf:5616|irda-utils
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
+libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
+pavuk:sf:81012|pavuk
 qiv:httpls:http://spiegl.de/qiv/download/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 usbview:httpls:http://www.kroah.com/linux-usb/

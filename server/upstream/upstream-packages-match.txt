@@ -416,6 +416,7 @@ gsynaptics:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
+gtkimageview:libgtkimageview0
 gtkglext:
 gtkmathview:
 gtkpbbuttons:
@@ -624,11 +625,16 @@ xesam-tools:
 
 
 #### Stuff from various other places:
+csmash:
+gocr:
+irda-utils:irda
 libdatrie:libdatrie0
+libdv:
 libebml:
 libmatroska:
 mkvtoolnix:
 mtr:
+pavuk:
 qiv:
 traffic-vis:
 usbview:
