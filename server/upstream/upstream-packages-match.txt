@@ -416,7 +416,7 @@ gsynaptics:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
-gtkimageview:libgtkimageview0
+gtkimageview:
 gtkglext:
 gtkmathview:
 gtkpbbuttons:
