@@ -548,6 +548,7 @@ webkit:libwebkit
 xchat:
 xchat-gnome:
 xsane:
+zeitgeist:
 
 ## Packages where we are upstream
 ## It's not required to list -branding-{openSUSE,SLED} packages.
