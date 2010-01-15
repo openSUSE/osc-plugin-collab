@@ -575,12 +575,16 @@ def _get_version_from_launchpad(project, limit):
         if series_biggest == _bigger_version(series_biggest, biggest):
             (location, biggest) = (series_location, series_biggest)
 
+    # try trunk, in case it exists
     try:
         (trunk_location, trunk_biggest) = _get_version_from_launchpad_series (project, limit, limit_data, 'trunk')
         if trunk_biggest == _bigger_version(trunk_biggest, biggest):
             (location, biggest) = (trunk_location, trunk_biggest)
     except UpstreamDownloadError:
         pass
+    except urllib2.HTTPError, e:
+        if e.code != 404:
+            raise e
 
     if location is None and biggest == '0':
         raise UpstreamDownloadError('No versions found')
