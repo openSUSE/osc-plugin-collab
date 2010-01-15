@@ -149,6 +149,7 @@ gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
+gnome-zeitgeist:lp:gnome-zeitgeist
 # gnucash is also hosted on sf...
 # gnucash:sf:192|gnucash
 gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/

@@ -397,6 +397,7 @@ gnome-keyring-sharp:
 gnome-mount:
 gnome-packagekit:
 gnome-presence-applet:
+gnome-zeitgeist:
 gnucash:
 gnucash-docs:
 gobby:
