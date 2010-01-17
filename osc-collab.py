@@ -2644,7 +2644,7 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
     # 4: because we also have a few other characters (see left variable)
     format = '%-' + str(max_len + 4) + 's%s'
     for (repo, arch) in repos_archs:
-        if build_state[repo][arch]['result'] in ['failed']:
+        if not build_state[repo][arch]['scheduler'] and build_state[repo][arch]['result'] in ['failed']:
             show_hint = True
 
         left = '  %s: ' % get_str_repo_arch(repo, arch, show_repos)
@@ -2652,6 +2652,9 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
             status = '%s (%s)' % (build_state[repo][arch]['result'], build_state[repo][arch]['details'])
         else:
             status = build_state[repo][arch]['result']
+
+        if build_state[repo][arch]['scheduler']:
+            status = '%s (was: %s)' % (build_state[repo][arch]['scheduler'], status)
 
         print format % (left, status)
 
@@ -2661,7 +2664,7 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, arch)
 
 
-def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, verbose_error):
+def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, verbose_error):
     time = self.OscCollabImport.m_import('time')
 
     try:
@@ -2697,6 +2700,9 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
         if not arch in archs:
             continue
 
+        scheduler_state = node.get('state')
+        scheduler_dirty = node.get('dirty') == 'true'
+
         status_node = node.find('status')
         try:
             status = status_node.get('code')
@@ -2714,6 +2720,8 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
         detailed_results[repo][arch] = {}
         detailed_results[repo][arch]['status'] = status
         detailed_results[repo][arch]['details'] = details
+        detailed_results[repo][arch]['scheduler_state'] = scheduler_state
+        detailed_results[repo][arch]['scheduler_dirty'] = scheduler_dirty
         repos_archs.append((repo, arch))
 
     # evaluate the status: do we need to give more time to the build service?
@@ -2731,36 +2739,50 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
         error_counter += 1
 
     for (repo, arch) in repos_archs:
+        # first look at the state of the scheduler
+        scheduler_state = detailed_results[repo][arch]['scheduler_state']
+        scheduler_dirty = detailed_results[repo][arch]['scheduler_dirty']
+        if detailed_results[repo][arch]['scheduler_dirty']:
+            scheduler_active = 'waiting for scheduler'
+        elif scheduler_state in ['unknown', 'scheduling']:
+            scheduler_active = 'waiting for scheduler'
+        elif scheduler_state in ['blocked']:
+            scheduler_active = 'blocked by scheduler'
+        else:
+            # we don't care about the scheduler state
+            scheduler_active = ''
+
         need_rebuild = False
         value = detailed_results[repo][arch]['status']
 
-        # the result has changed since last time, so we won't trigger a rebuild
-        if state[repo][arch]['result'] != value:
+        # the scheduler is working, or the result has changed since last time,
+        # so we won't trigger a rebuild
+        if scheduler_active or state[repo][arch]['result'] != value:
             state[repo][arch]['rebuild'] = -1
 
         # build is done, but not successful
-        if value not in ['succeeded', 'excluded']:
+        if scheduler_active or value not in ['succeeded', 'excluded']:
             build_successful = False
 
+        # we just ignore the status if the scheduler is active, since we know
+        # we need to wait for the build service
+        if scheduler_active:
+            bs_not_ready = True
+
         # build is happening or will happen soon
-        if value in ['scheduled', 'building', 'dispatching', 'finished']:
+        elif value in ['scheduled', 'building', 'dispatching', 'finished']:
             bs_not_ready = True
 
         # sometimes, the scheduler forgets about a package in 'blocked' state,
         # so we have to force a rebuild
-        if value in ['blocked']:
+        elif value in ['blocked']:
             bs_not_ready = True
             need_rebuild = True
 
         # build has failed for an architecture: no need to wait for other
         # architectures to know that there's a problem
         elif value in ['failed', 'expansion error', 'broken']:
-            # special case (see long comment in the caller of this function)
-            if not ignore_initial_errors:
-                do_not_wait_for_bs = True
-            else:
-                bs_not_ready = True
-                detailed_results[repo][arch]['status'] = 'rebuild needed'
+            do_not_wait_for_bs = True
 
         # 'disabled' => the build service didn't take into account
         # the change we did to the meta yet (eg).
@@ -2791,7 +2813,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
                     need_rebuild = True
                     detailed_results[repo][arch]['status'] = 'rebuild needed'
 
-        if need_rebuild and state[repo][arch]['rebuild'] == 0:
+        if not scheduler_active and need_rebuild and state[repo][arch]['rebuild'] == 0:
             bs_not_ready = True
 
             if not time:
@@ -2808,9 +2830,13 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
                     print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
                 error_counter += 1
 
+        state[repo][arch]['scheduler'] = scheduler_active
         state[repo][arch]['result'] = detailed_results[repo][arch]['status']
         state[repo][arch]['details'] = detailed_results[repo][arch]['details']
 
+        # Update the timeout data
+        if scheduler_active:
+            pass
         if state[repo][arch]['result'] in ['blocked']:
             # if we're blocked, maybe the scheduler forgot about us, so
             # schedule a rebuild every 60 minutes. The main use case is when
@@ -2850,7 +2876,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
     return (bs_not_ready, build_successful, error_counter, state)
 
 
-def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5, rev, recently_changed):
+def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5, rev):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
@@ -2879,11 +2905,9 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
             state[repo][arch] = {}
             state[repo][arch]['rebuild'] = -1
             state[repo][arch]['rebuild-timeout'] = -1
+            state[repo][arch]['scheduler'] = ''
             state[repo][arch]['result'] = 'unknown'
-
-    # if we just committed a change, we want to ignore the first error to let
-    # the build service reevaluate the situation
-    ignore_initial_errors = recently_changed
+            state[repo][arch]['details'] = ''
 
     print "Building on %s..." % ', '.join(repos)
     print "You can press enter to get the current status of the build."
@@ -2901,9 +2925,7 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, ignore_initial_errors, error_counter, print_status)
-                # make sure we don't ignore errors anymore
-                ignore_initial_errors = False
+                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, print_status)
 
                 # just stop if there are too many errors
                 if error_counter > max_errors:
@@ -2999,7 +3021,7 @@ def _collab_autodetect_repo(self, apiurl, project):
 #######################################################################
 
 
-def _collab_build_internal(self, apiurl, osc_package, repos, archs, recently_changed):
+def _collab_build_internal(self, apiurl, osc_package, repos, archs):
     project = osc_package.prjname
     package = osc_package.name
 
@@ -3032,7 +3054,7 @@ def _collab_build_internal(self, apiurl, osc_package, repos, archs, recently_cha
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repos, package, archs, osc_package.srcmd5, osc_package.rev, recently_changed)
+    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repos, package, archs, osc_package.srcmd5, osc_package.rev)
 
     if not build_success:
         self._collab_print_build_status(build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
@@ -3067,7 +3089,7 @@ def _collab_build(self, apiurl, user, projects, msg, repos, archs):
         self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -3120,7 +3142,7 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
         self._collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs, committed)
+    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs)
 
     # if build successful, submit
     if build_success:
