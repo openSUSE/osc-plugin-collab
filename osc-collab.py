@@ -46,7 +46,7 @@ for suffix in [ 'NEWS', 'ChangeLog' ]:
 try:
     import conf
     for helper in _osc_collab_helpers:
-        conf.DEFAULTS['exclude_glob'] += helper
+        conf.DEFAULTS['exclude_glob'] += ' %s' % helper
 except:
     # compatibility with osc <= 0.121
     for helper in _osc_collab_helpers:
