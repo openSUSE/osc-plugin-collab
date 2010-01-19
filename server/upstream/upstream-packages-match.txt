@@ -414,6 +414,7 @@ gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gsynaptics:
+gtg:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop

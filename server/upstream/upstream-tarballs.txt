@@ -171,6 +171,7 @@ gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
+gtg:lp:gtg
 gtk2-themes:upstream:
 gtkglext:sf:54333|gtkglext
 gtkimageview:httpls:http://trac.bjourne.webfactional.com/chrome/common/releases/
