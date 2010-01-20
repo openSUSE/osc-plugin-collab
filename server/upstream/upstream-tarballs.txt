@@ -142,7 +142,6 @@ glabels:sf:46122|glabels
 glitz:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 gmetadom:sf:40627|gmetadom
 gnome-activity-journal:lp:gnome-activity-journal
-gnome-disk-utility:httpls:http://hal.freedesktop.org/releases/
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
