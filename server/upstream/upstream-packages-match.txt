@@ -388,6 +388,7 @@ glabels:
 glipper:
 glitz:
 gmetadom:
+gnome-activity-journal:
 gnome-color-chooser:
 gnome-colors:gnome-colors-icon-theme
 gnome-disk-utility:
