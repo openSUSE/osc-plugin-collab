@@ -630,6 +630,7 @@ xesam-tools:
 
 #### Stuff from various other places:
 csmash:
+flickrapi:python-flickrapi
 gocr:
 irda-utils:irda
 libdatrie:libdatrie0
