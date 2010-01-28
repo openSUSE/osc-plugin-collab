@@ -55,11 +55,22 @@ class HermesException(Exception):
 class HermesEvent(object):
 
     regexp = None
+    raw_type = None
 
     def __init__(self, id, title, summary):
         self.id = id
         self.project = None
         self.package = None
+        self.raw = False
+
+        if self.raw_type:
+            if title == 'Notification %s arrived!' % self.raw_type:
+                self.raw = True
+                for line in summary.split('\n'):
+                    if not self.project and line.startswith('   project = '):
+                        self.project = line[len('   project = '):]
+                    elif not self.package and line.startswith('   package = '):
+                        self.package = line[len('   package = '):]
 
 
     @classmethod
@@ -70,6 +81,10 @@ class HermesEvent(object):
             through a regular expression.
 
         """
+        if cls.raw_type:
+            if title == 'Notification %s arrived!' % cls.raw_type:
+                return True
+
         if not cls.regexp:
             return False
 
@@ -93,9 +108,13 @@ class HermesEvent(object):
 class HermesEventCommit(HermesEvent):
 
     regexp = re.compile('OBS ([^/\s]*)/([^/\s]*) r\d* commited')
+    raw_type = 'obs_srcsrv_commit'
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
+        if self.raw:
+            return
+
         match = self.regexp.match(title)
 
         # for some reason, not using str() sometimes make our requests to the
@@ -117,9 +136,13 @@ class HermesEventCommit(HermesEvent):
 class HermesEventProjectDeleted(HermesEvent):
 
     regexp = re.compile('\[obs del\] Project ([^/\s]*) deleted')
+    raw_type = 'OBS_SRCSRV_DELETE_PROJECT'
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
+        if self.raw:
+            return
+
         match = self.regexp.match(title)
 
         self.project = str(match.group(1))
@@ -135,9 +158,13 @@ class HermesEventProjectDeleted(HermesEvent):
 class HermesEventPackageMeta(HermesEvent):
 
     regexp = re.compile('\[obs update\] Package ([^/\s]*) in ([^/\s]*) updated')
+    raw_type = 'OBS_SRCSRV_UPDATE_PACKAGE'
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
+        if self.raw:
+            return
+
         match = self.regexp.match(title)
 
         self.project = str(match.group(2))
@@ -156,6 +183,7 @@ class HermesEventPackageAdded(HermesEvent):
     regexp = re.compile('\[obs new\] New Package ([^/\s]*) in ([^/\s]*)')
     # Workaround again buggy messages
     workaround_regexp = re.compile('\[obs new\] New Package ([^/\s]*) in')
+    raw_type = 'OBS_SRCSRV_CREATE_PACKAGE'
 
     @classmethod
     def is_type_for_title(cls, title):
@@ -167,6 +195,9 @@ class HermesEventPackageAdded(HermesEvent):
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
+        if self.raw:
+            return
+
         match = self.regexp.match(title)
 
         if match:
@@ -191,9 +222,13 @@ class HermesEventPackageAdded(HermesEvent):
 class HermesEventPackageDeleted(HermesEvent):
 
     regexp = re.compile('\[obs del\] Package ([^/\s]*) from ([^/\s]*) deleted')
+    raw_type = 'OBS_SRCSRV_DELETE_PACKAGE'
 
     def __init__(self, id, title, summary):
         HermesEvent.__init__(self, id, title, summary)
+        if self.raw:
+            return
+
         match = self.regexp.match(title)
 
         self.project = str(match.group(2))
