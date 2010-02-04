@@ -96,6 +96,8 @@ class UpstreamDb:
         if create:
             self._sql_setup()
 
+        return True
+
     def _close_db(self):
         """ Closes the currently open database. """
         if self.cursor:
