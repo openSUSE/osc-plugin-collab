@@ -1012,6 +1012,8 @@ class SrcPackage(Base):
         self.error = ''
         self.error_details = ''
 
+        # the package is a link using the branch mechanism
+        self.has_branch = 0
         # there's a local _meta file for this package
         self.has_meta = False
 
@@ -1175,6 +1177,8 @@ class SrcPackage(Base):
                 if node is not None:
                     if node.find('delete') != None or node.find('apply') != None:
                         self.has_delta = 1
+                    if node.find('branch') != None:
+                        self.has_branch = 1
 
         root = None
         files = os.path.join(srcpackage_dir, '_files-expanded')
