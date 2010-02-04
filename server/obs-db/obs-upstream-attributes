@@ -77,9 +77,7 @@ def get_xml_for_attribute(namespace, name, value):
     value_node = ET.SubElement(attribute_node, 'value')
     value_node.text = value
 
-    tree = ET.ElementTree(attributes_node)
-
-    return ET.tostring(tree)
+    return ET.tostring(attributes_node)
 
 
 def package_set_attribute_internal(apiurl, project, package, namespace, name, value, try_again = True):
