@@ -2145,7 +2145,7 @@ class ObsDb:
                     if project.ignore_fallback:
                         continue
                 if branch != upstream.MATCH_CHANGE_NAME:
-                    if project.branch != branch:
+                    if project.branch != branch and branch != upstream.FALLBACK_BRANCH_NAME:
                         continue
 
                 self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
