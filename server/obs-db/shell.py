@@ -47,6 +47,7 @@ import config
 import database
 import hermes
 import infoxml
+import shellutils
 import upstream
 import util
 
@@ -75,8 +76,7 @@ class Runner:
         self.db = None
         self.xml = None
 
-        self._status_dir = os.path.join(self.conf.cache_dir, 'status')
-        self._status_file = os.path.join(self._status_dir, 'last')
+        self._status_file = os.path.join(self.conf.cache_dir, 'status', 'last')
         self._mirror_dir = os.path.join(self.conf.cache_dir, 'obs-mirror')
         self._upstream_dir = os.path.join(self.conf.cache_dir, 'upstream')
         self._db_dir = os.path.join(self.conf.cache_dir, 'db')
@@ -105,49 +105,12 @@ class Runner:
 
     def _read_status(self):
         """ Read the last known status of the script. """
-        if not os.path.exists(self._status_file):
-            return
-
-        file = open(self._status_file)
-        lines = file.readlines()
-        file.close()
-
-        for line in lines:
-            line = line[:-1]
-            handled = False
-
-            for key in self._status.keys():
-                if line.startswith(key + '='):
-                    value = line[len(key + '='):]
-                    try:
-                        self._status[key] = int(value)
-                    except ValueError:
-                        raise RunnnerException('Cannot parse status value for %s: %s' % (key, value))
-
-                handled = True
-
-            if not handled:
-                raise RunnnerException('Unknown status line: %s' % (line,))
+        self._status = shellutils.read_status(self._status_file, self._status)
 
 
     def _write_status(self):
         """ Save the last known status of the script. """
-        if not os.path.exists(self._status_dir):
-            os.makedirs(self._status_dir)
-
-        tmpfilename = self._status_file + '.new'
-
-        # it's always better to have things sorted, since it'll be predictable
-        # (so better for human eyes ;-))
-        items = self._status.items()
-        items.sort()
-
-        file = open(tmpfilename, 'w')
-        for (key, value) in items:
-            file.write('%s=%d\n' % (key, self._status[key]))
-        file.close()
-
-        os.rename(tmpfilename, self._status_file)
+        shellutils.write_status(self._status_file, self._status)
 
 
     def _run_mirror(self, conf_changed):
@@ -488,74 +451,12 @@ class Runner:
 #######################################################################
 
 
-def get_conf(args):
-    parser = optparse.OptionParser()
-
-    parser.add_option('--config', dest='config',
-                      help='configuration file to use')
-    parser.add_option('--opensuse', dest='opensuse',
-                      action='store_true', default=False,
-                      help='use the openSUSE config as a basis')
-    parser.add_option('--log', dest='log',
-                      help='log file to use (default: stderr)')
-
-    (options, args) = parser.parse_args()
-
-    if options.log:
-        path = os.path.realpath(options.log)
-        util.safe_mkdir_p(os.path.dirname(path))
-        sys.stderr = open(options.log, 'a')
-
-    try:
-        conf = config.Config(options.config, use_opensuse = options.opensuse)
-    except config.ConfigException, e:
-        print >>sys.stderr, e
-        return (args, None)
-
-    if conf.sockettimeout > 0:
-        # we have a setting for the default socket timeout to not hang forever
-        socket.setdefaulttimeout(conf.sockettimeout)
-
-    try:
-        os.makedirs(conf.cache_dir)
-    except OSError, e:
-        if e.errno != errno.EEXIST:
-            print >>sys.stderr, 'Cannot create cache directory.'
-            return (args, None)
-
-    return (args, conf)
-
-
-#######################################################################
-
-
-def lock_run(conf):
-    # FIXME: this is racy, we need a real lock file. Or use an atomic operation
-    # like mkdir instead
-    running_file = os.path.join(conf.cache_dir, 'running')
-    if os.path.exists(running_file):
-        print >>sys.stderr, 'Another instance of the script is running.'
-        return False
-
-    open(running_file, 'w').write('')
-
-    return True
-
-
-def unlock_run(conf):
-    running_file = os.path.join(conf.cache_dir, 'running')
-    os.unlink(running_file)
-
-
-#######################################################################
-
-
 def main(args):
-    (args, conf) = get_conf(args)
+    (args, options, conf) = shellutils.get_conf(args)
     if not conf:
         return 1
 
-    if not lock_run(conf):
+    if not shellutils.lock_run(conf):
         return 1
 
     runner = Runner(conf)
@@ -566,12 +467,12 @@ def main(args):
         runner.run()
         retval = 0
     except Exception, e:
-        if isinstance(e, (RunnerException, config.ConfigException, hermes.HermesException, database.ObsDbException, infoxml.InfoXmlException)):
+        if isinstance(e, (RunnerException, shellutils.ShellException, config.ConfigException, hermes.HermesException, database.ObsDbException, infoxml.InfoXmlException)):
             print >>sys.stderr, e
         else:
             traceback.print_exc()
 
-    unlock_run(conf)
+    shellutils.unlock_run(conf)
 
     return retval
 

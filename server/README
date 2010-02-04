@@ -95,6 +95,9 @@ obs-db/
         shell.py:
         Shell part of the script.
 
+        shellutils.py:
+        Miscellaneous functions to create an application using those modules.
+
         TODO:
         List of things to do :-)
 
