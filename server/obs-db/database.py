@@ -1204,6 +1204,9 @@ class SrcPackage(Base):
                             self.error = 'need-merge-with-parent'
                         self.error_details = error
 
+                    if self.error:
+                        self.has_delta = 1
+
                 for node in root.findall('entry'):
                     filename = node.get('name')
                     if filename in IGNORE_FILES:
