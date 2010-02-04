@@ -2171,6 +2171,64 @@ class ObsDb:
 
         return list(updated_projects)
 
+    def get_packages_with_upstream_change(self, upstream_mtime):
+        """ Get the list of packages that are affected by upstream changes.
+
+            Return a list of projects, each containing a list of packages, each
+            one containing a tuple (upstream_version, upstream_url).
+
+        """
+        branches = self.upstream.get_changed_packages(upstream_mtime)
+
+        if not branches:
+            return []
+
+        self._open_existing_db_if_necessary()
+
+        # Get all projects, with their config, and update the necessary
+        # packages if needed
+        projects = Project.sql_get_all(self._cursor, recursive = False)
+        for project in projects:
+            project.read_config(self.conf.projects, self.mirror_dir)
+
+        result = {}
+
+        for branch in branches.keys():
+            if not branches[branch]:
+                continue
+
+            for project in projects:
+                if branch == upstream.FALLBACK_BRANCH_NAME:
+                    if project.ignore_fallback:
+                        continue
+                if branch != upstream.MATCH_CHANGE_NAME:
+                    if project.branch != branch and branch != upstream.FALLBACK_BRANCH_NAME:
+                        continue
+
+                self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
+                srcpackages = [ name for (name,) in self._cursor ]
+
+                # so we're only interested in the intersection of the two sets
+                # (in the project, and in the changed entries)
+                affected_srcpackages = set(branches[branch]).intersection(srcpackages)
+
+                if not affected_srcpackages:
+                    continue
+
+                if not result.has_key(project.name):
+                    result[project.name] = {}
+
+                self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))
+
+                for srcpackage in affected_srcpackages:
+                    if branch == upstream.FALLBACK_BRANCH_NAME and result[project.name].has_key(srcpackage):
+                        continue
+
+                    (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branch, srcpackage, project.ignore_fallback)
+                    result[project.name][srcpackage] = (upstream_version, upstream_url)
+
+        return result
+
     def post_analyze(self):
         """
             Do some post-commit analysis on the db, to find new errors now that
