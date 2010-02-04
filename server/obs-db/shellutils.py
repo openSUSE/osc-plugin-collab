@@ -1,7 +1,7 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
-# Copyright (c) 2009, Novell, Inc.
+# Copyright (c) 2009-2010, Novell, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
