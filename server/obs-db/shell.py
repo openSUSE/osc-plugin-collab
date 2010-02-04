@@ -180,7 +180,7 @@ class Runner:
                     self.obs.remove_checkout_package(event.project, event.package)
 
                 else:
-                    raise RunnnerException('Unhandled Hermes event type by mirror: %s' % event.__class__.__name__)
+                    raise RunnerException('Unhandled Hermes event type by mirror: %s' % event.__class__.__name__)
 
         self.obs.run()
 
@@ -236,7 +236,7 @@ class Runner:
                     self.db.remove_package(event.project, event.package)
 
                 else:
-                    raise RunnnerException('Unhandled Hermes event type by database: %s' % event.__class__.__name__)
+                    raise RunnerException('Unhandled Hermes event type by database: %s' % event.__class__.__name__)
 
             return (False, changed)
 
@@ -288,7 +288,7 @@ class Runner:
                     changed_projects.add(event.project)
 
                 else:
-                    raise RunnnerException('Unhandled Hermes event type by XML generator: %s' % event.__class__.__name__)
+                    raise RunnerException('Unhandled Hermes event type by XML generator: %s' % event.__class__.__name__)
 
         self.xml.run(self.db.get_cursor(), changed_projects)
 
