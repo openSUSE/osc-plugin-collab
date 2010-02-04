@@ -69,6 +69,67 @@ class UpstreamAttributesException(Exception):
 #######################################################################
 
 
+def package_get_attribute(apiurl, project, package, namespace, name, try_again = True):
+    if not project:
+        raise UpstreamAttributesException('Internal error: no project defined')
+
+    if not package:
+        raise UpstreamAttributesException('Internal error: no package defined')
+
+    if not namespace:
+        raise UpstreamAttributesException('Internal error: no namespace defined')
+
+    if not name:
+        raise UpstreamAttributesException('Internal error: no name defined')
+
+    attribute_name = '%s:%s' % (namespace, name)
+    url = core.makeurl(apiurl, ['source', project, package, '_attribute', attribute_name])
+
+    try:
+        fin = core.http_GET(url)
+    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        if type(e) == urllib2.HTTPError and e.code == 404:
+            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+        elif try_again:
+            return package_has_attribute(apiurl, project, package, namespace, name, False)
+        else:
+            raise UpstreamAttributesException('Cannot look for attribute %s for package %s in project %s: %s' % (attribute_name, package, project, e))
+
+        return None
+
+    try:
+        attributes_node = ET.parse(fin).getroot()
+    except SyntaxError, e:
+        fin.close()
+        raise UpstreamAttributesException('Cannot look for attribute %s for package %s in project %s: %s' % (attribute_name, package, project, e))
+
+    fin.close()
+
+    for attribute_node in attributes_node.findall('attribute'):
+        if attribute_node.get('namespace') == namespace and attribute_node.get('name') == name:
+            value = []
+            for value_node in attribute_node.findall('value'):
+                value.append(value_node.text)
+            if not value:
+                return ''
+            elif len(value) == 1:
+                return value[0]
+            else:
+                return value
+
+    return None
+
+
+#######################################################################
+
+
+def package_has_attribute(apiurl, project, package, namespace, name):
+    return package_get_attribute(apiurl, project, package, namespace, name) is not None
+
+
+#######################################################################
+
+
 def get_xml_for_attribute(namespace, name, value):
     attributes_node = ET.Element('attributes')
     attribute_node = ET.SubElement(attributes_node, 'attribute')
@@ -96,6 +157,9 @@ def package_set_attribute_internal(apiurl, project, package, namespace, name, va
     attribute_name = '%s:%s' % (namespace, name)
 
     delete = (value == None)
+
+    if delete and not package_has_attribute(apiurl, project, package, namespace, name):
+        return
 
     if not delete:
         xml = get_xml_for_attribute(namespace, name, value)
