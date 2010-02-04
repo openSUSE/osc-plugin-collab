@@ -1,0 +1,299 @@
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2010, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@opensuse.org>
+#
+
+import os
+import sys
+
+import optparse
+import socket
+import traceback
+import urllib2
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    try:
+        from xml.etree import cElementTree as ET
+    except ImportError:
+        import cElementTree as ET
+
+from osc import core
+
+import config
+import database
+import shellutils
+import upstream
+
+
+#######################################################################
+
+
+class UpstreamAttributesException(Exception):
+    pass
+
+
+#######################################################################
+
+
+def get_xml_for_attribute(namespace, name, value):
+    attributes_node = ET.Element('attributes')
+    attribute_node = ET.SubElement(attributes_node, 'attribute')
+    attribute_node.set('namespace', namespace)
+    attribute_node.set('name', name)
+    value_node = ET.SubElement(attribute_node, 'value')
+    value_node.text = value
+
+    tree = ET.ElementTree(attributes_node)
+
+    return ET.tostring(tree)
+
+
+def package_set_attribute_internal(apiurl, project, package, namespace, name, value, try_again = True):
+    if not project:
+        raise UpstreamAttributesException('Internal error: no project defined')
+
+    if not package:
+        raise UpstreamAttributesException('Internal error: no package defined')
+
+    if not namespace:
+        raise UpstreamAttributesException('Internal error: no namespace defined')
+
+    if not name:
+        raise UpstreamAttributesException('Internal error: no name defined')
+
+    attribute_name = '%s:%s' % (namespace, name)
+
+    delete = (value == None)
+
+    if not delete:
+        xml = get_xml_for_attribute(namespace, name, value)
+        url = core.makeurl(apiurl, ['source', project, package, '_attribute'])
+        action = 'set'
+    else:
+        url = core.makeurl(apiurl, ['source', project, package, '_attribute', attribute_name])
+        action = 'unset'
+
+    try:
+        if not delete:
+            fin = core.http_POST(url, data = xml)
+        else:
+            fin = core.http_DELETE(url)
+    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        if type(e) == urllib2.HTTPError and e.code == 404:
+            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+        elif try_again:
+            package_set_attribute_internal(apiurl, project, package, namespace, name, value, False)
+        else:
+            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, e))
+
+        return
+
+    try:
+        node = ET.parse(fin).getroot()
+    except SyntaxError, e:
+        fin.close()
+        raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, e))
+
+    fin.close()
+
+    if node.get('code') != 'ok':
+        try:
+            summary = node.find('summary').text
+        except:
+            summary = 'Unknown error'
+
+        try:
+            details = node.find('details').text
+        except:
+            details = ''
+
+        if details:
+            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s (%s)' % (action, attribute_name, package, project, summary, details))
+        else:
+            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, summary))
+
+
+#######################################################################
+
+
+def package_unset_attribute(apiurl, project, package, namespace, name):
+    package_set_attribute_internal(apiurl, project, package, namespace, name, None)
+
+
+def package_set_attribute(apiurl, project, package, namespace, name, value):
+    package_set_attribute_internal(apiurl, project, package, namespace, name, value)
+
+
+#######################################################################
+
+
+def package_set_upstream_attributes(apiurl, project, package, upstream_version, upstream_url, ignore_empty = False):
+    if upstream_version:
+        package_set_attribute(apiurl, project, package, 'openSUSE', 'UpstreamVersion', upstream_version)
+    elif not ignore_empty:
+        package_unset_attribute(apiurl, project, package, 'openSUSE', 'UpstreamVersion')
+
+    if upstream_url:
+        package_set_attribute(apiurl, project, package, 'openSUSE', 'UpstreamTarballURL', upstream_url)
+    elif not ignore_empty:
+        package_unset_attribute(apiurl, project, package, 'openSUSE', 'UpstreamTarballURL')
+
+
+#######################################################################
+
+
+def run(conf, do_projects = None, initial = False):
+    status_file = os.path.join(conf.cache_dir, 'status', 'attributes')
+    failed_file = os.path.join(conf.cache_dir, 'status', 'attributes-failed')
+    db_dir = os.path.join(conf.cache_dir, 'db')
+    mirror_dir = os.path.join(conf.cache_dir, 'obs-mirror')
+
+    status = {}
+    status['upstream-mtime'] = -1
+
+    status = shellutils.read_status(status_file, status)
+
+    # Get packages that we had to update before, but where we failed
+    old_failed = []
+    if os.path.exists(failed_file):
+        failed_f = open(failed_file)
+        lines = failed_f.readlines()
+        failed_f.close()
+        for line in lines:
+            line = line[:-1]
+            try:
+                (project, package, upstream_version, upstream_url) = line.split('|', 3)
+            except ValueError:
+                raise UpstreamAttributesException('Invalid failed attribute line: %s' % line)
+
+            old_failed.append((project, package, upstream_version, upstream_url))
+
+    # Get packages we need to update
+    upstreamdb = upstream.UpstreamDb(None, db_dir, conf.debug)
+    new_upstream_mtime = upstreamdb.get_mtime()
+    db = database.ObsDb(conf, db_dir, mirror_dir, upstreamdb)
+
+    projects = db.get_packages_with_upstream_change(status['upstream-mtime'])
+
+    # close the database as soon as we don't need them anymore
+    del db
+    del upstreamdb
+
+    failed = []
+
+    for (project, package, upstream_version, upstream_url) in old_failed:
+        try:
+            if conf.debug:
+                print 'UpstreamAttributes: %s/%s' % (project, package)
+            package_set_upstream_attributes(conf.apiurl, project, package, upstream_version, upstream_url)
+        except UpstreamAttributesException, e:
+            print >>sys.stderr, e
+            failed.append((project, package, upstream_version, upstream_url))
+
+    # Remove the failed file as soon as we know it was handled
+    if os.path.exists(failed_file):
+        os.unlink(failed_file)
+
+    for (project, packages) in projects.items():
+        if do_projects and project not in do_projects:
+            continue
+
+        for (package, (upstream_version, upstream_url)) in packages.items():
+            try:
+                if conf.debug:
+                    print 'UpstreamAttributes: %s/%s' % (project, package)
+                package_set_upstream_attributes(conf.apiurl, project, package, upstream_version, upstream_url, ignore_empty = initial)
+            except UpstreamAttributesException, e:
+                print >>sys.stderr, e
+                failed.append((project, package, upstream_version, upstream_url))
+
+    # Save the failed packages for next run
+    if len(failed) > 0:
+        failed_f = open(failed_file, 'w')
+        for (project, package, upstream_version, upstream_url) in failed:
+            failed_f.write('|'.join((project, package, upstream_version, upstream_url)) + '\n')
+        failed_f.close()
+
+    # Save the status time last (saving it last ensures that everything has
+    # been really handled)
+    status['upstream-mtime'] = new_upstream_mtime
+    shellutils.write_status(status_file, status)
+
+
+#######################################################################
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option('--initial', dest='initial',
+                      action='store_true',
+                      help='initial setting of attributes (will ignore empty data, instead of deleting attributes)')
+    parser.add_option('--project', dest='projects',
+                      action='append', default = [],
+                      metavar='PROJECT',
+                      help='project to work on (default: all)')
+
+    (args, options, conf) = shellutils.get_conf(args, parser)
+    if not conf:
+        return 1
+
+    if not shellutils.lock_run(conf, 'attributes'):
+        return 1
+
+    retval = 1
+
+    try:
+        run(conf, options.projects, options.initial)
+        retval = 0
+    except Exception, e:
+        if isinstance(e, (UpstreamAttributesException, shellutils.ShellException, config.ConfigException, database.ObsDbException)):
+            print >>sys.stderr, e
+        else:
+            traceback.print_exc()
+
+    shellutils.unlock_run(conf, 'attributes')
+
+    return retval
+
+
+if __name__ == '__main__':
+    try:
+      ret = main(sys.argv)
+      sys.exit(ret)
+    except KeyboardInterrupt:
+      pass

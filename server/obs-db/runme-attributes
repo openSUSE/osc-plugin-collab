@@ -1,0 +1,92 @@
+#!/bin/sh
+# vim: set ts=4 sw=4 et:
+
+#
+# Copyright (c) 2008-2010, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@opensuse.org>
+#
+
+basedir=`dirname $0`
+
+## Basic setup
+
+CACHE_DIR=./cache
+USE_OPENSUSE=
+CONFIG_FILE=
+LOG_FILE=
+
+usage() {
+    echo "Usage: $0 [-o CONF-FILE] [-l LOG-FILE] [-s]"
+    echo ""
+    echo "Options:"
+    echo "   -o CONF-FILE     Use CONF-FILE as configuration file"
+    echo "   -l LOG-FILE      Use LOG-FILE to log errors"
+    echo "   -s               Use the openSUSE configuration file as a basis"
+}
+
+while getopts o:l:sh option; do
+    case $option in
+    o) CONFIG_FILE=$OPTARG;;
+    l) LOG_FILE=$OPTARG;;
+    s) USE_OPENSUSE=--opensuse;;
+    h|help) usage; exit 0;;
+    *) usage; exit 1;;
+    esac
+done
+
+if test "x$CONFIG_FILE" != "x"; then
+    if test ! -f $CONFIG_FILE; then
+        echo >&2 "Configuration file $CONFIG_FILE does not exit."
+        exit 1
+    else
+        OBS_OPTIONS_CACHE_DIR=`grep "^ *cache-dir =" $CONFIG_FILE | sed "s/.*= *\(.*\) *$/\1/g" | tail -n 1`
+        test "x$OBS_OPTIONS_CACHE_DIR" != "x" && CACHE_DIR=$OBS_OPTIONS_CACHE_DIR
+    fi
+fi
+
+mkdir -p $CACHE_DIR
+
+
+##############################################################
+# Update attributes in the build service
+
+CONFIG_OPTION=
+if test "x$CONFIG_FILE" != "x"; then
+    CONFIG_OPTION="--config $CONFIG_FILE"
+fi
+
+LOG_OPTION=
+if test "x$LOG_FILE" != "x"; then
+    LOG_OPTION="--log $LOG_FILE"
+fi
+
+$basedir/obs-upstream-attributes $CONFIG_OPTION $LOG_OPTION $USE_OPENSUSE

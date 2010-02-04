@@ -15,6 +15,8 @@ those scripts would be run in cron jobs:
  ./obs-db/runme: a good period should be between every 10 minutes and
                  every 30 minutes (it has to be tweaked)
 
+ ./obs-db/runme-attributes: a good period should be every 30 minutes
+
  ./upstream/runme: a good period should be every 30 minutes
 
 
@@ -86,11 +88,19 @@ obs-db/
         Executable script to manually download a project or package,
         in the same way as obs-db does.
 
+        obs-upstream-attributes:
+        Executable script to update the openSUSE:UpstreamVersion and
+        openSUSE:UpstreamTarballURL attributes in the build service with the
+        upstream data we habe.
+
         osc_copy.py:
         Some convenience functions copied from osc.
 
         runme:
         Small helper to launch the script.
+
+        runme-attributes:
+        Small helper to launch the obs-upstream-attributes script.
 
         shell.py:
         Shell part of the script.
