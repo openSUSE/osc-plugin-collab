@@ -1232,10 +1232,10 @@ class SrcPackage(Base):
         if not self.project.parent or self.project.parent == self.project.name:
             return
 
-        parent_project_dir = os.path.join(srcpackage_dir, '..', '..', self.project.parent, self.name)
-        files = os.path.join(parent_project_dir, '_files-expanded')
+        parent_package_dir = os.path.join(srcpackage_dir, '..', '..', self.project.parent, self.name)
+        files = os.path.join(parent_package_dir, '_files-expanded')
         if not os.path.exists(files):
-            files = os.path.join(parent_project_dir, '_files')
+            files = os.path.join(parent_package_dir, '_files')
 
         if not os.path.exists(files):
             return
@@ -1270,7 +1270,7 @@ class SrcPackage(Base):
                     # for spec files, we try to ignore the irrelevant stuff
                     elif filename[-5:] == '.spec':
                         spec = os.path.join(srcpackage_dir, filename)
-                        parent_spec = os.path.join(parent_project_dir, filename)
+                        parent_spec = os.path.join(parent_package_dir, filename)
                         if self._specs_are_different_lenient(spec, parent_spec):
                             self.has_delta = 2
                             break
