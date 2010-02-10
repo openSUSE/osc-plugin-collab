@@ -624,6 +624,8 @@ nspluginwrapper:
 raptor:
 rasqal:
 redland:
+shared-color-profiles:
+shared-color-targets:
 update-desktop-files:
 xdg-user-dirs:
 xdg-utils:

@@ -350,6 +350,8 @@ nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrappe
 raptor:httpls:http://download.librdf.org/source/
 rasqal:httpls:http://download.librdf.org/source/
 redland:httpls:http://download.librdf.org/source/
+shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
+shared-color-targets:httpls:http://people.freedesktop.org/~hughsient/releases/
 update-desktop-files:upstream:
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
