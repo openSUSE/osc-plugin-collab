@@ -227,6 +227,7 @@ gnome-audio:
 gnome-blog:
 gnome-bluetooth:
 gnome-build:
+gnome-color-manager:
 gnome-commander:
 gnome-common:
 gnome-games-extra-data:
@@ -277,6 +278,7 @@ libgda-3:libgda3
 libgda:
 libgdamm:
 libgdata:
+libgee:
 libghttp:
 libgnomecups:
 libgnomedb:
