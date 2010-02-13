@@ -645,6 +645,8 @@ libmatroska:
 mkvtoolnix:
 mtr:
 pavuk:
+pycups:python-cups
+pysmbc:python-smbc
 qiv:
 traffic-vis:
 usbview:
