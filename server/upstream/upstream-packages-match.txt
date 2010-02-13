@@ -328,6 +328,7 @@ PackageKit:
 PolicyKit-gnome:
 UPnP-Inspector:upnp-inspector
 abiword:
+abiword-docs:
 aqbanking:
 asio:
 avahi:

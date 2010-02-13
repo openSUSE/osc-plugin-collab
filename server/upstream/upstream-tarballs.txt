@@ -76,6 +76,7 @@ PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
+abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php
 asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
