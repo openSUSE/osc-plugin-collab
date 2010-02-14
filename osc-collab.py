@@ -1748,6 +1748,9 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
         new_f.close()
 
         diff = difflib.unified_diff(old_lines, new_lines)
+        # diff is a generator, so we can't know if it's empty or not until we
+        # iterate over it. So if it's empty, we'll create an empty file, and
+        # remove it afterwards.
 
         dest_f = open(dest, 'w')
 
@@ -1799,6 +1802,10 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
                 dest_f.write(line)
 
         dest_f.close()
+
+        if not cached:
+            os.unlink(dest)
+            return (False, False)
 
         return (True, True)
 
