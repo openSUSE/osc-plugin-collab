@@ -391,6 +391,7 @@ glabels:
 glipper:
 glitz:
 gmetadom:
+gnokii:
 gnome-activity-journal:
 gnome-color-chooser:
 gnome-colors:gnome-colors-icon-theme
