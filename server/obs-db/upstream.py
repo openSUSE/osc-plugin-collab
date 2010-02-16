@@ -145,6 +145,8 @@ class UpstreamDb:
             print >> sys.stderr, 'No upstream/package name match database available, keeping previous data.'
             return
 
+        handled = []
+
         file = open(matchpath)
         re_names = re.compile('^(.+):(.*)$')
         while True:
@@ -165,7 +167,9 @@ class UpstreamDb:
             else:
                 srcpackage = upstream
 
-            if oldmatches.has_key(srcpackage):
+            if srcpackage in handled:
+                print >> sys.stderr, 'Source package %s defined more than once in %s.' % (srcpackage, matchfile)
+            elif oldmatches.has_key(srcpackage):
                 # Update the entry if it has changed
                 (id, oldupstream) = oldmatches[srcpackage]
                 if oldupstream != upstream:
@@ -177,12 +181,14 @@ class UpstreamDb:
                         ;''',
                         (upstream, self._now, id))
                 del oldmatches[srcpackage]
+                handled.append(srcpackage)
             else:
                 # Add the entry
                 self.cursor.execute('''INSERT INTO upstream_pkg_name_match VALUES (
                     NULL, ?, ?, ?
                     );''',
                     (srcpackage, upstream, self._now))
+                handled.append(srcpackage)
 
         file.close()
 
