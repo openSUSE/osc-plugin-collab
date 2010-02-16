@@ -69,7 +69,7 @@ class UpstreamAttributesException(Exception):
 #######################################################################
 
 
-def package_get_attribute(apiurl, project, package, namespace, name, try_again = True):
+def package_check_attribute_valid_arguments(project, package, namespace, name):
     if not project:
         raise UpstreamAttributesException('Internal error: no project defined')
 
@@ -81,6 +81,13 @@ def package_get_attribute(apiurl, project, package, namespace, name, try_again =
 
     if not name:
         raise UpstreamAttributesException('Internal error: no name defined')
+
+
+#######################################################################
+
+
+def package_get_attribute(apiurl, project, package, namespace, name, try_again = True):
+    package_check_attribute_valid_arguments(project, package, namespace, name)
 
     attribute_name = '%s:%s' % (namespace, name)
     url = core.makeurl(apiurl, ['source', project, package, '_attribute', attribute_name])
@@ -130,65 +137,12 @@ def package_has_attribute(apiurl, project, package, namespace, name):
 #######################################################################
 
 
-def get_xml_for_attribute(namespace, name, value):
-    attributes_node = ET.Element('attributes')
-    attribute_node = ET.SubElement(attributes_node, 'attribute')
-    attribute_node.set('namespace', namespace)
-    attribute_node.set('name', name)
-    value_node = ET.SubElement(attribute_node, 'value')
-    value_node.text = value
-
-    return ET.tostring(attributes_node)
-
-
-def package_set_attribute_internal(apiurl, project, package, namespace, name, value, try_again = True):
-    if not project:
-        raise UpstreamAttributesException('Internal error: no project defined')
-
-    if not package:
-        raise UpstreamAttributesException('Internal error: no package defined')
-
-    if not namespace:
-        raise UpstreamAttributesException('Internal error: no namespace defined')
-
-    if not name:
-        raise UpstreamAttributesException('Internal error: no name defined')
-
-    attribute_name = '%s:%s' % (namespace, name)
-
-    delete = (value == None)
-
-    if delete and not package_has_attribute(apiurl, project, package, namespace, name):
-        return
-
-    if not delete:
-        xml = get_xml_for_attribute(namespace, name, value)
-        url = core.makeurl(apiurl, ['source', project, package, '_attribute'])
-        action = 'set'
-    else:
-        url = core.makeurl(apiurl, ['source', project, package, '_attribute', attribute_name])
-        action = 'unset'
-
-    try:
-        if not delete:
-            fin = core.http_POST(url, data = xml)
-        else:
-            fin = core.http_DELETE(url)
-    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
-        if type(e) == urllib2.HTTPError and e.code == 404:
-            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
-        elif try_again:
-            package_set_attribute_internal(apiurl, project, package, namespace, name, value, False)
-        else:
-            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, e))
-
-        return
-
+def package_set_attribute_handle_reply(fin, error_str):
     try:
         node = ET.parse(fin).getroot()
     except SyntaxError, e:
         fin.close()
-        raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, e))
+        raise UpstreamAttributesException('s: %s' % (error_str, e))
 
     fin.close()
 
@@ -204,26 +158,103 @@ def package_set_attribute_internal(apiurl, project, package, namespace, name, va
             details = ''
 
         if details:
-            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s (%s)' % (action, attribute_name, package, project, summary, details))
+            raise UpstreamAttributesException('%s: %s (%s)' % (error_str, summary, details))
         else:
-            raise UpstreamAttributesException('Cannot %s attribute %s for package %s in project %s: %s' % (action, attribute_name, package, project, summary))
+            raise UpstreamAttributesException('%s: %s' % (error_str, summary))
+
+
+def get_xml_for_attributes(attributes_values):
+    if len(attributes_values) == 0:
+        return None
+
+    attributes_node = ET.Element('attributes')
+
+    for (namespace, name, value) in attributes_values:
+        attribute_node = ET.SubElement(attributes_node, 'attribute')
+        attribute_node.set('namespace', namespace)
+        attribute_node.set('name', name)
+        value_node = ET.SubElement(attribute_node, 'value')
+        value_node.text = value
+
+    return ET.tostring(attributes_node)
 
 
 #######################################################################
 
 
-def package_unset_attribute(apiurl, project, package, namespace, name):
-    package_set_attribute_internal(apiurl, project, package, namespace, name, None)
+def package_unset_attribute(apiurl, project, package, namespace, name, try_again = True):
+    package_check_attribute_valid_arguments(project, package, namespace, name)
+
+    attribute_name = '%s:%s' % (namespace, name)
+    error_str = 'Cannot unset attribute %s for package %s in project %s' % (attribute_name, package, project)
+
+    if not package_has_attribute(apiurl, project, package, namespace, name):
+        return
+
+    url = core.makeurl(apiurl, ['source', project, package, '_attribute', attribute_name])
+
+    try:
+        fin = core.http_DELETE(url)
+    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        if type(e) == urllib2.HTTPError and e.code == 404:
+            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+        elif try_again:
+            package_unset_attribute(apiurl, project, package, namespace, name, False)
+        else:
+            raise UpstreamAttributesException('%s: %s' % (error_str, e))
+
+        return
+
+    package_set_attribute_handle_reply(fin, error_str)
+
+
+#######################################################################
+
+
+def package_set_attributes(apiurl, project, package, attributes, try_again = True):
+    for (namespace, name, value) in attributes:
+        package_check_attribute_valid_arguments(project, package, namespace, name)
+        if value == None:
+            raise UpstreamAttributesException('Internal error: no value defined')
+
+    if len(attributes) == 1:
+        # namespace/name are set because of the above loop
+        attribute_name = '%s:%s' % (namespace, name)
+        error_str = 'Cannot set attribute %s for package %s in project %s' % (attribute_name, package, project)
+    else:
+        error_str = 'Cannot set attributes for package %s in project %s' % (package, project)
+
+    xml = get_xml_for_attributes(attributes)
+    url = core.makeurl(apiurl, ['source', project, package, '_attribute'])
+
+    try:
+        fin = core.http_POST(url, data = xml)
+    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        if type(e) == urllib2.HTTPError and e.code == 404:
+            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+        elif try_again:
+            package_set_attributes(apiurl, project, package, attributes, False)
+        else:
+            raise UpstreamAttributesException('%s: %s' % (error_str, e))
+
+        return
+
+    package_set_attribute_handle_reply(fin, error_str)
 
 
 def package_set_attribute(apiurl, project, package, namespace, name, value):
-    package_set_attribute_internal(apiurl, project, package, namespace, name, value)
-
+    attributes = [ (namespace, name, value) ]
+    package_set_attributes(apiurl, project, package, attributes)
 
 #######################################################################
 
 
 def package_set_upstream_attributes(apiurl, project, package, upstream_version, upstream_url, ignore_empty = False):
+    if upstream_version and upstream_url:
+        attributes = [ ('openSUSE', 'UpstreamVersion', upstream_version), ('openSUSE', 'UpstreamTarballURL', upstream_url) ]
+        package_set_attributes(apiurl, project, package, attributes)
+        return
+
     if upstream_version:
         package_set_attribute(apiurl, project, package, 'openSUSE', 'UpstreamVersion', upstream_version)
     elif not ignore_empty:
