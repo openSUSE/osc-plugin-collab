@@ -91,7 +91,7 @@ def package_get_attribute(apiurl, project, package, namespace, name, try_again =
         if type(e) == urllib2.HTTPError and e.code == 404:
             print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
         elif try_again:
-            return package_has_attribute(apiurl, project, package, namespace, name, False)
+            return package_get_attribute(apiurl, project, package, namespace, name, False)
         else:
             raise UpstreamAttributesException('Cannot look for attribute %s for package %s in project %s: %s' % (attribute_name, package, project, e))
 
