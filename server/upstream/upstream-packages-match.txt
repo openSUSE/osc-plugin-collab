@@ -514,7 +514,6 @@ pycairo:python-cairo
 pymsn:python-msn
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
-pysmbc:python-smbc
 python-xlib:
 pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg

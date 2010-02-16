@@ -265,7 +265,6 @@ pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygtkglext:sf:54333|pygtkglext
 pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
-pysmbc:subdirhttpls:http://cyberelk.net/tim/data/pysmbc/
 python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
