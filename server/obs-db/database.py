@@ -1517,6 +1517,7 @@ class SrcPackage(Base):
             package = ET.parse(meta_file).getroot()
         except SyntaxError, e:
             print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
+            return
 
         self.has_meta = True
 
