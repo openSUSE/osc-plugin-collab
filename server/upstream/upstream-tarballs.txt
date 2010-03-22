@@ -190,6 +190,7 @@ gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|inkscape
+intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 istanbul:httpls:http://live.gnome.org/Istanbul
