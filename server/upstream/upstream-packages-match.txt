@@ -584,6 +584,8 @@ yast2-control-center-gnome:
 
 dbus-glib:dbus-1-glib
 libedit:
+udisks:
+UPower:upower
 
 
 #### X11:Compiz
@@ -621,6 +623,7 @@ geoclue:
 gos-wallpapers:
 gypsy:
 libspectre:
+media-player-info:
 nspluginwrapper:
 raptor:
 rasqal:

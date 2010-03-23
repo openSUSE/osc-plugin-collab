@@ -314,6 +314,8 @@ zeitgeist:lp:zeitgeist
 ## Base:System
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
 libedit:httpls:http://thrysoee.dk/editline/
+udisks:httpls:http://hal.freedesktop.org/releases/
+UPower:httpls:http://upower.freedesktop.org/releases/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/
@@ -348,6 +350,7 @@ geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
 gos-wallpapers:upstream:
 gypsy:httpls:http://gypsy.freedesktop.org/gypsy-releases/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
+media-player-info:httpls:http://hal.freedesktop.org/releases/
 nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
 raptor:httpls:http://download.librdf.org/source/
 rasqal:httpls:http://download.librdf.org/source/
