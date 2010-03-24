@@ -644,6 +644,7 @@ irda-utils:irda
 libdatrie:libdatrie0
 libdv:
 libebml:
+libgpod:libgpod4
 libmatroska:
 mkvtoolnix:
 mtr:

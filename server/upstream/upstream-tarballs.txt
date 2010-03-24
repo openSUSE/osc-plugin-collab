@@ -397,6 +397,7 @@ irda-utils:sf:5616|irda-utils
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
+libgpod:sf:67873|libgpod
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
