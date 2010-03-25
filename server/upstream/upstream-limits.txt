@@ -16,6 +16,7 @@ libflashsupport:max|2000
 libofx:max|0.10
 
 # we don't want unstable versions of the following modules
+dbus:no-odd-unstable
 gq:no-odd-unstable
 liferea:no-odd-unstable
 swfdec:no-odd-unstable

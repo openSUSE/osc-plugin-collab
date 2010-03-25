@@ -582,6 +582,7 @@ yast2-control-center-gnome:
 
 #### Base:System
 
+dbus:dbus-1
 dbus-glib:dbus-1-glib
 libedit:
 udisks:

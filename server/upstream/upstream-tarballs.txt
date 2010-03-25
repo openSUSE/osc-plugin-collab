@@ -312,6 +312,7 @@ zeitgeist:lp:zeitgeist
 
 
 ## Base:System
+dbus:httpls:http://dbus.freedesktop.org/releases/dbus/
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
 libedit:httpls:http://thrysoee.dk/editline/
 udisks:httpls:http://hal.freedesktop.org/releases/
