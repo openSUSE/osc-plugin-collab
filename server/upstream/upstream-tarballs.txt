@@ -405,6 +405,7 @@ pavuk:sf:81012|pavuk
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 qiv:httpls:http://spiegl.de/qiv/download/
+schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 usbview:httpls:http://www.kroah.com/linux-usb/
 wmakerconf:sf:196469|wmakerconf

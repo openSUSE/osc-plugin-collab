@@ -652,6 +652,7 @@ pavuk:
 pycups:python-cups
 pysmbc:python-smbc
 qiv:
+schroedinger:
 traffic-vis:
 usbview:
 wmakerconf:
