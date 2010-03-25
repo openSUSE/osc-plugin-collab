@@ -316,6 +316,7 @@ rhythmbox:
 scrollkeeper:
 seed:
 tasque:
+tracker:
 xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
