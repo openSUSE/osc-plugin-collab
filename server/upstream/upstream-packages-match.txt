@@ -586,6 +586,8 @@ yast2-control-center-gnome:
 dbus:dbus-1
 dbus-glib:dbus-1-glib
 libedit:
+obex-data-server:
+openobex:
 udisks:
 UPower:upower
 
