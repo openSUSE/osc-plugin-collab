@@ -650,6 +650,7 @@ libdv:
 libebml:
 libgpod:libgpod4
 libmatroska:
+libplist:
 mkvtoolnix:
 mtr:
 pavuk:

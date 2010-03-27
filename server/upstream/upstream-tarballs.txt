@@ -402,6 +402,7 @@ libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libgpod:sf:67873|libgpod
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
+libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
 pavuk:sf:81012|pavuk
