@@ -644,7 +644,10 @@ xesam-tools:
 
 
 #### Stuff from various other places:
+CouchDB:python-couchdb
+apache-couchdb:couchdb
 csmash:
+desktopcouch:python-desktopcouch
 flickrapi:python-flickrapi
 gocr:
 irda-utils:irda

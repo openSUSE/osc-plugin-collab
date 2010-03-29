@@ -393,7 +393,10 @@ tangerine:lp:tangerine
 
 
 #### Stuff from various other places:
+CouchDB:httpls:http://pypi.python.org/pypi/CouchDB
+apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 csmash:sf:4179|CannonSmash
+desktopcouch:lp:desktopcouch
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
 irda-utils:sf:5616|irda-utils
