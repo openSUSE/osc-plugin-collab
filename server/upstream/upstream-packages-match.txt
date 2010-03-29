@@ -230,6 +230,7 @@ gnome-build:
 gnome-color-manager:
 gnome-commander:
 gnome-common:
+gnome-devel-docs:
 gnome-games-extra-data:
 gnome-icon-theme-extras:
 gnome-js-common:
@@ -261,6 +262,7 @@ goocanvasmm:
 gtetrinet:
 gthumb:
 gtk+-1:gtk
+gtkmm-documentation:
 gtranslator:
 gwget:
 hippo-canvas:
