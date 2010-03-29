@@ -231,6 +231,7 @@ gnome-color-manager:
 gnome-commander:
 gnome-common:
 gnome-games-extra-data:
+gnome-icon-theme-extras:
 gnome-js-common:
 gnome-libs:
 gnome-main-menu:
