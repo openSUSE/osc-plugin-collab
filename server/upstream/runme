@@ -198,6 +198,7 @@ mkdir -p $CACHE_DIR/upstream
 
 download_gnome_version 2.26
 download_gnome_version 2.28
+download_gnome_version 2.30
 download_gnome_version stable
 download_gnome_version unstable
 download_gnome_version extras
