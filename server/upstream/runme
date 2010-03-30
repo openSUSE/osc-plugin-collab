@@ -39,7 +39,7 @@ basedir=`dirname $0`
 
 ## Options
 # What's the current GNOME version in Factory
-GNOME_FACTORY_VERSION=unstable
+GNOME_FACTORY_VERSION=stable
 
 
 ## Basic setup
