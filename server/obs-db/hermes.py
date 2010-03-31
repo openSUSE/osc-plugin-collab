@@ -354,7 +354,7 @@ class HermesReader:
         """ Read the first feed just to get a last known id. """
         self._debug_print('Fetching new last known id')
 
-        # we don't ignore self._conf.skip_hermes if we don't have a lst known
+        # we don't ignore self._conf.skip_hermes if we don't have a last known
         # id, since it can only harm by creating a later check for all projects
         # on the build service, which is expensive
         if self._conf.skip_hermes and self.last_known_id != -1:
@@ -363,13 +363,14 @@ class HermesReader:
         if len(self._base_urls) == 0:
             return
 
-        feed = feedparser.parse(self._base_urls[0])
-        if len(feed['entries']) == 0:
-            return
+        for base_url in self._base_urls:
+            feed = feedparser.parse(self.base_url)
+            if len(feed['entries']) == 0:
+                continue
 
-        id = self._get_entry_id(feed['entries'][0])
-        if id > self.last_known_id:
-            self.last_known_id = id
+            id = self._get_entry_id(feed['entries'][0])
+            if id > self.last_known_id:
+                self.last_known_id = id
 
 
     def _read_feed(self, base_url):
