@@ -662,6 +662,7 @@ libmatroska:
 libplist:
 mkvtoolnix:
 mtr:
+orc:
 pavuk:
 pycups:python-cups
 pysmbc:python-smbc

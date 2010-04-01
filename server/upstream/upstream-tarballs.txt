@@ -409,6 +409,7 @@ libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
+orc:httpls:http://code.entropywave.com/download/orc/
 pavuk:sf:81012|pavuk
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
