@@ -211,6 +211,7 @@ desktop-data-model:
 dia:
 dogtail:
 eel:
+eog-plugins:
 epiphany-extensions:
 evolution-sharp:
 f-spot:
