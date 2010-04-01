@@ -128,6 +128,7 @@ gbrainy:httpls:http://live.gnome.org/gbrainy
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://www.gdesklets.de/
 gdome2:httpls:http://gdome2.cs.unibo.it/tarball/
+geany:httpls:http://download.geany.org/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 gftp:httpls:http://gftp.seul.org/
 ggreeter:upstream:

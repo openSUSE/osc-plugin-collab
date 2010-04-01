@@ -219,7 +219,9 @@ gdk-pixbuf:
 gedit-plugins:
 genius:
 ghex:
+giggle:
 gir-repository:
+gitg:
 gjs:
 glade:
 glib-1:glib
@@ -295,8 +297,7 @@ libslab:
 libunique:
 libxml:
 loudmouth:
-# No package in openSUSE
-#meld:
+meld:
 memprof:
 mergeant:
 muine:
@@ -383,6 +384,7 @@ gbrainy:
 gdata.py:python-gdata
 gdesklets:gDesklets
 gdome2:
+geany:
 gegl:
 gftp:
 ggz-client-libs:
