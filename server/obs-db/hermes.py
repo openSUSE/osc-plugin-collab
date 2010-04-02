@@ -320,7 +320,12 @@ class HermesReader:
             if id <= self._previous_last_known_id:
                 return True
 
-            event = self._parse_entry(id, entry)
+            try:
+                event = self._parse_entry(id, entry)
+            except UnicodeEncodeError, e:
+                event = None
+                print >> sys.stderr, 'Cannot convert hermes message %d to str: %s' % (id, e)
+
             # Note that hermes can be buggy and give events without the proper
             # project/package. If it's '' and not None, then it means it has
             # been changed to something empty (and therefore it's a bug from
