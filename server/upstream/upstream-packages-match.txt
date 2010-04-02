@@ -667,6 +667,9 @@ mtr:
 onboard:
 orc:
 pavuk:
+pyclutter:python-clutter
+pyclutter-gst:python-clutter-gst
+pyclutter-gtk:python-clutter-gtk
 pycups:python-cups
 pysmbc:python-smbc
 python-virtkey:

@@ -413,6 +413,9 @@ mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
 onboard:lp:onboard
 orc:httpls:http://code.entropywave.com/download/orc/
 pavuk:sf:81012|pavuk
+pyclutter:subdirhttpls:http://clutter-project.org/sources/pyclutter/
+pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
+pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-virtkey:lp:virtkey
