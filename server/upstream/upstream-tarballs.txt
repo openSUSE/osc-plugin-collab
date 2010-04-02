@@ -396,6 +396,7 @@ tangerine:lp:tangerine
 #### Stuff from various other places:
 CouchDB:httpls:http://pypi.python.org/pypi/CouchDB
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
+brltty:httpls:http://mielke.cc/brltty/releases/
 csmash:sf:4179|CannonSmash
 desktopcouch:lp:desktopcouch
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi

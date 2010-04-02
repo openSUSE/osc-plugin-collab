@@ -649,6 +649,7 @@ xesam-tools:
 #### Stuff from various other places:
 CouchDB:python-couchdb
 apache-couchdb:couchdb
+brltty:
 csmash:
 desktopcouch:python-desktopcouch
 flickrapi:python-flickrapi
