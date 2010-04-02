@@ -672,6 +672,7 @@ pyclutter-gst:python-clutter-gst
 pyclutter-gtk:python-clutter-gtk
 pycups:python-cups
 pysmbc:python-smbc
+python-distutils-extra:
 python-virtkey:
 qiv:
 schroedinger:

@@ -418,6 +418,7 @@ pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
 pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
+python-distutils-extra:lp:python-distutils-extra
 python-virtkey:lp:virtkey
 qiv:httpls:http://spiegl.de/qiv/download/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
