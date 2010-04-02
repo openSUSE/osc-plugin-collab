@@ -410,10 +410,12 @@ libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
+onboard:lp:onboard
 orc:httpls:http://code.entropywave.com/download/orc/
 pavuk:sf:81012|pavuk
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
+python-virtkey:lp:virtkey
 qiv:httpls:http://spiegl.de/qiv/download/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html

@@ -206,6 +206,7 @@ bakery:
 beagle:
 beagle-xesam:
 bigboard:
+caribou:
 conduit:
 desktop-data-model:
 dia:
@@ -663,10 +664,12 @@ libmatroska:
 libplist:
 mkvtoolnix:
 mtr:
+onboard:
 orc:
 pavuk:
 pycups:python-cups
 pysmbc:python-smbc
+python-virtkey:
 qiv:
 schroedinger:
 traffic-vis:
