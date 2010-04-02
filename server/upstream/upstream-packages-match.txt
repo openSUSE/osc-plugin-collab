@@ -677,6 +677,7 @@ python-distutils-extra:
 python-virtkey:
 qiv:
 schroedinger:
+speech-dispatcher:
 traffic-vis:
 usbview:
 wmakerconf:
