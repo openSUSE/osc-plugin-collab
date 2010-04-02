@@ -300,6 +300,7 @@ translation-update:upstream:
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
 twitux:sf:198704|twitux
+valencia:subdirhttpls:http://yorba.org/download/valencia/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/

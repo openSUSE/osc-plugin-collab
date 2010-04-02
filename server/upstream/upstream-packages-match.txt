@@ -558,6 +558,7 @@ transmission:
 tsclient:
 twitux:
 vala:
+valencia:gedit-plugin-valencia
 vobject:
 webkit:libwebkit
 xchat:
