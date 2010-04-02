@@ -273,6 +273,7 @@ pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
+simple-scan:lp:simple-scan
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|sofia-sip
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec

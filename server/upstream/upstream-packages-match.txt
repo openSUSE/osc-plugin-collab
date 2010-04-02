@@ -531,6 +531,7 @@ recordmydesktop:
 rep-gtk:
 sawfish:
 shared-mime-info:
+simple-scan:
 sobby:
 sofia-sip:
 sound-theme-freedesktop:
