@@ -511,6 +511,7 @@ pidgin:
 pidgin-facebookchat:
 pidgin-guifications:
 pidgin-sipe:
+pino:
 pixman:
 pkg-config:
 poppler:
