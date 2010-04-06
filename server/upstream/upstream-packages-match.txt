@@ -416,6 +416,7 @@ gnucash-docs:
 gobby:
 gobby|0.4:gobby04
 google-gadgets-for-linux:google-gadgets
+gpodder:
 gpointing-device-settings:
 gq:
 gqview:
@@ -532,9 +533,11 @@ recordmydesktop:
 rep-gtk:
 sawfish:
 shared-mime-info:
+shotwell:
 simple-scan:
 sobby:
 sofia-sip:
+solang:
 sound-theme-freedesktop:
 specto:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals

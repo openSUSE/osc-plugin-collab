@@ -162,6 +162,7 @@ gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
+gpodder:httpls:http://download.berlios.de/gpodder/
 gq:sf:3805|GQ LDAP Client
 # we don't care about stable vs unstable for gqview
 gqview:sf:4050
@@ -274,8 +275,10 @@ pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
+shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 simple-scan:lp:simple-scan
 sobby:httpls:http://releases.0x539.de/sobby/
+solang:httpls:http://mirrors.aixtools.net/sv/solang/
 sofia-sip:sf:143636|sofia-sip
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
