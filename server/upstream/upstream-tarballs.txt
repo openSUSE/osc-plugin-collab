@@ -408,6 +408,7 @@ desktopcouch:lp:desktopcouch
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
 irda-utils:sf:5616|irda-utils
+libbraille:sf:17127|libbraille
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/

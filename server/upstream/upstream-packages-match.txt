@@ -662,6 +662,7 @@ desktopcouch:python-desktopcouch
 flickrapi:python-flickrapi
 gocr:
 irda-utils:irda
+libbraille:
 libdatrie:libdatrie0
 libdv:
 libebml:
