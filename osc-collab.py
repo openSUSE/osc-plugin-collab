@@ -2655,7 +2655,7 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
             show_hint = True
 
         left = '  %s: ' % get_str_repo_arch(repo, arch, show_repos)
-        if build_state[repo][arch]['result'] in ['expansion error', 'broken', 'blocked', 'finished'] and build_state[repo][arch]['details']:
+        if build_state[repo][arch]['result'] in ['unresolved', 'broken', 'blocked', 'finished', 'signing'] and build_state[repo][arch]['details']:
             status = '%s (%s)' % (build_state[repo][arch]['result'], build_state[repo][arch]['details'])
         else:
             status = build_state[repo][arch]['result']
@@ -2777,7 +2777,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
             bs_not_ready = True
 
         # build is happening or will happen soon
-        elif value in ['scheduled', 'building', 'dispatching', 'finished']:
+        elif value in ['scheduled', 'building', 'dispatching', 'finished', 'signing']:
             bs_not_ready = True
 
         # sometimes, the scheduler forgets about a package in 'blocked' state,
@@ -2788,7 +2788,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
 
         # build has failed for an architecture: no need to wait for other
         # architectures to know that there's a problem
-        elif value in ['failed', 'expansion error', 'broken']:
+        elif value in ['failed', 'unresolved', 'broken']:
             do_not_wait_for_bs = True
 
         # 'disabled' => the build service didn't take into account
