@@ -316,6 +316,8 @@ class HermesReader:
         feed = feedparser.parse(url)
 
         for entry in feed['entries']:
+            error_encoded = False
+
             id = self._get_entry_id(entry)
             if id <= self._previous_last_known_id:
                 return True
@@ -323,6 +325,7 @@ class HermesReader:
             try:
                 event = self._parse_entry(id, entry)
             except UnicodeEncodeError, e:
+                error_encoded = True
                 event = None
                 print >> sys.stderr, 'Cannot convert hermes message %d to str: %s' % (id, e)
 
@@ -335,7 +338,8 @@ class HermesReader:
                 not (event.is_package_event() and event.package == '')):
                 # put the id in the tuple so we can sort the list later
                 self._events.append((id, event))
-            else:
+            # in case of UnicodeEncodeError, we already output a message
+            elif not error_encoded:
                 print >> sys.stderr, 'Buggy hermes message %d (%s): "%s".' % (id, entry['updated'], entry['title'])
                 print >> sys.stderr, '----------'
                 print >> sys.stderr, '%s' % entry['summary']
