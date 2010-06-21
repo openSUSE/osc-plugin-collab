@@ -325,7 +325,7 @@ libedit:httpls:http://thrysoee.dk/editline/
 obex-data-server:httpls:http://tadas.dailyda.com/software/
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 udisks:httpls:http://hal.freedesktop.org/releases/
-UPower:httpls:http://upower.freedesktop.org/releases/
+upower:httpls:http://upower.freedesktop.org/releases/
 
 ## X11:Compiz
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/

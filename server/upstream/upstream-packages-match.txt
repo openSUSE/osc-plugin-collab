@@ -602,7 +602,7 @@ libedit:
 obex-data-server:
 openobex:
 udisks:
-UPower:upower
+upower:
 
 
 #### X11:Compiz
