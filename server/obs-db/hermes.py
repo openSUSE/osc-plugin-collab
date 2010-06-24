@@ -298,7 +298,7 @@ class HermesReader:
                 return type(id, title, entry['summary'])
 
         # work around some weird hermes bug
-        if title == 'Notification  arrived!':
+        if title in [ 'Notification  arrived!', 'Notification unknown type arrived!' ]:
             return None
 
         raise HermesException('Cannot get event type from message %d: "%s"' % (id, title))
