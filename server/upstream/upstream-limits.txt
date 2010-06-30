@@ -26,5 +26,5 @@ swfdec-mozilla:no-odd-unstable
 gobby|0.4:max|0.4.90
 
 # For openSUSE 11.3
-cairo:max|1.9
-telepathy-glib:max|0.11
+#cairo:max|1.9
+#telepathy-glib:max|0.11
