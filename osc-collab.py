@@ -1135,6 +1135,7 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
         reserved = self._collab_api.get_reserved_packages((project,))
         reserved_packages = [ reservation.package for reservation in reserved ]
     except self.OscCollabWebError, e:
+        reserved_packages = []
         print >>sys.stderr, e.msg
 
     # get the packages submitted
