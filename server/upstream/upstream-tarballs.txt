@@ -215,7 +215,6 @@ libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|libnjb
 libnl:httpls:http://www.infradead.org/~tgr/libnl/
-libnotify:httpls:http://www.galago-project.org/files/releases/source/libnotify/
 libofx:sf:61170|libofx
 liboil:httpls:http://liboil.freedesktop.org/download/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
@@ -239,7 +238,6 @@ nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
-notification-daemon:httpls:http://www.galago-project.org/files/releases/source/notification-daemon/
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 ntfs-3g:httpls:http://www.tuxera.com/community/ntfs-3g-download/
