@@ -373,7 +373,7 @@ class HermesReader:
             return
 
         for base_url in self._base_urls:
-            feed = feedparser.parse(self.base_url)
+            feed = feedparser.parse(base_url)
             if len(feed['entries']) == 0:
                 continue
 
