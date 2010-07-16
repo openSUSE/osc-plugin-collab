@@ -41,11 +41,11 @@ import sys
 import traceback
 
 import buildservice
-import shell
+import shellutils
 
 
 def main(args):
-    (args, conf) = shell.get_conf(args)
+    (args, options, conf) = shellutils.get_conf(args)
     if not conf:
         return 1
 
@@ -59,7 +59,7 @@ def main(args):
     else:
         package = None
 
-    if not shell.lock_run(conf):
+    if not shellutils.lock_run(conf):
         return 1
 
     retval = 1
@@ -80,7 +80,7 @@ def main(args):
     except Exception, e:
         traceback.print_exc()
 
-    shell.unlock_run(conf)
+    shellutils.unlock_run(conf)
 
     return retval
 
