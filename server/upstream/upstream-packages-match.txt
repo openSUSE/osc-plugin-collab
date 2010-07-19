@@ -136,7 +136,7 @@ devhelp:
 gdl:
 glade3:
 # No package in openSUSE
-#gnome-devel-docs:
+gnome-devel-docs:
 
 ## BINDINGS
 
@@ -690,3 +690,11 @@ wmakerconf:
 xdelta:
 xosd:
 xzgv:
+
+## TODO:
+#dconf:
+#gnome-icon-theme-symbolic:
+#rygel:
+#yelp-xsl:
+#atkmm:
+#librsvgmm:
