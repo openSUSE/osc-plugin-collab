@@ -135,7 +135,6 @@ anjuta:
 devhelp:
 gdl:
 glade3:
-# No package in openSUSE
 gnome-devel-docs:
 
 ## BINDINGS
@@ -234,7 +233,6 @@ gnome-build:
 gnome-color-manager:
 gnome-commander:
 gnome-common:
-gnome-devel-docs:
 gnome-games-extra-data:
 gnome-icon-theme-extras:
 gnome-js-common:
