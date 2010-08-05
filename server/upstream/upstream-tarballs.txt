@@ -290,6 +290,7 @@ telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabb
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
 telepathy-idle:httpls:http://telepathy.freedesktop.org/releases/telepathy-idle/
+telepathy-logger:httpls:http://telepathy.freedesktop.org/releases/telepathy-logger/
 # The 4.x branch: telepathy-mission-control:sf:190214|mission-control
 telepathy-mission-control:httpls:http://telepathy.freedesktop.org/releases/telepathy-mission-control/
 telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/

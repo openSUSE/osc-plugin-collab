@@ -215,6 +215,7 @@ eog-plugins:
 epiphany-extensions:
 evolution-sharp:
 f-spot:
+folks:
 gdk-pixbuf:
 gedit-plugins:
 genius:
@@ -551,6 +552,7 @@ telepathy-gabble:
 telepathy-glib:
 telepathy-haze:
 telepathy-idle:
+telepathy-logger:
 telepathy-mission-control:
 telepathy-python:python-telepathy
 telepathy-salut:
