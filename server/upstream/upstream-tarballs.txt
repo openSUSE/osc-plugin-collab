@@ -166,7 +166,7 @@ gpodder:httpls:http://download.berlios.de/gpodder/
 gq:sf:3805|GQ LDAP Client
 # we don't care about stable vs unstable for gqview
 gqview:sf:4050
-gssdp:httpls:http://www.gupnp.org/sources/gssdp/
+gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
@@ -181,11 +181,11 @@ gtkglext:sf:54333|gtkglext
 gtkimageview:httpls:http://trac.bjourne.webfactional.com/chrome/common/releases/
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gtkpbbuttons:sf:47862|gtkpbbuttons
-gupnp:httpls:http://www.gupnp.org/sources/gupnp/
-gupnp-av:httpls:http://www.gupnp.org/sources/gupnp-av/
-gupnp-igd:httpls:http://www.gupnp.org/sources/gupnp-igd/
-gupnp-tools:httpls:http://www.gupnp.org/sources/gupnp-tools/
-gupnp-ui:httpls:http://www.gupnp.org/sources/gupnp-ui/
+gupnp:httpls:http://gupnp.org/download/
+gupnp-av:httpls:http://gupnp.org/download/
+gupnp-igd:httpls:http://gupnp.org/download/
+gupnp-tools:httpls:http://gupnp.org/download/
+gupnp-ui:httpls:http://gupnp.org/download/
 gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php
 # There's no upstream tarball for gwibber, though
 gwibber:lp:gwibber
