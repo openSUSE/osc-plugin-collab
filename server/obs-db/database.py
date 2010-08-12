@@ -272,7 +272,7 @@ class Patch(Base):
     # Format of tag is: "# PATCH-{FIX|FEATURE}-{OPENSUSE|SLED|UPSTREAM} name-of-file.patch bncb.novell.com_bug_number bgob.gnome.org_bug_number you@example.com -- this patch..."
     # PATCH-NEEDS-REBASE is also a known tag
     # We remove trailing ':' for tags too...
-    re_strip_comment = re.compile('^#[#\s]*([\S]*[^:\s]):?\s*(.*)$')
+    re_strip_comment = re.compile('^#[#\s]*([\S]*[^:\s]):?\s*(.*)$', re.UNICODE)
     # anything that looks like something.diff or something.patch
     re_get_filename = re.compile('^\s*(\S+\.(?:diff|patch))\s*(.*)$')
     # anything that looks like word123 or word#123
