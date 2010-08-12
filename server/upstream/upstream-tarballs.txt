@@ -70,14 +70,14 @@
 Coherence:httpls:http://coherence.beebits.net/download/
 DeviceKit:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
-DeviceKit-power:httpls:http://hal.freedesktop.org/releases/
+DeviceKit-power:httpls:http://upower.freedesktop.org/releases/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
-aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php
+aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
@@ -115,7 +115,7 @@ eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
 exempi:httpls:http://libopenraw.freedesktop.org/download/
-farsight:httpls:http://farsight.freedesktop.org/releases/farsight/
+farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 file-shrimp:google:loolixbodes|file-shrimp
 fyre:httpls:http://releases.navi.cx/fyre/
@@ -169,7 +169,7 @@ gqview:sf:4050
 gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
-gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/gst-plugins-farsight/
+gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/
 gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
@@ -186,7 +186,7 @@ gupnp-av:httpls:http://gupnp.org/download/
 gupnp-igd:httpls:http://gupnp.org/download/
 gupnp-tools:httpls:http://gupnp.org/download/
 gupnp-ui:httpls:http://gupnp.org/download/
-gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php
+gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 # There's no upstream tarball for gwibber, though
 gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
@@ -209,7 +209,7 @@ libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|libiptcdata
-libjingle:httpls:http://farsight.freedesktop.org/releases/libjingle/
+libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
 liblouis:google:liblouis
 libmcs:httpls:http://distfiles.atheme.org/
 libnice:httpls:http://nice.freedesktop.org/releases/
@@ -276,7 +276,7 @@ shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 simple-scan:lp:simple-scan
 sobby:httpls:http://releases.0x539.de/sobby/
-solang:httpls:http://mirrors.aixtools.net/sv/solang/
+solang:httpls:http://projects.gnome.org/solang/download
 sofia-sip:sf:143636|sofia-sip
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
@@ -357,7 +357,7 @@ ding:httpls:http://ftp.tu-chemnitz.de/pub/Local/urz/ding/
 exiv2:httpls:http://www.exiv2.org/download.html
 geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
 gos-wallpapers:upstream:
-gypsy:httpls:http://gypsy.freedesktop.org/gypsy-releases/
+gypsy:httpls:http://gypsy.freedesktop.org/releases/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
 media-player-info:httpls:http://hal.freedesktop.org/releases/
 nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
