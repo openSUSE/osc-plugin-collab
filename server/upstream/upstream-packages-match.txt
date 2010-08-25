@@ -381,6 +381,7 @@ drapes:
 eds-feed:evolution-galago
 eiciel:
 enchant:
+evolution-tray:
 exempi:
 farsight:
 farsight2:
