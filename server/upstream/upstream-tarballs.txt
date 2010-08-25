@@ -202,7 +202,9 @@ icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|inkscape
 intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
-iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
+# Ugly workaround for iso-codes: the ftp is not accessibly from the server :/
+#iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
+iso-codes:httpls:http://translationproject.org/domain/iso_4217.html
 istanbul:httpls:http://live.gnome.org/Istanbul
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
