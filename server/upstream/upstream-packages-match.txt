@@ -698,6 +698,7 @@ libebml:
 libgpod:libgpod4
 libmatroska:
 libplist:
+libvpx:
 mkvtoolnix:
 mtr:
 onboard:
