@@ -20,6 +20,7 @@ gnome-mime-data:
 gnome-vfs:gnome-vfs2
 gnome-vfs-monikers:
 gtk+:gtk2
+gtk+-3:gtk3
 gtk-doc:
 libIDL:libidl
 libart_lgpl:
@@ -37,6 +38,7 @@ brasero:
 bug-buddy:
 cheese:
 dasher:
+dconf:
 deskbar-applet:
 ekiga:
 empathy:
@@ -62,6 +64,7 @@ gnome-desktop:
 gnome-doc-utils:
 gnome-games:
 gnome-icon-theme:
+gnome-icon-theme-symbolic:
 gnome-keyring:
 gnome-mag:
 gnome-media:
@@ -123,6 +126,7 @@ vinagre:
 vino:
 vte:
 yelp:
+yelp-xsl:
 zenity:
 
 ## ADMIN
@@ -140,6 +144,7 @@ gnome-devel-docs:
 ## BINDINGS
 
 # C++
+atkmm:
 gconfmm:
 glibmm:glibmm2
 gnome-vfsmm:
@@ -191,6 +196,7 @@ pygtk:python-gtk
 pyorbit:python-orbit
 
 ## EXTRAS
+ModemManager:
 NetworkManager:
 #NetworkManager-openconnect:
 NetworkManager-openvpn:
@@ -292,6 +298,7 @@ libgnomedb-3:libgnomedb3
 libgsf:
 libgtkhtml:
 libgtksourceviewmm:
+libpeas:
 libsigc++-1:libsigc++12
 libslab:
 libunique:
@@ -312,6 +319,7 @@ network-manager-applet:NetworkManager-gnome
 online-desktop:
 opal:
 ORBit:orbit
+pdfmod:
 # No package in openSUSE
 #pitivi:
 planner:
@@ -335,6 +343,7 @@ PolicyKit-gnome:
 UPnP-Inspector:upnp-inspector
 abiword:
 abiword-docs:
+alarm-clock-applet:
 aqbanking:
 asio:
 avahi:
@@ -365,8 +374,10 @@ conglomerate:
 contact-lookup-applet:
 cups-pk-helper:
 decibel-audio-player:
+deja-dup:
 dmlangsel:
 dopi:
+drapes:
 eds-feed:evolution-galago
 eiciel:
 enchant:
@@ -381,10 +392,12 @@ galago-daemon:
 galago-gtk-sharp:
 galago-sharp:
 gbrainy:
+gcstar:
 gdata.py:python-gdata
 gdesklets:gDesklets
 gdome2:
 geany:
+geany-plugins:
 gegl:
 gftp:
 ggz-client-libs:
@@ -415,6 +428,7 @@ gnucash-docs:
 gobby:
 gobby|0.4:gobby04
 google-gadgets-for-linux:google-gadgets
+gpa:
 gpodder:
 gpointing-device-settings:
 gq:
@@ -424,6 +438,7 @@ gssdp:
 gstreamer:gstreamer-0_10-doc
 gst-plugins-bad:gstreamer-0_10-plugins-bad
 gst-plugins-farsight:gstreamer-0_10-plugins-farsight
+gst-plugins-gl:gstreamer-0_10-plugins-gl
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gsynaptics:
@@ -431,12 +446,14 @@ gtg:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
 gtk-recordmydesktop:gtk-recordMyDesktop
-gtkimageview:
 gtkglext:
+gtkhotkey:
+gtkimageview:
 gtkmathview:
 gtkpbbuttons:
 gupnp:
 gupnp-av:
+gupnp-dlna:
 gupnp-igd:
 gupnp-tools:
 gupnp-ui:
@@ -457,14 +474,18 @@ libesmtp:
 libflashsupport:
 libgalago:
 libgalago-gtk:
+libgexiv2:
 libggz:ggz
 libgnomesu:
+libgrss:
 libgsasl:
 libinfinity:
 libiptcdata:
 libjingle:
 liblouis:
+liblouis:python-louis
 libmcs:
+libmodman:
 libnice:
 libnjb:
 libnl:
@@ -483,6 +504,7 @@ libthai:
 libxklavier:
 liferea:
 link-grammar:
+mail-notification:
 metatheme-Sonar:gtk2-metatheme-sonar
 metatheme-gilouche:gtk2-metatheme-gilouche
 # This is the old mission-control. Not needed anymore (unless we want to package the 4.x branch)
@@ -492,6 +514,7 @@ monsoon:
 mozilla-bonobo:
 nautilus-search-tool:
 net6:
+netspeed_applet:gnome-netspeed-applet
 nimbus:gtk2-metatheme-nimbus
 njb-sharp:
 notification-daemon:
@@ -510,10 +533,13 @@ pavumeter:
 pidgin:
 pidgin-facebookchat:
 pidgin-guifications:
+pidgin-otr:
 pidgin-sipe:
 pino:
 pixman:
 pkg-config:
+polkit:
+polkit-gnome:
 poppler:
 poppler-data:
 procmeter3:procmeter
@@ -562,7 +588,7 @@ transmission:
 tsclient:
 twitux:
 vala:
-valencia:gedit-plugin-valencia
+valencia:
 vobject:
 webkit:libwebkit
 xchat:
@@ -639,6 +665,7 @@ exiv2:
 geoclue:
 gos-wallpapers:
 gypsy:
+libgadu:
 libspectre:
 media-player-info:
 nspluginwrapper:
@@ -647,6 +674,7 @@ rasqal:
 redland:
 shared-color-profiles:
 shared-color-targets:
+shared-desktop-ontologies:
 update-desktop-files:
 xdg-user-dirs:
 xdg-utils:
@@ -660,6 +688,7 @@ brltty:
 csmash:
 desktopcouch:python-desktopcouch
 flickrapi:python-flickrapi
+glew:
 gocr:
 irda-utils:irda
 libbraille:
@@ -692,9 +721,5 @@ xosd:
 xzgv:
 
 ## TODO:
-#dconf:
-#gnome-icon-theme-symbolic:
 #rygel:
-#yelp-xsl:
-#atkmm:
 #librsvgmm:

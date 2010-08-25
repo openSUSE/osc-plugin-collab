@@ -77,6 +77,7 @@ QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&i
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
+alarm-clock-applet:lp:alarm-clock
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
@@ -110,7 +111,9 @@ conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
+deja-dup:lp:deja-dup
 dmlangsel:google:loolixbodes|dmlangsel
+drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
@@ -125,10 +128,12 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://live.gnome.org/gbrainy
+gcstar:httpls:http://download.gna.org/gcstar/
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://www.gdesklets.de/
 gdome2:httpls:http://gdome2.cs.unibo.it/tarball/
 geany:httpls:http://download.geany.org/
+geany-plugins:httpls:http://plugins.geany.org/geany-plugins/
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 gftp:httpls:http://gftp.seul.org/
 ggreeter:upstream:
@@ -170,6 +175,7 @@ gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/
+gst-plugins-gl:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-gl/
 gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
@@ -178,11 +184,13 @@ gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtg:lp:gtg
 gtk2-themes:upstream:
 gtkglext:sf:54333|gtkglext
+gtkhotkey:lp:gtkhotkey
 gtkimageview:httpls:http://trac.bjourne.webfactional.com/chrome/common/releases/
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gtkpbbuttons:sf:47862|gtkpbbuttons
 gupnp:httpls:http://gupnp.org/download/
 gupnp-av:httpls:http://gupnp.org/download/
+gupnp-dlna:httpls:http://gupnp.org/download/
 gupnp-igd:httpls:http://gupnp.org/download/
 gupnp-tools:httpls:http://gupnp.org/download/
 gupnp-ui:httpls:http://gupnp.org/download/
@@ -204,7 +212,9 @@ libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
+libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
 libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
@@ -212,6 +222,7 @@ libiptcdata:sf:130582|libiptcdata
 libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
 liblouis:google:liblouis
 libmcs:httpls:http://distfiles.atheme.org/
+libmodman:google:libmodman
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|libnjb
 libnl:httpls:http://www.infradead.org/~tgr/libnl/
@@ -228,6 +239,7 @@ libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libxklavier:sf:319|libxklavier
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
+mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 metacity-themes:upstream:
 metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
 metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
@@ -254,10 +266,13 @@ pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|Pidgin
 pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
+pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe
 pino:google:pino-twitter|pino
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
+polkit:httpls:http://hal.freedesktop.org/releases/
+polkit-gnome:httpls:http://hal.freedesktop.org/releases/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 poppler-data:httpls:http://poppler.freedesktop.org/
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
@@ -274,7 +289,8 @@ rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
-simple-scan:lp:simple-scan
+# Moved to ftp.gnome.org
+#simple-scan:lp:simple-scan
 sobby:httpls:http://releases.0x539.de/sobby/
 solang:httpls:http://projects.gnome.org/solang/download
 sofia-sip:sf:143636|sofia-sip
@@ -358,6 +374,7 @@ exiv2:httpls:http://www.exiv2.org/download.html
 geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
 gos-wallpapers:upstream:
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
+libgadu:httpls:http://toxygen.net/libgadu/files/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
 media-player-info:httpls:http://hal.freedesktop.org/releases/
 nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
@@ -366,6 +383,7 @@ rasqal:httpls:http://download.librdf.org/source/
 redland:httpls:http://download.librdf.org/source/
 shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
 shared-color-targets:httpls:http://people.freedesktop.org/~hughsient/releases/
+shared-desktop-ontologies:sf:254113|shared-desktop-ontologies
 update-desktop-files:upstream:
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
@@ -383,11 +401,13 @@ glipper:sf:167085|glipper
 gnome-color-chooser:sf:211146|gnome-color-chooser
 gnome-colors:google:gnome-colors
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
+gpa:httpls:http://wald.intevation.org/frs/?group_id=13
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
 gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
 last-exit:httpls:http://lastexit-player.org/releases/
 librep:sf:580|librep
+netspeed_applet:lp:netspeed
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 pidgin-guifications:trac:http://plugins.guifications.org/trac/downloads
 recordmydesktop:sf:172357|recordmydesktop
@@ -405,6 +425,7 @@ brltty:httpls:http://mielke.cc/brltty/releases/
 csmash:sf:4179|CannonSmash
 desktopcouch:lp:desktopcouch
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
+glew:sf:67586|glew
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
 irda-utils:sf:5616|irda-utils
 libbraille:sf:17127|libbraille
