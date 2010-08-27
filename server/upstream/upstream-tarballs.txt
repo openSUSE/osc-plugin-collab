@@ -122,6 +122,7 @@ exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 file-shrimp:google:loolixbodes|file-shrimp
+fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 fyre:httpls:http://releases.navi.cx/fyre/
 g-wrap:httpls:http://download.savannah.gnu.org/releases/g-wrap/
 gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-galago/
