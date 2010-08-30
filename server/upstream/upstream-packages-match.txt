@@ -425,6 +425,7 @@ gnome-mount:
 gnome-packagekit:
 gnome-presence-applet:
 gnome-zeitgeist:
+gnonlin:
 gnucash:
 gnucash-docs:
 gobby:
