@@ -232,6 +232,7 @@ gitg:
 gjs:
 glade:
 glib-1:glib
+glib-networking:
 glom:
 gnome-audio:
 gnome-blog:
