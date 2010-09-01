@@ -302,7 +302,9 @@ libgtksourceviewmm:
 libpeas:
 libsigc++-1:libsigc++12
 libslab:
-libunique:
+libunique-1:libunique
+# libunique is now GTK+ 3-based, but this should not be needed since there's GtkApplication in GTK+ 3
+#libunique:
 libxml:
 loudmouth:
 meld:
