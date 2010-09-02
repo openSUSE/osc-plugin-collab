@@ -215,6 +215,7 @@ ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libatasmart:httpls:http://0pointer.de/public/
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
+libdmapsharing:httpls:http://flyn.org/projects/libdmapsharing/download.html
 libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
 libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
