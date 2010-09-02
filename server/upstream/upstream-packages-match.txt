@@ -114,6 +114,7 @@ metacity:
 mousetweaks:
 nautilus:
 orca:
+rygel:
 pygtksourceview:python-gtksourceview
 seahorse-plugins:
 seahorse:
@@ -364,6 +365,7 @@ cairo:
 cairomm:
 cairo-clock:
 check:
+cherrytree:
 chmsee:
 claws-mail:
 claws-mail-extra-plugins:
@@ -416,6 +418,7 @@ glabels:
 glipper:
 glitz:
 gmetadom:
+gnac:
 gnokii:
 gnome-activity-journal:
 gnome-color-chooser:
@@ -590,6 +593,7 @@ telepathy-python:python-telepathy
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
+transmageddon:
 transmission:
 tsclient:
 twitux:
@@ -728,5 +732,4 @@ xosd:
 xzgv:
 
 ## TODO:
-#rygel:
 #librsvgmm:
