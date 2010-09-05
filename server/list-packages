@@ -38,6 +38,7 @@
 import os
 import sys
 
+import cStringIO as StringIO
 import errno
 import optparse
 import sqlite3
@@ -57,16 +58,49 @@ from osc import oscerr
 
 conf_initialized = False
 
+#FIXME: should probably live in util, and we'd import it
+def _copy_stderr_without_ssl(buffer):
+    """ Copy the content of a string io to stderr, except for the SSL warning. """
+    buffer.seek(0)
+    ignore_empty = False
+    while True:
+        line = buffer.readline()
+        if len(line) == 0:
+            break
+        if line == 'WARNING: SSL certificate checks disabled. Connection is insecure!\n':
+            ignore_empty = True
+            continue
+        if line == '\n' and ignore_empty:
+            ignore_empty = False
+            continue
+        ignore_empty = False
+        print >>sys.stderr, line[:-1]
+
+
 def osc_conf_init():
     global conf_initialized
 
     if not conf_initialized:
+        # Workaround to remove warning coming from osc.conf when we don't use
+        # SSL checks
+        buffer = StringIO.StringIO()
+        oldstderr = sys.stderr
+        sys.stderr = buffer
+
         try:
             conf.get_config()
             conf_initialized = True
         except oscerr.NoConfigfile, e:
+            sys.stderr = oldstderr
+            buffer.close()
             print >>sys.stderr, e.msg
             sys.exit(1)
+
+        # Workaround to remove warning coming from osc.conf when we don't use
+        # SSL checks
+        sys.stderr = oldstderr
+        _copy_stderr_without_ssl(buffer)
+        buffer.close()
 
 
 def get_db_conn(filename):
