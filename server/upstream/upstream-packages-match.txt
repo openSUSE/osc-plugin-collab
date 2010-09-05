@@ -515,6 +515,7 @@ libxklavier:
 liferea:
 link-grammar:
 mail-notification:
+memphis:
 metatheme-Sonar:gtk2-metatheme-sonar
 metatheme-gilouche:gtk2-metatheme-gilouche
 # This is the old mission-control. Not needed anymore (unless we want to package the 4.x branch)

@@ -248,6 +248,10 @@ libxklavier:sf:319|libxklavier
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
+# We use a mirror for memphis because the real upstream page doesn't work with
+# our parser
+#memphis:httpls:http://trac.openstreetmap.ch/trac/memphis/downloads
+memphis:httpls:http://wenner.ch/files/public/mirror/memphis/
 metacity-themes:upstream:
 metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
 metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
