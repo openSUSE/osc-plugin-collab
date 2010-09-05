@@ -176,6 +176,8 @@ class Config:
         try:
             oscconf.get_config(override_apiurl = self.apiurl)
         except oscerr.NoConfigfile, e:
+            sys.stderr = oldstderr
+            buffer.close()
             raise ConfigException(e)
 
         # Workaround to remove warning coming from osc.conf when we don't use
