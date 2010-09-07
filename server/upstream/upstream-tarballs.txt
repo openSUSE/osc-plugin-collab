@@ -68,6 +68,7 @@
 ## GNOME:Factory
 
 Coherence:httpls:http://coherence.beebits.net/download/
+ConsoleKit:httpls:http://www.freedesktop.org/software/ConsoleKit/dist/
 DeviceKit:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-power:httpls:http://upower.freedesktop.org/releases/

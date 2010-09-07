@@ -338,6 +338,7 @@ xdg-user-dirs-gtk:
 
 ## Non ftp.gnome.org stuff
 Coherence:python-coherence
+ConsoleKit:
 DeviceKit:
 DeviceKit-disks:
 DeviceKit-power:
