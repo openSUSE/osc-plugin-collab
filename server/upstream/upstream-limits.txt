@@ -16,9 +16,7 @@ libflashsupport:max|2000
 libofx:max|0.10
 
 # we don't want unstable versions of the following modules
-dbus:no-odd-unstable
 gq:no-odd-unstable
-liferea:no-odd-unstable
 swfdec:no-odd-unstable
 swfdec-mozilla:no-odd-unstable
 
@@ -28,3 +26,10 @@ gobby|0.4:max|0.4.90
 # For openSUSE 11.3
 #cairo:max|1.9
 #telepathy-glib:max|0.11
+
+# At least for openSUSE 11.4:
+dbus:no-odd-unstable
+libdmapsharing:no-odd-unstable
+liferea:no-odd-unstable
+# 0.20 is likely to be released in march, too late for 11.4
+pixman:no-odd-unstable
