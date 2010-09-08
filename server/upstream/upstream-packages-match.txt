@@ -705,10 +705,10 @@ glew:
 gocr:
 irda-utils:irda
 libbraille:
-libdatrie:libdatrie0
+libdatrie:
 libdv:
 libebml:
-libgpod:libgpod4
+libgpod:
 libmatroska:
 libplist:
 libvpx:
