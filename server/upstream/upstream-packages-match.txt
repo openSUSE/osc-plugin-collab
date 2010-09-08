@@ -59,6 +59,7 @@ gnome-applets:
 gnome-backgrounds:
 gnome-control-center:
 gnome-desktop:
+#gnome-desktop-3:
 # No package in openSUSE
 #gnome-desktop-sharp:
 gnome-doc-utils:
