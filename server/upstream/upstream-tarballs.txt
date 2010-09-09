@@ -80,6 +80,7 @@ abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
 alarm-clock-applet:lp:alarm-clock
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
+arista:httpls:http://www.transcoder.org/downloads/
 asio:sf:122478|asio
 at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
@@ -278,6 +279,7 @@ papyon:httpls:http://telepathy.freedesktop.org/releases/papyon/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|Pidgin
+pidgin-embedded:google:pidgin-embedded|pidgin-embedded
 pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
 pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe

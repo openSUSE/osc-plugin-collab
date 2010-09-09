@@ -351,6 +351,7 @@ abiword:
 abiword-docs:
 alarm-clock-applet:
 aqbanking:
+arista:
 asio:
 avahi:
 avahi:avahi-glib2
@@ -544,6 +545,7 @@ papyon:
 pavucontrol:
 pavumeter:
 pidgin:
+pidgin-embeddedvideo:
 pidgin-facebookchat:
 pidgin-guifications:
 pidgin-otr:
