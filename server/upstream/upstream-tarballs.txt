@@ -279,7 +279,7 @@ papyon:httpls:http://telepathy.freedesktop.org/releases/papyon/
 pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pidgin:sf:235|Pidgin
-pidgin-embedded:google:pidgin-embedded|pidgin-embedded
+pidgin-embeddedvideo:google:pidgin-embeddedvideo|pidgin-embeddedvideo
 pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
 pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe
