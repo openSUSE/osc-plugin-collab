@@ -568,12 +568,17 @@ class OscCollabObs:
 
         result = _collab_change_request_state(cls.apiurl, id, new_state, message)
 
-        root = ET.fromstring(result)
-        if not 'code' in root.keys() or root.get('code') != 'ok':
-            print >>sys.stderr, 'Cannot accept request %s: %s' % (id, result)
-            return False
+        try:
+            # before osc 0.129, we had the full XML
+            root = ET.fromstring(result)
+            if not 'code' in root.keys() or root.get('code') != 'ok':
+                print >>sys.stderr, 'Cannot accept request %s: %s' % (id, result)
+                return False
 
-        return True
+            return True
+        except SyntaxError:
+            # starting with osc 0.129, we just have the result code
+            return result == 'ok'
 
 
     @classmethod
