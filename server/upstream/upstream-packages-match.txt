@@ -560,7 +560,9 @@ poppler-data:
 procmeter3:procmeter
 psiconv:
 pulseaudio:
-pycairo:python-cairo
+# Python 3 bindings for cairo
+#pycairo:
+py2cairo:python-cairo
 pymsn:python-msn
 pygoocanvas:python-goocanvas
 pygtkglext:python-gtkglext
@@ -703,6 +705,7 @@ apache-couchdb:couchdb
 brltty:
 csmash:
 desktopcouch:python-desktopcouch
+djvulibre:
 flickrapi:python-flickrapi
 glew:
 gocr:

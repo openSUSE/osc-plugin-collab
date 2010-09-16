@@ -202,7 +202,6 @@ gupnp-igd:httpls:http://gupnp.org/download/
 gupnp-tools:httpls:http://gupnp.org/download/
 gupnp-ui:httpls:http://gupnp.org/download/
 gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
-# There's no upstream tarball for gwibber, though
 gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
@@ -250,10 +249,7 @@ libxklavier:sf:319|libxklavier
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
-# We use a mirror for memphis because the real upstream page doesn't work with
-# our parser
-#memphis:httpls:http://trac.openstreetmap.ch/trac/memphis/downloads
-memphis:httpls:http://wenner.ch/files/public/mirror/memphis/
+memphis:trac:http://trac.openstreetmap.ch/trac/memphis/downloads
 metacity-themes:upstream:
 metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
 metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
@@ -295,6 +291,7 @@ psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 #FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
 pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+py2cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygtkglext:sf:54333|pygtkglext
 pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 python-xlib:sf:10350|python-xlib
@@ -440,6 +437,7 @@ apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 brltty:httpls:http://mielke.cc/brltty/releases/
 csmash:sf:4179|CannonSmash
 desktopcouch:lp:desktopcouch
+djvulibre:sf:32953|DjVuLibre
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 glew:sf:67586|glew
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
