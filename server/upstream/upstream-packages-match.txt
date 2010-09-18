@@ -560,8 +560,7 @@ poppler-data:
 procmeter3:procmeter
 psiconv:
 pulseaudio:
-# Python 3 bindings for cairo
-#pycairo:
+pycairo:python3-cairo
 py2cairo:python-cairo
 pymsn:python-msn
 pygoocanvas:python-goocanvas
