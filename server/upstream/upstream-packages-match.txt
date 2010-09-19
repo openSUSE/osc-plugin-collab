@@ -700,15 +700,22 @@ xesam-tools:
 
 #### Stuff from various other places:
 CouchDB:python-couchdb
+LibRaw:libraw
 apache-couchdb:couchdb
 brltty:
 csmash:
 desktopcouch:python-desktopcouch
+diffutils:
 djvulibre:
+ed:
 flickrapi:python-flickrapi
 glew:
 gocr:
+gonvert:
+gurlchecker:
+gzip:
 irda-utils:irda
+iwatch:
 libbraille:
 libdatrie:
 libdv:
@@ -717,11 +724,15 @@ libgpod:
 libmatroska:
 libplist:
 libvpx:
+m4:
 mkvtoolnix:
 mtr:
+neon:
 onboard:
 orc:
 pavuk:
+pcre:
+psmisc:
 pyclutter:python-clutter
 pyclutter-gst:python-clutter-gst
 pyclutter-gtk:python-clutter-gtk
@@ -730,14 +741,17 @@ pysmbc:python-smbc
 python-distutils-extra:
 python-virtkey:
 qiv:
+rlwrap:
 schroedinger:
 speech-dispatcher:
 traffic-vis:
 usbview:
 wmakerconf:
+x11vnc:
 xdelta:
 xosd:
 xzgv:
+zlib:
 
 ## TODO:
 #librsvgmm:

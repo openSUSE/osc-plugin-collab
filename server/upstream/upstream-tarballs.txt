@@ -433,15 +433,22 @@ tangerine:lp:tangerine
 
 #### Stuff from various other places:
 CouchDB:httpls:http://pypi.python.org/pypi/CouchDB
+LibRaw:httpls:http://www.libraw.org/data/
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 brltty:httpls:http://mielke.cc/brltty/releases/
 csmash:sf:4179|CannonSmash
 desktopcouch:lp:desktopcouch
+diffutils:httpls:http://ftp.gnu.org/gnu/diffutils/
 djvulibre:sf:32953|DjVuLibre
+ed:httpls:http://ftp.gnu.org/gnu/ed/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 glew:sf:67586|glew
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
+gonvert:httpls:http://www.unihedron.com/projects/gonvert/downloads/
+gurlchecker:httpls:http://labs.libre-entreprise.org/frs/?group_id=7
+gzip:httpls:http://ftp.gnu.org/gnu/gzip/
 irda-utils:sf:5616|irda-utils
+iwatch:sf:174218|iwatch
 libbraille:sf:17127|libbraille
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libdv:sf:4393|libdv
@@ -450,11 +457,15 @@ libgpod:sf:67873|libgpod
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 libvpx:google:webm|libvpx
+m4:httpls:http://ftp.gnu.org/gnu/m4/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
+neon:httpls:http://www.webdav.org/neon/
 onboard:lp:onboard
 orc:httpls:http://code.entropywave.com/download/orc/
 pavuk:sf:81012|pavuk
+pcre:ftpls:ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+psmisc:sf:15273|psmisc
 pyclutter:subdirhttpls:http://clutter-project.org/sources/pyclutter/
 pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
 pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
@@ -463,12 +474,15 @@ pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-distutils-extra:lp:python-distutils-extra
 python-virtkey:lp:virtkey
 qiv:httpls:http://spiegl.de/qiv/download/
+rlwrap:httpls:http://utopia.knoware.nl/~hlub/rlwrap/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 usbview:httpls:http://www.kroah.com/linux-usb/
 wmakerconf:sf:196469|wmakerconf
+x11vnc:sf:32584|x11vnc
 # FIXME: tarball names are not standard
 xdelta:google:xdelta|xdelta
 xosd:sf:124390|libxosd
 xzgv:sf:203093|xzgv
+zlib:httpls:http://www.zlib.net/
