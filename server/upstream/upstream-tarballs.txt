@@ -434,6 +434,7 @@ tangerine:lp:tangerine
 #### Stuff from various other places:
 CouchDB:httpls:http://pypi.python.org/pypi/CouchDB
 LibRaw:httpls:http://www.libraw.org/data/
+acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 brltty:httpls:http://mielke.cc/brltty/releases/
 csmash:sf:4179|CannonSmash

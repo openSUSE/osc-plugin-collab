@@ -701,6 +701,7 @@ xesam-tools:
 #### Stuff from various other places:
 CouchDB:python-couchdb
 LibRaw:libraw
+acpid:
 apache-couchdb:couchdb
 brltty:
 csmash:
