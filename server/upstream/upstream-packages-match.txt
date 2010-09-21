@@ -607,6 +607,7 @@ tsclient:
 twitux:
 vala:
 valencia:
+vboxgtk:
 vobject:
 webkit:libwebkit
 xchat:
