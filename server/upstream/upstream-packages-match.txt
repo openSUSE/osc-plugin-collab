@@ -453,6 +453,7 @@ gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-gl:gstreamer-0_10-plugins-gl
 gst-plugins-ugly:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
+gst-rtsp:
 gsynaptics:
 gtg:
 gtk-engines-cleanice:gtk2-engine-cleanice
