@@ -325,8 +325,7 @@ online-desktop:
 opal:
 ORBit:orbit
 pdfmod:
-# No package in openSUSE
-#pitivi:
+pitivi:
 planner:
 ptlib:libpt2
 pyatspi:python-atspi
