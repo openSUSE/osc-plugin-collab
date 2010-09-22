@@ -463,6 +463,7 @@ gtkhotkey:
 gtkimageview:
 gtkmathview:
 gtkpbbuttons:
+gtkpod:
 gupnp:
 gupnp-av:
 gupnp-dlna:
@@ -532,6 +533,7 @@ netspeed_applet:gnome-netspeed-applet
 nimbus:gtk2-metatheme-nimbus
 njb-sharp:
 notification-daemon:
+notify-osd:
 notify-python:python-notify
 nss-mdns:
 ntfs-3g:
