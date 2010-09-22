@@ -313,6 +313,7 @@ meld:
 memprof:
 mergeant:
 muine:
+murrine:gtk2-engine-murrine
 mutter:
 nautilus-cd-burner:
 nautilus-open-terminal:
