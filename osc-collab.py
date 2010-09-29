@@ -2679,6 +2679,7 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
 
 def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, verbose_error):
     time = self.OscCollabImport.m_import('time')
+    httplib = self.OscCollabImport.m_import('httplib')
 
     try:
         results = show_results_meta(apiurl, project, package=package)
@@ -2690,9 +2691,9 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
 
         # reset the error counter
         error_counter = 0
-    except urllib2.HTTPError, e:
+    except (urllib2.HTTPError, httplib.BadStatusLine), e:
         if verbose_error:
-            print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e.msg
+            print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e
         error_counter += 1
         return (True, False, error_counter, state)
 
@@ -2838,9 +2839,9 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
                 rebuild(apiurl, project, package, repo, arch)
                 # reset the error counter
                 error_counter = 0
-            except urllib2.HTTPError, e:
+            except (urllib2.HTTPError, httplib.BadStatusLine), e:
                 if verbose_error:
-                    print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e.msg)
+                    print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e)
                 error_counter += 1
 
         state[repo][arch]['scheduler'] = scheduler_active
