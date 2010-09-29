@@ -31,5 +31,6 @@ gobby|0.4:max|0.4.90
 dbus:no-odd-unstable
 libdmapsharing:no-odd-unstable
 liferea:no-odd-unstable
-# 0.20 is likely to be released in march, too late for 11.4
+# Modules that follow a six-months cycle, and will be released in march, too late for 11.4
 pixman:no-odd-unstable
+telepathy-glib:no-odd-unstable
