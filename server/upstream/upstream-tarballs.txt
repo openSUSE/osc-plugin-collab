@@ -338,6 +338,7 @@ twitux:sf:198704|twitux
 valencia:subdirhttpls:http://yorba.org/download/valencia/
 vboxgtk:sf:263334|vboxgtk
 vobject:httpls:http://vobject.skyhouseconsulting.com/
+x-tile:httpls:http://www.giuspen.com/software/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
 yast2-control-center-gnome:upstream:

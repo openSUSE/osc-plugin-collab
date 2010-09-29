@@ -612,6 +612,7 @@ valencia:
 vboxgtk:
 vobject:
 webkit:libwebkit
+x-tile:
 xchat:
 xchat-gnome:
 xsane:
