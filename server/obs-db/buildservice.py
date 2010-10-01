@@ -425,7 +425,11 @@ class ObsCheckout:
         if not os.path.exists(path):
             return None
 
-        hash = hashlib.new('md5')
+        if algo not in [ 'md5' ]:
+            print >>sys.stderr, 'Internal error: _get_hash_from_file called with unknown hash algorithm: %s' % algo
+            return None
+
+        hash = hashlib.new(algo)
         file = open(path, 'rb')
         while True:
             data = file.read(32768)
