@@ -32,5 +32,8 @@ dbus:no-odd-unstable
 libdmapsharing:no-odd-unstable
 liferea:no-odd-unstable
 # Modules that follow a six-months cycle, and will be released in march, too late for 11.4
+folks:no-odd-unstable
 pixman:no-odd-unstable
 telepathy-glib:no-odd-unstable
+# no-odd-unstable can't work since it's missing a leading 0
+deja-dup:max|17.0
