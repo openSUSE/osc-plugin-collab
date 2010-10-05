@@ -456,6 +456,7 @@ gzip:httpls:http://ftp.gnu.org/gnu/gzip/
 irda-utils:sf:5616|irda-utils
 iwatch:sf:174218|iwatch
 libbraille:sf:17127|libbraille
+libdaemon:httpls:http://0pointer.de/lennart/projects/libdaemon/
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/

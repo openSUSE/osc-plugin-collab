@@ -723,6 +723,7 @@ gzip:
 irda-utils:irda
 iwatch:
 libbraille:
+libdaemon:
 libdatrie:
 libdv:
 libebml:
