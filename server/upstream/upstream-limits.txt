@@ -32,6 +32,7 @@ dbus:no-odd-unstable
 libdmapsharing:no-odd-unstable
 liferea:no-odd-unstable
 # Modules that follow a six-months cycle, and will be released in march, too late for 11.4
+clutter:no-odd-unstable
 folks:no-odd-unstable
 pixman:no-odd-unstable
 telepathy-glib:no-odd-unstable
