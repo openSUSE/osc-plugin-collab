@@ -120,6 +120,7 @@ drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
+evolution-rss:httpls:http://gnome.eu.org/evo/index.php/Evolution_RSS_Reader_Plugin
 evolution-tray:httpls:http://gnome.eu.org/evo/index.php/Evolution_Tray
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/

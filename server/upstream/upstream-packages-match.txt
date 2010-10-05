@@ -389,6 +389,7 @@ drapes:
 eds-feed:evolution-galago
 eiciel:
 enchant:
+evolution-rss:
 evolution-tray:
 exempi:
 farsight:
