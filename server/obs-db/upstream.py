@@ -314,11 +314,23 @@ class UpstreamDb:
 
         file.close()
 
-        # Remove data that as removed in the source file
+        # Remove data that was removed in the source file
         if len(olddata) > 0:
             ids = [ id for (id, version, url) in olddata.values() ]
-            where = ' OR '.join([ 'id = ?' for i in range(len(ids)) ])
-            self.cursor.execute('''DELETE FROM upstream WHERE %s;''' % where, ids)
+            # Delete by group of 50, since it once had to remove ~1800 items
+            # and it didn't work fine
+            chunk_size = 50
+            ids_len = len(ids)
+            for index in range(ids_len / chunk_size):
+                chunk_ids = ids[index * chunk_size : (index + 1) * chunk_size]
+                where = ' OR '.join([ 'id = ?' for i in range(len(chunk_ids)) ])
+                self.cursor.execute('''DELETE FROM upstream WHERE %s;''' % where, chunk_ids)
+            remainder = ids_len % chunk_size
+            if remainder > 0:
+                chunk_ids = ids[- remainder:]
+                where = ' OR '.join([ 'id = ?' for i in range(len(chunk_ids)) ])
+                self.cursor.execute('''DELETE FROM upstream WHERE %s;''' % where, chunk_ids)
+
             self._removed_upstream[branch] = olddata.keys()
         else:
             self._removed_upstream[branch] = []
