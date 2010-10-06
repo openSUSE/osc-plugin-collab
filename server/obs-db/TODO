@@ -1,3 +1,7 @@
+hermes:
+ + when there's a commit for a package, we should create a fake commit event
+   for all packages linking to this one, so that they get updated too.
+
 buildservice:
  + if we queue something twice, then we will really do it twice. We should have
    a way to queue, and then strip the useless elements to minimize data.
@@ -12,6 +16,10 @@ database:
  + only do one update call if there was a commit and meta change for a package
  + provide the API needed by infoxml so that it doesn't need to do any SQL
    query?
+
+upstream:
+ + add a removed table: right now, obs-upstream-attributes has no way to know
+   what upstream metadata got removed, which might result in stale attributes.
 
 general:
 !+ make it possible to queue tasks for a next run. Examples:
