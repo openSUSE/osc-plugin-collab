@@ -395,7 +395,7 @@ gos-wallpapers:upstream:
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
 libgadu:httpls:http://toxygen.net/libgadu/files/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
-media-player-info:httpls:http://hal.freedesktop.org/releases/
+media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
 nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
 raptor:httpls:http://download.librdf.org/source/
 rasqal:httpls:http://download.librdf.org/source/
