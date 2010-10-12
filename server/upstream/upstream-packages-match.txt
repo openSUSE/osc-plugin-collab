@@ -243,6 +243,7 @@ gnome-build:
 gnome-color-manager:
 gnome-commander:
 gnome-common:
+gnome-dvb-daemon:
 gnome-games-extra-data:
 gnome-icon-theme-extras:
 gnome-js-common:
