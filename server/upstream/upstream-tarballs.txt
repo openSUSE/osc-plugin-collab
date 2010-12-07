@@ -72,6 +72,7 @@ ConsoleKit:httpls:http://www.freedesktop.org/software/ConsoleKit/dist/
 DeviceKit:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-disks:httpls:http://hal.freedesktop.org/releases/
 DeviceKit-power:httpls:http://upower.freedesktop.org/releases/
+NetworkManager-strongswan:httpls:http://download.strongswan.org/NetworkManager/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3

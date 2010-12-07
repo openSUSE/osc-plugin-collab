@@ -344,6 +344,7 @@ ConsoleKit:
 DeviceKit:
 DeviceKit-disks:
 DeviceKit-power:
+NetworkManager-strongswan:
 QtCurve-Gtk2:qtcurve-gtk2
 PackageKit:
 PolicyKit-gnome:
