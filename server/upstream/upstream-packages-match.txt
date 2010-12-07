@@ -578,6 +578,7 @@ pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
 rarian:
 raw-thumbnailer:
+rednotebook:
 recordmydesktop:
 rep-gtk:
 sawfish:
@@ -612,6 +613,7 @@ transmageddon:
 transmission:
 tsclient:
 twitux:
+uget:
 vala:
 valencia:
 vboxgtk:

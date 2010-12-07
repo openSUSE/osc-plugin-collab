@@ -306,6 +306,7 @@ pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
+rednotebook:sf:238077
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 # Moved to ftp.gnome.org
@@ -339,6 +340,7 @@ transmageddon:httpls:http://www.linuxrising.org/transmageddon/files/
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
 twitux:sf:198704|twitux
+uget:sf:72252|Uget (stable)
 valencia:subdirhttpls:http://yorba.org/download/valencia/
 vboxgtk:sf:263334|vboxgtk
 vobject:httpls:http://vobject.skyhouseconsulting.com/
