@@ -149,6 +149,7 @@ gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
 # FIXME: not good: we have the version in the URL...
 gimp-gap:ftpls:ftp://ftp.gimp.org/pub/gimp/plug-ins/v2.6/gap/
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
+gimp-lqr-plugin:httpls:http://liquidrescale.wikidot.com/en:download-page-sources
 gimp-save-for-web:httpls:http://registry.gimp.org/node/33
 giver:google:giver
 gkrellm:httpls:http://members.dslextreme.com/users/billw/gkrellm/gkrellm.html
@@ -180,6 +181,7 @@ gpodder:httpls:http://download.berlios.de/gpodder/
 gq:sf:3805|GQ LDAP Client
 # we don't care about stable vs unstable for gqview
 gqview:sf:4050
+gramps:sf:25770
 gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/

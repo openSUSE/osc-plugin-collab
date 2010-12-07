@@ -417,6 +417,7 @@ ggz-client-libs:
 gimp:
 gimp-gap:
 gimp-help:
+gimp-lqr-plugin:
 gimp-save-for-web:
 giver:
 gkrellm:
@@ -448,6 +449,7 @@ gpodder:
 gpointing-device-settings:
 gq:
 gqview:
+gramps:
 gromit:
 gssdp:
 gstreamer:gstreamer-0_10-doc
