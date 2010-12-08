@@ -162,11 +162,13 @@ gnokii:httpls:http://www.gnokii.org/download/gnokii/
 gnome-activity-journal:lp:gnome-activity-journal
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
+gnome-gmail-notifier:google:gnome-gmail-notifier
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
+gnome-subtitles:sf:129996
 gnome-zeitgeist:lp:gnome-zeitgeist
 gnonlin:httpls:http://gstreamer.freedesktop.org/src/gnonlin/
 # gnucash is also hosted on sf...
@@ -265,6 +267,7 @@ monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
+nautilus-terminal:lp:nautilus-terminal
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
 notify-osd:lp:notify-osd
@@ -305,6 +308,7 @@ pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
+radiotray:sf:295096
 rarian:httpls:http://rarian.freedesktop.org/Releases/
 raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 rednotebook:sf:238077

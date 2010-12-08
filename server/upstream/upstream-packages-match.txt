@@ -439,10 +439,12 @@ gnome-colors:gnome-colors-icon-theme
 gnome-disk-utility:
 gnome-do:
 gnome-do-plugins:
+gnome-gmail-notifier:
 gnome-keyring-sharp:
 gnome-mount:
 gnome-packagekit:
 gnome-presence-applet:
+gnome-subtitles:
 gnome-zeitgeist:
 gnonlin:
 gnucash:
@@ -540,6 +542,7 @@ mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
 nautilus-search-tool:
+nautilus-terminal:
 net6:
 netspeed_applet:gnome-netspeed-applet
 nimbus:gtk2-metatheme-nimbus
@@ -582,6 +585,7 @@ pygtkglext:python-gtkglext
 python-xlib:
 pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
+radiotray:
 rarian:
 raw-thumbnailer:
 rednotebook:
