@@ -89,10 +89,12 @@ gnome-user-docs:
 gnome-user-share:
 gnome-utils:
 gok:
+gsettings-desktop-schemas:
 gst-plugins-base:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
 gstreamer:gstreamer-0_10
 gtk-engines:gtk2-engines
+gtk-engines-3:gtk3-engines
 gtkhtml:gtkhtml2
 gtksourceview-1.0:gtksourceview18
 gtksourceview:
@@ -236,6 +238,7 @@ glade:
 glib-1:glib
 glib-networking:
 glom:
+gnet:
 gnome-audio:
 gnome-blog:
 gnome-bluetooth:
@@ -313,6 +316,7 @@ loudmouth:
 meld:
 memprof:
 mergeant:
+mobile-broadband-provider-info:
 muine:
 murrine:gtk2-engine-murrine
 mutter:
@@ -331,6 +335,7 @@ pitivi:
 planner:
 ptlib:libpt2
 pyatspi:python-atspi
+rest:librest
 rhythmbox:
 scrollkeeper:
 seed:
