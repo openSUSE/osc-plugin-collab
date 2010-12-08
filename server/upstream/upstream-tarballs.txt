@@ -75,7 +75,8 @@ DeviceKit-power:httpls:http://upower.freedesktop.org/releases/
 NetworkManager-strongswan:httpls:http://download.strongswan.org/NetworkManager/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
-QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
+QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=4
+QtCurve-Gtk3:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/

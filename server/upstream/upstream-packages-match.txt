@@ -351,6 +351,7 @@ DeviceKit-disks:
 DeviceKit-power:
 NetworkManager-strongswan:
 QtCurve-Gtk2:qtcurve-gtk2
+QtCurve-Gtk3:qtcurve-gtk3
 PackageKit:
 PolicyKit-gnome:
 UPnP-Inspector:upnp-inspector
