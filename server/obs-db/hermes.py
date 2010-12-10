@@ -180,9 +180,9 @@ class HermesEventPackageMeta(HermesEvent):
 
 class HermesEventPackageAdded(HermesEvent):
 
-    regexp = re.compile('\[obs new\] New Package ([^/\s]*) in ([^/\s]*)')
+    regexp = re.compile('\[obs new\] New Package ([^/\s]*) ([^/\s]*)')
     # Workaround again buggy messages
-    workaround_regexp = re.compile('\[obs new\] New Package ([^/\s]*) in')
+    workaround_regexp = re.compile('\[obs new\] New Package ([^/\s]*)')
     raw_type = 'OBS_SRCSRV_CREATE_PACKAGE'
 
     @classmethod
@@ -201,6 +201,10 @@ class HermesEventPackageAdded(HermesEvent):
         match = self.regexp.match(title)
 
         if match:
+            # Hermes previously said "Package $PGK in $PRJ"
+            if str(match.group(2)) == 'in':
+                raise HermesException('Old format of hermes message detected: %s' % title)
+
             self.project = str(match.group(2))
             self.package = str(match.group(1))
         else:
