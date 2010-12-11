@@ -182,7 +182,7 @@ class HermesEventPackageAdded(HermesEvent):
 
     regexp = re.compile('\[obs new\] New Package ([^/\s]*) ([^/\s]*)')
     # Workaround again buggy messages
-    workaround_regexp = re.compile('\[obs new\] New Package ([^/\s]*)')
+    workaround_regexp = re.compile('\[obs new\] New Package\s*$')
     raw_type = 'OBS_SRCSRV_CREATE_PACKAGE'
 
     @classmethod
