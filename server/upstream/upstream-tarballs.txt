@@ -488,6 +488,9 @@ pyclutter:subdirhttpls:http://clutter-project.org/sources/pyclutter/
 pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
 pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
+# FIXME: unfortunately, it doesn't work: the rdf has no information...
+#pypoppler:lp:poppler-python
+pypoppler:httpls:https://launchpad.net/poppler-python/+download
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-distutils-extra:lp:python-distutils-extra
 python-virtkey:lp:virtkey

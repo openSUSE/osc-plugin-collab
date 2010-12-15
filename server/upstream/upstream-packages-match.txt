@@ -761,6 +761,7 @@ pyclutter:python-clutter
 pyclutter-gst:python-clutter-gst
 pyclutter-gtk:python-clutter-gtk
 pycups:python-cups
+pypoppler:
 pysmbc:python-smbc
 python-distutils-extra:
 python-virtkey:
