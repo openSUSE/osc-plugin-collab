@@ -217,6 +217,7 @@ beagle-xesam:
 bigboard:
 caribou:
 conduit:
+d-feet:
 desktop-data-model:
 dia:
 dogtail:
