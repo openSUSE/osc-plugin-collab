@@ -10,6 +10,8 @@
 #    Use the "max|x.y" instruction for this behavior.
 #
 
+# LaTeXPlugin has some tarballs with a date instead of version
+LaTeXPlugin:max|2000
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
 # libofx used 0.11 as 0.1.1...

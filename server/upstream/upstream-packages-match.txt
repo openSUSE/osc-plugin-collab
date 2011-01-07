@@ -267,6 +267,7 @@ gnome-vfs-obexftp:
 gnome-web-photo:
 gnomeicu:
 gnopernicus:
+gnote:
 gnumeric:
 gob2:
 gobject-introspection:
@@ -306,6 +307,7 @@ libgnomedb-3:libgnomedb3
 libgsf:
 libgtkhtml:
 libgtksourceviewmm:
+libpanelappletmm:
 libpeas:
 libsigc++-1:libsigc++12
 libslab:
@@ -350,6 +352,7 @@ ConsoleKit:
 DeviceKit:
 DeviceKit-disks:
 DeviceKit-power:
+LaTeXPlugin:gedit-latex-plugin
 NetworkManager-strongswan:
 QtCurve-Gtk2:qtcurve-gtk2
 QtCurve-Gtk3:qtcurve-gtk3
