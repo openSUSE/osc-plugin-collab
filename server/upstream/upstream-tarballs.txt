@@ -436,13 +436,13 @@ gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
 gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
 last-exit:httpls:http://lastexit-player.org/releases/
-librep:sf:580|librep
+librep:httpls:http://download.tuxfamily.org/sawfish/librep/
 netspeed_applet:lp:netspeed
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 pidgin-guifications:trac:http://plugins.guifications.org/trac/downloads
 recordmydesktop:sf:172357|recordmydesktop
-rep-gtk:sf:581|rep-gtk
-sawfish:sf:32|sawfish
+rep-gtk:httpls:http://download.tuxfamily.org/sawfish/rep-gtk/
+sawfish:httpls:http://download.tuxfamily.org/sawfish/sawfish/
 specto:httpls:http://specto.sourceforge.net/?go=download
 spheres-and-crystals:sf:64400|spherecrystal
 tangerine:lp:tangerine
