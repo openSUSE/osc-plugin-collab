@@ -52,8 +52,8 @@ branch = latest
 
 [Project openSUSE:Factory]
 
-[Project GNOME:STABLE:2.26]
-branch = gnome-2-26
+[Project GNOME:STABLE:2.32]
+branch = gnome-2-32
 ignore-fallback = true
 """
 

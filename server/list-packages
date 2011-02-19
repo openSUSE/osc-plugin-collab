@@ -224,8 +224,8 @@ def main(args):
         if e.errno != errno.EEXIST:
             raise e
 
-    # 'DISCONTINUED:openSUSE:10.2', 'DISCONTINUED:openSUSE:10.2:Update', 'openSUSE:10.3:Update', 'openSUSE:11.0:Update', 'openSUSE:10.3', 'openSUSE:11.0'
-    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Apps', 'GNOME:Contrib', 'GNOME:STABLE:2.26', 'GNOME:STABLE:2.28', 'GNOME:STABLE:2.30', 'GNOME:STABLE:2.32', 'openSUSE:11.1', 'openSUSE:11.1:Update', 'openSUSE:11.2', 'openSUSE:11.2:Update', 'openSUSE:11.2:Contrib', 'openSUSE:11.3', 'openSUSE:11.3:Update', 'openSUSE:11.3:Contrib' ]
+    # 'DISCONTINUED:openSUSE:10.2', 'DISCONTINUED:openSUSE:10.2:Update', 'openSUSE:10.3:Update', 'openSUSE:11.0:Update', 'openSUSE:10.3', 'openSUSE:11.0', 'openSUSE:11.1', 'openSUSE:11.1:Update', 'GNOME:STABLE:2.26'
+    projects = [ 'openSUSE:Factory', 'openSUSE:Factory:Contrib', 'GNOME:Factory', 'GNOME:Apps', 'GNOME:Contrib', 'GNOME:STABLE:2.28', 'GNOME:STABLE:2.30', 'GNOME:STABLE:2.32', 'openSUSE:11.2', 'openSUSE:11.2:Update', 'openSUSE:11.2:Contrib', 'openSUSE:11.3', 'openSUSE:11.3:Update', 'openSUSE:11.3:Contrib' ]
 
     osc_conf_init()
 
