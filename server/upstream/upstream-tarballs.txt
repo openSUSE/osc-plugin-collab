@@ -205,6 +205,7 @@ gtkimageview:httpls:http://trac.bjourne.webfactional.com/chrome/common/releases/
 gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gtkpbbuttons:sf:47862|gtkpbbuttons
 gtkpod:sf:67873|gtkpod
+gtkspell:sf:7896
 gupnp:httpls:http://gupnp.org/download/
 gupnp-av:httpls:http://gupnp.org/download/
 gupnp-dlna:httpls:http://gupnp.org/download/

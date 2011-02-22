@@ -482,6 +482,7 @@ gtkimageview:
 gtkmathview:
 gtkpbbuttons:
 gtkpod:
+gtkspell:
 gupnp:
 gupnp-av:
 gupnp-dlna:
