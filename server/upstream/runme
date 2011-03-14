@@ -197,7 +197,9 @@ download_upstream_version () {
 
 mkdir -p $CACHE_DIR/upstream
 
-download_gnome_version 2.26
+## Discontinued
+# download_gnome_version 2.26
+
 download_gnome_version 2.28
 download_gnome_version 2.30
 download_gnome_version 2.32
