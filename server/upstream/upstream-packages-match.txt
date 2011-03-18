@@ -85,6 +85,7 @@ gnome-system-monitor:
 #gnome-system-tools:
 gnome-terminal:
 gnome-themes:
+gnome-themes-standard:
 gnome-user-docs:
 gnome-user-share:
 gnome-utils:
