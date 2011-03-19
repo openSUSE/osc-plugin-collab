@@ -36,6 +36,7 @@ pango:
 alacarte:
 brasero:
 bug-buddy:
+cantarell-fonts:
 cheese:
 dasher:
 dconf:
