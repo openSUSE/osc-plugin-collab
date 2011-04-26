@@ -2376,9 +2376,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     if old_tarball_with_dir:
         if os.path.exists(old_tarball_with_dir):
-            osc_package.put_on_deletelist(old_tarball)
-            osc_package.write_deletelist()
-            osc_package.delete_source_file(old_tarball)
+            osc_package.delete_file(old_tarball, force=True)
             print '%s has been removed from the package.' % old_tarball
         else:
             print 'WARNING: the previous tarball could not be found. Please manually remove it.'
