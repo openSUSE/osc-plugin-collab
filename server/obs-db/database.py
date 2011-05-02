@@ -69,10 +69,10 @@ RPMLINT_ERRORS_PATH = ''
 #RPMLINT_ERRORS_PATH = os.path.join(OBS_DISSECTOR_DIR, 'tmp', 'rpmlint')
 
 # Changing this means breaking compatibility with previous db
-DB_MAJOR = 3
+DB_MAJOR = 4
 # Changing this means changing the db while keeping compatibility
 # Increase when changing the db. Reset to 0 when changing DB_MAJOR.
-DB_MINOR = 2
+DB_MINOR = 0
 
 
 #######################################################################
@@ -105,6 +105,7 @@ class File(Base):
         cursor.execute('''CREATE TABLE %s (
             id INTEGER PRIMARY KEY,
             filename TEXT,
+            mtime INTEGER,
             srcpackage INTEGER
             );''' % cls.sql_table)
 
@@ -118,7 +119,7 @@ class File(Base):
             (srcpackage.sql_id,))
 
         for row in cursor.fetchall():
-            file = File(srcpackage, row['filename'])
+            file = File(srcpackage, row['filename'], row['mtime'])
             file.sql_id = row['id']
             files.append(file)
 
@@ -137,24 +138,34 @@ class File(Base):
                 ;''' % cls.sql_table,
                 (ids,))
 
-    def __init__(self, src, name):
+    def __init__(self, src, name, mtime):
         self.sql_id = -1
 
         self.filename = name
         self.src_package = src
+        try:
+            self.mtime = int(mtime)
+        except SyntaxError, e:
+            print >> sys.stderr, 'Cannot parse %s as mtime for %s/%s: %s' % (mtime, src, name, e)
+            self.mtime = -1
 
     def sql_add(self, cursor):
         if self.src_package.sql_id == -1:
             raise ObsDbException('No SQL id for %s when adding file %s.' % (self.src_package.name, self.filename))
         cursor.execute('''INSERT INTO %s VALUES (
-            NULL, ?, ?
+            NULL, ?, ?, ?
             );''' % self.sql_table,
-            (self.filename, self.src_package.sql_id))
+            (self.filename, self.mtime, self.src_package.sql_id))
         self._sql_update_last_id(cursor)
 
     def sql_update_from(self, cursor, new_file):
-        # Nothing can be changed, so nothing to do
-        pass
+        if self.sql_id < 0:
+            raise ObsDbException('File %s of %s used for update does not have a SQL id.' % (self.filename, self.src_package.name))
+        cursor.execute('''UPDATE %s SET
+            mtime = ?
+            WHERE id = ?
+            ;''' % self.sql_table,
+            (new_file.mtime, self.sql_id))
 
     def sql_remove(self, cursor):
         if self.src_package.sql_id == -1:
@@ -167,6 +178,7 @@ class File(Base):
 
     def __ne__(self, other):
         if (self.filename != other.filename or
+            self.mtime != other.mtime or
             self.src_package.name != other.src_package.name or
             self.src_package.project.name != other.src_package.project.name):
             return True
@@ -1215,7 +1227,8 @@ class SrcPackage(Base):
                     filename = node.get('name')
                     if filename in IGNORE_FILES:
                         continue
-                    self.files.append(File(self, filename))
+                    mtime = node.get('mtime')
+                    self.files.append(File(self, filename, mtime))
 
         # if we want to force the parent to the project parent, then we do it
         # only if the package is a link and there's no error in the link
