@@ -1361,17 +1361,28 @@ class SrcPackage(Base):
         # By default, we take the spec file with the same name as the source
         # package; if it doesn't exist, we take the first one.
         bestfile = None
+        specname = self.name + '.spec'
+
+        def _name_is_perfect_match(specname, filename):
+            # if the file has a prefix, it has to be '_service:.*' to be
+            # considered as perfect candidate
+            return filename == specname or (filename.startswith('_service:') and filename.endswith(':' + specname))
 
         for file in self.files:
             if file.filename[-5:] == '.spec':
-                if file.filename[:-5] == self.name:
-                    bestfile = file.filename
-                    break
-                elif not bestfile:
-                    bestfile = file.filename
+                if _name_is_perfect_match(specname, file.filename):
+                    if not bestfile or bestfile.mtime < file.mtime:
+                        bestfile = file
+                else:
+                    if not bestfile:
+                        bestfile = file
+                    elif not _name_is_perfect_match(specname, bestfile.filename) and bestfile.mtime < file.mtime:
+                        # the current best file has not a perfect name, so we
+                        # just take the best one based on the mtime
+                        bestfile = file
 
         if bestfile:
-            self._analyze_spec(os.path.join(srcpackage_dir, bestfile))
+            self._analyze_spec(os.path.join(srcpackage_dir, bestfile.filename))
 
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
