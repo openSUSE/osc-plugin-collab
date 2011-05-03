@@ -202,6 +202,26 @@ class UpstreamDb:
         else:
             self._removed_matches = []
 
+    def _get_upstream_name_branches(self):
+        result = {}
+
+        self.cursor.execute('''SELECT upstream FROM upstream_pkg_name_match WHERE upstream LIKE "%|%"''')
+        for row in self.cursor:
+            name_branch = row['upstream']
+            index = name_branch.find('|')
+            name = name_branch[:index]
+            limit = name_branch[index + 1:]
+            item = (name_branch, limit)
+
+            if result.has_key(name):
+                name_branches = result[name]
+                name_branches.append(item)
+                result[name] = name_branches
+            else:
+                result[name] = [ item ]
+
+        return result
+
     def _get_branch_data(self, branch):
         self.cursor.execute('''SELECT id, mtime FROM branches WHERE
             branch = ?;''', (branch,))
@@ -211,7 +231,7 @@ class UpstreamDb:
         else:
             return ('', '')
 
-    def _update_upstream_data(self, branch, is_fallback = False):
+    def _update_upstream_data(self, branch, upstream_name_branches, is_fallback = False):
         branch_path = os.path.join(self.dest_dir, branch)
 
         if is_fallback:
@@ -247,8 +267,11 @@ class UpstreamDb:
         for row in self.cursor:
             olddata[row['name']] = (row['id'], row['version'], row['url'])
 
-        # a guard against multiple definitions for a module in the same file
-        done = {}
+        # upstream data, after we've converted the names to branch names if
+        # needed. For instance, glib:1.2.10 will translate to the "glib|1.3"
+        # name but also to the "glib" name if it doesn't exist yet or if the
+        # version there is lower than 1.2.10.
+        real_upstream_data = {}
 
         if is_fallback:
             # bad hack to support the fallback format with a regexp with the
@@ -274,11 +297,6 @@ class UpstreamDb:
             name = match.group(2)
             version = match.group(3)
 
-            # ignore data if it was already in the file
-            if done.has_key(name):
-                continue
-            done[name] = True
-
             if is_fallback:
                 url = ''
             elif match.group(1) == 'nonfgo':
@@ -293,6 +311,32 @@ class UpstreamDb:
                     majmin = versions[0] + '.' + versions[1]
                 url = 'http://ftp.gnome.org/pub/GNOME/sources/%s/%s/%s-%s.tar.bz2' % (name, majmin, name, version)
 
+            ignore = False
+            if real_upstream_data.has_key(name):
+                (current_version, current_url) = real_upstream_data[name]
+                if util.version_ge(current_version, version):
+                    ignore = True
+
+            if not ignore:
+                real_upstream_data[name] = (version, url)
+
+            # Now also fill data for 'glib|1.2.10' if it fits
+            if upstream_name_branches.has_key(name):
+                # name = 'glib', upstream_name_branch = 'glib|1.2.10'
+                # and limit = '1.2.10'
+                for (upstream_name_branch, limit) in upstream_name_branches[name]:
+                    if real_upstream_data.has_key(upstream_name_branch):
+                        (current_version, current_url) = real_upstream_data[upstream_name_branch]
+                        if util.version_ge(current_version, version):
+                            continue
+
+                    if util.version_ge(version, limit):
+                        continue
+
+                    real_upstream_data[upstream_name_branch] = (version, url)
+
+
+        for (name, (version, url)) in real_upstream_data.items():
             if olddata.has_key(name):
                 # Update the entry if it has changed
                 (id, oldversion, oldurl) = olddata[name]
@@ -464,12 +508,15 @@ class UpstreamDb:
         self._open_db(create_if_needed = True)
 
         self._update_upstream_pkg_name_match('upstream-packages-match.txt')
-        self._update_upstream_data('fallback', True)
+
+        upstream_name_branches = self._get_upstream_name_branches()
+
+        self._update_upstream_data('fallback', upstream_name_branches, True)
 
         branches = set([ project_configs[project].branch for project in project_configs.keys() ])
         for branch in branches:
             if branch:
-                self._update_upstream_data(branch)
+                self._update_upstream_data(branch, upstream_name_branches)
 
         # add fallback branch
         branches.add(FALLBACK_BRANCH_NAME)
@@ -486,14 +533,19 @@ def main(args):
             self.branch = branch
 
     configs = {}
-    configs['gnome-2.26'] = ProjectConfig('gnome-2.26')
+    configs['gnome-2.32'] = ProjectConfig('gnome-2.32')
     configs['latest'] = ProjectConfig('latest')
 
     upstream = UpstreamDb('/tmp/obs-dissector/cache/upstream', '/tmp/obs-dissector/tmp')
     upstream.update(configs)
 
-    print 'gtk2 (2.26): %s' % (upstream.get_upstream_data('gnome-2.26', 'gtk2', True),)
+    print 'glib (latest): %s' % (upstream.get_upstream_data('latest', 'glib', True),)
+    print 'glib2 (latest): %s' % (upstream.get_upstream_data('latest', 'glib2', True),)
+    print 'gtk2 (2.32): %s' % (upstream.get_upstream_data('gnome-2.32', 'gtk2', True),)
     print 'gtk2 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk2', True),)
+    print 'gtk3 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk3', True),)
+    print 'gobby04 (latest): %s' % (upstream.get_upstream_data('latest', 'gobby04', True),)
+    print 'gobby (latest): %s' % (upstream.get_upstream_data('latest', 'gobby', True),)
     print 'OpenOffice_org (latest, fallback): %s' % (upstream.get_upstream_data('latest', 'OpenOffice_org', False),)
 
 
