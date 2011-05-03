@@ -76,8 +76,9 @@ LaTeXPlugin:sf:204144
 NetworkManager-strongswan:httpls:http://download.strongswan.org/NetworkManager/
 PackageKit:httpls:http://www.packagekit.org/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
-QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=4
-QtCurve-Gtk3:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
+QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
+# FIXME: Doesn't exist anymore?
+#QtCurve-Gtk3:httpls:http://www.kde-look.org/content/download.php?content=40492&id=4
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
@@ -85,13 +86,11 @@ alarm-clock-applet:lp:alarm-clock
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
 asio:sf:122478|asio
-at-spi2-atk:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
-at-spi2-core:httpls:https://projects.codethink.co.uk/media/upload/at-spi2/files/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
-banshee-1:subdirhttpls:http://download.banshee-project.org/banshee/stable/
+banshee:subdirhttpls:http://download.banshee.fm/banshee/stable/
 beagle-index:upstream:
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
@@ -139,7 +138,7 @@ galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-s
 gbrainy:httpls:http://live.gnome.org/gbrainy
 gcstar:httpls:http://download.gna.org/gcstar/
 gdata.py:google:gdata-python-client|gdata
-gdesklets:httpls:http://www.gdesklets.de/
+gdesklets:httpls:http://gdesklets.de/
 gdome2:httpls:http://gdome2.cs.unibo.it/tarball/
 geany:httpls:http://download.geany.org/
 geany-plugins:httpls:http://plugins.geany.org/geany-plugins/
@@ -166,7 +165,6 @@ gnome-do-plugins:lp:do-plugins
 gnome-gmail-notifier:google:gnome-gmail-notifier
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
-gnome-packagekit:httpls:http://www.packagekit.org/releases/
 gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 gnome-subtitles:sf:129996
@@ -211,7 +209,7 @@ gupnp-av:httpls:http://gupnp.org/download/
 gupnp-dlna:httpls:http://gupnp.org/download/
 gupnp-igd:httpls:http://gupnp.org/download/
 gupnp-tools:httpls:http://gupnp.org/download/
-gupnp-ui:httpls:http://gupnp.org/download/
+gupnp-ui:httpls:http://gupnp.org/download?keys=gupnp-ui
 gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 gwibber:lp:gwibber
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
@@ -253,7 +251,7 @@ libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
 libproxy:google:libproxy
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libssui:google:libssui
-libtasn1:httpls:http://ftp.gnu.org/gnu/gnutls/
+libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libxklavier:sf:319|libxklavier
@@ -262,8 +260,10 @@ link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 memphis:trac:http://trac.openstreetmap.ch/trac/memphis/downloads
 metacity-themes:upstream:
-metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
-metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
+# FIXME: Server is down
+#metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
+# FIXME: Server is down
+#metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
@@ -271,15 +271,16 @@ nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 nautilus-terminal:lp:nautilus-terminal
 net6:httpls:http://releases.0x539.de/net6/
-njb-sharp:httpls:http://download.banshee-project.org/njb-sharp/
+njb-sharp:httpls:http://download.banshee.fm/legacy/njb-sharp/
 notify-osd:lp:notify-osd
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
-ntfs-3g:httpls:http://www.tuxera.com/community/ntfs-3g-download/
+ntfs-3g_ntfsprogs:httpls:http://www.tuxera.com/community/ntfs-3g-download/
 ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 #FIXME opal http://sourceforge.net/project/showfiles.php?group_id=204472
-opensuse-font-fifth-leg:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/fonts/
+# FIXME: Server is down
+#opensuse-font-fifth-leg:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/fonts/
 opt_gnome-compat:upstream:
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 paman:httpls:http://0pointer.de/lennart/projects/paman/
@@ -343,7 +344,7 @@ telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-so
 #telepathy-sofiasip:sf:191149
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
 translation-update:upstream:
-transmageddon:httpls:http://www.linuxrising.org/transmageddon/files/
+transmageddon:httpls:http://www.linuxrising.org/files/
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
 twitux:sf:198704|twitux
@@ -437,13 +438,13 @@ gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
 gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
 last-exit:httpls:http://lastexit-player.org/releases/
-librep:httpls:http://download.tuxfamily.org/sawfish/librep/
+librep:httpls:http://download.tuxfamily.org/librep/
 netspeed_applet:lp:netspeed
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
-pidgin-guifications:trac:http://plugins.guifications.org/trac/downloads
+pidgin-guifications:httpls:https://www.guifications.org/projects/gf2/files
 recordmydesktop:sf:172357|recordmydesktop
-rep-gtk:httpls:http://download.tuxfamily.org/sawfish/rep-gtk/
-sawfish:httpls:http://download.tuxfamily.org/sawfish/sawfish/
+rep-gtk:httpls:http://download.tuxfamily.org/librep/rep-gtk/
+sawfish:httpls:http://download.tuxfamily.org/sawfish/
 specto:httpls:http://specto.sourceforge.net/?go=download
 spheres-and-crystals:sf:64400|spherecrystal
 tangerine:lp:tangerine
@@ -451,7 +452,7 @@ tangerine:lp:tangerine
 
 #### Stuff from various other places:
 CouchDB:httpls:http://pypi.python.org/pypi/CouchDB
-LibRaw:httpls:http://www.libraw.org/data/
+LibRaw:httpls:http://www.libraw.org/download
 acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 brltty:httpls:http://mielke.cc/brltty/releases/
@@ -495,7 +496,7 @@ pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pypoppler:httpls:https://launchpad.net/poppler-python/+download
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-distutils-extra:lp:python-distutils-extra
-python-virtkey:lp:virtkey
+python-virtkey:lp:python-virtkey
 qiv:httpls:http://spiegl.de/qiv/download/
 rlwrap:httpls:http://utopia.knoware.nl/~hlub/rlwrap/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
