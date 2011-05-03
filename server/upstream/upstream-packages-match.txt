@@ -95,7 +95,7 @@ gsettings-desktop-schemas:
 gst-plugins-base:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
 gstreamer:gstreamer-0_10
-gtk-engines:gtk2-engines
+gtk-engines|2.90:gtk2-engines
 gtkhtml:gtkhtml2
 gtksourceview|1.9:gtksourceview18
 gtksourceview|2.90:gtksourceview2
