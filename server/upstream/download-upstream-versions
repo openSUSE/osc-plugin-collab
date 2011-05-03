@@ -330,12 +330,12 @@ def _get_latest_version(versions, limit):
 def _all_indexes(list, item, shift = 0):
     try:
         i = list.index(item)
-        i += shift
+        real_index = i + shift
     except ValueError:
         return []
 
-    subresult = _all_indexes(list[i+1:], item, i + 1)
-    subresult.append(i)
+    subresult = _all_indexes(list[i+1:], item, real_index + 1)
+    subresult.append(real_index)
     return subresult
 
 
