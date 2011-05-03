@@ -89,7 +89,7 @@ concatenate_all_versions () {
     rm -f $DESTFILE.new
 
     for file in $CACHE_DIR/upstream/gnome-$GNOME_FACTORY_VERSION \
-                $CACHE_DIR/upstream/gnome-extras \
+                $CACHE_DIR/upstream/gnome-$GNOME_FACTORY_VERSION-extras \
                 $CACHE_DIR/upstream/upstream; do
         if test -f $file; then
             cat $file >> $DESTFILE.new
@@ -205,7 +205,8 @@ download_gnome_version 2.30
 download_gnome_version 2.32
 download_gnome_version stable
 download_gnome_version unstable
-download_gnome_version extras
+download_gnome_version stable-extras
+download_gnome_version unstable-extras
 
 # Do this once, before the slow step
 concatenate_all_versions
