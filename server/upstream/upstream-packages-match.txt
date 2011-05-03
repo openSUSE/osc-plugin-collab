@@ -19,8 +19,8 @@ glib:glib2
 gnome-mime-data:
 gnome-vfs:gnome-vfs2
 gnome-vfs-monikers:
-gtk+:gtk2
-gtk+-3:gtk3
+gtk+|2.90:gtk2
+gtk+:gtk3
 gtk-doc:
 libIDL:libidl
 libart_lgpl:
@@ -59,8 +59,8 @@ gedit:
 gnome-applets:
 gnome-backgrounds:
 gnome-control-center:
-gnome-desktop:gnome-desktop2
-gnome-desktop-3:gnome-desktop
+gnome-desktop|2.90:gnome-desktop2
+gnome-desktop:gnome-desktop
 # No package in openSUSE
 #gnome-desktop-sharp:
 gnome-doc-utils:
@@ -96,9 +96,8 @@ gst-plugins-base:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
 gstreamer:gstreamer-0_10
 gtk-engines:gtk2-engines
-gtk-engines-3:gtk3-engines
 gtkhtml:gtkhtml2
-gtksourceview-1.0:gtksourceview18
+gtksourceview|1.9:gtksourceview18
 gtksourceview:
 gucharmap:
 gvfs:
@@ -238,7 +237,7 @@ gir-repository:
 gitg:
 gjs:
 glade:
-glib-1:glib
+glib|1.3:glib
 glib-networking:
 glom:
 gnet:
@@ -281,7 +280,7 @@ goocanvasmm:
 #gossip:
 gtetrinet:
 gthumb:
-gtk+-1:gtk
+gtk+|1.3:gtk
 gtkmm-documentation:
 gtranslator:
 gwget:
@@ -297,7 +296,7 @@ libbtctl:
 libchamplain:
 libcroco:
 libepc:
-libgda-3:libgda3
+libgda|3.99:libgda3
 libgda:
 libgdamm:
 libgdata:
@@ -305,15 +304,16 @@ libgee:
 libghttp:
 libgnomecups:
 libgnomedb:
-libgnomedb-3:libgnomedb3
+libgnomedb|3.99:libgnomedb3
 libgsf:
 libgtkhtml:
 libgtksourceviewmm:
 libpanelappletmm:
 libpeas:
-libsigc++-1:libsigc++12
+libsigc++|1.3:libsigc++12
 libslab:
-libunique-1:libunique
+libunique:
+libunique|2:libunique1
 # libunique is now GTK+ 3-based, but this should not be needed since there's GtkApplication in GTK+ 3
 #libunique:
 libxml:
@@ -731,7 +731,7 @@ CouchDB:python-couchdb
 LibRaw:libraw
 acpid:
 apache-couchdb:couchdb
-banshee-1:banshee
+banshee:banshee-1
 brltty:
 csmash:
 desktopcouch:python-desktopcouch
