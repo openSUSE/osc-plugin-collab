@@ -82,6 +82,7 @@ QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&i
 webkit:httpls:http://www.webkitgtk.org/?page=download
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
+accountsservice:httpls:http://www.freedesktop.org/software/accountsservice/
 alarm-clock-applet:lp:alarm-clock
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
@@ -179,6 +180,7 @@ gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
+gourmet:sf:108118
 gpodder:httpls:http://download.berlios.de/gpodder/
 gq:sf:3805|GQ LDAP Client
 # we don't care about stable vs unstable for gqview
@@ -267,6 +269,7 @@ metacity-themes:upstream:
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
+mx:subdirhttpls:http://source.clutter-project.org/sources/mx/
 nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 nautilus-terminal:lp:nautilus-terminal
@@ -357,6 +360,7 @@ xchat:subdirhttpls:http://www.xchat.org/files/source/
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
 yast2-control-center-gnome:upstream:
 zeitgeist:lp:zeitgeist
+zeitgeist-datahub:lp:zeitgeist-datahub
 
 ## Packages that we removed
 # gst-pulse:httpls:http://0pointer.de/lennart/projects/gst-pulse/

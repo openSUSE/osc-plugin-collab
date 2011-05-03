@@ -98,7 +98,10 @@ gstreamer:gstreamer-0_10
 gtk-engines:gtk2-engines
 gtkhtml:gtkhtml2
 gtksourceview|1.9:gtksourceview18
+gtksourceview|2.90:gtksourceview2
 gtksourceview:
+gtksourceviewmm|2.90:gtksourceviewmm2
+gtksourceviewmm:
 gucharmap:
 gvfs:
 hamster-applet:
@@ -114,6 +117,7 @@ libgweather:
 librsvg:
 libsoup:
 libwnck:
+libwnck|2.90:libwnck2
 metacity:
 mousetweaks:
 nautilus:
@@ -130,6 +134,7 @@ totem-pl-parser:
 vinagre:
 vino:
 vte:
+vte:vte2
 yelp:
 yelp-xsl:
 zenity:
@@ -153,7 +158,8 @@ atkmm:
 gconfmm:
 glibmm:glibmm2
 gnome-vfsmm:
-gtkmm:gtkmm2
+gtkmm|2.90:gtkmm2
+gtkmm:gtkmm3
 libglademm:
 libgnomecanvasmm:
 libgnomemm:
@@ -196,7 +202,7 @@ Pango:perl-Pango
 
 # Python
 gnome-python:python-gnome
-pygobject:python-gobject2
+pygobject:python-gobject
 pygtk:python-gtk
 pyorbit:python-orbit
 
@@ -264,6 +270,7 @@ gnome-shell:
 #gnome-scan:
 gnome-spell:gnome-spell2
 gnome-themes-extras:
+gnome-tweak-tool:
 gnome-vfs-obexftp:
 gnome-web-photo:
 gnomeicu:
@@ -302,6 +309,7 @@ libgdamm:
 libgdata:
 libgee:
 libghttp:
+libgnome-media-profiles:
 libgnomecups:
 libgnomedb:
 libgnomedb|3.99:libgnomedb3
@@ -312,6 +320,7 @@ libpanelappletmm:
 libpeas:
 libsigc++|1.3:libsigc++12
 libslab:
+libsocialweb:
 libunique:
 libunique|2:libunique1
 # libunique is now GTK+ 3-based, but this should not be needed since there's GtkApplication in GTK+ 3
@@ -344,6 +353,7 @@ rest:librest
 rhythmbox:
 scrollkeeper:
 seed:
+seed:seed2
 tasque:
 tracker:
 xdg-user-dirs-gtk:
@@ -363,6 +373,7 @@ PolicyKit-gnome:
 UPnP-Inspector:upnp-inspector
 abiword:
 abiword-docs:
+accountsservice:
 alarm-clock-applet:
 aqbanking:
 arista:
@@ -458,6 +469,7 @@ gnucash-docs:
 gobby:
 gobby|0.4:gobby04
 google-gadgets-for-linux:google-gadgets
+gourmet:
 gpa:
 gpodder:
 gpointing-device-settings:
@@ -477,6 +489,7 @@ gsynaptics:
 gtg:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-vnc:
+gtk-vnc:gtk-vnc2
 gtk-recordmydesktop:gtk-recordMyDesktop
 gtkglext:
 gtkhotkey:
@@ -548,6 +561,7 @@ metatheme-gilouche:gtk2-metatheme-gilouche
 mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
+mx:
 nautilus-search-tool:
 nautilus-terminal:
 net6:
@@ -626,21 +640,25 @@ telepathy-python:python-telepathy
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
+the-board:
 transmageddon:
 transmission:
 tsclient:
 twitux:
 uget:
 vala:
+vala:vala-unstable
 valencia:
 vboxgtk:
 vobject:
 webkit:libwebkit
+webkit:libwebkit3
 x-tile:
 xchat:
 xchat-gnome:
 xsane:
 zeitgeist:
+zeitgeist-datahub:
 
 ## Packages where we are upstream
 ## It's not required to list -branding-{openSUSE,SLED} packages.
@@ -899,7 +917,6 @@ zlib:
 #gnome-pim:
 #gnome-print:
 #gnome-specimen:
-#gnome-tweak-tool:
 #gnome-vfs-extras:
 #gnome-video-arcade:
 #gnome-video-effects:
@@ -932,7 +949,6 @@ zlib:
 #gtkmm_hello:
 #gtkmozedit:
 #gtkmozembedmm:
-#gtksourceviewmm:
 #gtm:
 #gtop:
 #gturing:
@@ -961,7 +977,6 @@ zlib:
 #libeds-java:
 #libgda-uimm:
 #libgnetwork:
-#libgnome-media-profiles:
 #libgnome2:
 #libgnomecanvas2:
 #libgnomecompat2:
@@ -976,7 +991,6 @@ zlib:
 #libmrproject:
 #libnotifymm:
 #libole2:
-#libsocialweb:
 #libunicode:
 #libvte-java:
 #libvtemm:
@@ -1047,7 +1061,6 @@ zlib:
 #system-tray-applet:
 #tasks:
 #telegnome:
-#the-board:
 #themus:
 #toutdoux:
 #trilobite:
