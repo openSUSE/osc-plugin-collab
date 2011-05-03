@@ -221,47 +221,6 @@ def _get_files_from_svn(url):
 #######################################################################
 
 
-# comes from convert-to-tarball.py
-def _strict_bigger_version(a, b):
-    a_nums = a.split('.')
-    b_nums = b.split('.')
-    num_fields = min(len(a_nums), len(b_nums))
-    for i in range(0,num_fields):
-        if   int(a_nums[i]) > int(b_nums[i]):
-            return a
-        elif int(a_nums[i]) < int(b_nums[i]):
-            return b
-    if   len(a_nums) > len(b_nums):
-        return a
-    elif len(a_nums) < len(b_nums):
-        return b
-    else:
-        return None
-
-
-def _bigger_version(a, b):
-    # We compare versions this way (with examples):
-    #   + 0.3 and 0.3.1:
-    #     0.3.1 wins: 0.3 == 0.3 and 0.3.1 has another digit
-    #   + 0.3-1 and 0.3-2:
-    #     0.3-2 wins: 0.3 == 0.3 and 1 < 2
-    #   + 0.3.1-1 and 0.3-2:
-    #     0.3.1-1 wins: 0.3.1 > 0.3
-    a_nums = a.split('-')
-    b_nums = b.split('-')
-    num_fields = min(len(a_nums), len(b_nums))
-    for i in range(0,num_fields):
-        bigger = _strict_bigger_version(a_nums[i], b_nums[i])
-        if   bigger == a_nums[i]:
-            return a
-        elif bigger == b_nums[i]:
-            return b
-    if len(a_nums) > len(b_nums):
-        return a
-    else:
-        return b
-
-
 def _setup_limit(limit):
     limit_data = None
 
@@ -297,9 +256,7 @@ def _respect_limit(version, limit, limit_data):
             return True
 
     elif limit == 'max':
-        # if the limit is exactly the same as the version we're looking at,
-        # _bigger_version will return what we want
-        return limit_data == _bigger_version(limit_data, version) and version != limit_data
+        return version_gt(limit_data, version)
 
     else:
         return False
@@ -318,7 +275,7 @@ def _get_latest_version(versions, limit):
         return None
 
     for version in versions[versions.index(biggest) + 1:]:
-        if _respect_limit(version, limit, limit_data) and version == _bigger_version(biggest, version):
+        if _respect_limit(version, limit, limit_data) and version_gt(version, biggest):
             biggest = version
 
     return biggest
@@ -437,7 +394,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
 
         version = match.group(1)
         ext = match.group(2)
-        if not version == _bigger_version(version, biggest):
+        if not version_gt(version, biggest):
             continue
         if not _respect_limit(version, limit, limit_data):
             continue
@@ -499,7 +456,7 @@ def _get_version_from_google_atom(name, limit):
             continue
 
         version = match.group(1)
-        if not version == _bigger_version(version, biggest):
+        if not version_gt(version, biggest):
             continue
         if not _respect_limit(version, limit, limit_data):
             continue
@@ -547,7 +504,7 @@ def _get_version_from_launchpad_series(project, limit, limit_data, series):
         if not _respect_limit(version, limit, limit_data):
             continue
 
-        if version == _bigger_version(version, biggest):
+        if version_gt(version, biggest):
             biggest = version
 
     # TODO: this is blocked by https://bugs.launchpad.net/bugs/268359
@@ -583,17 +540,17 @@ def _get_version_from_launchpad(project, limit):
         if not _respect_limit(series_version, limit, limit_data):
             continue
 
-        if biggest == _bigger_version(biggest, series_version):
+        if version_ge(biggest, series_version):
             continue
 
         (series_location, series_biggest) = _get_version_from_launchpad_series (project, limit, limit_data, series_version)
-        if series_biggest == _bigger_version(series_biggest, biggest):
+        if version_gt(series_biggest, biggest):
             (location, biggest) = (series_location, series_biggest)
 
     # try trunk, in case it exists
     try:
         (trunk_location, trunk_biggest) = _get_version_from_launchpad_series (project, limit, limit_data, 'trunk')
-        if trunk_biggest == _bigger_version(trunk_biggest, biggest):
+        if version_gt(trunk_biggest, biggest):
             (location, biggest) = (trunk_location, trunk_biggest)
     except UpstreamDownloadError:
         pass
@@ -726,7 +683,7 @@ def get_upstream_version(modulename, method, additional_info, limit):
         except UpstreamDownloadError:
             (location2, version2) = (None, None)
 
-        if version1 and version2 and version1 == _bigger_version(version1, version2):
+        if version1 and version2 and version_ge(version1, version2):
             return (location1, version1)
         elif version1 and version2:
             return (location2, version2)
