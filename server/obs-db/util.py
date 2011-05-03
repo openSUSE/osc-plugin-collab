@@ -39,6 +39,9 @@ import os
 import errno
 
 def safe_mkdir(dir):
+    if not dir:
+        return
+
     try:
         os.mkdir(dir)
     except OSError, e:
@@ -46,6 +49,9 @@ def safe_mkdir(dir):
             raise e
 
 def safe_mkdir_p(dir):
+    if not dir:
+        return
+
     try:
         os.makedirs(dir)
     except OSError, e:
