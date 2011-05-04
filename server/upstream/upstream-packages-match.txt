@@ -210,6 +210,7 @@ pyorbit:python-orbit
 ModemManager:
 NetworkManager:
 #NetworkManager-openconnect:
+NetworkManager-openswan:
 NetworkManager-openvpn:
 NetworkManager-pptp:
 NetworkManager-vpnc:
