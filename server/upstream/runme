@@ -221,7 +221,7 @@ fi
 # Check that we have everything in the match database
 for i in `grep -v '^#' $CACHE_DIR/upstream/latest | grep ':' | cut -d ':' -f 2`; do
     re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
-    grep -q -E "^(# ?)?$re_i:" $basedir/upstream-packages-match.txt
+    grep -q -E "^(# ?)?$re_i[:|]" $basedir/upstream-packages-match.txt
     if test $? -ne 0; then
         echo $i not in $basedir/upstream-packages-match.txt
     fi
