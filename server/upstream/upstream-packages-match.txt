@@ -293,6 +293,7 @@ gtkmm-documentation:
 gtranslator:
 gwget:
 hippo-canvas:
+hyena:
 intltool:
 jhbuild:
 krb5-auth-dialog:
@@ -959,7 +960,6 @@ zlib:
 #hipo:
 #hitori:
 #hotssh:
-#hyena:
 #imlib:
 #iogrind:
 #jamboree:
@@ -1072,3 +1072,4 @@ zlib:
 #ximian-connector:
 #ximian-setup-tools:
 #xml-i18n-tools:
+#yelp-tools:
