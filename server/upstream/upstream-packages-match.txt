@@ -286,6 +286,8 @@ goocanvas:
 goocanvasmm:
 # No package in openSUSE
 #gossip:
+gparted:
+grisbi:
 gtetrinet:
 gthumb:
 gtk+|1.3:gtk
@@ -329,6 +331,7 @@ libunique|2:libunique1
 #libunique:
 libxml:
 loudmouth:
+mangler:
 meld:
 memprof:
 mergeant:
@@ -387,6 +390,7 @@ avahi:avahi-qt4
 babl:
 bakefile:
 balsa:
+blueproximity:
 bluez-gnome:
 bombermaze:
 boot-mode-ui:
@@ -404,6 +408,7 @@ clutter-cairo:
 clutter-gst:
 clutter-gtk:
 colorblind:
+comix:
 computertemp:
 conglomerate:
 contact-lookup-applet:
@@ -411,6 +416,7 @@ cups-pk-helper:
 decibel-audio-player:
 deja-dup:
 dmlangsel:
+docky:
 dopi:
 drapes:
 eds-feed:evolution-galago
@@ -458,6 +464,7 @@ gnome-colors:gnome-colors-icon-theme
 gnome-disk-utility:
 gnome-do:
 gnome-do-plugins:
+gnome-gmail:
 gnome-gmail-notifier:
 gnome-keyring-sharp:
 gnome-mount:
@@ -552,6 +559,7 @@ libtasn1:
 libtelepathy:
 libthai:
 libxklavier:
+libzeitgeist:
 liferea:
 link-grammar:
 mail-notification:
@@ -618,6 +626,7 @@ sawfish:
 shared-mime-info:
 shotwell:
 simple-scan:
+smuxi:
 sobby:
 sofia-sip:
 solang:

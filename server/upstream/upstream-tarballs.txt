@@ -93,6 +93,7 @@ bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
 banshee:subdirhttpls:http://download.banshee.fm/banshee/stable/
 beagle-index:upstream:
+blueproximity:sf:203022
 # We're using www2.kernel.org because the main kernel.org website makes
 # everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
@@ -113,12 +114,14 @@ clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
+comix:sf:146377
 conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
 deja-dup:lp:deja-dup
 dmlangsel:google:loolixbodes|dmlangsel
+docky:lp:docky
 drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
@@ -163,6 +166,7 @@ gnokii:httpls:http://www.gnokii.org/download/gnokii/
 gnome-activity-journal:lp:gnome-activity-journal
 gnome-do:lp:do
 gnome-do-plugins:lp:do-plugins
+gnome-gmail:sf:277145
 gnome-gmail-notifier:google:gnome-gmail-notifier
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
@@ -170,6 +174,7 @@ gnome-patch-translation:upstream:
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 gnome-subtitles:sf:129996
 gnome-zeitgeist:lp:gnome-zeitgeist
+gnomeicu:sf:237
 gnonlin:httpls:http://gstreamer.freedesktop.org/src/gnonlin/
 # gnucash is also hosted on sf...
 # gnucash:sf:192|gnucash
@@ -181,11 +186,14 @@ gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
 gourmet:sf:108118
+gparted:sf:115843
 gpodder:httpls:http://download.berlios.de/gpodder/
 gq:sf:3805|GQ LDAP Client
 # we don't care about stable vs unstable for gqview
 gqview:sf:4050
 gramps:sf:25770
+# we really only want stable versions
+grisbi:sf:93867|grisbi stable
 gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
@@ -257,8 +265,10 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libxklavier:sf:319|libxklavier
+libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
+mangler:httpls:http://www.mangler.org/downloads/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 memphis:trac:http://trac.openstreetmap.ch/trac/memphis/downloads
 metacity-themes:upstream:
@@ -322,6 +332,7 @@ shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 # Moved to ftp.gnome.org
 #simple-scan:lp:simple-scan
+smuxi:httpls:http://www.smuxi.org/page/Download
 sobby:httpls:http://releases.0x539.de/sobby/
 solang:httpls:http://projects.gnome.org/solang/download
 sofia-sip:sf:143636|sofia-sip
