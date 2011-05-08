@@ -859,6 +859,7 @@ zlib:
 #evolution-caldav:
 #evolution-couchdb:
 #evolution-data-server-dbus:
+#evolution-groupwise:
 #evolution-jescs:
 #evolution-scalix:
 #firestarter:
