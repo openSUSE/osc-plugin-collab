@@ -267,6 +267,7 @@ gnome-pilot-conduits:
 gnome-python-extras:python-gnome-extras
 gnome-reset:
 gnome-shell:
+gnome-shell-extensions:
 # No package in openSUSE
 #gnome-scan:
 gnome-spell:gnome-spell2
@@ -350,6 +351,7 @@ online-desktop:
 opal:
 ORBit:orbit
 pdfmod:
+pinpoint:
 pitivi:
 planner:
 ptlib:libpt2
@@ -890,6 +892,7 @@ zlib:
 #gedit2:
 #gegl-vala:
 #geglmm:
+#geocode-glib:
 #gevice:
 #gfax:
 #gfloppy:
