@@ -968,6 +968,7 @@ zlib:
 #gtop:
 #gturing:
 #guile-gobject:
+#gupnp-vala:
 #guppi:
 #gyrus:
 #hipo:
