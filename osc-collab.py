@@ -34,7 +34,7 @@
 # Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
-OSC_COLLAB_VERSION = '0.93'
+OSC_COLLAB_VERSION = '0.94'
 
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
