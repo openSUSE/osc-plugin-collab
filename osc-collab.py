@@ -1944,42 +1944,6 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
 #######################################################################
 
 
-def _collab_gz_to_bz2_internal(self, file):
-    if file.endswith('.gz'):
-        dest_file = file[:-3] + '.bz2'
-    elif file.endswith('.tgz'):
-        dest_file = file[:-4] + '.tar.bz2'
-    else:
-        raise self.OscCollabCompressError('Cannot recompress %s as bz2: filename not ending with .gz.' % os.path.basename(file))
-
-    gzip = self.OscCollabImport.m_import('gzip')
-    bz2 = self.OscCollabImport.m_import('bz2')
-
-    if not gzip or not bz2:
-        raise self.OscCollabCompressError('Cannot recompress %s as bz2: incomplete python installation.' % os.path.basename(file))
-
-    if os.path.exists(dest_file):
-        os.unlink(dest_file)
-
-    fin = gzip.open(file)
-    fout = bz2.BZ2File(dest_file, 'wb')
-
-    while True:
-        bytes = fin.read(500 * 1024)
-        if len(bytes) == 0:
-            break
-        fout.write(bytes)
-
-    fin.close()
-    fout.close()
-
-    os.unlink(file)
-    return dest_file
-
-
-#######################################################################
-
-
 def _collab_subst_defines(self, s, defines):
     '''Replace macros like %{version} and %{name} in strings. Useful
        for sources and patches '''
@@ -2343,18 +2307,6 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
                 print 'Complete ChangeLog of %s is available in %s' % (upstream_tarball_basename, changelog_basename)
         else:
             print 'No ChangeLog information found.'
-
-
-    # recompress as bz2
-    # not fatal if fails
-    if upstream_tarball.endswith('.gz') or upstream_tarball.endswith('.tgz'):
-        try:
-            old_upstream_tarball_basename = os.path.basename(upstream_tarball)
-            upstream_tarball = self._collab_gz_to_bz2_internal(upstream_tarball)
-            print '%s has been recompressed to bz2.' % old_upstream_tarball_basename
-            upstream_tarball_basename = os.path.basename(upstream_tarball)
-        except self.OscCollabCompressError, e:
-            print >>sys.stderr, e.msg
 
 
     # try applying the patches with rpm quilt
