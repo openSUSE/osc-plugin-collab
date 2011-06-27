@@ -104,6 +104,7 @@ bundle-lang-gnome-extras:upstream:
 build-compare:upstream:
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+cairo-compmgr:httpls:http://download.tuxfamily.org/ccm/cairo-compmgr/
 check:sf:28255|check
 cherrytree:httpls:http://www.giuspen.com/software/
 chmsee:google:chmsee
@@ -114,6 +115,7 @@ clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
+colord:httpls:http://people.freedesktop.org/~hughsient/releases/
 comix:sf:146377
 conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
@@ -231,6 +233,7 @@ ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
 #iso-codes:ftpls:ftp://pkg-isocodes.alioth.debian.org/pub/pkg-isocodes/
 iso-codes:httpls:http://translationproject.org/domain/iso_4217.html
 istanbul:httpls:http://live.gnome.org/Istanbul
+itstool:httpls:http://files.itstool.org/itstool/
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libatasmart:httpls:http://0pointer.de/public/
@@ -279,6 +282,7 @@ metacity-themes:upstream:
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
+mrim-prpl:google:mrim-prpl|mrim-prpl
 mx:subdirhttpls:http://source.clutter-project.org/sources/mx/
 nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
@@ -337,9 +341,11 @@ sobby:httpls:http://releases.0x539.de/sobby/
 solang:httpls:http://projects.gnome.org/solang/download
 sofia-sip:sf:143636|sofia-sip
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
+sparkleshare:httpls:https://github.com/hbons/SparkleShare/downloads
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
+synapse:lp:synapse-project
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-butterfly:httpls:http://telepathy.freedesktop.org/releases/telepathy-butterfly/

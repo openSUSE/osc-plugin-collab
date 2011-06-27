@@ -214,6 +214,7 @@ NetworkManager-openswan:
 NetworkManager-openvpn:
 NetworkManager-pptp:
 NetworkManager-vpnc:
+aisleriot:
 anjuta-extras:
 at-spi2-atk:
 at-spi2-core:
@@ -255,6 +256,7 @@ gnome-build:
 gnome-color-manager:
 gnome-commander:
 gnome-common:
+gnome-contacts:
 gnome-dvb-daemon:
 gnome-games-extra-data:
 gnome-icon-theme-extras:
@@ -400,6 +402,7 @@ byzanz:
 cairo:
 cairomm:
 cairo-clock:
+cairo-compmgr:
 check:
 cherrytree:
 chmsee:
@@ -409,7 +412,9 @@ clutter:
 clutter-cairo:
 clutter-gst:
 clutter-gtk:
+cogl:
 colorblind:
+colord:
 comix:
 computertemp:
 conglomerate:
@@ -523,6 +528,7 @@ inkscape:
 ipod-sharp:
 iso-codes:
 istanbul:
+itstool:
 json-glib:
 ldtp:
 libao-pulse:
@@ -573,6 +579,7 @@ metatheme-gilouche:gtk2-metatheme-gilouche
 mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
+mrim-prlp:pidgin-mrim
 mx:
 nautilus-search-tool:
 nautilus-terminal:
@@ -633,11 +640,13 @@ sobby:
 sofia-sip:
 solang:
 sound-theme-freedesktop:
+sparkleshare:
 specto:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
 startup-notification:
 swfdec:
 swfdec-mozilla:
+synapse:
 system-config-printer:
 tangerine:
 tango-icon-theme:
@@ -870,13 +879,13 @@ zlib:
 #evolution-caldav:
 #evolution-couchdb:
 #evolution-data-server-dbus:
-#evolution-groupwise:
+evolution-groupwise:
 #evolution-jescs:
 #evolution-scalix:
 #firestarter:
 #fontilus:
 #fpm:
-#frogr:
+frogr:
 #g-print:
 #gASQL:
 #gDesklets:
@@ -892,7 +901,7 @@ zlib:
 #gedit2:
 #gegl-vala:
 #geglmm:
-#geocode-glib:
+geocode-glib:
 #gevice:
 #gfax:
 #gfloppy:
