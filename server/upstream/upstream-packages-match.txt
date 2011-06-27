@@ -285,6 +285,7 @@ gob2:
 gobject-introspection:
 goffice:
 goobox:
+goocanvas|1.90:goocanvas1
 goocanvas:
 goocanvasmm:
 # No package in openSUSE
@@ -294,6 +295,7 @@ grisbi:
 gtetrinet:
 gthumb:
 gtk+|1.3:gtk
+gtkmm-documentation|2.90:gtkmm2-documentation
 gtkmm-documentation:
 gtranslator:
 gwget:
