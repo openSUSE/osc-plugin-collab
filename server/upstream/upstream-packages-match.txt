@@ -579,7 +579,7 @@ metatheme-gilouche:gtk2-metatheme-gilouche
 mod_dnssd:apache2-mod_dnssd
 monsoon:
 mozilla-bonobo:
-mrim-prlp:pidgin-mrim
+mrim-prpl:pidgin-mrim
 mx:
 nautilus-search-tool:
 nautilus-terminal:
@@ -1095,4 +1095,7 @@ geocode-glib:
 #ximian-connector:
 #ximian-setup-tools:
 #xml-i18n-tools:
+## Added to ftp.gnome.org recently
+#gedit-cossa:
+#latexila:
 #yelp-tools:
