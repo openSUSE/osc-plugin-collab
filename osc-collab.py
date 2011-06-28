@@ -1974,7 +1974,7 @@ def _collab_update_spec(self, spec_file, upstream_version):
         print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
         return (False, None, None, False)
 
-    re_spec_header = re.compile('^(# spec file for package \S* \(Version )\S*(\).*)', re.IGNORECASE)
+    re_spec_header_with_version = re.compile('^(# spec file for package \S*) \(Version \S*\)(.*)', re.IGNORECASE)
     re_spec_define = re.compile('^%define\s+(\S*)\s+(\S*)', re.IGNORECASE)
     re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
     re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
@@ -2001,9 +2001,10 @@ def _collab_update_spec(self, spec_file, upstream_version):
             os.write(fdout, line)
             break
 
-        match = re_spec_header.match(line)
+        match = re_spec_header_with_version.match(line)
         if match:
-            os.write(fdout, '%s%s%s\n' % (match.group(1), upstream_version, match.group(2)))
+            # We drop the "(Version XYZ)" part of the header
+            os.write(fdout, '%s%s\n' % (match.group(1), match.group(2)))
             continue
 
         match = re_spec_define.match(line)
