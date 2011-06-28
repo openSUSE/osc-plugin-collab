@@ -1959,7 +1959,7 @@ def _collab_subst_defines(self, s, defines):
     return s
 
 
-def _collab_update_spec(self, spec_file, upstream_version):
+def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
         return (False, None, None, False)
@@ -1979,7 +1979,7 @@ def _collab_update_spec(self, spec_file, upstream_version):
     re_spec_name = re.compile('^Name:\s*(\S*)', re.IGNORECASE)
     re_spec_version = re.compile('^(Version:\s*)(\S*)', re.IGNORECASE)
     re_spec_release = re.compile('^(Release:\s*)\S*', re.IGNORECASE)
-    re_spec_source = re.compile('^Source0?:\s*(\S*)', re.IGNORECASE)
+    re_spec_source = re.compile('^(Source0?:\s*)(\S*)', re.IGNORECASE)
     re_spec_prep = re.compile('^%prep', re.IGNORECASE)
 
     defines = {}
@@ -2033,8 +2033,19 @@ def _collab_update_spec(self, spec_file, upstream_version):
 
         match = re_spec_source.match(line)
         if match:
-            old_source = os.path.basename(match.group(1))
-            os.write(fdout, line)
+            old_source = os.path.basename(match.group(2))
+            if upstream_url:
+                non_basename = os.path.dirname(upstream_url)
+                new_source = os.path.basename(upstream_url)
+                for key in [ 'name', '_name', 'version' ]:
+                    if defines.has_key(key):
+                        if key == 'version':
+                            new_source = new_source.replace(upstream_version, '%%{%s}' % key)
+                        else:
+                            new_source = new_source.replace(defines[key], '%%{%s}' % key)
+                os.write(fdout, '%s%s/%s\n' % (match.group(1), non_basename, new_source))
+            else:
+                os.write(fdout, line)
             continue
 
         os.write(fdout, line)
@@ -2221,7 +2232,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     spec_file = os.path.join(package_dir, package + '.spec')
     if not os.path.exists(spec_file) and package != branch_package:
         spec_file = os.path.join(package_dir, branch_package + '.spec')
-    (updated, old_tarball, old_version, define_in_source) = self._collab_update_spec(spec_file, pkg.upstream_version)
+    (updated, old_tarball, old_version, define_in_source) = self._collab_update_spec(spec_file, pkg.upstream_url, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
