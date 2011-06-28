@@ -1583,8 +1583,12 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
         try:
             # disable package tracking: the current directory might not be a
             # project directory
+            # Rationale: for new contributors, checking out in the current
+            # directory is easier as it hides some complexity. However, this
+            # results in possibly mixing packages from different projects,
+            # which makes package tracking not work at all.
             old_tracking = conf.config['do_package_tracking']
-            conf.config['do_package_tracking'] = 0
+            conf.config['do_package_tracking'] = self._collab_get_config(None, 'collab_do_package_tracking', default = 0)
             checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
             print 'Package %s has been checked out.' % branch_package
@@ -3222,6 +3226,9 @@ def _collab_add_config_option(self, section, key, value):
 
 
 def _collab_get_compatible_apiurl_for_config(self, config, apiurl):
+    if apiurl is None:
+        return None
+
     if config.has_section(apiurl):
         return apiurl
 
