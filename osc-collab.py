@@ -260,6 +260,27 @@ class OscCollabPackage:
         cls._import = parent.OscCollabImport.m_import
 
 
+    @classmethod
+    def _fix_upstream_url(cls, url):
+        if url.startswith('http://sourceforge.net/projects/') and url.endswith('/download'):
+            # We want to move from:
+            #    http://sourceforge.net/projects/gtkpod/files%2Fgtkpod%2Fgtkpod-2.0.2%2Fgtkpod-2.0.2.tar.gz/download
+            # to:
+            #    http://downloads.sourceforge.net/project/gtkpod/gtkpod/gtkpod-2.0.2/gtkpod-2.0.2.tar.gz
+
+            # strip leading 'http://sourceforge.net/projects/' and trailing '/download'
+            stripped = url[32:-9]
+            # find project name
+            prjname = stripped[:stripped.find('/')]
+            # find path to file
+            path = stripped[stripped.find('%2F') + 3:]
+            path = path.replace('%2F', '/')
+
+            return 'http://downloads.sourceforge.net/project/%s/%s' % (prjname, path)
+
+        return url
+
+
     def __init__(self, node, project):
         self.name = None
         self.version = None
@@ -304,7 +325,7 @@ class OscCollabPackage:
                 if upstream is not None:
                     url = upstream.find('url')
                     if url is not None:
-                        self.upstream_url = url.text
+                        self.upstream_url = self._fix_upstream_url(url.text)
 
             link = node.find('link')
             if link is not None:
