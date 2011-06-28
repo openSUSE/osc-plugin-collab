@@ -2034,6 +2034,7 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
         match = re_spec_source.match(line)
         if match:
             old_source = os.path.basename(match.group(2))
+
             if upstream_url:
                 non_basename = os.path.dirname(upstream_url)
                 new_source = os.path.basename(upstream_url)
@@ -2043,9 +2044,18 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
                             new_source = new_source.replace(upstream_version, '%%{%s}' % key)
                         else:
                             new_source = new_source.replace(defines[key], '%%{%s}' % key)
-                os.write(fdout, '%s%s/%s\n' % (match.group(1), non_basename, new_source))
-            else:
-                os.write(fdout, line)
+
+                # Only use the URL as source if the basename looks like the
+                # real name of the file.
+                # If '?' is in the basename, then we likely have some dynamic
+                # page to download the file, which means the wrong basename.
+                # For instance:
+                # download.php?package=01&release=61&file=01&dummy=gwenhywfar-4.1.0.tar.gz
+                if '?' not in new_source:
+                    os.write(fdout, '%s%s/%s\n' % (match.group(1), non_basename, new_source))
+                    continue
+
+            os.write(fdout, line)
             continue
 
         os.write(fdout, line)
