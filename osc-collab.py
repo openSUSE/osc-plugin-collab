@@ -3066,7 +3066,7 @@ def _collab_build(self, apiurl, user, projects, msg, repos, archs):
 #######################################################################
 
 
-def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False):
+def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -3124,6 +3124,14 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
             # we volunteerly restrict the project list to parent_project for
             # self-consistency and more safety
             self._collab_forward(apiurl, [ parent_project ], result)
+
+        if not no_unreserve:
+            try:
+                reservation = self._collab_api.is_package_reserved((parent_project,), package, no_devel_project = True)
+                if reservation and reservation.user == user:
+                    self._collab_unreserve((parent_project,), (package,), user, no_devel_project = True)
+            except self.OscCollabWebError, e:
+                print >>sys.stderr, e.msg
     else:
         print 'Package was not submitted to %s' % parent_project
 
@@ -3383,6 +3391,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
+@cmdln.option('--nu', '--no-unreserve', action='store_true',
+              dest='no_unreserve',
+              help='do not unreserve the package')
 @cmdln.option('--nodevelproject', action='store_true',
               dest='no_devel_project',
               help='do not use development project of the packages')
@@ -3458,7 +3469,7 @@ def do_collab(self, subcmd, opts, *args):
         osc collab forward [--project=PROJECT] ID
 
         osc collab build [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
-        osc collab buildsubmit [--forward|-f] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
+        osc collab buildsubmit [--forward|-f] [--no-unreserve|--nu] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
     ${cmd_option_list}
     """
 
@@ -3564,7 +3575,7 @@ def do_collab(self, subcmd, opts, *args):
         self._collab_build(apiurl, user, projects, opts.msg, repos, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward)
+        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward, no_unreserve = opts.no_unreserve)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
