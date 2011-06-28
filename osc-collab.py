@@ -3421,6 +3421,9 @@ def _collab_parse_arg_packages(self, packages):
 def do_collab(self, subcmd, opts, *args):
     """${cmd_name}: Various commands to ease collaboration on the openSUSE Build Service.
 
+    A tutorial and detailed documentation are available at:
+      http://en.opensuse.org/openSUSE:Osc_Collab
+
     "todo" (or "t") will list the packages that need some action.
 
     "todoadmin" (or "ta") will list the packages from the project that need
