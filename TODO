@@ -7,7 +7,6 @@
 + 'osc gnome update':
   - print information about rpmlint of this package
   - prefill the .changes with "Updated translations"?
-    (Magnus has a patch)
   - check integrity with md5sum/sha1sum
   - integrate with spec-cleaner
 + 'osc gnome todoadmin':
@@ -24,9 +23,5 @@
 + 'osc gnome buildsubmit':
   - do nothing with --forward option when the user has not enough privilege to
     forward
-  - automatically unreserve (if it was reserved), with a --no-unreserve option.
 + Kill usage of http_GET, http_PUT (?)
 + Output an error if the project passed with --project does not exist (?)
-+ "osc gnome todo" should group packages somehow.  At the very least,
-   packages that are part of the GNOME release cycle (and their blessed
-   dependencies?) should be grouped apart.
