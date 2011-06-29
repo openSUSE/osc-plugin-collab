@@ -78,14 +78,14 @@ def print_header(title=''):
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="robots" content="index,follow" />
 
-  <link rel="stylesheet" href="theme/css/style.css" type="text/css" media="screen" title="All" charset="utf-8" />
-  <link rel="stylesheet" href="theme/css/print.css" type="text/css" media="print" charset="utf-8">
+  <link rel="stylesheet" href="http://static.opensuse.org/themes/bento/css/style.css" type="text/css" media="screen" title="All" charset="utf-8" />
+  <link rel="stylesheet" href="http://static.opensuse.org/themes/bento/css/print.css" type="text/css" media="print" charset="utf-8">
 
-  <script src="theme/js/jquery.js" type="text/javascript" charset="utf-8"></script>
-  <script src="theme/js/global-navigation-data-en_US.js" type="text/javascript" charset="utf-8"></script>
-  <script src="theme/js/global-navigation.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://static.opensuse.org/themes/bento/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://static.opensuse.org/themes/bento/js/l10n/global-navigation-data-en.js" type="text/javascript" charset="utf-8"></script>
+  <script src="http://static.opensuse.org/themes/bento/js/global-navigation.js" type="text/javascript" charset="utf-8"></script>
 
-  <link rel="icon" type="image/png" href="theme/images/favicon.png" />
+  <link rel="icon" type="image/png" href="http://static.opensuse.org/themes/bento/images/favicon.png" />
   <title>%s</title>
  </head>
 
@@ -93,7 +93,7 @@ def print_header(title=''):
   <!-- Start: Header -->
   <div id="header">
     <div id="header-content" class="container_12">
-      <a id="header-logo" href="./"><img src="theme/images/header-logo.png" width="46" height="26" alt="Header Logo" /></a>
+      <a id="header-logo" href="./"><img src="http://static.opensuse.org/themes/bento/images/header-logo.png" width="46" height="26" alt="Header Logo" /></a>
       <ul id="global-navigation">
         <li id="item-downloads"><a href="http://en.opensuse.org/openSUSE:Browse#downloads">Downloads</a></li>
         <li id="item-support"><a href="http://en.opensuse.org/openSUSE:Browse#support">Support</a></li>
