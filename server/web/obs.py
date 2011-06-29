@@ -108,16 +108,18 @@ def colortype_to_style(colortype):
 #######################################################################
 
 
-def get_legend():
+def get_legend_box():
     s = ''
+    s += '<div id="some_other_content" class="box box-shadow alpha clear-both">\n'
+    s += '<h2 class="box-header">Legend</h2>\n'
     s += '<table>\n'
-    s += '<tr><th>Legend</th></tr>\n'
     s += '<tr><td>Package is perfect!</td></tr>\n'
     s += '<tr><td%s>Does not exist in parent</td></tr>\n' % colortype_to_style('not-in-parent')
     s += '<tr><td%s>Has delta with parent</td></tr>\n' % colortype_to_style('delta')
     s += '<tr><td%s>No upstream data</td></tr>\n' % colortype_to_style('no-upstream')
     s += '<tr><td%s>Upstream has a new version</td></tr>\n' % colortype_to_style('new-upstream')
     s += '</table>\n'
+    s += '</div>\n'
 
     return s
 
@@ -303,6 +305,5 @@ libhttp.print_header('Versions of packages in the Build Service for project %s' 
 
 print libdbhtml.get_project_selector(current_project = project, use_future = use_future)
 print table
-print get_legend()
 
-libhttp.print_foot()
+libhttp.print_foot(additional_box = get_legend_box())

@@ -112,7 +112,7 @@ def print_header(title=''):
         <!-- Begin Content Area -->
 ''' % title
 
-def print_foot():
+def print_foot(additional_box = ''):
     timestr = libdbcore.get_db_mtime()
     print '''
       <!-- End Content Area -->
@@ -130,6 +130,8 @@ def print_foot():
           </ul>
       </div>
 
+%s
+
     </div>
 
   </div>
@@ -146,7 +148,7 @@ def print_foot():
     </div>
   </div>
  </body>
-</html>''' % timestr
+</html>''' % (additional_box, timestr)
 
 # At some point we wanted to have this too:
 
