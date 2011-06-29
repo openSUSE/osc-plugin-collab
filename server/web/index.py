@@ -47,14 +47,18 @@ if config.cgitb:
 
 
 libhttp.print_html_header()
-libhttp.print_header("Some playground for openSUSE")
+libhttp.print_header("Our playground for openSUSE")
 
 print '''
-<h2>Some playground for openSUSE</h2>
-<p>You can find here some playground where the GNOME team put some scripts related to openSUSE. The original idea was to analyze our packages to know what kind of work is needed, but this has evolved in various things.
-It's now a good place to get some data about openSUSE. And foremost, it hosts a service that makes it easier to collaborate within the openSUSE GNOME team, via <a href="http://en.opensuse.org/openSUSE:Osc_Collab">osc collab</a>. This service is available for all other teams: you can use it, it's already working for your projects!</p>
+<h2>Our playground for openSUSE</h2>
 
-<p>On the left side, you can find a few links that are, hopefully, self-explanatory :-)</p>
+<p>If you're simply interested in browsing the openSUSE source, head to the <a href="http://build.opensuse.org/">openSUSE instance</a> of the <a href="http://open-build-service.org/">Open Build Service</a>! No need to login, just browse the packages; the most interesting projects are the ones starting with "openSUSE:", like <a href="https://build.opensuse.org/project/show?project=openSUSE%3AFactory">openSUSE:Factory</a>.</p>
+
+<p>The original idea behind this playground was to analyze the packages of the GNOME team to know what kind of work is needed, but it has evolved and it's now a good place to get some data about all packages in openSUSE.</a>
+
+<p>This playground also hosts a service that makes it easier to collaborate within the openSUSE community, via <a href="http://en.opensuse.org/openSUSE:Osc_Collab">osc collab</a>. This service works for all packages part of <a href="https://build.opensuse.org/project/show?project=openSUSE%3AFactory">openSUSE:Factory</a>!</p>
+
+<p>On the right side, you can find a few links that are, hopefully, self-explanatory :-)</p>
 '''
 
 libhttp.print_foot()
