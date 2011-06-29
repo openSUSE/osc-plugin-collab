@@ -50,8 +50,6 @@ from libdissector import libinfoxml
 # Upload with:
 # # Upload the db
 # curl --silent --show-error -F dbfile=@/path/to/obs.db http://server/path/obs-upload.py
-# # Uploade the package list
-# curl --silent --show-error -F destfile=packagelist.db -F dbfile=@/path/to/packagelist.db http://server/path/obs-upload.py
 
 UPLOAD_DIR = config.datadir
 AUTHORIZED_IPS = config.upload_authorized_ips
@@ -92,11 +90,6 @@ def save_uploaded_file_internal (filename, fileitem, tmppath, destpath):
         if size < 1024*1024*8:
             print 'File upload cancelled: file is not as expected'
             log_error ('File upload cancelled: obs.db too small (%d)' % size)
-            return False
-    elif filename == 'packagelist.db':
-        if size < 1024*200 or size > 1024*1024:
-            print 'File upload cancelled: file is not as expected'
-            log_error ('File upload cancelled: packagelist.db too small (%d)' % size)
             return False
 
     try:
@@ -198,7 +191,7 @@ print 'content-type: text/html\n'
 form = cgi.FieldStorage()
 if form.has_key('destfile'):
     dest = form.getfirst('destfile')
-    if not dest in ['obs.db', 'packagelist.db']:
+    if not dest in ['obs.db']:
         print 'Unknown file'
         sys.exit(0)
 else:

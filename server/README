@@ -11,8 +11,6 @@ obs-db/data/defaults.conf.
 There are runme scripts that should help people get started. Ideally,
 those scripts would be run in cron jobs:
 
- ./runme: a good period would be every 12 hours or every day
-
  ./obs-db/runme: a good period should be between every 10 minutes and
                  every 30 minutes (it has to be tweaked)
 
@@ -28,15 +26,6 @@ The solution is to edit ssl.py, as mentioned in the above bugs.
 
 
 #######################################################################
-
-
-runme:
-    Small helper to call list-packages.
-
-list-packages:
-        Create a small database containing the list of packages in
-        various Build Service projects. This is needed by the browse.py
-        web script.
 
 
 obs-db/

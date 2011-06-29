@@ -123,7 +123,6 @@ def print_foot(additional_box = ''):
       <div id="some_other_content" class=" box box-shadow alpha clear-both navigation">
         <h2 class="box-header">Navigation</h2>
           <ul class="navigation">
-            <li><a href="./browse">Browse openSUSE Source</a></li>
             <li><a href="./obs">Packages Status</a></li>
             <li><a href="./patch">Patches Status</a></li>
             <!--<li><a href="./rpmlint">Rpmlint Status</a></li>-->
