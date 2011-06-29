@@ -1,8 +1,7 @@
-#!/usr/bin/python2.5
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
-# Copyright (c) 2009, Novell, Inc.
+# Copyright (c) 2009-2010, Novell, Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -49,10 +48,11 @@ except ImportError:
     except ImportError:
         import cElementTree as ET
 
-import libdb
+import config
+import libdbcore
 
 # Directory containing XML caches for projects data
-XML_CACHE_DIR = '/tmp/obs-xml'
+XML_CACHE_DIR = os.path.join(config.datadir, 'xml')
 
 
 #######################################################################
@@ -64,7 +64,7 @@ class InfoXmlException(Exception):
         self.msg = value
 
     def __str__(self):
-        return repr(self.msg)
+        return self.msg
 
 
 #######################################################################
@@ -72,24 +72,19 @@ class InfoXmlException(Exception):
 
 class InfoXml:
 
-    pkg_query = 'SELECT %s.* FROM %s, %s WHERE %s.name = ? AND %s.name = ? AND %s.project = %s.id;' % (libdb.SrcPackage.sql_table, libdb.Project.sql_table, libdb.SrcPackage.sql_table, libdb.Project.sql_table, libdb.SrcPackage.sql_table, libdb.SrcPackage.sql_table, libdb.Project.sql_table)
-    version_query = 'SELECT %s.version FROM %s, %s WHERE %s.name = ? AND %s.name = ? AND %s.project = %s.id ;' % (libdb.SrcPackage.sql_table, libdb.Project.sql_table, libdb.SrcPackage.sql_table, libdb.Project.sql_table, libdb.SrcPackage.sql_table, libdb.SrcPackage.sql_table, libdb.Project.sql_table)
+    version_query = 'SELECT %s.version FROM %s, %s WHERE %s.name = ? AND %s.name = ? AND %s.project = %s.id ;' % (libdbcore.table_srcpackage, libdbcore.table_project, libdbcore.table_srcpackage, libdbcore.table_project, libdbcore.table_srcpackage, libdbcore.table_srcpackage, libdbcore.table_project)
 
-    def __init__(self, db = None, use_future = False):
-        if not db:
-            self.packagedb = libdb.PackageDB(use_future)
-            self.db = self.packagedb.db
-            self.cursor = self.packagedb.cursor
+    def __init__(self, obsdb = None, use_future = False):
+        if not obsdb:
+            self.obsdb = libdbcore.ObsDb(use_future)
         else:
-            self.packagedb = None
-            self.db = db
-            if not self.db.row_factory:
-                self.db.row_factory = sqlite3.Row
-            if self.db.row_factory != sqlite3.Row:
-                raise InfoXmlException('Internal error: database object already has a row factory')
-            self.cursor = self.db.cursor()
+            if not isinstance(obsdb, libdbcore.ObsDb):
+                raise TypeError, 'obsdb must be a ObsDb instance'
+            self.obsdb = obsdb
 
-        self.cursor_helper = self.db.cursor()
+        self.cursor = self.obsdb.cursor_new()
+        self.cursor_helper = self.obsdb.cursor_new()
+
         self.cache_dir = XML_CACHE_DIR
         self.version_cache = None
 
@@ -104,7 +99,7 @@ class InfoXml:
     def _find_version_for(self, project, package):
         # We have a cache here because we want to avoid doing SQL queries.
         # See also comment in create_cache()
-    	if self.version_cache is None:
+        if self.version_cache is None:
             return self._find_version_for_sql(project, package)
 
         try:
@@ -126,7 +121,7 @@ class InfoXml:
         error = row['obs_error']
         error_details = row['obs_error_details']
 
-        link_version = None
+        parent_version = None
         devel_version = None
 
         package = ET.Element('package')
@@ -138,7 +133,9 @@ class InfoXml:
                 node.set('project', link_project)
                 if link_package and link_package != name:
                     node.set('package', link_package)
-            link_version = self._find_version_for(link_project, link_package or name)
+            parent_version = self._find_version_for(link_project, link_package or name)
+        elif default_parent_project:
+            parent_version = self._find_version_for(default_parent_project, name)
 
         if devel_project:
             node = ET.SubElement(package, 'devel')
@@ -147,14 +144,14 @@ class InfoXml:
                 node.set('package', devel_package)
             devel_version = self._find_version_for(devel_project, devel_package or name)
 
-        if version or upstream_version or link_version or devel_version:
+        if version or upstream_version or parent_version or devel_version:
             node = ET.SubElement(package, 'version')
             if version:
                 node.set('current', version)
             if upstream_version:
                 node.set('upstream', upstream_version)
-            if link_version:
-                node.set('parent', link_version)
+            if parent_version:
+                node.set('parent', parent_version)
             if devel_version:
                 node.set('devel', devel_version)
 
@@ -170,6 +167,9 @@ class InfoXml:
                 node.set('delta', 'true')
             else:
                 node.set('delta', 'false')
+        # deep delta (ie, delta in non-link packages)
+        elif has_delta:
+            node = ET.SubElement(package, 'delta')
 
         if error:
             node = ET.SubElement(package, 'error')
@@ -180,13 +180,13 @@ class InfoXml:
         return package
 
     def get_package_node(self, project, package):
-        self.cursor.execute(self.pkg_query, (project, package))
+        self.cursor.execute(libdbcore.pkg_query, (project, package))
         row = self.cursor.fetchone()
         
         if not row:
             raise InfoXmlException('Non existing package in project %s: %s' % (project, package))
 
-        self.cursor_helper.execute('''SELECT * FROM %s WHERE name = ?;''' % libdb.Project.sql_table, (project,))
+        self.cursor_helper.execute('''SELECT * FROM %s WHERE name = ?;''' % libdbcore.table_project, (project,))
 
         row_helper = self.cursor_helper.fetchone()
         parent_project = row_helper['parent']
@@ -200,7 +200,7 @@ class InfoXml:
             if prj_node is not None:
                 return prj_node
 
-        self.cursor.execute('''SELECT * FROM %s WHERE name = ?;''' % libdb.Project.sql_table, (project,))
+        self.cursor.execute('''SELECT * FROM %s WHERE name = ?;''' % libdbcore.table_project, (project,))
         row = self.cursor.fetchone()
 
         if not row:
@@ -215,15 +215,41 @@ class InfoXml:
         if parent_project:
             prj_node.set('parent', parent_project)
         if ignore_upstream:
-            prj_node.set('parent', 'true')
+            prj_node.set('ignore_upstream', 'true')
 
         if not filled:
             return prj_node
 
-        self.cursor.execute('''SELECT * FROM %s WHERE project = ? ORDER BY name;''' % libdb.SrcPackage.sql_table, (project_id,))
+        should_exist = {}
+        self.cursor.execute('''SELECT A.name AS parent_project, B.name AS parent_package, B.devel_package FROM %s AS A, %s AS B WHERE A.id = B.project AND devel_project = ? ORDER BY A.name, B.name;''' % (libdbcore.table_project, libdbcore.table_srcpackage), (project,))
+        for row in self.cursor:
+            should_parent_project = row['parent_project']
+            should_parent_package = row['parent_package']
+            should_devel_package = row['devel_package'] or should_parent_package
+            should_exist[should_devel_package] = (should_parent_project, should_parent_package)
+
+        self.cursor.execute('''SELECT * FROM %s WHERE project = ? ORDER BY name;''' % libdbcore.table_srcpackage, (project_id,))
         for row in self.cursor:
             pkg_node = self._get_package_node_from_row(row, ignore_upstream, parent_project)
             prj_node.append(pkg_node)
+            try:
+                del should_exist[row['name']]
+            except KeyError:
+                pass
+
+        if len(should_exist) > 0:
+            missing_node = ET.Element('missing')
+            for (should_package_name, (should_parent_project, should_parent_package)) in should_exist.iteritems():
+                missing_pkg_node = ET.Element('package')
+
+                missing_pkg_node.set('name', should_package_name)
+                missing_pkg_node.set('parent_project', should_parent_project)
+                if should_package_name != should_parent_package:
+                    missing_pkg_node.set('parent_package', should_parent_package)
+
+                missing_node.append(missing_pkg_node)
+
+            prj_node.append(missing_node)
 
         if write_cache:
             self._write_cache(project, prj_node)
@@ -273,7 +299,7 @@ class InfoXml:
         if not os.access(self.cache_dir, os.W_OK):
             raise InfoXmlException('No write access.')
 
-        self.cursor.execute('''SELECT name FROM %s;''' % libdb.Project.sql_table)
+        self.cursor.execute('''SELECT name FROM %s;''' % libdbcore.table_project)
         # We need to first take all names because cursor will be re-used
         projects = [ row['name'] for row in self.cursor ]
 
@@ -287,7 +313,7 @@ class InfoXml:
         self.version_cache = {}
         for project in projects:
             self.version_cache[project] = {}
-        self.cursor.execute('''SELECT A.name, A.version, B.name AS project FROM %s AS A, %s AS B WHERE A.project = B.id;''' % (libdb.SrcPackage.sql_table, libdb.Project.sql_table))
+        self.cursor.execute('''SELECT A.name, A.version, B.name AS project FROM %s AS A, %s AS B WHERE A.project = B.id;''' % (libdbcore.table_srcpackage, libdbcore.table_project))
         for row in self.cursor:
             self.version_cache[row['project']][row['name']] = row['version']
 
@@ -296,10 +322,10 @@ class InfoXml:
             if verbose:
                 print 'Wrote cache for %s.' % project
 
-if __name__ == '__main__':
-    try:
-        info = InfoXml()
-        info.cache_dir = XML_CACHE_DIR + '-test'
-        info.create_cache()
-    except KeyboardInterrupt:
-        pass
+#if __name__ == '__main__':
+#    try:
+#        info = InfoXml()
+#        info.cache_dir = XML_CACHE_DIR + '-test'
+#        info.create_cache()
+#    except KeyboardInterrupt:
+#        pass

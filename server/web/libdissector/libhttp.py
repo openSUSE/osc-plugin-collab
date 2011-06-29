@@ -1,10 +1,46 @@
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from cgi import escape
-import os
-import time
+#
+# Copyright (c) 2008-2010, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@oepnsuse.org>
+#
 
-import libdb as db
+#
+# The included HTML code here is the design from the openSUSE project.
+# FIXME: find the right copyright/license for it.
+#
+
+import config
+import libdbcore
 
 def print_text_header():
     print 'Content-type: text/plain'
@@ -107,11 +143,10 @@ def print_header(title='', secondary_title=''):
         </div>
         <div class="box_content">
          <ul class="navlist">
-          <li><a href="./browse.py">Browse openSUSE Source</a></li>
-          <li><a href="./obs.py">GNOME:Factory Status</a></li>
-          <li><a href="./srcpackage.py">G:F Source Packages</a></li>
-          <li><a href="./patch.py">G:F Patches</a></li>
-          <li><a href="./rpmlint.py">G:F Rpmlint</a></li>
+          <li><a href="./browse">Browse openSUSE Source</a></li>
+          <li><a href="./obs">Packages Status</a></li>
+          <li><a href="./patch">Patches Status</a></li>
+          <!--<li><a href="./rpmlint">Rpmlint Status</a></li>-->
          </ul>
         </div>
         <div class="box_bottom_row">
@@ -131,7 +166,7 @@ def print_header(title='', secondary_title=''):
         <div class="box_content_row">
          <div class="box_content" id="banner_content">
           <div id="slogan">
-       <img src="./images/local/analyze.png" alt="Analyze it (prototype, GNOME-related packages)" />
+            <img src="./images/local/analyze.png" alt="Analyze it (prototype)" />
           </div>
          </div>
         </div>
@@ -159,7 +194,7 @@ def print_header(title='', secondary_title=''):
 ''' % (title, secondary_title)
 
 def print_foot():
-    timestr = time.strftime('%d/%m/%Y (%H:%M UTC)', db.get_db_mtime())
+    timestr = libdbcore.get_db_mtime()
     print '''
 <!-- End Content Area -->
           <div style="clear:both;"></div>
@@ -260,18 +295,23 @@ def get_arg(form, name, default_value = None):
     else:
         return default_value
 
-def print_project_selector(cursor, project):
-    cursor.execute('''SELECT name FROM %s ORDER BY UPPER(name);''' % db.Project.sql_table)
-    print '<form action="%s">' % escape(os.environ['SCRIPT_NAME'])
-    print 'Project:'
-    print '<select name="project">'
-    for row in cursor:
-        escaped_name = escape(row['name'])
-        if row['name'] == project:
-            selected = ' selected'
-        else:
-            selected = ''
-        print '<option value="%s"%s>%s</option>' % (escaped_name, selected, escaped_name)
-    print '</select>'
-    print '<input type="submit" value="choose">'
-    print '</form>'
+def get_arg_bool(form, name, default_value = False):
+    if default_value:
+        default = '1'
+    else:
+        default = '0'
+
+    value = get_arg(form, name, default)
+    try:
+        return (int(value) == 1)
+    except ValueError:
+        return default_value
+
+def get_project(form):
+    return get_arg(form, 'project', config.default_project)
+
+def get_srcpackage(form):
+    ret = get_arg(form, 'srcpackage')
+    if not ret:
+        ret = get_arg(form, 'package')
+    return ret

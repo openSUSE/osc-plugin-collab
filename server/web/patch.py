@@ -1,100 +1,211 @@
-#!/usr/bin/python2.5
+#!/usr/bin/env python
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
-from libdb import *
-from libhttp import *
-import cgi
-from cgi import escape
-import cgitb; cgitb.enable()
+#
+# Copyright (c) 2008-2010, Novell, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#  * Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+#  * Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#  * Neither the name of the <ORGANIZATION> nor the names of its contributors
+#    may be used to endorse or promote products derived from this software
+#    without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+#
+# (Licensed under the simplified BSD license)
+#
+# Authors: Vincent Untz <vuntz@opensuse.org>
+#
+
+
 import os
 import sys
 
-form = cgi.FieldStorage()
-srcpackage_var = get_arg(form, 'srcpackage')
-tag_var = get_arg(form, 'tag')
+import cgi
+from cgi import escape
 
-print_html_header()
+from libdissector import buildservice
+from libdissector import config
+from libdissector import libdbcore
+from libdissector import libdbhtml
+from libdissector import libhttp
 
-if srcpackage_var:
-    if tag_var:
-        title = 'Information about patches tagged "%s" in source package "%s"' % (escape(tag_var), escape(srcpackage_var))
+if config.cgitb:
+    import cgitb; cgitb.enable()
+
+
+#######################################################################
+
+
+def get_page_title(project, srcpackage, tag):
+    if project and srcpackage and tag:
+        return 'Patches tagged %s for package %s in project %s' % (escape(tag), escape(srcpackage), escape(project))
+    elif project and srcpackage:
+        return 'Patches for package %s in project %s' % (escape(srcpackage), escape(project))
+    elif project and tag:
+        return 'Patches tagged %s in project %s' % (escape(tag), escape(project))
+    elif project:
+        return 'Patches in project %s' % (escape(project))
     else:
-        title = 'Information about patches in source package "%s"' % escape(srcpackage_var)
-elif tag_var:
-    title = 'Information about patches tagged "%s"' % escape(tag_var)
-else:
-    title = 'Query openSUSE patches'
-print_header(title)
+        return 'Patches'
 
-db = PackageDB()
 
-if srcpackage_var:
-    srcpackage = SrcPackage.get_from_db(srcpackage_var, db.cursor)
-    if not srcpackage or srcpackage.id == -1:
-        print '<h1>No source package named "%s"</h1>' % escape(srcpackage_var)
-    else:
-        if tag_var:
-            print '<h1>Patches tagged "%s" in "%s"</h1>' % (escape(tag_var), escape(srcpackage_var))
-        else:
-            print '<h1>Patches in "%s"</h1>' % escape(srcpackage_var)
+#######################################################################
 
-        if srcpackage.is_obs_link and srcpackage.srcmd5 != '':
-            api_source_args = '?rev=' + srcpackage.srcmd5
-        else:
-            api_source_args = ''
 
-        print '<pre>'
-        for patch in srcpackage.patches:
-            if not tag_var or tag_var == patch.tag or (tag_var == 'None' and patch.tag == ''):
-                ret = "%s: <a href=\"https://api.opensuse.org/public/source/GNOME:Factory/%s/%s%s\">%s</a>" % (patch.number, srcpackage.name, patch.filename, api_source_args, patch.filename)
-                if patch.disabled != 0:
-                    ret = ret + " (not applied)"
-                print ret
-        print '</pre>'
-
-elif tag_var:
-    db.cursor.execute('''SELECT id FROM %s WHERE name = ?;''' % Project.sql_table, ('GNOME:Factory',))
+def get_package(db, project, srcpackage, tag):
+    db.cursor.execute(libdbcore.pkg_query, (project, srcpackage))
     row = db.cursor.fetchone()
-    if row:
-        project_id = row['id']
-    else:
-        project_id = -1
+    
+    if not row:
+        return 'Error: package %s does not exist in project %s' % (escape(project), escape(srcpackage))
 
-    if tag_var == 'None':
+    if row['is_obs_link'] and row['srcmd5']:
+        rev = row['srcmd5']
+    else:
+        rev = None
+
+    if tag:
+        db.cursor.execute('''SELECT * FROM %s WHERE srcpackage = ? AND tag = ? ORDER BY nb_in_pack;''' % libdbcore.table_patch, (row['id'], tag))
+    else:
+        db.cursor.execute('''SELECT * FROM %s WHERE srcpackage = ? ORDER BY nb_in_pack;''' % libdbcore.table_patch, (row['id'],))
+
+    s = ''
+    s += '<pre>\n'
+
+    count = 0
+    for row in db.cursor:
+        count += 1
+        url = buildservice.get_source_url(project, srcpackage, row['filename'], rev, True)
+        s += '%s: <a href=\"%s\">%s</a>' % (row['nb_in_pack'], url, row['filename'])
+        if row['disabled'] != 0:
+            s += ' (not applied)'
+        s += '\n'
+
+    s += '</pre>\n'
+
+    if tag:
+        s = '<h1>%d patches tagged %s for package %s in project %s</h1>\n' % (count, escape(tag), escape(srcpackage), escape(project)) + s
+    else:
+        s = '<h1>%d patches for package %s in project %s</h1>\n' % (count, escape(srcpackage), escape(project)) + s
+
+    return s
+
+
+#######################################################################
+
+
+def get_project(db, project, tag):
+    db.cursor.execute('''SELECT id FROM %s WHERE name = ?;''' % libdbcore.table_project, (project,))
+    row = db.cursor.fetchone()
+    
+    if not row:
+        return 'Error: project %s does not exist' % escape(project)
+
+    project_id = row['id']
+
+    if tag == 'None':
         tag_sql = ''
     else:
-        tag_sql = tag_var
-    db.cursor.execute('''SELECT COUNT(*) FROM %s, %s WHERE tag = ? AND %s.srcpackage = %s.id AND %s.project = ?;''' % (Patch.sql_table, SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, SrcPackage.sql_table), (tag_sql, project_id))
-    row = db.cursor.fetchone()
-    print '<h1>%s patches tagged "%s"</h1>' % (escape(str(row[0])), tag_var)
-    db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND tag = ? AND %s.project = ? GROUP BY srcpackage ORDER BY c DESC;''' % (SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, SrcPackage.sql_table), (tag_sql, project_id))
-    for row in db.cursor:
-        print '<a href="./srcpackage.py?srcpackage=%s">%s</a>: <a href="%s?srcpackage=%s&amp;tag=%s">%s</a><br />' % (escape(row['n']), escape(row['n']), escape(os.environ['SCRIPT_NAME']), escape(row['n']), escape(tag_var), escape(str(row['c'])))
+        tag_sql = tag
 
-else:
-    db.cursor.execute('''SELECT id FROM %s WHERE name = ?;''' % Project.sql_table, ('GNOME:Factory',))
-    row = db.cursor.fetchone()
-    if row:
-        project_id = row['id']
+    if tag:
+        db.cursor.execute('''SELECT COUNT(*) FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? AND tag = ?;''' % (libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage) , (project_id, tag_sql))
     else:
-        project_id = -1
-
-    db.cursor.execute('''SELECT COUNT(*) FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ?;''' % (Patch.sql_table, SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, SrcPackage.sql_table), (project_id,))
+        db.cursor.execute('''SELECT COUNT(*) FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ?;''' % (libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage) , (project_id,))
+    
     row = db.cursor.fetchone()
-    print '<h1>%s patches</h1>' % escape(str(row[0]))
+    count = escape(str(row[0]))
 
-    print '<h2>Order by tag</h2>'
-    db.cursor.execute('''SELECT COUNT(*) AS c, tag FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY tag ORDER BY c DESC;''' % (Patch.sql_table, SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, SrcPackage.sql_table), (project_id,))
-    for row in db.cursor:
-        if row['tag'] == '':
-            tag = 'None'
-        else:
-            tag = escape(row['tag'])
-        print '<a href="%s?tag=%s">%s</a>: %s<br />' % (escape(os.environ['SCRIPT_NAME']), tag, tag, escape(str(row['c'])))
+    s = ''
 
-    print '<h2>Order by source package</h2>'
-    db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY srcpackage ORDER BY c DESC;''' % (SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, Patch.sql_table, SrcPackage.sql_table, SrcPackage.sql_table), (project_id,))
-    for row in db.cursor:
-        print '<a href="./srcpackage.py?srcpackage=%s">%s</a>: <a href="%s?srcpackage=%s">%s</a><br />' % (escape(row['n']), escape(row['n']), escape(os.environ['SCRIPT_NAME']), escape(row['n']), escape(str(row['c'])))
+    if tag:
+        s += '<h1>%s patches tagged %s in project %s</h1>\n' % (count, escape(tag), escape(project))
 
-print_foot()
+        db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? AND tag = ? GROUP BY srcpackage ORDER BY c DESC;''' % (libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id, tag_sql))
+        for row in db.cursor:
+            s += '<a href="%s?project=%s&amp;srcpackage=%s&amp;tag=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), escape(row['n']), escape(tag or ''), escape(row['n']), escape(str(row['c'])))
+
+    else:
+        s += '<h1>%s patches in project %s</h1>\n' % (count, escape(project))
+
+        s += '<h2>Order by tag</h2>\n'
+
+        db.cursor.execute('''SELECT COUNT(*) AS c, tag FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY tag ORDER BY c DESC;''' % (libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id,))
+
+        for row in db.cursor:
+            if row['tag'] == '':
+                row_tag = 'None'
+            else:
+                row_tag = escape(row['tag'])
+
+            s += '<a href="%s?project=%s&amp;tag=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), row_tag, row_tag, escape(str(row['c'])))
+
+        s += '<h2>Order by source package</h2>\n'
+
+        db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY srcpackage ORDER BY c DESC;''' % (libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id,))
+        for row in db.cursor:
+            s += '<a href="%s?project=%s&amp;srcpackage=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), escape(row['n']), escape(row['n']), escape(str(row['c'])))
+
+    return s
+
+
+#######################################################################
+
+
+def get_page_content(db, project, srcpackage, tag):
+    if not project:
+        return 'Error: no project specified'
+
+    if srcpackage:
+        return get_package(db, project, srcpackage, tag)
+    else:
+        return get_project(db, project, tag)
+
+
+#######################################################################
+
+
+form = cgi.FieldStorage()
+
+if form.has_key('future'):
+    use_future = True
+else:
+    use_future = False
+
+libhttp.print_html_header()
+
+project = libhttp.get_project(form)
+srcpackage = libhttp.get_srcpackage(form)
+tag = libhttp.get_arg(form, 'tag')
+
+db = libdbcore.ObsDb(use_future)
+
+title = get_page_title(project, srcpackage, tag)
+content = get_page_content(db, project, srcpackage, tag)
+
+libhttp.print_header(title)
+
+if not srcpackage:
+    print libdbhtml.get_project_selector(current_project = project, db = db)
+print content
+
+libhttp.print_foot()
