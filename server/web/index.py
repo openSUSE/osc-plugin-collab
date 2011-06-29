@@ -52,7 +52,7 @@ libhttp.print_header("Some playground for openSUSE")
 print '''
 <h2>Some playground for openSUSE</h2>
 <p>You can find here some playground where the GNOME team put some scripts related to openSUSE. The original idea was to analyze our packages to know what kind of work is needed, but this has evolved in various things.
-It's now a good place to get some data about openSUSE. And foremost, it hosts a service that makes it easier to collaborate within the openSUSE GNOME team, via <a href="http://en.opensuse.org/GNOME/OscGnome">osc gnome</a>. This service is available for all other teams: you can use it, it's already working for your projects!</p>
+It's now a good place to get some data about openSUSE. And foremost, it hosts a service that makes it easier to collaborate within the openSUSE GNOME team, via <a href="http://en.opensuse.org/openSUSE:Osc_Collab">osc collab</a>. This service is available for all other teams: you can use it, it's already working for your projects!</p>
 
 <p>On the left side, you can find a few links that are, hopefully, self-explanatory :-)</p>
 '''
