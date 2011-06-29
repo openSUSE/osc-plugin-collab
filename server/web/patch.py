@@ -103,9 +103,9 @@ def get_package(db, project, srcpackage, tag):
     s += '</pre>\n'
 
     if tag:
-        s = '<h1>%d patches tagged %s for package %s in project %s</h1>\n' % (count, escape(tag), escape(srcpackage), escape(project)) + s
+        s = '<h2>%d patches tagged %s for package %s in project %s</h2>\n' % (count, escape(tag), escape(srcpackage), escape(project)) + s
     else:
-        s = '<h1>%d patches for package %s in project %s</h1>\n' % (count, escape(srcpackage), escape(project)) + s
+        s = '<h2>%d patches for package %s in project %s</h2>\n' % (count, escape(srcpackage), escape(project)) + s
 
     return s
 
@@ -138,16 +138,18 @@ def get_project(db, project, tag):
     s = ''
 
     if tag:
-        s += '<h1>%s patches tagged %s in project %s</h1>\n' % (count, escape(tag), escape(project))
+        s += '<h2>%s patches tagged %s in project %s</h2>\n<p>\n' % (count, escape(tag), escape(project))
 
         db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? AND tag = ? GROUP BY srcpackage ORDER BY c DESC;''' % (libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id, tag_sql))
         for row in db.cursor:
             s += '<a href="%s?project=%s&amp;srcpackage=%s&amp;tag=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), escape(row['n']), escape(tag or ''), escape(row['n']), escape(str(row['c'])))
 
-    else:
-        s += '<h1>%s patches in project %s</h1>\n' % (count, escape(project))
+        s += '</p>\n'
 
-        s += '<h2>Order by tag</h2>\n'
+    else:
+        s += '<h2>%s patches in project %s</h2>\n' % (count, escape(project))
+
+        s += '<h3>Order by tag</h3>\n<p>\n'
 
         db.cursor.execute('''SELECT COUNT(*) AS c, tag FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY tag ORDER BY c DESC;''' % (libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id,))
 
@@ -159,11 +161,13 @@ def get_project(db, project, tag):
 
             s += '<a href="%s?project=%s&amp;tag=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), row_tag, row_tag, escape(str(row['c'])))
 
-        s += '<h2>Order by source package</h2>\n'
+        s += '</p>\n<h3>Order by source package</h3>\n<p>\n'
 
         db.cursor.execute('''SELECT COUNT(*) AS c, %s.name AS n FROM %s, %s WHERE %s.srcpackage = %s.id AND %s.project = ? GROUP BY srcpackage ORDER BY c DESC;''' % (libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_patch, libdbcore.table_srcpackage, libdbcore.table_srcpackage), (project_id,))
         for row in db.cursor:
             s += '<a href="%s?project=%s&amp;srcpackage=%s">%s</a>: %s<br />\n' % (escape(os.environ['SCRIPT_NAME']), escape(project), escape(row['n']), escape(row['n']), escape(str(row['c'])))
+
+        s += '</p>\n'
 
     return s
 

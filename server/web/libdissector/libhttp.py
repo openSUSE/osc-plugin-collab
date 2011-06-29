@@ -71,164 +71,79 @@ def print_foot_raw():
 </body>
 </html>'''
 
-def print_header(title='', secondary_title=''):
+def print_header(title=''):
     print '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="robots" content="index,follow" />
+
+  <link rel="stylesheet" href="theme/css/style.css" type="text/css" media="screen" title="All" charset="utf-8" />
+  <link rel="stylesheet" href="theme/css/print.css" type="text/css" media="print" charset="utf-8">
+
+  <script src="theme/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+  <script src="theme/js/global-navigation-data-en_US.js" type="text/javascript" charset="utf-8"></script>
+  <script src="theme/js/global-navigation.js" type="text/javascript" charset="utf-8"></script>
+
+  <link rel="icon" type="image/png" href="theme/images/favicon.png" />
   <title>%s</title>
-  <link href="./css/local/include.css" rel="stylesheet" type="text/css" />
  </head>
 
 <body>
-  <div id="page_margins">
-   <div id="page" class="hold_floats">
-    <!-- Begin 2 column main part -->
-    <div id="main">
-     <!-- Begin left column -->
-     <div id="col1">
-      <div id="col1_content" class="clearfix">
-       <!-- Begin Logo -->
-       <div class="grey_box" id="logo">
-        <div class="box_content_row">
-         <div class="box_content" id="logo_content">
-          <a href="./"><img src="./images/common/geeko.jpg" alt="openSUSE" /></a>
-         </div>
-        </div>
-        <div class="box_bottom_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-       </div>
-       <!-- End Logo -->
-       <!-- Begin openSUSE navigation -->
-       <div class="grey_box">
-        <div class="box_top_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-        <div class="box_title_row">
-         <div class="box_title">
-          openSUSE
-         </div>
-        </div>
-        <div class="box_content">
-         <ul class="navlist">
-          <li style="list-style-image: url(css/common/images/liDot_download.png)"><a href="http://software.opensuse.org/">Get Software</a></li>
-          <li style="list-style-image: url(css/common/images/liDot_wiki.png)"><a href="http://en.opensuse.org/">Wiki</a></li>
-          <li style="list-style-image: url(css/common/images/liDot_build.png)"><a href="http://build.opensuse.org/">Build Software</a></li>
-          <li style="list-style-image: url(css/common/images/liDot_community.png)"><a href="http://users.opensuse.org/">User Directory</a></li>          
-          <li style="list-style-image: url(css/common/images/liDot_wiki.png)"><a href="http://news.opensuse.org/">News</a></li>
-          <li style="list-style-image: url(css/common/images/liDot_wiki.png)"><a href="http://shop.opensuse.org/">Shop</a></li>
-         </ul>
-        </div>
-        <div class="box_bottom_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-       </div>
-       <br />
-       <!-- End openSUSE navigation -->
-       <!-- Begin custom navigation -->
-       <div class="green_box">
-        <div class="box_top_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-        <div class="box_title_row">
-         <div class="box_title">
-          Queries
-         </div>
-        </div>
-        <div class="box_content">
-         <ul class="navlist">
-          <li><a href="./browse">Browse openSUSE Source</a></li>
-          <li><a href="./obs">Packages Status</a></li>
-          <li><a href="./patch">Patches Status</a></li>
-          <!--<li><a href="./rpmlint">Rpmlint Status</a></li>-->
-         </ul>
-        </div>
-        <div class="box_bottom_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-       </div>
-       <br />
-       <!-- End custom navigation -->
-      </div>
-     </div>
-     <!-- End left column -->
-     <!-- Begin right cloumn -->
-     <div id="col3">
-      <div id="col3_content" class="clearfix">
-       <div class="green_box_double" id="banner_green">
-        <div class="box_content_row">
-         <div class="box_content" id="banner_content">
-          <div id="slogan">
-            <img src="./images/local/analyze.png" alt="Analyze it (prototype)" />
-          </div>
-         </div>
-        </div>
-        <div class="box_bottom_row">
-         <div class="box_left"></div>
-         <div class="box_right"></div>
-        </div>
-       </div>
-       <br style="clear: right;" />
-       <div id="contentarea">
-        <div class="grey_box_double">
-         <div class="box_top_row">
-          <div class="box_left"></div>
-          <div class="box_right"></div>
-         </div>
-         <div class="box_title_row">
-          <div class="box_title">
-           <div id="page_actions">
-            <b style="font-size:120%%">%s</b>
-           </div>
-          </div>
-         </div>
-         <div class="box_content" id="bodyContent">
-           <!-- Begin Content area-->
-''' % (title, secondary_title)
+  <!-- Start: Header -->
+  <div id="header">
+    <div id="header-content" class="container_12">
+      <a id="header-logo" href="./"><img src="theme/images/header-logo.png" width="46" height="26" alt="Header Logo" /></a>
+      <ul id="global-navigation">
+        <li id="item-downloads"><a href="http://en.opensuse.org/openSUSE:Browse#downloads">Downloads</a></li>
+        <li id="item-support"><a href="http://en.opensuse.org/openSUSE:Browse#support">Support</a></li>
+        <li id="item-community"><a href="http://en.opensuse.org/openSUSE:Browse#community">Community</a></li>
+        <li id="item-development"><a href="http://en.opensuse.org/openSUSE:Browse#development">Development</a></li>
+      </ul>
+    </div>
+  </div>
+  <!-- End: Header -->
+
+  <!-- Start: Main Content Area -->
+  <div id="content" class="container_16 content-wrapper">
+
+    <div class="box box-shadow grid_12 alpha">
+
+        <!-- Begin Content Area -->
+''' % title
 
 def print_foot():
     timestr = libdbcore.get_db_mtime()
     print '''
-<!-- End Content Area -->
-          <div style="clear:both;"></div>
-         </div>
-         <div class="box_footer_row">
-          <div id="page_footer" class="box_footer">
-           <!-- Begin Footer -->
-           This is still a prototype and is not officially endorsed by the openSUSE project.
-           <br />
-           Database last updated on %s
-           <br />
-           This site uses the <a href="http://www.yaml.de">YAML</a> CSS framework.
-           <br />
-           <a href="http://en.opensuse.org/openSUSE:About" title="openSUSE:About">About openSUSE</a>
-           <br />
-           <a href="http://www.novell.com/linux/"><img src="./images/common/founded_novell.gif" alt="Founded by Novell" /></a>
-           <!-- End Footer -->
-          </div>
-         </div>
-         <div class="box_bottom_row">
-          <div class="box_left"></div>
-          <div class="box_right"></div>
-         </div>
-        </div>
-       </div>
-      </div>
-      <!-- IE Column Clearing -->
-      <div id="ie_clearing">&nbsp;</div>
-      <!-- Ende: IE Column Clearing -->
-     </div>
-     <!-- End right column -->
+      <!-- End Content Area -->
     </div>
-    <!-- End 2 cloumn main part -->
-   </div>
+
+    <div class="column grid_4 omega">
+
+      <div id="some_other_content" class=" box box-shadow alpha clear-both navigation">
+        <h2 class="box-header">Navigation</h2>
+          <ul class="navigation">
+            <li><a href="./browse">Browse openSUSE Source</a></li>
+            <li><a href="./obs">Packages Status</a></li>
+            <li><a href="./patch">Patches Status</a></li>
+            <!--<li><a href="./rpmlint">Rpmlint Status</a></li>-->
+          </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Start: included footer part -->
+  <div id="footer" class="container_12">
+    <!-- TODO: add content -->
+    <div id="footer-legal" class="border-top grid_12">
+      <p>
+        This is still a prototype and is not officially endorsed by the openSUSE project.
+        <br />
+        Database last updated on %s
+      </p>
+    </div>
   </div>
  </body>
 </html>''' % timestr

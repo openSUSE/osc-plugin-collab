@@ -45,6 +45,7 @@ def get_project_selector(current_project = None, db = None, use_future = False):
     db.cursor.execute('''SELECT name FROM %s ORDER BY UPPER(name);''' % libdbcore.table_project)
     s = ''
     s += '<form action="%s">\n' % escape(os.environ['SCRIPT_NAME'])
+    s += '<p>\n'
     s += 'Project:\n'
     s += '<select name="project">\n'
     for row in db.cursor:
@@ -56,6 +57,7 @@ def get_project_selector(current_project = None, db = None, use_future = False):
         s += '<option value="%s"%s>%s</option>\n' % (escaped_name, selected, escaped_name)
     s += '</select>\n'
     s += '<input type="submit" value="choose">\n'
+    s += '</p>\n'
     s += '</form>\n'
 
     return s

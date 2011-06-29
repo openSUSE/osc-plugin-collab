@@ -233,7 +233,7 @@ def get_table_for_project(project, only_missing_upstream, use_future):
                 break
 
     s = ''
-    s += '<h1>%s source packages in %s</h1>\n' % (len(packages), escape(project))
+    s += '<h2>%s source packages in %s</h2>\n' % (len(packages), escape(project))
     s += '<table>\n'
 
     s += '<tr>\n'
