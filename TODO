@@ -1,4 +1,3 @@
-+ Put server code in git.
 + Make --xs the default for 'osc gnome t'
   For t: maybe check the version in the home project?
 + add 'osc gnome validate/check': make sure that committing is fine

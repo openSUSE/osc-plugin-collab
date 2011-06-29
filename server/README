@@ -1,5 +1,6 @@
 This directory contains the script used to create the server-side
-database used by the osc collab plugin.
+database used by the osc collab plugin, as well as the web API used by
+the plugin.
 
 All data created will be created in ./cache/ unless the cache-dir option
 in a configuration file is set. You can choose the configuration file
@@ -136,3 +137,13 @@ upstream/
 
     upstream-tarballs.txt:
         Information about where to find the latest upstream tarballs.
+
+web/
+    Contains the web API that the osc collab plugin connects to. To
+    deploy it, simply install the files on a web server, copy
+    libdissector/config.py.in to libdissector/config.py and edit it for
+    the configuration.
+
+    Note that there is a .htaccess file in libdissector/. You will want
+    to check it will not be ignored because of the apache configuration
+    before deploying.
