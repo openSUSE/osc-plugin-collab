@@ -67,7 +67,7 @@ METADATA_DBFILE = os.path.join(config.datadir, 'metadata.db')
 #  + when breaking compatibility in the XML, then increase X and reset Y to 0.
 #  + when adding a new feature in a compatible way, increase Y.
 PROTOCOL_MAJOR = 0
-PROTOCOL_MINOR = 1
+PROTOCOL_MINOR = 2
 
 #######################################################################
 

@@ -684,7 +684,7 @@ class OscCollabObs:
 class OscCollabApi:
 
     _api_url = 'http://tmp.vuntz.net/opensuse-packages/api'
-    _supported_api = '0.1'
+    _supported_api = '0.2'
     _supported_api_major = '0'
 
     def __init__(self, parent, apiurl = None):
