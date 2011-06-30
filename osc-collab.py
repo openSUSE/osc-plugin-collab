@@ -161,15 +161,17 @@ class OscCollabComment:
     comment = None
     firstline = None
 
-    def __init__(self, project = None, package = None, user = None, comment = None, node = None):
+    def __init__(self, project = None, package = None, date = None, user = None, comment = None, node = None):
         if node is None:
             self.project = project
             self.package = package
+            self.date = date
             self.user = user
             self.comment = comment
         else:
             self.project = node.get('project')
             self.package = node.get('package')
+            self.date = node.get('date')
             self.user = node.get('user')
             self.comment = node.text
         if self.comment is None:
@@ -1676,11 +1678,16 @@ def _collab_comment(self, projects, packages, no_devel_project = False):
         if not comment:
             print 'Package %s is not commented.' % package
         else:
+            if comment.date:
+                date_str = ' on %s' % comment.date
+            else:
+                date_str = ''
+
             if comment.project not in projects or comment.package != package:
-                print 'Package %s in %s (devel package for %s) is commented by %s:' % (comment.package, comment.project, package, comment.user)
+                print 'Package %s in %s (devel package for %s) is commented by %s%s:' % (comment.package, comment.project, package, comment.user, date_str)
                 print _indent(comment.comment)
             else:
-                print 'Package %s in %s is commented by %s:' % (package, comment.project, comment.user)
+                print 'Package %s in %s is commented by %s%s:' % (package, comment.project, comment.user, date_str)
                 print _indent(comment.comment)
 
 
