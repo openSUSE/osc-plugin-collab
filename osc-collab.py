@@ -1284,7 +1284,7 @@ def _collab_table_print_header(self, template, title):
 #######################################################################
 
 
-def _collab_todo_internal(self, apiurl, project, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     # get all versions of packages
     try:
         prj = self._collab_api.get_project_details(project)
@@ -1293,27 +1293,15 @@ def _collab_todo_internal(self, apiurl, project, show_details, ignore_comments, 
         print >>sys.stderr, e.msg
         return (None, None)
 
-    # get the list of reserved packages
-    try:
-        reserved = self._collab_api.get_reserved_packages((project,))
-        reserved_packages = [ reservation.package for reservation in reserved ]
-    except self.OscCollabWebError, e:
-        reserved_packages = []
-        print >>sys.stderr, e.msg
+    # get the list of reserved packages for this project
+    reserved_packages = [ reservation.package for reservation in all_reserved if reservation.project == project ]
 
-    if not ignore_comments:
-        firstline_comments = {}
-        # get the list of commented packages
-        try:
-            commented = self._collab_api.get_commented_packages((project,))
-            for comment in commented:
-                firstline_comments[comment.package] = comment.firstline
-            commented_packages = firstline_comments.keys()
-        except self.OscCollabWebError, e:
-            commented_packages = []
-            print >>sys.stderr, e.msg
-    else:
-        commented_packages = []
+    # get the list of commented packages for this project
+    firstline_comments = {}
+    for comment in all_commented:
+        if comment.project == project:
+            firstline_comments[comment.package] = comment.firstline
+    commented_packages = firstline_comments.keys()
 
     # get the packages submitted
     requests_to = self.OscCollabObs.get_request_list_to(project)
@@ -1390,8 +1378,23 @@ def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_
     packages = []
     parent_project = None
 
+    # get the list of reserved packages
+    try:
+        reserved = self._collab_api.get_reserved_packages(projects)
+    except self.OscCollabWebError, e:
+        reserved = []
+        print >>sys.stderr, e.msg
+
+    # get the list of commented packages
+    commented = []
+    if not ignore_comments:
+        try:
+            commented = self._collab_api.get_commented_packages(projects)
+        except self.OscCollabWebError, e:
+            print >>sys.stderr, e.msg
+
     for project in projects:
-        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
+        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, reserved, commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
         if not project_packages:
             continue
         packages.extend(project_packages)
