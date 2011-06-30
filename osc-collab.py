@@ -1641,6 +1641,11 @@ def _collab_listcommented(self, projects):
 
 
 def _collab_comment(self, projects, packages, no_devel_project = False):
+    def _indent(text, spaces = '  '):
+        lines = text.split('\n')
+        lines = [ spaces + line for line in lines ]
+        return '\n'.join(lines)
+
     for package in packages:
         try:
             comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
@@ -1653,10 +1658,10 @@ def _collab_comment(self, projects, packages, no_devel_project = False):
         else:
             if comment.project not in projects or comment.package != package:
                 print 'Package %s in %s (devel package for %s) is commented by %s:' % (comment.package, comment.project, package, comment.user)
-                print comment.comment
+                print _indent(comment.comment)
             else:
                 print 'Package %s in %s is commented by %s:' % (package, comment.project, comment.user)
-                print comment.comment
+                print _indent(comment.comment)
 
 
 #######################################################################
