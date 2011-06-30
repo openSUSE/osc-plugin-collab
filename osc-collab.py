@@ -153,6 +153,57 @@ class OscCollabReservation:
 #######################################################################
 
 
+class OscCollabComment:
+
+    project = None
+    package = None
+    user = None
+    comment = None
+
+    def __init__(self, project = None, package = None, user = None, comment = None, node = None):
+        if node is None:
+            self.project = project
+            self.package = package
+            self.user = user
+            self.comment = comment
+        else:
+            self.project = node.get('project')
+            self.package = node.get('package')
+            self.user = node.get('user')
+            self.comment = node.text
+
+
+    def __len__(self):
+        return 4
+
+
+    def __getitem__(self, key):
+        if not type(key) == int:
+            raise TypeError
+
+        if key == 0:
+            return self.project
+        elif key == 1:
+            return self.package
+        elif key == 2:
+            return self.user
+        elif key == 3:
+            return self.comment
+        else:
+            raise IndexError
+
+
+    def is_relevant(self, projects, package):
+        if self.project not in projects:
+            return False
+        if self.package != package:
+            return False
+        return True
+
+
+#######################################################################
+
+
 class OscCollabRequest():
 
     req_id = -1
@@ -632,6 +683,7 @@ class OscCollabApi:
         self.Error = parent.OscCollabWebError
         self.Cache = parent.OscCollabCache
         self.Reservation = parent.OscCollabReservation
+        self.Comment = parent.OscCollabComment
         self.Project = parent.OscCollabProject
         self.Package = parent.OscCollabPackage
         if apiurl:
@@ -674,12 +726,23 @@ class OscCollabApi:
         return self._get_api_url_for('reserve', project, projects, package, False)
 
 
-    def _get_root_for_url(self, url, error_prefix, cache_file = None, cache_age = 10):
+    def _get_comment_url(self, project = None, projects = None, package = None):
+        return self._get_api_url_for('comment', project, projects, package, False)
+
+
+    def _get_root_for_url(self, url, error_prefix, post_data = None, cache_file = None, cache_age = 10):
+        if post_data and type(post_data) != dict:
+            raise self.Error('%s: Internal error when posting data' % error_prefix)
+
         try:
-            if cache_file:
+            if cache_file and not post_data:
                 fd = self.Cache.get_url_fd_with_cache(url, cache_file, cache_age)
             else:
-                fd = urllib2.urlopen(url)
+                if post_data:
+                    data = urlencode(post_data)
+                else:
+                    data = None
+                fd = urllib2.urlopen(url, data)
         except urllib2.HTTPError, e:
             raise self.Error('%s: %s' % (error_prefix, e.msg))
 
@@ -715,6 +778,14 @@ class OscCollabApi:
         return root
 
 
+    def _meta_append_no_devel_project(self, url, no_devel_project):
+        if not no_devel_project:
+            return url
+
+        data = urlencode({'ignoredevel': 'true'})
+        return self._append_data_to_url(url, data)
+
+
     def _parse_reservation_node(self, node):
         reservation = self.Reservation(node = node)
         if not reservation.project or not reservation.package:
@@ -737,25 +808,17 @@ class OscCollabApi:
         return reserved_packages
 
 
-    def _reserve_append_no_devel_project(self, url, no_devel_project):
-        if not no_devel_project:
-            return url
-
-        data = urlencode({'ignoredevel': 'true'})
-        return self._append_data_to_url(url, data)
-
-
     def is_package_reserved(self, projects, package, no_devel_project = False):
         '''
             Only returns something if the package is really reserved.
         '''
         url = self._get_reserve_url(projects = projects, package = package)
-        url = self._reserve_append_no_devel_project(url, no_devel_project)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot look if package %s is reserved' % package)
 
         for reservation in root.findall('reservation'):
             item = self._parse_reservation_node(reservation)
-            if not item or (no_devel_project and not item.is_relevant(projects, package)):
+            if item is None or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
                 # We continue to make sure there are no other relevant entries
@@ -769,7 +832,7 @@ class OscCollabApi:
         url = self._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'set', 'user': username})
         url = self._append_data_to_url(url, data)
-        url = self._reserve_append_no_devel_project(url, no_devel_project)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot reserve package %s' % package)
 
         for reservation in root.findall('reservation'):
@@ -787,7 +850,7 @@ class OscCollabApi:
         url = self._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'unset', 'user': username})
         url = self._append_data_to_url(url, data)
-        url = self._reserve_append_no_devel_project(url, no_devel_project)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
         root = self._get_root_for_url(url, 'Cannot unreserve package %s' % package)
 
         for reservation in root.findall('reservation'):
@@ -796,6 +859,85 @@ class OscCollabApi:
                 continue
             if item.user:
                 raise self.Error('Cannot unreserve package %s: reserved by %s' % (package, item.user))
+            return item
+
+
+    def _parse_comment_node(self, node):
+        comment = self.Comment(node = node)
+        if not comment.project or not comment.package:
+            return None
+
+        return comment
+
+
+    def get_commented_packages(self, projects):
+        url = self._get_comment_url(projects = projects)
+        root = self._get_root_for_url(url, 'Cannot get list of commented packages')
+
+        commented_packages = []
+        for comment in root.findall('comment'):
+            item = self._parse_comment_node(comment)
+            if item is None or not item.user or not item.comment:
+                continue
+            commented_packages.append(item)
+
+        return commented_packages
+
+
+    def get_package_comment(self, projects, package, no_devel_project = False):
+        '''
+            Only returns something if the package is really commented.
+        '''
+        url = self._get_comment_url(projects = projects, package = package)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
+        root = self._get_root_for_url(url, 'Cannot look if package %s is commented' % package)
+
+        for comment in root.findall('comment'):
+            item = self._parse_comment_node(comment)
+            if item is None or (no_devel_project and not item.is_relevant(projects, package)):
+                continue
+            if not item.user or not item.comment:
+                # We continue to make sure there are no other relevant entries
+                continue
+            return item
+
+        return None
+
+
+    def set_package_comment(self, projects, package, username, comment, no_devel_project = False):
+        if not comment:
+            raise self.Error('Cannot set comment on package %s: empty comment' % package)
+
+        url = self._get_comment_url(projects = projects, package = package)
+        data = urlencode({'cmd': 'set', 'user': username})
+        url = self._append_data_to_url(url, data)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
+        root = self._get_root_for_url(url, 'Cannot set comment on package %s' % package, post_data = {'comment': comment})
+
+        for comment in root.findall('comment'):
+            item = self._parse_comment_node(comment)
+            if not item or (no_devel_project and not item.is_relevant(projects, package)):
+                continue
+            if not item.user:
+                raise self.Error('Cannot set comment on package %s: unknown error' % package)
+            if item.user != username:
+                raise self.Error('Cannot set comment on package %s: already commented by %s' % (package, item.user))
+            return item
+
+
+    def unset_package_comment(self, projects, package, username, no_devel_project = False):
+        url = self._get_comment_url(projects = projects, package = package)
+        data = urlencode({'cmd': 'unset', 'user': username})
+        url = self._append_data_to_url(url, data)
+        url = self._meta_append_no_devel_project(url, no_devel_project)
+        root = self._get_root_for_url(url, 'Cannot unset comment on package %s' % package)
+
+        for comment in root.findall('comment'):
+            item = self._parse_comment_node(comment)
+            if not item or (no_devel_project and not item.is_relevant(projects, package)):
+                continue
+            if item.user:
+                raise self.Error('Cannot unset comment on package %s: commented by %s' % (package, item.user))
             return item
 
 
@@ -1454,6 +1596,91 @@ def _collab_unreserve(self, projects, packages, username, no_devel_project = Fal
             continue
 
         print 'Package %s unreserved.' % package
+
+
+#######################################################################
+
+
+def _collab_listcommented(self, projects):
+    try:
+        commented_packages = self._collab_api.get_commented_packages(projects)
+    except self.OscCollabWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if len(commented_packages) == 0:
+        print 'No package commented.'
+        return
+
+    # print headers
+    # if changing the order here, then we need to change __getitem__ of
+    # Comment in the same way
+    title = ('Project', 'Package', 'Commented by')
+    (max_project, max_package, max_username) = self._collab_table_get_maxs(title, commented_packages)
+    # trim to a reasonable max
+    max_project = min(max_project, 28)
+    max_package = min(max_package, 48)
+    max_username = min(max_username, 28)
+
+    print_line = self._collab_table_get_template(max_project, max_package, max_username)
+    self._collab_table_print_header(print_line, title)
+
+    for comment in commented_packages:
+        if comment.user:
+            print print_line % (comment.project, comment.package, comment.user)
+
+
+#######################################################################
+
+
+def _collab_comment(self, projects, package, no_devel_project = False):
+    try:
+        comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
+    except self.OscCollabWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if not comment:
+        print 'Package is not commented.'
+    else:
+        if comment.project not in projects or comment.package != package:
+            print 'Package %s in %s (devel package for %s) is commented by %s:' % (comment.package, comment.project, package, comment.user)
+            print comment.comment
+        else:
+            print 'Package %s in %s is commented by %s:' % (package, comment.project, comment.user)
+            print comment.comment
+
+
+#######################################################################
+
+
+def _collab_commentset(self, projects, package, username, comment, no_devel_project = False):
+    try:
+        comment = self._collab_api.set_package_comment(projects, package, username, comment, no_devel_project = no_devel_project)
+    except self.OscCollabWebError, e:
+        print >>sys.stderr, e.msg
+        return
+
+    if comment.project not in projects or comment.package != package:
+        print 'Comment on package %s in %s (devel package for %s) set.' % (comment.package, comment.project, package)
+    else:
+        print 'Comment on package %s set.' % package
+    print 'Do not forget to unset comment on the package when done with it:'
+    print '    osc %s commentunset %s' % (self._osc_collab_alias, package)
+
+
+#######################################################################
+
+
+def _collab_commentunset(self, projects, packages, username, no_devel_project = False):
+    for package in packages:
+        try:
+            self._collab_api.unset_package_comment(projects, package, username, no_devel_project = no_devel_project)
+        except self.OscCollabWebError, e:
+            print >>sys.stderr, e.msg
+            continue
+
+        print 'Comment on package %s unset.' % package
 
 
 #######################################################################
@@ -3460,6 +3687,15 @@ def do_collab(self, subcmd, opts, *args):
 
     "unreserve" (or "u") will remove the reservation you had on a package.
 
+    "listcommented" (or "lc") will list the commented packages.
+
+    "comment" (or "c") will look if a package is commented.
+
+    "commentset" (or "cs") will add to a package a comment you want to share
+    with other people.
+
+    "commentunset" (or "cu") will remove the comment you set on a package.
+
     "setup" (or "s") will prepare a package for work (possibly reservation,
     branch, checking out, etc.). The package will be checked out in the current
     directory.
@@ -3488,6 +3724,11 @@ def do_collab(self, subcmd, opts, *args):
         osc collab reserve [--nodevelproject] [--project=PROJECT] PKG [...]
         osc collab unreserve [--nodevelproject] [--project=PROJECT] PKG [...]
 
+        osc collab listcommented
+        osc collab comment [--nodevelproject] [--project=PROJECT] PKG
+        osc collab commentset [--nodevelproject] [--project=PROJECT] PKG COMMENT
+        osc collab commentunset [--nodevelproject] [--project=PROJECT] PKG [...]
+
         osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
         osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--project=PROJECT] PKG
 
@@ -3509,18 +3750,20 @@ def do_collab(self, subcmd, opts, *args):
         print self.OSC_COLLAB_VERSION
         return
 
-    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
+    cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'listcommented', 'lc', 'comment', 'c', 'commentset', 'cs', 'commentunset', 'cu', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
         raise oscerr.WrongArgs('Unknown %s action. Choose one of %s.' % (self._osc_collab_alias, ', '.join(cmds)))
 
     cmd = args[0]
 
     # Check arguments validity
-    if cmd in ['listreserved', 'lr', 'todo', 't', 'todoadmin', 'ta', 'build', 'b', 'buildsubmit', 'bs']:
+    if cmd in ['listreserved', 'lr', 'listcommented', 'lc', 'todo', 't', 'todoadmin', 'ta', 'build', 'b', 'buildsubmit', 'bs']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'setup', 's', 'update', 'up', 'forward', 'f']:
+    elif cmd in ['isreserved', 'ir', 'comment', 'c', 'setup', 's', 'update', 'up', 'forward', 'f']:
         min_args, max_args = 1, 1
-    elif cmd in ['reserve', 'r', 'unreserve', 'u']:
+    elif cmd in ['commentset', 'cs']:
+        min_args, max_args = 2, 2
+    elif cmd in ['reserve', 'r', 'unreserve', 'u', 'commentunset', 'cu']:
         min_args = 1
         max_args = sys.maxint
     else:
@@ -3583,6 +3826,22 @@ def do_collab(self, subcmd, opts, *args):
     elif cmd in ['unreserve', 'u']:
         packages = self._collab_parse_arg_packages(args[1:])
         self._collab_unreserve(projects, packages, user, no_devel_project = opts.no_devel_project)
+
+    elif cmd in ['listcommented', 'lc']:
+        self._collab_listcommented(projects)
+
+    elif cmd in ['comment', 'c']:
+        package = self._collab_parse_arg_packages(args[1])
+        self._collab_comment(projects, package, no_devel_project = opts.no_devel_project)
+
+    elif cmd in ['commentset', 'cs']:
+        packages = self._collab_parse_arg_packages(args[1])
+        comment = args[2]
+        self._collab_commentset(projects, packages, user, comment, no_devel_project = opts.no_devel_project)
+
+    elif cmd in ['commentunset', 'cu']:
+        packages = self._collab_parse_arg_packages(args[1:])
+        self._collab_commentunset(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['setup', 's']:
         package = self._collab_parse_arg_packages(args[1])
