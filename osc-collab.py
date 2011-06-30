@@ -1284,7 +1284,7 @@ def _collab_table_print_header(self, template, title):
 #######################################################################
 
 
-def _collab_todo_internal(self, apiurl, project, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo_internal(self, apiurl, project, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     # get all versions of packages
     try:
         prj = self._collab_api.get_project_details(project)
@@ -1302,10 +1302,13 @@ def _collab_todo_internal(self, apiurl, project, ignore_comments, exclude_commen
         print >>sys.stderr, e.msg
 
     if not ignore_comments:
+        firstline_comments = {}
         # get the list of commented packages
         try:
             commented = self._collab_api.get_commented_packages((project,))
-            commented_packages = [ comment.package for comment in commented ]
+            for comment in commented:
+                firstline_comments[comment.package] = comment.firstline
+            commented_packages = firstline_comments.keys()
         except self.OscCollabWebError, e:
             commented_packages = []
             print >>sys.stderr, e.msg
@@ -1341,11 +1344,15 @@ def _collab_todo_internal(self, apiurl, project, ignore_comments, exclude_commen
             package.version_print = '??'
 
         package.upstream_version_print = package.upstream_version
+        package.comment = ''
 
         if package.name in commented_packages:
             if exclude_commented:
                 continue
-            package.upstream_version_print += ' (c)'
+            if not show_details:
+                package.version_print += ' (c)'
+                package.upstream_version_print += ' (c)'
+            package.comment = firstline_comments[package.name]
 
         if not package.devel_needs_update():
             if exclude_devel:
@@ -1379,12 +1386,12 @@ def _collab_todo_internal(self, apiurl, project, ignore_comments, exclude_commen
 #######################################################################
 
 
-def _collab_todo(self, apiurl, projects, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     packages = []
     parent_project = None
 
     for project in projects:
-        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
+        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
         if not project_packages:
             continue
         packages.extend(project_packages)
@@ -1398,7 +1405,12 @@ def _collab_todo(self, apiurl, projects, ignore_comments, exclude_commented, exc
         print 'Nothing to do.'
         return
 
-    lines = [ (package.name, package.parent_version_print, package.version_print, package.upstream_version_print) for package in packages ]
+    show_comments = not (ignore_comments or exclude_commented) and show_details
+
+    if show_comments:
+        lines = [ (package.name, package.parent_version_print, package.version_print, package.upstream_version_print, package.comment) for package in packages ]
+    else:
+        lines = [ (package.name, package.parent_version_print, package.version_print, package.upstream_version_print) for package in packages ]
 
     # the first element in the tuples is the package name, so it will sort
     # the lines the right way for what we want
@@ -1410,27 +1422,50 @@ def _collab_todo(self, apiurl, projects, ignore_comments, exclude_commented, exc
         project_header = "Devel Project"
 
     # print headers
-    if parent_project:
-        title = ('Package', parent_project, project_header, 'Upstream')
-        (max_package, max_parent, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
+    if show_comments:
+        if parent_project:
+            title = ('Package', parent_project, project_header, 'Upstream', 'Comment')
+            (max_package, max_parent, max_devel, max_upstream, max_comment) = self._collab_table_get_maxs(title, lines)
+        else:
+            title = ('Package', project_header, 'Upstream', 'Comment')
+            (max_package, max_devel, max_upstream, max_comment) = self._collab_table_get_maxs(title, lines)
+            max_parent = 0
     else:
-        title = ('Package', project_header, 'Upstream')
-        (max_package, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
-        max_parent = 0
+        if parent_project:
+            title = ('Package', parent_project, project_header, 'Upstream')
+            (max_package, max_parent, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
+        else:
+            title = ('Package', project_header, 'Upstream')
+            (max_package, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
+            max_parent = 0
+        max_comment = 0
 
     # trim to a reasonable max
     max_package = min(max_package, 48)
     max_version = min(max(max(max_parent, max_devel), max_upstream), 20)
+    max_comment = min(max_comment, 48)
 
-    if parent_project:
-        print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version)
+    if show_comments:
+        if parent_project:
+            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version, max_comment)
+        else:
+            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_comment)
     else:
-        print_line = self._collab_table_get_template(max_package, max_version, max_version)
+        if parent_project:
+            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version)
+        else:
+            print_line = self._collab_table_get_template(max_package, max_version, max_version)
+
     self._collab_table_print_header(print_line, title)
+
     for line in lines:
         if not parent_project:
-            (package, parent_version, devel_version, upstream_version) = line
-            line = (package, devel_version, upstream_version)
+            if show_comments:
+                (package, parent_version, devel_version, upstream_version, comment) = line
+                line = (package, devel_version, upstream_version, comment)
+            else:
+                (package, parent_version, devel_version, upstream_version) = line
+                line = (package, devel_version, upstream_version)
         print print_line % line
 
 
@@ -3730,6 +3765,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('-f', '--forward', action='store_true',
               dest='forward',
               help='automatically forward to parent project if successful')
+@cmdln.option('--details', action='store_true',
+              dest='details',
+              help='show more details')
 @cmdln.option('--project', metavar='PROJECT', action='append',
               dest='projects', default=[],
               help='project to work on (default: openSUSE:Factory)')
@@ -3794,7 +3832,7 @@ def do_collab(self, subcmd, opts, *args):
     and if the build succeeds, submit the package to the development project.
 
     Usage:
-        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-commented|--xc] [--exclude-devel|--xd] [--ignore-comments|--ic] [--project=PROJECT]
+        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-commented|--xc] [--exclude-devel|--xd] [--ignore-comments|--ic] [--details] [--project=PROJECT]
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
@@ -3885,7 +3923,7 @@ def do_collab(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._collab_todo(apiurl, projects, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
+        self._collab_todo(apiurl, projects, opts.details, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
 
     elif cmd in ['todoadmin', 'ta']:
         self._collab_todoadmin(apiurl, projects, opts.include_upstream)
