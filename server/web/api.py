@@ -60,8 +60,8 @@ from libdissector import libinfoxml
 if config.cgitb:
     import cgitb; cgitb.enable()
 
-# Database containing reservations. Can be created if needed.
-RESERVATION_DBFILE = os.path.join(config.datadir, 'reservations.db')
+# Database containing metadata. Can be created if needed.
+METADATA_DBFILE = os.path.join(config.datadir, 'metadata.db')
 
 # Protocol version is X.Y.
 #  + when breaking compatibility in the XML, then increase X and reset Y to 0.
@@ -282,93 +282,110 @@ class ApiInfo(ApiGeneric):
 #######################################################################
 
 
-class ApiReserve(ApiGeneric):
+class ApiPackageMetadata(ApiGeneric):
     '''
-        api/reserve (list)
-        api/reserve/<project> (list)
-        api/reserve/<project>/<package> (list)
-        api/reserve/<project>/<package>?cmd=list
-        api/reserve/<project>/<package>?cmd=set&user=<user>
-        api/reserve/<project>/<package>?cmd=unset&user=<user>
+        api/<meta> (list)
+        api/<meta>/<project> (list)
+        api/<meta>/<project>/<package> (list)
+        api/<meta>/<project>/<package>?cmd=list
+        api/<meta>/<project>/<package>?cmd=set&user=<user>
+        api/<meta>/<project>/<package>?cmd=unset&user=<user>
 
-        api/reserve?project=aa&project=... (list)
-        api/reserve/<package>?project=aa&project=...&cmd=...
+        api/<meta>?project=aa&project=... (list)
+        api/<meta>/<package>?project=aa&project=...&cmd=...
 
         For all package-related commands, ignoredevel=1 or ignoredevel=true can
-        be used to not make the reservation work on the development package of
-        the package, but to force the commands on this package in this project.
+        be used to not make the metadata request work on the development
+        package of the package, but to force the commands on this package in
+        this project.
+
+        Subclasses should:
+          - set self.dbtable and self.command in __init__
+          - override self._create_node()
+          - override self._run_project_package_helper()
     '''
 
     def __init__(self, output, protocol, args, form):
         ApiGeneric.__init__(self, output, protocol, args, form)
 
-        self.dbreserve = None
+        self.dbmeta = None
         self.cursor = None
+
+        # Should be overridden by subclass
+        self.dbtable = ''
+        self.command = ''
 
     def __del__(self):
         if self.cursor:
             self.cursor.close()
-        if self.dbreserve:
-            self.dbreserve.close()
+        if self.dbmeta:
+            self.dbmeta.close()
 
-    def _get_reservation_database(self):
+    def _get_metadata_database(self):
         create = True
-        if os.path.exists(RESERVATION_DBFILE):
+        if os.path.exists(METADATA_DBFILE):
             create = False
-            if not os.access(RESERVATION_DBFILE, os.W_OK):
+            if not os.access(METADATA_DBFILE, os.W_OK):
                 self.output.set_result(False, 'Read-only database')
                 return False
         else:
-            dirname = os.path.dirname(RESERVATION_DBFILE)
+            dirname = os.path.dirname(METADATA_DBFILE)
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
 
-        self.dbreserve = sqlite3.connect(RESERVATION_DBFILE)
-        if not self.dbreserve:
+        self.dbmeta = sqlite3.connect(METADATA_DBFILE)
+        if not self.dbmeta:
             self.output.set_result(False, 'No access to database')
             return False
 
-        self.dbreserve.row_factory = sqlite3.Row
-        self.cursor = self.dbreserve.cursor()
+        self.dbmeta.row_factory = sqlite3.Row
+        self.cursor = self.dbmeta.cursor()
 
         if create:
-            self.cursor.execute('''CREATE TABLE reserve (date TEXT, user TEXT, package TEXT, project TEXT);''')
+            # When adding a table here, update _prune_old_metadata() and
+            # _check_no_abuse() to deal with them too.
+            self.cursor.execute('''CREATE TABLE reserve (date TEXT, user TEXT, project TEXT, package TEXT);''')
 
         return True
 
-    def _prune_old_reservations(self):
+    def _prune_old_metadata(self):
         self.cursor.execute('''DELETE FROM reserve WHERE datetime(date, '+36 hours') < datetime('now');''')
 
     def _check_no_abuse(self):
-        # just don't do anything if we have more than 200 reservations (we're
-        # getting spammed)
-        self.cursor.execute('''SELECT COUNT(*) FROM reserve;''')
+        # just don't do anything if we have more than 200 entries in a table
+        # (we're getting spammed)
+        for table in [ 'reserve' ]:
+            self.cursor.execute('''SELECT COUNT(*) FROM %s;''' % table)
 
-        row = self.cursor.fetchone()
-        if not row or row[0] > 200:
-            self.output.set_result(False, 'Database currently unavailable')
-            return False
+            row = self.cursor.fetchone()
+            if not row or row[0] > 200:
+                self.output.set_result(False, 'Database currently unavailable')
+                return False
 
         return True
 
-    def _create_node(self, project, package, user):
-        node = ET.Element('reservation')
-        node.set('project', project)
-        node.set('package', package)
-        if user:
-            node.set('user', user)
-        return node
+    def _create_node(self, row):
+        ''' Should be overridden by subclass. '''
+        # Note: row can be a sqlite3.Row or a tuple
+        return None
 
     def _list_all(self, projects = None):
         if projects:
             projects_where = ' OR '.join(['project = ?' for project in projects])
-            self.cursor.execute('''SELECT * FROM reserve WHERE %s ORDER BY project, package;''' % projects_where, projects)
+            self.cursor.execute('''SELECT * FROM %s WHERE %s ORDER BY project, package;''' % (self.dbtable, projects_where), projects)
         else:
-            self.cursor.execute('''SELECT * FROM reserve ORDER BY project, package;''')
+            self.cursor.execute('''SELECT * FROM %s ORDER BY project, package;''' % self.dbtable)
 
         for row in self.cursor:
-            node = self._create_node(row['project'], row['package'], row['user'])
+            node = self._create_node(row)
+            if node is None:
+                self.output.set_result(False, 'Internal server error')
+                return
             self.output.add_node(node)
+
+    def _run_project_package_helper(self, user, subcommand, project, package):
+        ''' Should be overridden by subclass. '''
+        return None
 
     def _run_project_package(self, project, package):
         ignore_devel = False
@@ -389,7 +406,7 @@ class ApiReserve(ApiGeneric):
             cmd = 'list'
 
         if cmd not in [ 'list', 'set', 'unset' ]:
-            self.output.set_result(False, 'Unknown "reserve" subcommand: %s' % cmd)
+            self.output.set_result(False, 'Unknown "%s" subcommand: %s' % (self.command, cmd))
             return
 
         if form.has_key('user'):
@@ -401,48 +418,28 @@ class ApiReserve(ApiGeneric):
             self.output.set_result(False, 'No user specified')
             return
 
-        self.cursor.execute('''SELECT user FROM reserve WHERE project = ? AND package = ?;''', (project, package,))
-        row = self.cursor.fetchone()
-        if row:
-            reserved_by = row['user']
-        else:
-            reserved_by = None
+        pseudorow = self._run_project_package_helper(user, cmd, project, package)
 
-        if cmd == 'list':
-            # we just want the reservation node
-            pass
-        elif cmd == 'set':
-            if reserved_by:
-                self.output.set_result(False, 'Package already reserved by %s' % reserved_by)
-            else:
-                self.cursor.execute('''INSERT INTO reserve VALUES (datetime('now'), ?, ?, ?);''', (user, package, project))
-                reserved_by = user
-        elif cmd == 'unset':
-            if not reserved_by:
-                self.output.set_result(False, 'Package not reserved')
-            elif reserved_by != user:
-                self.output.set_result(False, 'Package reserved by %s' % reserved_by)
-            else:
-                self.cursor.execute('''DELETE FROM reserve WHERE user = ? AND project = ? AND package = ?''', (user, project, package))
-                reserved_by = None
-
-        self.dbreserve.commit()
-        node = self._create_node(project, package, reserved_by)
+        self.dbmeta.commit()
+        node = self._create_node(pseudorow)
+        if node is None:
+            self.output.set_result(False, 'Internal server error')
+            return
         self.output.add_node(node)
 
     def run(self):
-        if not self._get_reservation_database():
+        if not self._get_metadata_database():
             return
 
-        # automatically remove old reservations
-        self._prune_old_reservations()
+        # automatically remove old metadata
+        self._prune_old_metadata()
 
         if not self._check_no_abuse():
             return
 
         paths = self.args.split('/')
         if len(paths) > 2:
-            self.output.set_result(False, 'Too many arguments to "reserve" command')
+            self.output.set_result(False, 'Too many arguments to "%s" command' % self.command)
             return
 
         (ok, project, package) = self._parse_standard_args(paths)
@@ -456,6 +453,75 @@ class ApiReserve(ApiGeneric):
             self._list_all((project,))
         else:
             self._run_project_package(project, package)
+
+
+#######################################################################
+
+
+class ApiReserve(ApiPackageMetadata):
+    '''
+        See ApiPackageMetadata comment, with <meta> == reserve
+    '''
+
+    def __init__(self, output, protocol, args, form):
+        ApiPackageMetadata.__init__(self, output, protocol, args, form)
+
+        self.dbtable = 'reserve'
+        self.command = 'reserve'
+
+    def _create_node(self, row):
+        # Note: row can be a sqlite3.Row or a tuple
+        keys = row.keys()
+        if not ('project' in keys and 'package' in keys):
+            return None
+
+        project = row['project']
+        package = row['package']
+        if 'user' in keys:
+            user = row['user']
+        else:
+            user = None
+
+        node = ET.Element('reservation')
+        node.set('project', project)
+        node.set('package', package)
+        if user:
+            node.set('user', user)
+        return node
+
+    def _run_project_package_helper(self, user, subcommand, project, package):
+        self.cursor.execute('''SELECT user FROM reserve WHERE project = ? AND package = ?;''', (project, package,))
+        row = self.cursor.fetchone()
+        if row:
+            reserved_by = row['user']
+        else:
+            reserved_by = None
+
+        if subcommand == 'list':
+            # we just want the reservation node
+            pass
+        elif subcommand == 'set':
+            if reserved_by:
+                self.output.set_result(False, 'Package already reserved by %s' % reserved_by)
+            else:
+                self.cursor.execute('''INSERT INTO reserve VALUES (datetime('now'), ?, ?, ?);''', (user, project, package))
+                reserved_by = user
+        elif subcommand == 'unset':
+            if not reserved_by:
+                self.output.set_result(False, 'Package not reserved')
+            elif reserved_by != user:
+                self.output.set_result(False, 'Package reserved by %s' % reserved_by)
+            else:
+                self.cursor.execute('''DELETE FROM reserve WHERE user = ? AND project = ? AND package = ?''', (user, project, package))
+                reserved_by = None
+
+        pseudorow = {}
+        pseudorow['project'] = project
+        pseudorow['package'] = package
+        if reserved_by:
+            pseudorow['user'] = reserved_by
+
+        return pseudorow
 
 
 #######################################################################
