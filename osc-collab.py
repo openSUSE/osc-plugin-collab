@@ -1554,20 +1554,21 @@ def _collab_listreserved(self, projects):
 #######################################################################
 
 
-def _collab_isreserved(self, projects, package, no_devel_project = False):
-    try:
-        reservation = self._collab_api.is_package_reserved(projects, package, no_devel_project = no_devel_project)
-    except self.OscCollabWebError, e:
-        print >>sys.stderr, e.msg
-        return
+def _collab_isreserved(self, projects, packages, no_devel_project = False):
+    for package in packages:
+        try:
+            reservation = self._collab_api.is_package_reserved(projects, package, no_devel_project = no_devel_project)
+        except self.OscCollabWebError, e:
+            print >>sys.stderr, e.msg
+            continue
 
-    if not reservation:
-        print 'Package is not reserved.'
-    else:
-        if reservation.project not in projects or reservation.package != package:
-            print 'Package %s in %s (devel package for %s) is reserved by %s.' % (reservation.package, reservation.project, package, reservation.user)
+        if not reservation:
+            print 'Package %s is not reserved.' % package
         else:
-            print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
+            if reservation.project not in projects or reservation.package != package:
+                print 'Package %s in %s (devel package for %s) is reserved by %s.' % (reservation.package, reservation.project, package, reservation.user)
+            else:
+                print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
 
 
 #######################################################################
@@ -1639,22 +1640,23 @@ def _collab_listcommented(self, projects):
 #######################################################################
 
 
-def _collab_comment(self, projects, package, no_devel_project = False):
-    try:
-        comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
-    except self.OscCollabWebError, e:
-        print >>sys.stderr, e.msg
-        return
+def _collab_comment(self, projects, packages, no_devel_project = False):
+    for package in packages:
+        try:
+            comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
+        except self.OscCollabWebError, e:
+            print >>sys.stderr, e.msg
+            continue
 
-    if not comment:
-        print 'Package is not commented.'
-    else:
-        if comment.project not in projects or comment.package != package:
-            print 'Package %s in %s (devel package for %s) is commented by %s:' % (comment.package, comment.project, package, comment.user)
-            print comment.comment
+        if not comment:
+            print 'Package %s is not commented.' % package
         else:
-            print 'Package %s in %s is commented by %s:' % (package, comment.project, comment.user)
-            print comment.comment
+            if comment.project not in projects or comment.package != package:
+                print 'Package %s in %s (devel package for %s) is commented by %s:' % (comment.package, comment.project, package, comment.user)
+                print comment.comment
+            else:
+                print 'Package %s in %s is commented by %s:' % (package, comment.project, comment.user)
+                print comment.comment
 
 
 #######################################################################
@@ -3726,12 +3728,12 @@ def do_collab(self, subcmd, opts, *args):
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
-        osc collab isreserved [--nodevelproject] [--project=PROJECT] PKG
+        osc collab isreserved [--nodevelproject] [--project=PROJECT] PKG [...]
         osc collab reserve [--nodevelproject] [--project=PROJECT] PKG [...]
         osc collab unreserve [--nodevelproject] [--project=PROJECT] PKG [...]
 
         osc collab listcommented
-        osc collab comment [--nodevelproject] [--project=PROJECT] PKG
+        osc collab comment [--nodevelproject] [--project=PROJECT] PKG [...]
         osc collab commentset [--nodevelproject] [--project=PROJECT] PKG COMMENT
         osc collab commentunset [--nodevelproject] [--project=PROJECT] PKG [...]
 
@@ -3765,11 +3767,11 @@ def do_collab(self, subcmd, opts, *args):
     # Check arguments validity
     if cmd in ['listreserved', 'lr', 'listcommented', 'lc', 'todo', 't', 'todoadmin', 'ta', 'build', 'b', 'buildsubmit', 'bs']:
         min_args, max_args = 0, 0
-    elif cmd in ['isreserved', 'ir', 'comment', 'c', 'setup', 's', 'update', 'up', 'forward', 'f']:
+    elif cmd in ['setup', 's', 'update', 'up', 'forward', 'f']:
         min_args, max_args = 1, 1
     elif cmd in ['commentset', 'cs']:
         min_args, max_args = 2, 2
-    elif cmd in ['reserve', 'r', 'unreserve', 'u', 'commentunset', 'cu']:
+    elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'comment', 'c', 'commentunset', 'cu']:
         min_args = 1
         max_args = sys.maxint
     else:
@@ -3822,8 +3824,8 @@ def do_collab(self, subcmd, opts, *args):
         self._collab_listreserved(projects)
 
     elif cmd in ['isreserved', 'ir']:
-        package = self._collab_parse_arg_packages(args[1])
-        self._collab_isreserved(projects, package, no_devel_project = opts.no_devel_project)
+        packages = self._collab_parse_arg_packages(args[1:])
+        self._collab_isreserved(projects, packages, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['reserve', 'r']:
         packages = self._collab_parse_arg_packages(args[1:])
@@ -3837,8 +3839,8 @@ def do_collab(self, subcmd, opts, *args):
         self._collab_listcommented(projects)
 
     elif cmd in ['comment', 'c']:
-        package = self._collab_parse_arg_packages(args[1])
-        self._collab_comment(projects, package, no_devel_project = opts.no_devel_project)
+        packages = self._collab_parse_arg_packages(args[1:])
+        self._collab_comment(projects, packages, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['commentset', 'cs']:
         packages = self._collab_parse_arg_packages(args[1])
