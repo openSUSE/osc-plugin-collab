@@ -1895,7 +1895,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             # results in possibly mixing packages from different projects,
             # which makes package tracking not work at all.
             old_tracking = conf.config['do_package_tracking']
-            conf.config['do_package_tracking'] = self._collab_get_config_bool(None, 'collab_do_package_tracking', default = False)
+            conf.config['do_package_tracking'] = self._collab_get_config_bool(apiurl, 'collab_do_package_tracking', default = False)
             checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
             print 'Package %s has been checked out.' % branch_package
