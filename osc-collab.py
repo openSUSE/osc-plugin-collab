@@ -159,6 +159,7 @@ class OscCollabComment:
     package = None
     user = None
     comment = None
+    firstline = None
 
     def __init__(self, project = None, package = None, user = None, comment = None, node = None):
         if node is None:
@@ -171,6 +172,10 @@ class OscCollabComment:
             self.package = node.get('package')
             self.user = node.get('user')
             self.comment = node.text
+        if self.comment is None:
+            self.firstline = None
+        else:
+            self.firstline = self.comment.split('\n')[0]
 
 
     def __len__(self):
@@ -188,7 +193,7 @@ class OscCollabComment:
         elif key == 2:
             return self.user
         elif key == 3:
-            return self.comment
+            return self.firstline
         else:
             raise IndexError
 
@@ -1615,19 +1620,20 @@ def _collab_listcommented(self, projects):
     # print headers
     # if changing the order here, then we need to change __getitem__ of
     # Comment in the same way
-    title = ('Project', 'Package', 'Commented by')
-    (max_project, max_package, max_username) = self._collab_table_get_maxs(title, commented_packages)
+    title = ('Project', 'Package', 'Commented by', 'Comment')
+    (max_project, max_package, max_username, max_comment) = self._collab_table_get_maxs(title, commented_packages)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_username = min(max_username, 28)
+    max_comment = min(max_comment, 65)
 
-    print_line = self._collab_table_get_template(max_project, max_package, max_username)
+    print_line = self._collab_table_get_template(max_project, max_package, max_username, max_comment)
     self._collab_table_print_header(print_line, title)
 
     for comment in commented_packages:
         if comment.user:
-            print print_line % (comment.project, comment.package, comment.user)
+            print print_line % (comment.project, comment.package, comment.user, comment.firstline)
 
 
 #######################################################################
