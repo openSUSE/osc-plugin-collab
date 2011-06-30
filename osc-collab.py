@@ -1895,7 +1895,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             # results in possibly mixing packages from different projects,
             # which makes package tracking not work at all.
             old_tracking = conf.config['do_package_tracking']
-            conf.config['do_package_tracking'] = self._collab_get_config(None, 'collab_do_package_tracking', default = 0)
+            conf.config['do_package_tracking'] = self._collab_get_config_bool(None, 'collab_do_package_tracking', default = False)
             checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
             print 'Package %s has been checked out.' % branch_package
@@ -3644,6 +3644,19 @@ def _collab_get_config(self, apiurl, key, default = None):
         return default
 
 
+def _collab_get_config_bool(self, apiurl, key, default = None):
+    value = self._collab_get_config(apiurl, key, default)
+    if type(value) == bool:
+        return value
+
+    if value.lower() in [ 'true', 'yes' ]:
+        return True
+    try:
+        return int(value) != 0
+    except:
+        pass
+    return False
+
 def _collab_get_config_list(self, apiurl, key, default = None):
     def split_items(line):
         items = line.split(';')
@@ -3922,7 +3935,7 @@ def do_collab(self, subcmd, opts, *args):
     else:
         archs = self._collab_get_config_list(apiurl, 'collab_archs', 'i586;x86_64;')
 
-    details = self._collab_get_config(apiurl, 'collab_details', False)
+    details = self._collab_get_config_bool(apiurl, 'collab_details', False)
     if details and opts.no_details:
         details = False
     elif not details and opts.details:
