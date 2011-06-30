@@ -1914,7 +1914,7 @@ def _print_comment_after_setup(self, pkg, no_devel_project):
 #######################################################################
 
 
-def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False, no_devel_project = False, no_branch = False):
+def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
     pkg = self._collab_get_package_with_valid_project(projects, package)
     if not pkg:
         return
@@ -1925,7 +1925,8 @@ def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = F
         return
     print 'Package %s has been prepared for work.' % branch_package
 
-    self._print_comment_after_setup(pkg, no_devel_project)
+    if not ignore_comment:
+        self._print_comment_after_setup(pkg, no_devel_project)
 
 
 #######################################################################
@@ -2484,7 +2485,7 @@ def _collab_quilt_package(self, spec_file):
 #######################################################################
 
 
-def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, no_reserve = False, no_devel_project = False, no_branch = False):
+def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
     if len(projects) == 1:
         project = projects[0]
 
@@ -2660,7 +2661,8 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     print 'Package %s has been prepared for the update.' % branch_package
     print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), self._osc_collab_alias)
 
-    self._print_comment_after_setup(pkg, no_devel_project)
+    if not ignore_comment:
+        self._print_comment_after_setup(pkg, no_devel_project)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
@@ -3805,8 +3807,8 @@ def do_collab(self, subcmd, opts, *args):
         osc collab commentset [--nodevelproject] [--project=PROJECT] PKG COMMENT
         osc collab commentunset [--nodevelproject] [--project=PROJECT] PKG [...]
 
-        osc collab setup [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
-        osc collab update [--ignore-reserved|--ir] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
+        osc collab setup [--ignore-reserved|--ir] [--ignore-comments|--ic] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
+        osc collab update [--ignore-reserved|--ir] [--ignore-comments|--ic] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
 
         osc collab forward [--project=PROJECT] ID
 
@@ -3924,11 +3926,11 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['setup', 's']:
         package = self._collab_parse_arg_packages(args[1])
-        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
+        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
 
     elif cmd in ['update', 'up']:
         package = self._collab_parse_arg_packages(args[1])
-        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
+        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
