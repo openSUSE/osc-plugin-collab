@@ -175,7 +175,10 @@ class OscCollabComment:
         if self.comment is None:
             self.firstline = None
         else:
-            self.firstline = self.comment.split('\n')[0]
+            lines = self.comment.split('\n')
+            self.firstline = lines[0]
+            if len(lines) > 1:
+                self.firstline += ' [...]'
 
 
     def __len__(self):
