@@ -548,18 +548,21 @@ class ApiComment(ApiPackageMetadata):
 
         project = row['project']
         package = row['package']
+        date = None
+        user = None
+        comment = None
+        if 'date' in keys:
+            date = row['date']
         if 'user' in keys:
             user = row['user']
-        else:
-            user = None
         if 'comment' in keys:
             comment = row['comment']
-        else:
-            comment = None
 
         node = ET.Element('comment')
         node.set('project', project)
         node.set('package', package)
+        if date:
+            node.set('date', date)
         if user:
             node.set('user', user)
         if comment:
@@ -572,14 +575,16 @@ class ApiComment(ApiPackageMetadata):
         else:
             form_comment = None
 
-        self.cursor.execute('''SELECT user, comment FROM comment WHERE project = ? AND package = ?;''', (project, package,))
+        self.cursor.execute('''SELECT user, comment, date FROM comment WHERE project = ? AND package = ?;''', (project, package,))
         row = self.cursor.fetchone()
         if row:
             commented_by = row['user']
             comment = row['comment']
+            date = row['date']
         else:
             commented_by = None
             comment = None
+            date = None
 
         if subcommand == 'list':
             # we just want the comment node
@@ -596,6 +601,10 @@ class ApiComment(ApiPackageMetadata):
                     self.cursor.execute('''INSERT INTO comment VALUES (datetime('now'), ?, ?, ?, ?);''', (user, project, package, form_comment))
                     commented_by = user
                     comment = form_comment
+                    # we do a query to get the right format for the date
+                    self.cursor.execute('''SELECT datetime('now');''')
+                    row = self.cursor.fetchone()
+                    date = row[0]
         elif subcommand == 'unset':
             if not commented_by:
                 self.output.set_result(False, 'Package not commented')
@@ -608,6 +617,8 @@ class ApiComment(ApiPackageMetadata):
         pseudorow = {}
         pseudorow['project'] = project
         pseudorow['package'] = package
+        if date:
+            pseudorow['date'] = date
         if commented_by:
             pseudorow['user'] = commented_by
         if comment:
