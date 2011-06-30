@@ -639,8 +639,13 @@ def handle_args(output, path, form):
         except ValueError:
             output.set_result(False, 'Invalid protocol version')
             return
-    protocol = int(client_version_items[0])
-    if int(client_version_items[0]) > PROTOCOL_MAJOR:
+
+    if len(client_version_items) != 2:
+        output.set_result(False, 'Invalid format for protocol version')
+        return
+
+    protocol = (int(client_version_items[0]), int(client_version_items[1]))
+    if protocol[0] > PROTOCOL_MAJOR or (protocol[0] == PROTOCOL_MAJOR and protocol[1] > PROTOCOL_MINOR):
         output.set_result(False, 'Protocol version requested is unknown')
         return
 
