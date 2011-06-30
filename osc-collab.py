@@ -211,6 +211,12 @@ class OscCollabComment:
         return True
 
 
+    def indent(self, spaces = '  '):
+        lines = self.comment.split('\n')
+        lines = [ spaces + line for line in lines ]
+        return '\n'.join(lines)
+
+
 #######################################################################
 
 
@@ -1663,11 +1669,6 @@ def _collab_listcommented(self, projects):
 
 
 def _collab_comment(self, projects, packages, no_devel_project = False):
-    def _indent(text, spaces = '  '):
-        lines = text.split('\n')
-        lines = [ spaces + line for line in lines ]
-        return '\n'.join(lines)
-
     for package in packages:
         try:
             comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
@@ -1685,10 +1686,10 @@ def _collab_comment(self, projects, packages, no_devel_project = False):
 
             if comment.project not in projects or comment.package != package:
                 print 'Package %s in %s (devel package for %s) is commented by %s%s:' % (comment.package, comment.project, package, comment.user, date_str)
-                print _indent(comment.comment)
+                print comment.indent()
             else:
                 print 'Package %s in %s is commented by %s%s:' % (package, comment.project, comment.user, date_str)
-                print _indent(comment.comment)
+                print comment.indent()
 
 
 #######################################################################
@@ -1898,6 +1899,21 @@ def _collab_get_package_with_valid_project(self, projects, package):
 #######################################################################
 
 
+def _print_comment_after_setup(self, pkg, no_devel_project):
+    comment = self._collab_api.get_package_comment(pkg.project.name, pkg.name, no_devel_project = no_devel_project)
+    if comment:
+        if comment.date:
+            date_str = ' on %s' % comment.date
+        else:
+            date_str = ''
+
+        print 'Note the comment from %s%s on this package:' % (comment.user, date_str)
+        print comment.indent()
+
+
+#######################################################################
+
+
 def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, no_reserve = False, no_devel_project = False, no_branch = False):
     pkg = self._collab_get_package_with_valid_project(projects, package)
     if not pkg:
@@ -1908,6 +1924,8 @@ def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = F
     if not setup:
         return
     print 'Package %s has been prepared for work.' % branch_package
+
+    self._print_comment_after_setup(pkg, no_devel_project)
 
 
 #######################################################################
@@ -2641,6 +2659,8 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     print 'Package %s has been prepared for the update.' % branch_package
     print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), self._osc_collab_alias)
+
+    self._print_comment_after_setup(pkg, no_devel_project)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
