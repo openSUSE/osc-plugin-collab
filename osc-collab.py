@@ -3765,6 +3765,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('-f', '--forward', action='store_true',
               dest='forward',
               help='automatically forward to parent project if successful')
+@cmdln.option('--no-details', action='store_true',
+              dest='no_details',
+              help='do not show more details')
 @cmdln.option('--details', action='store_true',
               dest='details',
               help='show more details')
@@ -3832,7 +3835,7 @@ def do_collab(self, subcmd, opts, *args):
     and if the build succeeds, submit the package to the development project.
 
     Usage:
-        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-commented|--xc] [--exclude-devel|--xd] [--ignore-comments|--ic] [--details] [--project=PROJECT]
+        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-commented|--xc] [--exclude-devel|--xd] [--ignore-comments|--ic] [--details|--no-details] [--project=PROJECT]
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
@@ -3890,6 +3893,9 @@ def do_collab(self, subcmd, opts, *args):
     if len(args) - 1 > max_args:
         raise oscerr.WrongArgs('Too many arguments.')
 
+    if opts.details and opts.no_details:
+        raise oscerr.WrongArgs('--details and --no-details cannot be used at the same time.')
+
     apiurl = conf.config['apiurl']
     user = conf.config['user']
 
@@ -3916,6 +3922,12 @@ def do_collab(self, subcmd, opts, *args):
     else:
         archs = self._collab_get_config_list(apiurl, 'collab_archs', 'i586;x86_64;')
 
+    details = self._collab_get_config(apiurl, 'collab_details', False)
+    if details and opts.no_details:
+        details = False
+    elif not details and opts.details:
+        details = True
+
     self._collab_api = self.OscCollabApi(self, collab_apiurl)
     self.OscCollabCache.init(self, opts.no_cache)
     self.OscCollabObs.init(self, apiurl)
@@ -3923,7 +3935,7 @@ def do_collab(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._collab_todo(apiurl, projects, opts.details, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
+        self._collab_todo(apiurl, projects, details, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
 
     elif cmd in ['todoadmin', 'ta']:
         self._collab_todoadmin(apiurl, projects, opts.include_upstream)
