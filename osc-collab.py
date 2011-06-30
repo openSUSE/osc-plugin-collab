@@ -2521,7 +2521,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     if old_version and old_version == pkg.upstream_version:
         if no_branch:
-            print 'Package %s is already up-to-date (or the database is not up-to-date).' % branch_package
+            print 'Package %s is already up-to-date (the database might not be up-to-date).' % branch_package
         else:
             print 'Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % branch_package
         return
