@@ -77,6 +77,7 @@ class Runner:
         self.xml = None
 
         self._status_file = os.path.join(self.conf.cache_dir, 'status', 'last')
+        self._status_catchup = os.path.join(self.conf.cache_dir, 'status', 'catchup')
         self._mirror_dir = os.path.join(self.conf.cache_dir, 'obs-mirror')
         self._upstream_dir = os.path.join(self.conf.cache_dir, 'upstream')
         self._db_dir = os.path.join(self.conf.cache_dir, 'db')
@@ -96,6 +97,8 @@ class Runner:
         # mtime of the upstream database
         self._status['upstream-mtime'] = -1
 
+        self._catchup = []
+
 
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
@@ -111,6 +114,46 @@ class Runner:
     def _write_status(self):
         """ Save the last known status of the script. """
         shellutils.write_status(self._status_file, self._status)
+
+
+    def _setup_catchup(self):
+        """ Gets a list of packages that we need to update because of some
+        reason: missing hermes message, bug somewhere, etc."""
+        if not os.path.exists(self._status_catchup):
+            return
+
+        file = open(self._status_catchup)
+        lines = file.readlines()
+
+        for line in lines:
+            line = line[:-1]
+            s = line.split('/')
+            if len(s) != 2:
+                if len(s) == 1:
+                    print >>sys.stderr, 'Cannot handle catchup line: %s (projects are ignored)' % line
+                else:
+                    print >>sys.stderr, 'Cannot handle catchup line: %s' % line
+                continue
+
+            (project, package) = s
+            if not project:
+                print >>sys.stderr, 'Cannot handle catchup line: %s' % line
+                continue
+            if not package:
+                print >>sys.stderr, 'Cannot handle catchup line: %s (projects are ignored)' % line
+                continue
+
+            self._catchup.append((project, package))
+
+        file.close()
+
+
+    def _empty_catchup(self):
+        if os.path.exists(self._status_catchup):
+            try:
+                os.unlink(self._status_catchup)
+            except Exception, e:
+                print >>sys.stderr, 'Cannot remove catchup file: %s' % e
 
 
     def _run_mirror(self, conf_changed):
@@ -182,6 +225,10 @@ class Runner:
                 else:
                     raise RunnerException('Unhandled Hermes event type by mirror: %s' % event.__class__.__name__)
 
+            for (project, package) in self._catchup:
+                self.obs.queue_checkout_package(project, package)
+                self.obs.queue_checkout_package_meta(project, package)
+
         self.obs.run()
 
 
@@ -204,7 +251,7 @@ class Runner:
             # reverse to have chronological order
             events = self.hermes.get_events(self._status['db'], reverse = True)
 
-            if len(events) == 0:
+            if len(events) == 0 and len(self._catchup) == 0:
                 return (False, False)
 
             changed = False
@@ -237,6 +284,16 @@ class Runner:
 
                 else:
                     raise RunnerException('Unhandled Hermes event type by database: %s' % event.__class__.__name__)
+
+            db_projects = set(self.db.get_projects())
+
+            for (project, package) in self._catchup:
+                if project not in db_projects:
+                    print >>sys.stderr, 'Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package)
+                    continue
+
+                changed = True
+                self.db.add_package(project, package)
 
             return (False, changed)
 
@@ -386,6 +443,8 @@ class Runner:
 
         self.hermes = hermes.HermesReader(min_last_known_id, self.conf.hermes_urls, self.conf)
 
+        self._setup_catchup()
+
         # Run the mirror update, and make sure to update the status afterwards
         # in case we crash later
         self.obs = buildservice.ObsCheckout(self.conf, self._mirror_dir)
@@ -445,6 +504,7 @@ class Runner:
         self._status['conf-mtime'] = new_conf_mtime
         self._status['opensuse-mtime'] = new_opensuse_mtime
 
+        self._empty_catchup()
         self._write_status()
 
 
