@@ -345,16 +345,18 @@ class ApiPackageMetadata(ApiGeneric):
             # When adding a table here, update _prune_old_metadata() and
             # _check_no_abuse() to deal with them too.
             self.cursor.execute('''CREATE TABLE reserve (date TEXT, user TEXT, project TEXT, package TEXT);''')
+            self.cursor.execute('''CREATE TABLE comment (date TEXT, user TEXT, project TEXT, package TEXT, comment TEXT);''')
 
         return True
 
     def _prune_old_metadata(self):
+        # do not touch comments, since they might stay for good reasons
         self.cursor.execute('''DELETE FROM reserve WHERE datetime(date, '+36 hours') < datetime('now');''')
 
     def _check_no_abuse(self):
         # just don't do anything if we have more than 200 entries in a table
         # (we're getting spammed)
-        for table in [ 'reserve' ]:
+        for table in [ 'reserve', 'comment' ]:
             self.cursor.execute('''SELECT COUNT(*) FROM %s;''' % table)
 
             row = self.cursor.fetchone()
@@ -527,6 +529,96 @@ class ApiReserve(ApiPackageMetadata):
 #######################################################################
 
 
+class ApiComment(ApiPackageMetadata):
+    '''
+        See ApiPackageMetadata comment, with <meta> == comment
+    '''
+
+    def __init__(self, output, protocol, args, form):
+        ApiPackageMetadata.__init__(self, output, protocol, args, form)
+
+        self.dbtable = 'comment'
+        self.command = 'comment'
+
+    def _create_node(self, row):
+        # Note: row can be a sqlite3.Row or a tuple
+        keys = row.keys()
+        if not ('project' in keys and 'package' in keys):
+            return None
+
+        project = row['project']
+        package = row['package']
+        if 'user' in keys:
+            user = row['user']
+        else:
+            user = None
+        if 'comment' in keys:
+            comment = row['comment']
+        else:
+            comment = None
+
+        node = ET.Element('comment')
+        node.set('project', project)
+        node.set('package', package)
+        if user:
+            node.set('user', user)
+        if comment:
+            node.text = comment
+        return node
+
+    def _run_project_package_helper(self, user, subcommand, project, package):
+        if form.has_key('comment'):
+            form_comment = form.getfirst('comment')
+        else:
+            form_comment = None
+
+        self.cursor.execute('''SELECT user, comment FROM comment WHERE project = ? AND package = ?;''', (project, package,))
+        row = self.cursor.fetchone()
+        if row:
+            commented_by = row['user']
+            comment = row['comment']
+        else:
+            commented_by = None
+            comment = None
+
+        if subcommand == 'list':
+            # we just want the comment node
+            pass
+        elif subcommand == 'set':
+            if commented_by:
+                self.output.set_result(False, 'Package already commented by %s' % commented_by)
+            else:
+                if not form_comment:
+                    self.output.set_result(False, 'No comment provided')
+                elif len(form_comment) > 1000:
+                    self.output.set_result(False, 'Provided comment is too long')
+                else:
+                    self.cursor.execute('''INSERT INTO comment VALUES (datetime('now'), ?, ?, ?, ?);''', (user, project, package, form_comment))
+                    commented_by = user
+                    comment = form_comment
+        elif subcommand == 'unset':
+            if not commented_by:
+                self.output.set_result(False, 'Package not commented')
+            elif commented_by != user:
+                self.output.set_result(False, 'Package commented_by by %s' % commented_by)
+            else:
+                self.cursor.execute('''DELETE FROM comment WHERE user = ? AND project = ? AND package = ?''', (user, project, package))
+                commented_by = None
+
+        pseudorow = {}
+        pseudorow['project'] = project
+        pseudorow['package'] = package
+        if commented_by:
+            pseudorow['user'] = commented_by
+        if comment:
+            pseudorow['comment'] = comment
+
+        return pseudorow
+
+
+#######################################################################
+
+
 def handle_args(output, path, form):
     paths = path.split('/', 1)
     if len(paths) == 1:
@@ -567,6 +659,12 @@ def handle_args(output, path, form):
         try:
             reserve = ApiReserve(output, protocol, args, form)
             reserve.run()
+        except libdbcore.ObsDbException, e:
+            output.set_result(False, str(e))
+    elif command == 'comment':
+        try:
+            comment = ApiComment(output, protocol, args, form)
+            comment.run()
         except libdbcore.ObsDbException, e:
             output.set_result(False, str(e))
     else:
