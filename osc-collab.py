@@ -1276,7 +1276,7 @@ def _collab_table_print_header(self, template, title):
 #######################################################################
 
 
-def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo_internal(self, apiurl, project, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     # get all versions of packages
     try:
         prj = self._collab_api.get_project_details(project)
@@ -1285,13 +1285,24 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
         print >>sys.stderr, e.msg
         return (None, None)
 
-    # get the list of reserved package
+    # get the list of reserved packages
     try:
         reserved = self._collab_api.get_reserved_packages((project,))
         reserved_packages = [ reservation.package for reservation in reserved ]
     except self.OscCollabWebError, e:
         reserved_packages = []
         print >>sys.stderr, e.msg
+
+    if not ignore_comments:
+        # get the list of commented packages
+        try:
+            commented = self._collab_api.get_commented_packages((project,))
+            commented_packages = [ comment.package for comment in commented ]
+        except self.OscCollabWebError, e:
+            commented_packages = []
+            print >>sys.stderr, e.msg
+    else:
+        commented_packages = []
 
     # get the packages submitted
     requests_to = self.OscCollabObs.get_request_list_to(project)
@@ -1300,7 +1311,7 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
     packages = []
 
     for package in prj.itervalues():
-        if not package.needs_update():
+        if not package.needs_update() and package.name not in commented_packages:
             continue
 
         broken_link = package.is_broken_link()
@@ -1323,6 +1334,11 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
 
         package.upstream_version_print = package.upstream_version
 
+        if package.name in commented_packages:
+            if exclude_commented:
+                continue
+            package.upstream_version_print += ' (c)'
+
         if not package.devel_needs_update():
             if exclude_devel:
                 continue
@@ -1334,6 +1350,7 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
                 continue
             package.version_print += ' (s)'
             package.upstream_version_print += ' (s)'
+
         if package.name in reserved_packages:
             if exclude_reserved:
                 continue
@@ -1354,12 +1371,12 @@ def _collab_todo_internal(self, apiurl, project, exclude_reserved, exclude_submi
 #######################################################################
 
 
-def _collab_todo(self, apiurl, projects, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo(self, apiurl, projects, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     packages = []
     parent_project = None
 
     for project in projects:
-        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, exclude_reserved, exclude_submitted, exclude_devel)
+        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, project, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
         if not project_packages:
             continue
         packages.extend(project_packages)
@@ -3644,9 +3661,15 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--xr', '--exclude-reserved', action='store_true',
               dest='exclude_reserved',
               help='do not show reserved packages in the output')
+@cmdln.option('--xc', '--exclude-commented', action='store_true',
+              dest='exclude_commented',
+              help='do not show commented packages in the output')
 @cmdln.option('--xd', '--exclude-devel', action='store_true',
               dest='exclude_devel',
               help='do not show packages that are up-to-date in their development project in the output')
+@cmdln.option('--ic', '--ignore-comments', action='store_true',
+              dest='ignore_comments',
+              help='ignore the comments')
 @cmdln.option('--ir', '--ignore-reserved', action='store_true',
               dest='ignore_reserved',
               help='ignore the reservation state of the package if necessary')
@@ -3732,7 +3755,7 @@ def do_collab(self, subcmd, opts, *args):
     and if the build succeeds, submit the package to the development project.
 
     Usage:
-        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-devel|--xd] [--project=PROJECT]
+        osc collab todo [--exclude-submitted|--xs] [--exclude-reserved|--xr] [--exclude-commented|--xc] [--exclude-devel|--xd] [--ignore-comments|--ic] [--project=PROJECT]
         osc collab todoadmin [--include-upstream|--iu] [--project=PROJECT]
 
         osc collab listreserved
@@ -3823,7 +3846,7 @@ def do_collab(self, subcmd, opts, *args):
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._collab_todo(apiurl, projects, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
+        self._collab_todo(apiurl, projects, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
 
     elif cmd in ['todoadmin', 'ta']:
         self._collab_todoadmin(apiurl, projects, opts.include_upstream)
