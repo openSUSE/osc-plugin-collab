@@ -3801,7 +3801,7 @@ def do_collab(self, subcmd, opts, *args):
     elif cmd in ['setup', 's', 'update', 'up', 'forward', 'f']:
         min_args, max_args = 1, 1
     elif cmd in ['commentset', 'cs']:
-        min_args, max_args = 2, 2
+        min_args, max_args = 1, 2
     elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'comment', 'c', 'commentunset', 'cu']:
         min_args = 1
         max_args = sys.maxint
@@ -3875,7 +3875,10 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['commentset', 'cs']:
         packages = self._collab_parse_arg_packages(args[1])
-        comment = args[2]
+        if len(args) - 1 == 1:
+            comment = edit_message()
+        else:
+            comment = args[2]
         self._collab_commentset(projects, packages, user, comment, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['commentunset', 'cu']:
