@@ -73,6 +73,7 @@ gnome-media:
 gnome-menus:
 gnome-netstatus:
 gnome-nettool:
+gnome-online-accounts:
 gnome-panel:
 gnome-power-manager:
 gnome-python-desktop:
@@ -365,6 +366,7 @@ rhythmbox:
 scrollkeeper:
 seed:
 seed:seed2
+sushi:
 tasque:
 tracker:
 xdg-user-dirs-gtk:
@@ -1082,7 +1084,6 @@ geocode-glib:
 #soup:
 #straw:
 #strongwind:
-#sushi:
 #system-tools-backends:
 #system-tray-applet:
 #tasks:
