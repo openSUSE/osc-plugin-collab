@@ -39,7 +39,7 @@ OSC_COLLAB_VERSION = '0.95'
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
 _osc_collab_helpers = []
-for suffix in [ 'NEWS', 'ChangeLog' ]:
+for suffix in [ 'NEWS', 'ChangeLog', 'configure' ]:
     for prefix in _osc_collab_helper_prefixes:
         _osc_collab_helpers.append(prefix + suffix)
 
@@ -67,7 +67,7 @@ class OscCollabWebError(OscCollabError):
 class OscCollabDownloadError(OscCollabError):
     pass
 
-class OscCollabNewsError(OscCollabError):
+class OscCollabDiffError(OscCollabError):
     pass
 
 class OscCollabCompressError(OscCollabError):
@@ -2030,7 +2030,7 @@ def _collab_download_internal(self, url, dest_dir):
 #######################################################################
 
 
-def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
+def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
     def _cleanup(old, new, tmpdir):
         if old:
             old.close()
@@ -2096,7 +2096,7 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
         # diff for reference.
         # This works because a well-formed NEWS/ChangeLog will only have new
         # items added at the top, and therefore the useful diff is the addition
-        # at the top.
+        # at the top. This doesn't work for configure.{ac,in}, but that's fine.
         # We need to cache the first lines, though, since diff is a generator
         # and we don't have direct access to lines.
 
@@ -2154,7 +2154,7 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     difflib = self.OscCollabImport.m_import('difflib')
 
     if not tempfile or not shutil or not tarfile or not difflib:
-        raise self.OscCollabNewsError('Cannot extract NEWS information: incomplete python installation.')
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: incomplete python installation.')
 
     tmpdir = tempfile.mkdtemp(prefix = 'osc-collab-')
 
@@ -2167,8 +2167,8 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
         except tarfile.TarError:
             pass
     else:
-        # this is not fatal: we can provide the NEWS/ChangeLog from the new
-        # tarball without a diff
+        # this is not fatal: we can provide the
+        # NEWS/ChangeLog/configure.{ac,in} from the new tarball without a diff
         pass
 
     if new_tarball and os.path.exists(new_tarball):
@@ -2177,10 +2177,10 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
             new = tarfile.open(new_tarball)
         except tarfile.TarError, e:
             _cleanup(old, new, tmpdir)
-            raise self.OscCollabNewsError('Error when opening %s: %s' % (new_tarball_basename, e))
+            raise self.OscCollabDiffError('Error when opening %s: %s' % (new_tarball_basename, e))
     else:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: no new tarball.')
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no new tarball.')
 
     # make sure we have at least a subdirectory in tmpdir, since we'll extract
     # files from two tarballs that might conflict
@@ -2190,13 +2190,13 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     try:
         if old:
             err_tarball = os.path.basename(old_tarball)
-            _extract_files (old, old_dir, ['NEWS', 'ChangeLog'])
+            _extract_files (old, old_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in'])
 
         err_tarball = new_tarball_basename
-        _extract_files (new, new_dir, ['NEWS', 'ChangeLog'])
+        _extract_files (new, new_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in'])
     except (tarfile.ReadError, EOFError):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: %s is not a valid tarball.' % err_tarball)
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: %s is not a valid tarball.' % err_tarball)
 
     if old:
         old.close()
@@ -2205,20 +2205,20 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
         new.close()
         new = None
 
-    # find toplevel NEWS & ChangeLog in the new tarball
+    # find toplevel NEWS/ChangeLog/configure.{ac,in} in the new tarball
     if not os.path.exists(new_dir):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
 
     new_dir_files = os.listdir(new_dir)
     if len(new_dir_files) != 1:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_subdir = os.path.join(new_dir, new_dir_files[0])
     if not os.path.isdir(new_subdir):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_news = os.path.join(new_subdir, 'NEWS')
     if not os.path.exists(new_news) or not os.path.isfile(new_news):
@@ -2226,15 +2226,21 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     new_changelog = os.path.join(new_subdir, 'ChangeLog')
     if not os.path.exists(new_changelog) or not os.path.isfile(new_changelog):
         new_changelog = None
+    new_configure = os.path.join(new_subdir, 'configure.ac')
+    if not os.path.exists(new_configure) or not os.path.isfile(new_configure):
+        new_configure = os.path.join(new_subdir, 'configure.in')
+        if not os.path.exists(new_configure) or not os.path.isfile(new_configure):
+            new_configure = None
 
-    if not new_news and not new_changelog:
+    if not new_news and not new_changelog and not new_configure:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabNewsError('Cannot extract NEWS information: no relevant files found in %s.' % new_tarball_basename)
+        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
 
-    # find toplevel NEWS & ChangeLog in the old tarball
+    # find toplevel NEWS/ChangeLog/configure.{ac,in} in the old tarball
     # not fatal
     old_news = None
     old_changelog = None
+    old_configure = None
 
     if os.path.exists(old_dir):
         old_dir_files = os.listdir(old_dir)
@@ -2250,6 +2256,12 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
             old_changelog = os.path.join(old_subdir, 'ChangeLog')
             if not os.path.exists(old_changelog) or not os.path.isfile(old_changelog):
                 old_changelog = None
+            old_configure = os.path.join(old_subdir, 'configure.ac')
+            if not os.path.exists(old_configure) or not os.path.isfile(old_configure):
+                old_configure = os.path.join(old_subdir, 'configure.in')
+                if not os.path.exists(old_configure) or not os.path.isfile(old_configure):
+                    old_configure = None
+
 
     # Choose the most appropriate prefix for helper files, based on the alias
     # that was used by the user
@@ -2264,13 +2276,15 @@ def _collab_extract_news_internal(self, directory, old_tarball, new_tarball):
     (news_created, news_is_diff) = _diff_files(old_news, new_news, news)
     changelog = os.path.join(directory, helper_prefix + 'ChangeLog')
     (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
+    configure = os.path.join(directory, helper_prefix + 'configure')
+    (configure_created, configure_is_diff) = _diff_files(old_configure, new_configure, configure)
 
     # Note: we make osc ignore those helper file we created by modifying
     # the exclude list of osc.core. See the top of this file.
 
     _cleanup(old, new, tmpdir)
 
-    return (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff)
+    return (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff)
 
 
 #######################################################################
@@ -2641,10 +2655,10 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
     # not fatal if fails
-    print 'Finding NEWS and ChangeLog information...'
+    print 'Extracting useful diff between tarballs (NEWS, ChangeLog, configure.{ac,in})...'
     try:
-        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff) = self._collab_extract_news_internal(package_dir, old_tarball_with_dir, upstream_tarball)
-    except self.OscCollabNewsError, e:
+        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff) = self._collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+    except self.OscCollabDiffError, e:
         print >>sys.stderr, e.msg
     else:
         if news_created:
@@ -2664,6 +2678,15 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
                 print 'Complete ChangeLog of %s is available in %s' % (upstream_tarball_basename, changelog_basename)
         else:
             print 'No ChangeLog information found.'
+
+        if configure_created:
+            configure_basename = os.path.basename(configure)
+            if configure_is_diff:
+                print 'Diff in configure.{ac,in} between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, configure_basename)
+            else:
+                print 'Complete configure.{ac,in} of %s is available in %s' % (upstream_tarball_basename, configure_basename)
+        else:
+            print 'No configure.{ac,in} information found (tarball is probably not using autotools).'
 
 
     # try applying the patches with rpm quilt
