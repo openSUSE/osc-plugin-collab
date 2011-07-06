@@ -1331,7 +1331,7 @@ def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, sh
         else:
             package.version_print = '??'
 
-        package.upstream_version_print = package.upstream_version
+        package.upstream_version_print = package.upstream_version or ''
         package.comment = ''
 
         if package.name in commented_packages:
@@ -1358,6 +1358,8 @@ def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, sh
             if exclude_reserved:
                 continue
             package.upstream_version_print += ' (r)'
+
+        package.upstream_version_print = package.upstream_version_print.strip()
 
         if package.parent_project:
             if parent_project == None:
