@@ -97,7 +97,7 @@ gst-plugins-base:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
 gstreamer:gstreamer-0_10
 gtk-engines|2.90:gtk2-engines
-gtkhtml:gtkhtml2
+gtkhtml:
 gtksourceview|1.9:gtksourceview18
 gtksourceview|2.90:gtksourceview2
 gtksourceview:
@@ -918,6 +918,7 @@ geocode-glib:
 #gmdns:
 #gmf:
 #gmime:
+gmime|2.5:gmime
 #gnome-admin:
 #gnome-braille:
 #gnome-chart:
@@ -947,7 +948,7 @@ geocode-glib:
 #gnome-specimen:
 #gnome-vfs-extras:
 #gnome-video-arcade:
-#gnome-video-effects:
+gnome-video-effects:
 #gnome-xcf-thumbnailer:
 #gnome2-user-docs:
 #gnome_js_common:
@@ -1041,7 +1042,7 @@ geocode-glib:
 #moserial:
 #mrproject:
 #nanny:
-#nautilus-actions:
+nautilus-actions:
 #nautilus-gtkhtml:
 #nautilus-image-converter:
 #nautilus-media:
