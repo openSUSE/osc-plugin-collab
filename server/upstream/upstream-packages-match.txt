@@ -994,6 +994,7 @@ gnome-video-effects:
 #java-access-bridge:
 #java-atk-wrapper:
 #java-gnome:
+#java-libglom:
 #kbdraw:
 #kiwi:
 #lasem:
