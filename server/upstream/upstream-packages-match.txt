@@ -596,6 +596,7 @@ notify-osd:
 notify-python:python-notify
 nss-mdns:
 ntfs-3g_ntfsprogs:ntfs-3g
+ntfs-3g_ntfsprogs:ntfs-3g_ntfsprogs
 ntfs-config:
 obby:
 opensuse-font-fifth-leg:fifth-leg-font
