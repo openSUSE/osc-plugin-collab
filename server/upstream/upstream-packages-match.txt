@@ -600,6 +600,7 @@ ntfs-3g_ntfsprogs:ntfs-3g_ntfsprogs
 ntfs-config:
 obby:
 opensuse-font-fifth-leg:fifth-leg-font
+p11-kit:
 padevchooser:
 paman:
 paprefs:

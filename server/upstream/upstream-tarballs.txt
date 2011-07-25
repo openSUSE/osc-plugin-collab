@@ -299,6 +299,7 @@ obby:httpls:http://releases.0x539.de/obby/
 # FIXME: Server is down
 #opensuse-font-fifth-leg:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/fonts/
 opt_gnome-compat:upstream:
+p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 paman:httpls:http://0pointer.de/lennart/projects/paman/
 paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
