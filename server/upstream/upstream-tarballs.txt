@@ -119,7 +119,7 @@ colord:httpls:http://people.freedesktop.org/~hughsient/releases/
 comix:sf:146377
 conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
-cups-pk-helper:httpls:http://www.vuntz.net/download/cups-pk-helper/
+cups-pk-helper:httpls:http://www.freedesktop.org/software/cups-pk-helper/releases/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
 deja-dup:lp:deja-dup
 dmlangsel:google:loolixbodes|dmlangsel
