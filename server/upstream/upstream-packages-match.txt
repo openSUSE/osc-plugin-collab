@@ -658,6 +658,7 @@ tangerine:
 tango-icon-theme:
 telepathy-butterfly:
 telepathy-farsight:
+telepathy-farstream:
 telepathy-gabble:
 telepathy-glib:
 telepathy-haze:

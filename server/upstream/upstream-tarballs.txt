@@ -351,6 +351,7 @@ system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-pr
 tango-icon-theme:httpls:http://tango.freedesktop.org/releases/
 telepathy-butterfly:httpls:http://telepathy.freedesktop.org/releases/telepathy-butterfly/
 telepathy-farsight:httpls:http://telepathy.freedesktop.org/releases/telepathy-farsight/
+telepathy-farstream:httpls:http://telepathy.freedesktop.org/releases/telepathy-farstream/
 telepathy-gabble:httpls:http://telepathy.freedesktop.org/releases/telepathy-gabble/
 telepathy-glib:httpls:http://telepathy.freedesktop.org/releases/telepathy-glib/
 telepathy-haze:httpls:http://telepathy.freedesktop.org/releases/telepathy-haze/
