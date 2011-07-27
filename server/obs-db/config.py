@@ -138,8 +138,9 @@ class Config:
         self.filename = file
         self.use_opensuse = use_opensuse
         self.apiurl = None
-        self.hermes_urls = []
-        self._hermes_urls_helper = ''
+        self.hermes_baseurl = ''
+        self.hermes_feeds = ''
+        self._hermes_feeds_helper = []
 
         self.cache_dir = os.path.realpath('cache')
         self.ignore_conf_mtime = False
@@ -256,7 +257,8 @@ class Config:
             return
 
         self.apiurl = cp.safe_get('General', 'apiurl', self.apiurl)
-        self._hermes_urls_helper = cp.safe_get('General', 'hermes-urls', self._hermes_urls_helper)
+        self.hermes_baseurl = cp.safe_get('General', 'hermes-baseurl', self.hermes_baseurl)
+        self._hermes_feeds_helper = cp.safe_get('General', 'hermes-feeds', self._hermes_feeds_helper)
         self.cache_dir = os.path.realpath(cp.safe_get('General', 'cache-dir', self.cache_dir))
         self.ignore_conf_mtime = cp.safe_getboolean('General', 'ignore-conf-mtime', self.ignore_conf_mtime)
         self.no_full_check = cp.safe_getboolean('General', 'no-full-check', self.no_full_check)
@@ -264,8 +266,8 @@ class Config:
         self.sockettimeout = cp.safe_getint('General', 'sockettimeout', self.sockettimeout)
         self.threads_sockettimeout = cp.safe_getint('General', 'threads-sockettimeout', self.threads_sockettimeout)
 
-        if self._hermes_urls_helper:
-            self.hermes_urls = [ url.strip() for url in self._hermes_urls_helper.split(',') ]
+        if self._hermes_feeds_helper:
+            self.hermes_feeds = [ feed.strip() for feed in self._hermes_feeds_helper.split(',') ]
 
 
     def _parse_debug(self, cp):

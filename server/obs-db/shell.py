@@ -441,7 +441,7 @@ class Runner:
             ids.append(self._status['xml'])
         min_last_known_id = min(ids)
 
-        self.hermes = hermes.HermesReader(min_last_known_id, self.conf.hermes_urls, self.conf)
+        self.hermes = hermes.HermesReader(min_last_known_id, self.conf.hermes_baseurl, self.conf.hermes_feeds, self.conf)
 
         self._setup_catchup()
 

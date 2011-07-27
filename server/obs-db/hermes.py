@@ -38,6 +38,7 @@ import os
 import sys
 
 import re
+import urlparse
 
 import feedparser
 
@@ -251,21 +252,29 @@ class HermesReader:
     types = [ HermesEventCommit, HermesEventProjectDeleted, HermesEventPackageMeta, HermesEventPackageAdded, HermesEventPackageDeleted ]
 
 
-    def __init__(self, last_known_id, base_urls, conf):
+    def __init__(self, last_known_id, base_url, feeds, conf):
         """ Arguments:
             last_known_id -- id of the last known event, so the hermes reader
                              can know where to stop.
-            base_urls -- a list of base urls, one for each feed. "?page=X" can
-                         be appended to view additional events.
+            base_url -- the base url for the hermes server.
+            feeds -- a list of feed ids. They will be used to get a merged feed
+                     from the hermes server.
             conf -- configuration object
 
         """
         self._events = []
         self.last_known_id = last_known_id
 
-        self._previous_last_known_id = last_known_id
-        self._base_urls = base_urls
+        self._previous_last_known_id = int(last_known_id)
         self._conf = conf
+
+        if not base_url or not feeds:
+            self._feed = None
+            self._debug_print('No defined feed')
+        else:
+            resource = '/feeds/' + ','.join(feeds) + '.rdf'
+            self._feed = urlparse.urljoin(base_url, resource)
+            self._debug_print('Feed to be used: %s' % self._feed)
 
         self._last_parsed_id = -1
 
@@ -286,11 +295,9 @@ class HermesReader:
         id = os.path.basename(entry_id)
 
         try:
-            self._last_parsed_id = int(id)
+            return int(id)
         except ValueError:
             raise HermesException('Cannot get event id from: %s' % entry_id)
-
-        return self._last_parsed_id
 
 
     def _parse_entry(self, id, entry):
@@ -311,20 +318,24 @@ class HermesReader:
     def _parse_feed(self, url):
         """ Parses the feed to get events that are somehow relevant.
 
-            This function stops when we reach the last known id that was
-            previously seen, or when all entries of the feed were parsed.
+            This function ignores entries older than the previous last known id.
 
-            Return True if the last known id was reached, False otherwise.
+            Return True if the feed was empty.
 
         """
         feed = feedparser.parse(url)
+
+        if len(feed['entries']) == 0:
+            return True
 
         for entry in feed['entries']:
             error_encoded = False
 
             id = self._get_entry_id(entry)
             if id <= self._previous_last_known_id:
-                return True
+                continue
+            if id > self._last_parsed_id:
+                self._last_parsed_id = id
 
             try:
                 event = self._parse_entry(id, entry)
@@ -371,25 +382,26 @@ class HermesReader:
         # id, since it can only harm by creating a later check for all projects
         # on the build service, which is expensive
         if self._conf.skip_hermes and self.last_known_id != -1:
-            return self.last_known_id
-
-        if len(self._base_urls) == 0:
             return
 
-        for base_url in self._base_urls:
-            feed = feedparser.parse(base_url)
-            if len(feed['entries']) == 0:
-                continue
+        if not self._feed:
+            return
 
-            id = self._get_entry_id(feed['entries'][0])
+        feed = feedparser.parse(self._feed)
+        for entry in feed['entries']:
+            id = self._get_entry_id(entry)
             if id > self.last_known_id:
                 self.last_known_id = id
 
 
-    def _read_feed(self, base_url):
+    def _read_feed(self, feed_url):
         """ Read events from hermes, and populates the events item. """
+        self._last_parsed_id = -1
         page = 1
-        url = base_url
+        if self._previous_last_known_id > 0:
+            url = self._append_data_to_url(feed_url, 'last_id=%d' % self._previous_last_known_id)
+        else:
+            raise HermesException('Internal error: trying to parse feeds while there is no last known id')
 
         if self._conf.skip_hermes:
             return
@@ -400,12 +412,18 @@ class HermesReader:
 
             self._debug_print('Parsing %s' % url)
 
-            stop = self._parse_feed(url)
-            if stop:
+            old_last_parsed_id = self._last_parsed_id
+
+            empty_feed = self._parse_feed(url)
+            if empty_feed:
                 break
+            elif old_last_parsed_id >= self._last_parsed_id:
+                # this should never happen, as if we don't have an empty feeed, it
+                # means we progress
+                raise HermesException('No progress when parsing pages: last parsed id is %d, last known id is %d' % (self._last_parsed_id, self._previous_last_known_id))
 
             page += 1
-            url = self._append_data_to_url(base_url, 'page=%d' % page)
+            url = self._append_data_to_url(feed_url, 'last_id=%d' % self._last_parsed_id)
 
 
     def read(self):
@@ -413,8 +431,8 @@ class HermesReader:
         # Make sure we don't append events to some old values
         self._events = []
 
-        for base_url in self._base_urls:
-            self._read_feed(base_url)
+        if self._feed:
+            self._read_feed(self._feed)
 
         # Sort to make sure events are in the reverse chronological order
         self._events.sort(reverse = True)
@@ -521,10 +539,10 @@ def main(args):
             self.debug = True
             self.skip_hermes = False
 
-    url = 'https://hermes.opensuse.org/feeds/25547.rdf'
-    last_known_id = 2093541
+    feeds = [ '25545', '25547', '55386', '55387', '55388' ]
+    last_known_id = 10011643
 
-    reader = HermesReader(last_known_id, [ url ], Conf())
+    reader = HermesReader(last_known_id, 'https://hermes.opensuse.org/', feeds, Conf())
     reader.read()
 
     print 'Number of events: %d' % len(reader.get_events(2094133))
