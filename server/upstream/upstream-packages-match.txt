@@ -1007,6 +1007,7 @@ gnome-video-effects:
 #libcapplet:
 #libccc:
 #libcm:
+libcryptui:
 #libeds-java:
 #libgda-uimm:
 #libgnetwork:
