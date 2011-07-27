@@ -321,7 +321,7 @@ poppler-data:httpls:http://poppler.freedesktop.org/
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 #FIXME ptlib http://sourceforge.net/project/showfiles.php?group_id=204472
-pulseaudio:httpls:http://www.pulseaudio.org/wiki/DownloadPulseAudio
+pulseaudio:httpls:http://www.freedesktop.org/software/pulseaudio/releases/
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 py2cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pygtkglext:sf:54333|pygtkglext
