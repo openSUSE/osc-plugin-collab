@@ -307,7 +307,6 @@ jhbuild:
 krb5-auth-dialog:
 # No package in openSUSE
 #labyrinth:
-last-exit:
 libbeagle:
 libbtctl:
 libchamplain:
@@ -413,7 +412,6 @@ chmsee:
 claws-mail:
 claws-mail-extra-plugins:
 clutter:
-clutter-cairo:
 clutter-gst:
 clutter-gtk:
 cogl:
@@ -428,7 +426,6 @@ decibel-audio-player:
 deja-dup:
 dmlangsel:
 docky:
-dopi:
 drapes:
 eds-feed:evolution-galago
 eiciel:
@@ -1108,3 +1105,11 @@ nautilus-actions:
 #gedit-cossa:
 #latexila:
 #yelp-tools:
+
+
+##
+## Package with no upstream page anymore
+##
+#clutter-cairo:
+#dopi:
+#last-exit:

@@ -111,7 +111,8 @@ chmsee:google:chmsee
 claws-mail:sf:25528|Claws Mail
 claws-mail-extra-plugins:sf:25528|extra plugins
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
-clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
+# Dead: no upstream homepage anymore, and deprecated
+#clutter-cairo:subdirhttpls:http://clutter-project.org/sources/clutter-cairo/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
@@ -273,7 +274,9 @@ liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 mangler:httpls:http://www.mangler.org/downloads/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
-memphis:trac:http://trac.openstreetmap.ch/trac/memphis/downloads
+# trac doesn't work
+#memphis:trac:http://trac.openstreetmap.ch/trac/memphis/downloads
+memphis:httpls:http://trac.openstreetmap.ch/trac/memphis/
 metacity-themes:upstream:
 # FIXME: Server is down
 #metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
@@ -285,7 +288,6 @@ mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 mrim-prpl:google:mrim-prpl|mrim-prpl
 mx:subdirhttpls:http://source.clutter-project.org/sources/mx/
 nautilus-search-tool:sf:149158|nautilus-search-tool
-nautilus-share:httpls:http://gentoo.ovibes.net/nautilus-share/
 nautilus-terminal:lp:nautilus-terminal
 net6:httpls:http://releases.0x539.de/net6/
 njb-sharp:httpls:http://download.banshee.fm/legacy/njb-sharp/
@@ -426,6 +428,7 @@ desktop-translations:upstream:
 devilspie:httpls:http://www.burtonini.com/computing/
 ding:httpls:http://ftp.tu-chemnitz.de/pub/Local/urz/ding/
 exiv2:httpls:http://www.exiv2.org/download.html
+# Known to be broken :/
 geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
 gos-wallpapers:upstream:
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
@@ -451,8 +454,9 @@ UPnP-Inspector:httpls:http://coherence.beebits.net/download/
 #byzanz:httpls:http://people.freedesktop.org/~company/byzanz/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 computertemp:httpls:http://computertemp.berlios.de/download.php
-dopi:httpls:http://www.snorp.net/files/dopi/
-glipper:sf:167085|glipper
+# Dead: no upstream homepage anymore
+#dopi:httpls:http://www.snorp.net/files/dopi/
+glipper:lp:glipper
 gnome-color-chooser:sf:211146|gnome-color-chooser
 gnome-colors:google:gnome-colors
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
@@ -460,7 +464,8 @@ gpa:httpls:http://wald.intevation.org/frs/?group_id=13
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
 gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
-last-exit:httpls:http://lastexit-player.org/releases/
+# Dead: no upstream homepage anymore
+#last-exit:httpls:http://lastexit-player.org/releases/
 librep:httpls:http://download.tuxfamily.org/librep/
 netspeed_applet:lp:netspeed
 nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
