@@ -179,12 +179,12 @@ gnome-subtitles:sf:129996
 gnome-zeitgeist:lp:gnome-zeitgeist
 gnomeicu:sf:237
 gnonlin:httpls:http://gstreamer.freedesktop.org/src/gnonlin/
-# gnucash is also hosted on sf...
-# gnucash:sf:192|gnucash
-gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
-# gnucash is also hosted on sf...
-# gnucash-docs:sf:192|gnucash-docs
-gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gnucash:sf:192|gnucash (stable)
+# Not updated anymore
+#gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
+gnucash-docs:sf:192|gnucash-docs
+# Not updated anymore
+#gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gobby:httpls:http://releases.0x539.de/gobby/
 google-gadgets-for-linux:google:google-gadgets-for-linux
