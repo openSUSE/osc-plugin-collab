@@ -964,8 +964,8 @@ gnome-video-effects:
 #googlizer:
 #gopersist:
 #gpdf:
-#grilo:
-#grilo-plugins:
+grilo:
+grilo-plugins:
 #gst-plugins:
 #gstreamermm:
 #gswitchit-plugins:
