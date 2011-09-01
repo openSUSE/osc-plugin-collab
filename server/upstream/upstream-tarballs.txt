@@ -116,7 +116,7 @@ clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
-colord:httpls:http://people.freedesktop.org/~hughsient/releases/
+colord:httpls:http://www.freedesktop.org/software/colord/releases/
 comix:sf:146377
 conglomerate:sf:82766|Conglomerate XML Editor
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
