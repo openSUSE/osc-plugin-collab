@@ -2451,7 +2451,7 @@ def _collab_update_changes(self, changes_file, upstream_version, email):
     old_lc_time = locale.setlocale(locale.LC_TIME)
     old_tz = os.getenv('TZ')
     locale.setlocale(locale.LC_TIME, 'C')
-    os.putenv('TZ', 'Europe/Paris')
+    os.putenv('TZ', 'UTC')
 
     os.write(fdout, '-------------------------------------------------------------------\n')
     os.write(fdout, '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email))
