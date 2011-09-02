@@ -135,7 +135,7 @@ totem-pl-parser:
 vinagre:
 vino:
 vte:
-vte:vte2
+vte|0.29:vte2
 yelp:
 yelp-xsl:
 zenity:
