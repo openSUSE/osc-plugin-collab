@@ -93,9 +93,11 @@ gnome-user-share:
 gnome-utils:
 gok:
 gsettings-desktop-schemas:
-gst-plugins-base:gstreamer-0_10-plugins-base
+gst-plugins-base:gstreamer-plugins-base
+gst-plugins-base|0.10:gstreamer-0_10-plugins-base
 gst-plugins-good:gstreamer-0_10-plugins-good
-gstreamer:gstreamer-0_10
+gstreamer:
+gstreamer|0.10:gstreamer-0_10
 gtk-engines|2.90:gtk2-engines
 gtkhtml:
 gtksourceview|1.9:gtksourceview18
@@ -496,7 +498,7 @@ gqview:
 gramps:
 gromit:
 gssdp:
-gstreamer:gstreamer-0_10-doc
+gstreamer|0.10:gstreamer-0_10-doc
 gst-plugins-bad:gstreamer-0_10-plugins-bad
 gst-plugins-farsight:gstreamer-0_10-plugins-farsight
 gst-plugins-gl:gstreamer-0_10-plugins-gl

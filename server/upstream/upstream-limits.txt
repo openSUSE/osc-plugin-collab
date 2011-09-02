@@ -24,6 +24,8 @@ swfdec-mozilla:no-odd-unstable
 
 # branches
 gobby|0.4:max|0.4.90
+gst-plugins-base|0.10:max|0.11.0
+gstreamer|0.10:max|0.11.0
 
 ## At least for next release
 #dbus:no-odd-unstable

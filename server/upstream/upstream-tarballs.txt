@@ -199,6 +199,7 @@ gramps:sf:25770
 grisbi:sf:93867|grisbi stable
 gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
+gst-plugins-base|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/
 gst-plugins-gl:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-gl/
@@ -206,6 +207,7 @@ gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gst-rtsp:httpls:http://gstreamer.freedesktop.org/src/gst-rtsp/
+gstreamer|0.10:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
 gtg:lp:gtg
