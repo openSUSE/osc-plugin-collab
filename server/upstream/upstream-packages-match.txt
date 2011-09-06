@@ -557,7 +557,8 @@ libmcs:
 libmodman:
 libnice:
 libnjb:
-libnl:
+# The way libnl is packaged is a bit too complex since it depends on the version
+#libnl:
 libnotify:
 libofx:
 liboil:
