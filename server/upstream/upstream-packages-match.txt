@@ -1106,7 +1106,7 @@ nautilus-actions:
 ## Added to ftp.gnome.org recently
 #gedit-cossa:
 #latexila:
-#yelp-tools:
+yelp-tools:
 
 
 ##
