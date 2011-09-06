@@ -778,7 +778,6 @@ CouchDB:python-couchdb
 LibRaw:libraw
 acpid:
 apache-couchdb:couchdb
-banshee:banshee-1
 brltty:
 csmash:
 desktopcouch:python-desktopcouch
@@ -849,7 +848,7 @@ zlib:
 #anjal:
 #aravis:
 #at-poke:
-#banshee:
+banshee:
 #banter:
 #battfink:
 #billreminder:

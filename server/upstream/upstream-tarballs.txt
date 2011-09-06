@@ -91,7 +91,6 @@ avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
-banshee:subdirhttpls:http://download.banshee.fm/banshee/stable/
 beagle-index:upstream:
 blueproximity:sf:203022
 # We're using www2.kernel.org because the main kernel.org website makes
