@@ -443,7 +443,8 @@ uget:sf:72252|Uget (stable)
 upower:httpls:http://upower.freedesktop.org/releases/
 usbview:httpls:http://www.kroah.com/linux-usb/
 valencia:subdirhttpls:http://yorba.org/download/valencia/
-vboxgtk:sf:263334|vboxgtk
+# vboxgtk: used to live at: vboxgtk:sf:263334|vboxgtk
+vboxgtk:google:vboxgtk
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
