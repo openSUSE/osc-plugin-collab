@@ -514,6 +514,7 @@ loudmouth:
 m4:
 mail-notification:
 mangler:
+md5deep:
 media-player-info:
 meld:
 memphis:

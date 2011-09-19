@@ -317,6 +317,7 @@ link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
+md5deep:sf:67079|md5deep
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
