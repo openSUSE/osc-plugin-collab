@@ -347,9 +347,9 @@ orc:httpls:http://code.entropywave.com/download/orc/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 paman:httpls:http://0pointer.de/lennart/projects/paman/
-paprefs:httpls:http://0pointer.de/lennart/projects/paprefs/
+paprefs:httpls:http://freedesktop.org/software/pulseaudio/paprefs/
 papyon:httpls:http://www.freedesktop.org/software/papyon/releases/
-pavucontrol:httpls:http://0pointer.de/lennart/projects/pavucontrol/
+pavucontrol:httpls:http://freedesktop.org/software/pulseaudio/pavucontrol/
 pavuk:sf:81012|pavuk
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pcre:ftpls:ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
