@@ -63,6 +63,7 @@ bakefile:
 bakery:
 balsa:
 banshee:
+banshee-community-extensions:
 beagle-xesam:
 beagle:
 bigboard:
@@ -121,6 +122,7 @@ dconf:
 dd_rescue:
 ddrescue:gnu_ddrescue
 decibel-audio-player:
+dee:
 deja-dup:
 deskbar-applet:
 desktop-data-model:
@@ -171,6 +173,7 @@ file-shrimp:
 fillmore-lombard:
 flickrapi:python-flickrapi
 folks:
+frei0r-plugins:
 frogr:
 fyre:
 g-wrap:
@@ -194,6 +197,7 @@ geany-plugins:
 geany:
 gedit-plugins:
 gedit:
+geeqie:
 gegl:
 genius:
 geoclue:
@@ -266,6 +270,7 @@ gnome-mag:
 gnome-main-menu:
 gnome-media:
 gnome-menus:
+gnome-menus|3.1:gnome-menus-legacy
 gnome-mime-data:
 gnome-mount:
 gnome-netstatus:
@@ -282,6 +287,7 @@ gnome-python-desktop:
 gnome-python-extras:python-gnome-extras
 gnome-python:python-gnome
 gnome-reset:
+gnome-schedule:
 gnome-screensaver:
 gnome-session:
 gnome-settings-daemon:
@@ -605,6 +611,8 @@ pavumeter:
 pcre:
 pdfmod:
 pessulus:
+pidgin-advanced-sound-notification:
+pidgin-birthday-reminder:
 pidgin-embeddedvideo:
 pidgin-facebookchat:
 pidgin-guifications:
@@ -626,6 +634,7 @@ procmeter3:procmeter
 psiconv:
 psmisc:
 ptlib:libpt2
+purple-plugin_pack:
 pulseaudio:
 py2cairo:python-cairo
 pyatspi:python-atspi
@@ -635,6 +644,9 @@ pyclutter-gtk:python-clutter-gtk
 pyclutter:python-clutter
 pycups:python-cups
 pygobject:python-gobject
+pygobject:python3-gobject
+pygobject|2.29:python-gobject2
+pygobject|2.29:python3-gobject2
 pygoocanvas:python-goocanvas
 pygtk:python-gtk
 pygtkglext:python-gtkglext
@@ -668,6 +680,7 @@ schismtracker:
 schroedinger:
 scrollkeeper:
 seahorse-plugins:
+seahorse-sharing:
 seahorse:
 seed:
 seed:seed2
@@ -731,6 +744,7 @@ upower:
 usbview:
 vala:
 vala:vala-unstable
+vala|0.12:vala-0_12
 valencia:
 varnish:
 vboxgtk:

@@ -95,6 +95,7 @@ avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
+banshee-community-extensions:subdirhttpls:http://download.banshee.fm/banshee-community-extensions/
 blueproximity:sf:203022
 # bluez-gnome: We're using www2.kernel.org because the main kernel.org website makes everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
@@ -140,6 +141,7 @@ dbus:httpls:http://dbus.freedesktop.org/releases/dbus/
 dd_rescue:httpls:http://garloff.de/kurt/linux/ddrescue/
 ddrescue:httpls:http://ftp.gnu.org/gnu/ddrescue/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
+dee:lp:dee
 deja-dup:lp:deja-dup
 desktop-file-utils:httpls:http://www.freedesktop.org/software/desktop-file-utils/releases/
 desktopcouch:lp:desktopcouch
@@ -165,6 +167,7 @@ farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
 file-shrimp:google:loolixbodes|file-shrimp
 fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
+frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
 fyre:httpls:http://releases.navi.cx/fyre/
 g-wrap:httpls:http://download.savannah.gnu.org/releases/g-wrap/
 gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-galago/
@@ -178,6 +181,7 @@ gdesklets:httpls:http://gdesklets.de/
 gdome2:httpls:http://gdome2.cs.unibo.it/tarball/
 geany-plugins:httpls:http://plugins.geany.org/geany-plugins/
 geany:httpls:http://download.geany.org/
+geeqie:sf:222125
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 gftp:httpls:http://gftp.seul.org/
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
@@ -204,6 +208,7 @@ gnome-gmail:sf:277145
 gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
+gnome-schedule:sf:112183
 gnome-subtitles:sf:129996
 gnome-zeitgeist:lp:gnome-zeitgeist
 gnomeicu:sf:237
@@ -377,6 +382,8 @@ pavucontrol:httpls:http://freedesktop.org/software/pulseaudio/pavucontrol/
 pavuk:sf:81012|pavuk
 pavumeter:httpls:http://0pointer.de/lennart/projects/pavumeter/
 pcre:ftpls:ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/
+pidgin-advanced-sound-notification:lp:pidgin-advanced-sound-notification
+pidgin-birthday-reminder:lp:pidgin-birthday-reminder
 pidgin-embeddedvideo:google:pidgin-embeddedvideo|pidgin-embeddedvideo
 pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
 pidgin-guifications:httpls:https://www.guifications.org/projects/gf2/files
@@ -395,6 +402,7 @@ procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 psmisc:sf:15273|psmisc
 pulseaudio:httpls:http://www.freedesktop.org/software/pulseaudio/releases/
+purple-plugin_pack:httpls:https://www.guifications.org/projects/purple-plugin-pack/files
 py2cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
