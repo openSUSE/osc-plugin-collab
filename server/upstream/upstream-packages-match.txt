@@ -191,6 +191,7 @@ gdata.py:python-gdata
 gdesklets:gDesklets
 gdk-pixbuf:
 gdl:
+gdlmm:
 gdm:
 gdome2:
 geany-plugins:
@@ -896,7 +897,6 @@ yast2-control-center-gnome:
 #garnome:
 #gazpacho:
 #gb:
-#gdlmm:
 #gedit-collaboration:
 #gedit2:
 #gegl-vala:
