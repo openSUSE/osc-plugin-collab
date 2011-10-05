@@ -744,7 +744,7 @@ upower:
 usbview:
 vala:
 vala:vala-unstable
-vala|0.12:vala-0_12
+vala|0.13:vala-0_12
 valencia:
 varnish:
 vboxgtk:
