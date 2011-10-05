@@ -88,7 +88,9 @@ alarm-clock-applet:lp:alarm-clock
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
+arping:httpls:http://www.habets.pp.se/synscan/files/
 asio:sf:122478|asio
+atheme-services:httpls:http://atheme.net/downloads/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
@@ -103,13 +105,16 @@ cairo-clock:httpls:http://macslow.net/?page_id=23
 cairo-compmgr:httpls:http://download.tuxfamily.org/ccm/cairo-compmgr/
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
+ccgfs:sf:207310
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/
+cdecl:httpls:http://www.gtlib.cc.gatech.edu/pub/Linux/devel/lang/c/
 check:sf:28255|check
 cherrytree:httpls:http://www.giuspen.com/software/
 chmlib:httpls:http://www.jedrea.com/chmlib/
 chmsee:google:chmsee
 claws-mail-extra-plugins:sf:25528|extra plugins
 claws-mail:sf:25528|Claws Mail
+cloop:httpls:http://debian-knoppix.alioth.debian.org/packages/cloop/
 clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
 clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
@@ -126,11 +131,14 @@ compizconfig-backend-kconfig:subdirhttpls:http://releases.compiz.org/components/
 compizconfig-python:subdirhttpls:http://releases.compiz.org/components/compizconfig-python/
 computertemp:httpls:http://computertemp.berlios.de/download.php
 conglomerate:sf:82766|Conglomerate XML Editor
+conntrack-tools:httpls:http://ftp.netfilter.org/pub/conntrack-tools/
 contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 csmash:sf:4179|CannonSmash
 cups-pk-helper:httpls:http://www.freedesktop.org/software/cups-pk-helper/releases/
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
 dbus:httpls:http://dbus.freedesktop.org/releases/dbus/
+dd_rescue:httpls:http://garloff.de/kurt/linux/ddrescue/
+ddrescue:httpls:http://ftp.gnu.org/gnu/ddrescue/
 decibel-audio-player:httpls:http://decibel.silent-blade.org/index.php?n=Main.Download
 deja-dup:lp:deja-dup
 desktop-file-utils:httpls:http://www.freedesktop.org/software/desktop-file-utils/releases/
@@ -142,6 +150,7 @@ djvulibre:sf:32953|DjVuLibre
 dmlangsel:google:loolixbodes|dmlangsel
 docky:lp:docky
 drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
+dwarves:httpls:http://fedorapeople.org/~acme/dwarves/
 ed:httpls:http://ftp.gnu.org/gnu/ed/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
@@ -255,15 +264,22 @@ gwibber:lp:gwibber
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
 gzip:httpls:http://ftp.gnu.org/gnu/gzip/
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
+ht:sf:1066
+hxtools:httpls:http://dl.medozas.de/hxtools/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|inkscape
 intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
+iproute2:httpls:http://devresources.linuxfoundation.org/dev/iproute2/download/
+iptables:httpls:http://ftp.netfilter.org/pub/iptables/
+iptraf-ng:httpls:https://fedorahosted.org/iptraf-ng/wiki/Download
 irda-utils:sf:5616|irda-utils
 istanbul:httpls:http://live.gnome.org/Istanbul
 itstool:httpls:http://files.itstool.org/itstool/
 iwatch:sf:174218|iwatch
+kye:httpls:http://games.moria.org.uk/kye/download-install
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
+libHX:sf:254041
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libatasmart:httpls:http://0pointer.de/public/
 libbraille:sf:17127|libbraille
@@ -292,7 +308,13 @@ libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
 liblouis:google:liblouis
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
 libmcs:httpls:http://distfiles.atheme.org/
+libmnl:httpls:http://ftp.netfilter.org/pub/libmnl/
 libmodman:google:libmodman
+libmowgli:httpls:http://distfiles.atheme.org/
+libnetfilter_conntrack:httpls:http://ftp.netfilter.org/pub/libnetfilter_conntrack/
+libnetfilter_log:httpls:http://ftp.netfilter.org/pub/libnetfilter_log/
+libnetfilter_queue:httpls:http://ftp.netfilter.org/pub/libnetfilter_queue/
+libnfnetlink:httpls:http://ftp.netfilter.org/pub/libnfnetlink/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|libnjb
 libnl:httpls:http://www.infradead.org/~tgr/libnl/
@@ -310,6 +332,7 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libvpx:google:webm|libvpx
+libwebp:google:webp|libwebp
 libxklavier:sf:319|libxklavier
 libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
@@ -347,6 +370,7 @@ orc:httpls:http://code.entropywave.com/download/orc/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 paman:httpls:http://0pointer.de/lennart/projects/paman/
+pam_mount:sf:41452
 paprefs:httpls:http://freedesktop.org/software/pulseaudio/paprefs/
 papyon:httpls:http://www.freedesktop.org/software/papyon/releases/
 pavucontrol:httpls:http://freedesktop.org/software/pulseaudio/pavucontrol/
@@ -366,6 +390,7 @@ polkit-gnome:httpls:http://hal.freedesktop.org/releases/
 polkit:httpls:http://hal.freedesktop.org/releases/
 poppler-data:httpls:http://poppler.freedesktop.org/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
+posixovl:sf:255236
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 psmisc:sf:15273|psmisc
@@ -396,6 +421,7 @@ rednotebook:sf:238077
 rep-gtk:httpls:http://download.tuxfamily.org/librep/rep-gtk/
 rlwrap:httpls:http://utopia.knoware.nl/~hlub/rlwrap/
 sawfish:httpls:http://download.tuxfamily.org/sawfish/
+schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
 shared-color-targets:httpls:http://people.freedesktop.org/~hughsient/releases/
@@ -412,6 +438,7 @@ sparkleshare:httpls:https://github.com/hbons/SparkleShare/downloads
 specto:httpls:http://specto.sourceforge.net/?go=download
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 spheres-and-crystals:sf:64400|spherecrystal
+sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
@@ -434,6 +461,7 @@ telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut
 # telepathy-sofiasip: used to live at: telepathy-sofiasip:sf:191149
 telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
+tinyproxy:httpls:https://banu.com/tinyproxy/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 transmageddon:httpls:http://www.linuxrising.org/files/
 transmission:httpls:http://download.m0k.org/transmission/files/
@@ -441,12 +469,15 @@ tsclient:sf:192483|tsclient
 twitux:sf:198704|twitux
 udisks:httpls:http://hal.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)
+ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
 upower:httpls:http://upower.freedesktop.org/releases/
 usbview:httpls:http://www.kroah.com/linux-usb/
 valencia:subdirhttpls:http://yorba.org/download/valencia/
+varnish:httpls:http://repo.varnish-cache.org/source/
 # vboxgtk: used to live at: vboxgtk:sf:263334|vboxgtk
 vboxgtk:google:vboxgtk
 vobject:httpls:http://vobject.skyhouseconsulting.com/
+wadptr:httpls:http://soulsphere.org/projects/wadptr/
 webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
@@ -457,6 +488,7 @@ xdg-utils:httpls:http://portland.freedesktop.org/wiki/
 xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
 xosd:sf:124390|libxosd
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
+xtables-addons:sf:254159
 xzgv:sf:203093|xzgv
 zeitgeist-datahub:lp:zeitgeist-datahub
 zeitgeist:lp:zeitgeist

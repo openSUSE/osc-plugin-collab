@@ -45,10 +45,12 @@ anjuta:
 apache-couchdb:couchdb
 aqbanking:
 arista:
+arping:arping2
 asio:
 at-spi2-atk:
 at-spi2-core:
 at-spi:
+atheme-services:atheme
 atk:
 atkmm:
 audiofile:
@@ -78,7 +80,9 @@ cairo:
 cairomm:
 cantarell-fonts:
 caribou:
+ccgfs:
 ccsm:compizconfig-settings-manager
+cdecl:
 check:
 cheese:
 cherrytree:
@@ -86,6 +90,7 @@ chmlib:
 chmsee:
 claws-mail-extra-plugins:
 claws-mail:
+cloop:
 clutter-gst:
 clutter-gtk:
 clutter:
@@ -104,6 +109,7 @@ compizconfig-python:python-compizconfig
 computertemp:
 conduit:
 conglomerate:
+conntrack-tools:
 contact-lookup-applet:
 csmash:
 cups-pk-helper:
@@ -112,6 +118,8 @@ dasher:
 dbus-glib:dbus-1-glib
 dbus:dbus-1
 dconf:
+dd_rescue:
+ddrescue:gnu_ddrescue
 decibel-audio-player:
 deja-dup:
 deskbar-applet:
@@ -129,6 +137,7 @@ dmlangsel:
 docky:
 dogtail:
 drapes:
+dwarves:
 ed:
 eds-feed:evolution-galago
 eel:
@@ -393,11 +402,16 @@ gzip:
 hamster-applet:
 hicolor-icon-theme:
 hippo-canvas:
+ht:
+hxtools:
 hyena:
 icon-naming-utils:
 inkscape:
 intltool:
 ipod-sharp:
+iproute2:
+iptables:
+iptraf-ng:iptraf
 irda-utils:irda
 iso-codes:
 istanbul:
@@ -406,7 +420,9 @@ iwatch:
 jhbuild:
 json-glib:
 krb5-auth-dialog:
+kye:
 ldtp:
+libHX:
 libIDL:libidl
 libao-pulse:
 libart_lgpl:
@@ -474,7 +490,13 @@ liblouis:
 liblouis:python-louis
 libmatroska:
 libmcs:
+libmnl:
 libmodman:
+libmowgli:
+libnetfilter_conntrack:
+libnetfilter_log:
+libnetfilter_queue:
+libnfnetlink:
 libnice:
 libnjb:
 libnotify:
@@ -502,6 +524,7 @@ libthai:
 libunique:
 libunique|2:libunique1
 libvpx:
+libwebp:
 libwnck:
 libwnck|2.90:libwnck2
 libxklavier:
@@ -571,6 +594,7 @@ orca:
 p11-kit:
 padevchooser:
 paman:
+pam_mount:
 pango:
 pangomm:
 paprefs:
@@ -597,6 +621,7 @@ polkit-gnome:
 polkit:
 poppler-data:
 poppler:
+posixovl:
 procmeter3:procmeter
 psiconv:
 psmisc:
@@ -639,6 +664,7 @@ rlwrap:
 rygel:
 sabayon:
 sawfish:
+schismtracker:
 schroedinger:
 scrollkeeper:
 seahorse-plugins:
@@ -662,6 +688,7 @@ sparkleshare:
 specto:
 speech-dispatcher:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
+sshfp:
 startup-notification:
 sushi:
 swfdec-gnome:
@@ -686,6 +713,7 @@ telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
 the-board:
+tinyproxy:
 tomboy:
 totem-pl-parser:
 totem:
@@ -697,18 +725,21 @@ tsclient:
 twitux:
 udisks:
 uget:
+ulogd:ulogd2
 update-desktop-files:
 upower:
 usbview:
 vala:
 vala:vala-unstable
 valencia:
+varnish:
 vboxgtk:
 vinagre:
 vino:
 vobject:
 vte:
 vte|0.29:vte2
+wadptr:
 webkit:libwebkit
 webkit:libwebkit3
 wmakerconf:
@@ -723,6 +754,7 @@ xdg-utils:
 xesam-tools:
 xosd:
 xsane:
+xtables-addons:
 xzgv:
 yelp-tools:
 yelp-xsl:
