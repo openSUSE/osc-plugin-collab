@@ -962,6 +962,8 @@ yast2-control-center-gnome:
 #gswitchit-plugins:
 #gswitchit_plugins:
 #gtk-css-engine:
+#gtk-mac-bundler:
+#gtk-mac-integration:
 #gtk-theme-engine-clearlooks:
 #gtk-thinice-engine:
 #gtkglarea:
