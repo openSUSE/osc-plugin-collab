@@ -2792,7 +2792,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 #######################################################################
 
 
-def _collab_forward(self, apiurl, projects, request_id):
+def _collab_forward(self, apiurl, user, projects, request_id):
     try:
         int_request_id = int(request_id)
     except ValueError:
@@ -2847,6 +2847,9 @@ def _collab_forward(self, apiurl, projects, request_id):
                                    request.description)
 
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
+
+    for old_id in self.OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
+        print 'Previous submission request %s has been superseded.' % old_id
 
 
 #######################################################################
@@ -3559,10 +3562,14 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
                                        msg)
 
         print 'Package submitted to %s (request id: %s).' % (parent_project, result)
+
+        for old_id in self.OscCollabObs.supersede_old_requests(user, parent_project, package, result):
+            print 'Previous submission request %s has been superseded.' % old_id
+
         if forward:
             # we volunteerly restrict the project list to parent_project for
             # self-consistency and more safety
-            self._collab_forward(apiurl, [ parent_project ], result)
+            self._collab_forward(apiurl, user, [ parent_project ], result)
 
         if not no_unreserve:
             try:
@@ -4083,7 +4090,7 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._collab_forward(apiurl, projects, request_id)
+        self._collab_forward(apiurl, user, projects, request_id)
 
     elif cmd in ['build', 'b']:
         self._collab_build(apiurl, user, projects, opts.msg, repos, archs)
