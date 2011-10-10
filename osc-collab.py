@@ -551,7 +551,7 @@ class OscCollabObs:
             print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
             return None
 
-        match = 'state/@name=\'new\''
+        match = '(state/@name=\'new\'%20or%20state/@name=\'review\')'
         match += '%20and%20'
         match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
         if package:
