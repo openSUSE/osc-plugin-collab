@@ -2844,7 +2844,7 @@ def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = Fal
     result = create_submit_request(apiurl,
                                    dest_project, dest_package,
                                    pkg.parent_project, pkg.parent_package,
-                                   request.description)
+                                   request.description + ' (forwarded request %s from %s)' % (request_id, request.by))
 
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
 
