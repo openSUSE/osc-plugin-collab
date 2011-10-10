@@ -2792,7 +2792,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 #######################################################################
 
 
-def _collab_forward(self, apiurl, user, projects, request_id):
+def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = False):
     try:
         int_request_id = int(request_id)
     except ValueError:
@@ -2848,8 +2848,9 @@ def _collab_forward(self, apiurl, user, projects, request_id):
 
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
 
-    for old_id in self.OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
-        print 'Previous submission request %s has been superseded.' % old_id
+    if not no_supersede:
+        for old_id in self.OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
+            print 'Previous submission request %s has been superseded.' % old_id
 
 
 #######################################################################
@@ -3508,7 +3509,7 @@ def _collab_build(self, apiurl, user, projects, msg, repos, archs):
 #######################################################################
 
 
-def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False):
+def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False, no_supersede = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -3563,13 +3564,14 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
 
         print 'Package submitted to %s (request id: %s).' % (parent_project, result)
 
-        for old_id in self.OscCollabObs.supersede_old_requests(user, parent_project, package, result):
-            print 'Previous submission request %s has been superseded.' % old_id
+        if not no_supersede:
+            for old_id in self.OscCollabObs.supersede_old_requests(user, parent_project, package, result):
+                print 'Previous submission request %s has been superseded.' % old_id
 
         if forward:
             # we volunteerly restrict the project list to parent_project for
             # self-consistency and more safety
-            self._collab_forward(apiurl, user, [ parent_project ], result)
+            self._collab_forward(apiurl, user, [ parent_project ], result, no_supersede = no_supersede)
 
         if not no_unreserve:
             try:
@@ -3856,6 +3858,9 @@ def _collab_parse_arg_packages(self, packages):
 @cmdln.option('--nr', '--no-reserve', action='store_true',
               dest='no_reserve',
               help='do not reserve the package')
+@cmdln.option('--ns', '--no-supersede', action='store_true',
+              dest='no_supersede',
+              help='do not supersede requests to the same package')
 @cmdln.option('--nu', '--no-unreserve', action='store_true',
               dest='no_unreserve',
               help='do not unreserve the package')
@@ -3957,10 +3962,10 @@ def do_collab(self, subcmd, opts, *args):
         osc collab setup [--ignore-reserved|--ir] [--ignore-comments|--ic] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
         osc collab update [--ignore-reserved|--ir] [--ignore-comments|--ic] [--no-reserve|--nr] [--nodevelproject] [--nobranch] [--project=PROJECT] PKG
 
-        osc collab forward [--project=PROJECT] ID
+        osc collab forward [--no-supersede|--ns] [--project=PROJECT] ID
 
         osc collab build [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
-        osc collab buildsubmit [--forward|-f] [--no-unreserve|--nu] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
+        osc collab buildsubmit [--forward|-f] [--no-supersede|--ns] [--no-unreserve|--nu] [--message=TEXT|-m=TEXT] [--repo=REPOSITORY] [--arch=ARCH]
     ${cmd_option_list}
     """
 
@@ -4090,13 +4095,13 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._collab_forward(apiurl, user, projects, request_id)
+        self._collab_forward(apiurl, user, projects, request_id, no_supersede = opts.no_supersede)
 
     elif cmd in ['build', 'b']:
         self._collab_build(apiurl, user, projects, opts.msg, repos, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward, no_unreserve = opts.no_unreserve)
+        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward, no_unreserve = opts.no_unreserve, no_supersede = opts.no_supersede)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
