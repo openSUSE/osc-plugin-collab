@@ -545,15 +545,7 @@ class OscCollabObs:
 
 
     @classmethod
-    def _get_request_list_internal(cls, project, type):
-        if type == 'source':
-            what = 'list of requests from %s' % project
-        elif type == 'target':
-            what = 'list of requests to %s' % project
-        else:
-            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
-            return None
-
+    def _get_request_list_url(cls, project, package, type, what):
         urllib = cls._import('urllib')
         if not urllib:
             print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
@@ -562,26 +554,21 @@ class OscCollabObs:
         match = 'state/@name=\'new\''
         match += '%20and%20'
         match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
+        if package:
+            match += '%20and%20'
+            match += 'action/%s/@package=\'%s\'' % (type, urllib.quote(package))
 
-        # download the data (cache for 10 minutes)
-        url = makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
-        filename = '%s-requests-%s.obs' % (project, type)
-        max_age_minutes = 60 * 10
-
-        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+        return makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
 
 
     @classmethod
-    def _parse_request_list_internal(cls, file):
+    def _parse_request_list_internal(cls, f, what):
         requests = []
 
-        if not file or not os.path.exists(file):
-            return requests
-
         try:
-            collection = ET.parse(file).getroot()
+            collection = ET.parse(f).getroot()
         except SyntaxError, e:
-            print >>sys.stderr, 'Cannot parse request list: %s' % (e.msg,)
+            print >>sys.stderr, 'Cannot parse %s: %s' % (what, e.msg)
             return requests
 
         for node in collection.findall('request'):
@@ -591,15 +578,71 @@ class OscCollabObs:
 
 
     @classmethod
-    def get_request_list_from(cls, project):
-        file = cls._get_request_list_internal(project, 'source')
-        return cls._parse_request_list_internal(file)
+    def _get_request_list_no_cache(cls, project, package, type, what):
+        url = cls._get_request_list_url(project, package, type, what)
+
+        try:
+            fin = http_GET(url)
+        except urllib2.HTTPError, e:
+            print >>sys.stderr, 'Cannot get %s: %s' % (what, e.msg)
+            return []
+
+        requests = cls._parse_request_list_internal(fin, what)
+
+        fin.close()
+
+        return requests
 
 
     @classmethod
-    def get_request_list_to(cls, project):
-        file = cls._get_request_list_internal(project, 'target')
-        return cls._parse_request_list_internal(file)
+    def _get_request_list_with_cache(cls, project, package, type, what):
+        url = cls._get_request_list_url(project, package, type, what)
+        if url is None:
+            return []
+
+        # download the data (cache for 10 minutes)
+        if package:
+            filename = '%s-%s-requests-%s.obs' % (project, package, type)
+        else:
+            filename = '%s-requests-%s.obs' % (project, type)
+        max_age_minutes = 60 * 10
+
+        file = cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+
+        if not file or not os.path.exists(file):
+            return []
+
+        return cls._parse_request_list_internal(file, what)
+
+
+    @classmethod
+    def _get_request_list(cls, project, package, type, use_cache):
+        if package:
+            what_helper = '%s/%s' % (project, package)
+        else:
+            what_helper = project
+        if type == 'source':
+            what = 'list of requests from %s' % what_helper
+        elif type == 'target':
+            what = 'list of requests to %s' % what_helper
+        else:
+            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
+            return None
+
+        if use_cache:
+            return cls._get_request_list_with_cache(project, package, type, what)
+        else:
+            return cls._get_request_list_no_cache(project, package, type, what)
+
+
+    @classmethod
+    def get_request_list_from(cls, project, package=None, use_cache=True):
+        return cls._get_request_list(project, package, 'source', use_cache)
+
+
+    @classmethod
+    def get_request_list_to(cls, project, package=None, use_cache=True):
+        return cls._get_request_list(project, package, 'target', use_cache)
 
 
     @classmethod
