@@ -668,27 +668,42 @@ class OscCollabObs:
 
 
     @classmethod
-    def change_request_state(cls, id, new_state, message):
+    def change_request_state(cls, id, new_state, message, superseded_by=None):
         try:
             _collab_change_request_state = change_request_state
         except NameError, e:
             # in osc <= 0.120, change_request_state was named
             # change_submit_request_state
             _collab_change_request_state = change_submit_request_state
+            # don't think old osc supported superseding...
+            if new_state == 'superseded':
+                new_state = 'revoked'
 
-        result = _collab_change_request_state(cls.apiurl, id, new_state, message)
+        if new_state != 'superseded':
+            result = _collab_change_request_state(cls.apiurl, id, new_state, message)
+        else:
+            result = _collab_change_request_state(cls.apiurl, id, new_state, message, supersed=superseded_by)
 
         try:
             # before osc 0.129, we had the full XML
             root = ET.fromstring(result)
             if not 'code' in root.keys() or root.get('code') != 'ok':
-                print >>sys.stderr, 'Cannot accept request %s: %s' % (id, result)
+                print >>sys.stderr, 'Cannot change request %s: %s' % (id, result)
                 return False
 
             return True
         except SyntaxError:
             # starting with osc 0.129, we just have the result code
             return result == 'ok'
+
+
+    @classmethod
+    def supersede_old_requests(cls, user, project, package, new_request_id):
+        requests_to = cls.get_request_list_to(project, package, use_cache=False)
+        old_ids = [ request.req_id for request in requests_to if request.by == user and str(request.req_id) != new_request_id ]
+        for old_id in old_ids:
+            cls.change_request_state(str(old_id), 'superseded', 'superseded by %s' % new_request_id, superseded_by=new_request_id)
+        return old_ids
 
 
     @classmethod
