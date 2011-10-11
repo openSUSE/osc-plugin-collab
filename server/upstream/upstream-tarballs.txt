@@ -257,6 +257,7 @@ gtkmathview:httpls:http://helm.cs.unibo.it/mml-widget/sources/
 gtkpbbuttons:sf:47862|gtkpbbuttons
 gtkpod:sf:67873|gtkpod
 gtkspell:sf:7896
+guake:trac:http://guake.org/downloads
 gupnp-av:httpls:http://gupnp.org/download/
 gupnp-dlna:httpls:http://gupnp.org/download/
 gupnp-igd:httpls:http://gupnp.org/download/

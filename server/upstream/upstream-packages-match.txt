@@ -393,6 +393,7 @@ gtksourceviewmm:
 gtksourceviewmm|2.90:gtksourceviewmm2
 gtkspell:
 gtranslator:
+guake:
 gucharmap:
 gupnp-av:
 gupnp-dlna:
