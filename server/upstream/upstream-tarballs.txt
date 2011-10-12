@@ -479,6 +479,7 @@ twitux:sf:198704|twitux
 udisks:httpls:http://hal.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)
 ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
+unico:lp:unico
 upower:httpls:http://upower.freedesktop.org/releases/
 usbview:httpls:http://www.kroah.com/linux-usb/
 valencia:subdirhttpls:http://yorba.org/download/valencia/

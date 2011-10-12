@@ -742,6 +742,7 @@ twitux:
 udisks:
 uget:
 ulogd:ulogd2
+unico:
 update-desktop-files:
 upower:
 usbview:
