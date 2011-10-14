@@ -475,6 +475,7 @@ traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 transmageddon:httpls:http://www.linuxrising.org/files/
 transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
+turpial:httpls:http://turpial.org.ve/files/sources/stable/
 twitux:sf:198704|twitux
 udisks:httpls:http://hal.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)

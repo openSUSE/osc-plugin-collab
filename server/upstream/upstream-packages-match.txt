@@ -738,6 +738,7 @@ traffic-vis:
 transmageddon:
 transmission:
 tsclient:
+turpial:
 twitux:
 udisks:
 uget:
