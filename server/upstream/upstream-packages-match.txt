@@ -155,6 +155,7 @@ epiphany:
 esound:
 evince:
 evolution-data-server:
+evolution-ews:
 evolution-exchange:
 evolution-groupwise:
 evolution-mapi:
