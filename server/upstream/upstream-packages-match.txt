@@ -64,6 +64,7 @@ bakery:
 balsa:
 banshee:
 banshee-community-extensions:
+baobab:
 beagle-xesam:
 beagle:
 bigboard:
@@ -197,6 +198,7 @@ gdm:
 gdome2:
 geany-plugins:
 geany:
+gedit-code-assistance:
 gedit-latex:
 gedit-plugins:
 gedit:
@@ -252,12 +254,14 @@ gnome-control-center:
 gnome-desktop:gnome-desktop
 gnome-desktop|2.90:gnome-desktop2
 gnome-devel-docs:
+gnome-dictionary:
 gnome-disk-utility:
 gnome-do-plugins:
 gnome-do:
 gnome-doc-utils:
 gnome-documents:
 gnome-dvb-daemon:
+gnome-font-viewer:
 gnome-games-extra-data:
 gnome-games:
 gnome-gmail-notifier:
@@ -292,6 +296,8 @@ gnome-python:python-gnome
 gnome-reset:
 gnome-schedule:
 gnome-screensaver:
+gnome-screenshot:
+gnome-search-tool:
 gnome-session:
 gnome-settings-daemon:
 gnome-sharp:gnome-sharp2
@@ -300,6 +306,7 @@ gnome-shell:
 gnome-speech:
 gnome-spell:gnome-spell2
 gnome-subtitles:
+gnome-system-log:
 gnome-system-monitor:
 gnome-terminal:
 gnome-themes-extras:
@@ -683,6 +690,7 @@ sawfish:
 schismtracker:
 schroedinger:
 scrollkeeper:
+seahorse-nautilus:
 seahorse-plugins:
 seahorse-sharing:
 seahorse:
