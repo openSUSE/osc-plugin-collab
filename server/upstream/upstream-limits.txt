@@ -30,7 +30,7 @@ gst-plugins-base|0.10:max|0.11.0
 gstreamer|0.10:max|0.11.0
 
 ## At least for next release
-PackageKit:no-odd-unstable
+#PackageKit:no-odd-unstable
 #dbus:no-odd-unstable
 #libdmapsharing:no-odd-unstable
 #liferea:no-odd-unstable
