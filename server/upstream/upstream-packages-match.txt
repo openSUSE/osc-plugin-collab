@@ -234,7 +234,7 @@ glipper:
 glitz:
 glom:
 gmetadom:
-gmime|2.5:gmime
+gmime:
 gnac:
 gnet:
 gnokii:
