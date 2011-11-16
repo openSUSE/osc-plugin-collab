@@ -186,6 +186,7 @@ galago-gtk-sharp:
 galago-sharp:
 gbrainy:
 gcalctool:
+gcr:
 gconf-editor:
 gconfmm:
 gcstar:
@@ -500,6 +501,7 @@ libgtkhtml:
 libgtksourceviewmm:
 libgtop:
 libgweather:
+libgxps:
 libinfinity:
 libiptcdata:
 libjingle:
