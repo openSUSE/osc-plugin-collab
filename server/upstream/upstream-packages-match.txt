@@ -1113,7 +1113,7 @@ yast2-control-center-gnome:
 ## Added to ftp.gnome.org recently
 #gedit-cossa:
 #latexila:
-#glick2
+#glick2:
 
 # Other gnome-related upstreams with no package in openSUSE
 #gnome-desktop-sharp:
