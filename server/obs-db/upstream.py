@@ -309,7 +309,7 @@ class UpstreamDb:
                     majmin = version
                 else:
                     majmin = versions[0] + '.' + versions[1]
-                url = 'http://download.gnome.org/sources/%s/%s/%s-%s.tar.bz2' % (name, majmin, name, version)
+                url = 'http://download.gnome.org/sources/%s/%s/%s-%s.tar.xz' % (name, majmin, name, version)
 
             ignore = False
             if real_upstream_data.has_key(name):
