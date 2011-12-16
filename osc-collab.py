@@ -2440,7 +2440,9 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
             if upstream_url:
                 non_basename = os.path.dirname(upstream_url)
                 new_source = os.path.basename(upstream_url)
-                for key in [ 'name', '_name', 'version' ]:
+                # Use _name in favor of name, as if _name exists, it's for a
+                # good reason
+                for key in [ '_name', 'name', 'version' ]:
                     if defines.has_key(key):
                         if key == 'version':
                             new_source = new_source.replace(upstream_version, '%%{%s}' % key)
