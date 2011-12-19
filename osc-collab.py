@@ -2098,6 +2098,22 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
             new.close()
         shutil.rmtree(tmpdir)
 
+    def _lzma_hack(filename, tmpdir):
+        if not filename.endswith('.xz'):
+            return filename
+
+        shutil = self.OscCollabImport.m_import('shutil')
+        subprocess = self.OscCollabImport.m_import('subprocess')
+
+        if not shutil or not subprocess:
+            return filename
+
+        dest = os.path.join(tmpdir, os.path.basename(filename))
+        shutil.copyfile(filename, dest)
+        subprocess.call(['xz', '-d', dest])
+
+        return dest[:-3]
+
     # we need to make sure it's safe to extract the file
     # see the warning in http://www.python.org/doc/lib/tarfile-objects.html
     def _can_extract_with_trust(name):
@@ -2216,6 +2232,9 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
     if not tempfile or not shutil or not tarfile or not difflib:
         raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: incomplete python installation.')
 
+    # FIXME: only needed until we switch to python >= 3.3
+    lzma_hack = not hasattr(tarfile.TarFile, 'xzopen')
+
     tmpdir = tempfile.mkdtemp(prefix = 'osc-collab-')
 
     old = None
@@ -2223,6 +2242,8 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 
     if old_tarball and os.path.exists(old_tarball):
         try:
+            if lzma_hack:
+                old_tarball = _lzma_hack(old_tarball, tmpdir)
             old = tarfile.open(old_tarball)
         except tarfile.TarError:
             pass
@@ -2234,6 +2255,8 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
     if new_tarball and os.path.exists(new_tarball):
         new_tarball_basename = os.path.basename(new_tarball)
         try:
+            if lzma_hack:
+                new_tarball = _lzma_hack(new_tarball, tmpdir)
             new = tarfile.open(new_tarball)
         except tarfile.TarError, e:
             _cleanup(old, new, tmpdir)
