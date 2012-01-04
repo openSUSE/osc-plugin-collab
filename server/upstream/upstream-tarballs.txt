@@ -522,12 +522,15 @@ bundle-lang-other:upstream:
 desktop-data-SLED:upstream:
 desktop-data-openSUSE:upstream:
 desktop-translations:upstream:
+dynamic-wallpapers-11x:upstream:
 ggreeter:upstream:
 gnome-patch-translation:upstream:
+gnome-shell-search-provider-openSUSE-packages:upstream:
 gos-wallpapers:upstream:
 gtk2-themes:upstream:
 metacity-themes:upstream:
 opt_gnome-compat:upstream:
+tennebon-dynamic-wallpaper:upstream:
 translation-update:upstream:
 update-desktop-files:upstream:
 yast2-control-center-gnome:upstream:

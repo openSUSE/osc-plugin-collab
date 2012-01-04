@@ -18,6 +18,7 @@ Gtk2:perl-Gtk2
 LaTeXPlugin:gedit-latex-plugin
 LibRaw:libraw
 ModemManager:
+NetworkManager-openconnect:
 NetworkManager-openswan:
 NetworkManager-openvpn:
 NetworkManager-pptp:
@@ -147,6 +148,7 @@ eel:
 eiciel:
 ekiga:
 emerald:compiz-emerald
+emerillon:
 empathy:
 enchant:
 eog-plugins:
@@ -746,6 +748,7 @@ tomboy:
 totem-pl-parser:
 totem:
 tracker:
+tracker:tracker-extras
 traffic-vis:
 transmageddon:
 transmission:
@@ -819,12 +822,15 @@ bundle-lang-kde:
 bundle-lang-other:
 desktop-data-openSUSE:
 desktop-data-SLED:
+dynamic-wallpapers-11x:
 ggreeter:
 gnome-patch-translation:
+gnome-shell-search-provider-openSUSE-packages:
 gos-wallpapers:
 gtk2-themes:
 metacity-themes:
 opt_gnome-compat:
+tennebon-dynamic-wallpaper:
 translation-update:
 yast2-control-center-gnome:
 
@@ -846,7 +852,6 @@ yast2-control-center-gnome:
 
 ## TODO (should get packaged):
 #librsvgmm:
-#NetworkManager-openconnect:
 
 ## Stuff on ftp.gnome.org we don't handle
 #GConf-dbus:
@@ -894,7 +899,6 @@ yast2-control-center-gnome:
 #ease:
 #ee:
 #eggcups:
-#emerillon:
 #evolution-caldav:
 #evolution-couchdb:
 #evolution-data-server-dbus:
