@@ -202,7 +202,7 @@ def get_colortype(package, parent, use_upstream):
 #######################################################################
 
 
-def get_table_for_project(project, only_missing_upstream, use_future):
+def get_table_for_project(project, only_missing_upstream, only_missing_parent, use_future):
     info = libinfoxml.InfoXml(use_future = use_future)
     try:
         node = info.get_project_node(project)
@@ -220,6 +220,9 @@ def get_table_for_project(project, only_missing_upstream, use_future):
             if package.upstream_url:
                 continue
             if package.upstream_version == '--':
+                continue
+        elif only_missing_parent and parent:
+            if package.parent_version != '--':
                 continue
 
         packages.append(package)
@@ -295,11 +298,12 @@ else:
     use_future = False
 
 only_missing_upstream = libhttp.get_arg_bool(form, 'missing-upstream', False)
+only_missing_parent = libhttp.get_arg_bool(form, 'missing-parent', False)
 
 libhttp.print_html_header()
 
 project = libhttp.get_project(form)
-table = get_table_for_project(project, only_missing_upstream, use_future)
+table = get_table_for_project(project, only_missing_upstream, only_missing_parent, use_future)
 
 libhttp.print_header('Versions of packages in the Build Service for project %s' % escape(project))
 
