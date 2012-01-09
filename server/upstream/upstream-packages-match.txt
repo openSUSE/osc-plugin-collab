@@ -67,6 +67,7 @@ balsa:
 banshee:
 banshee-community-extensions:
 baobab:
+bash-completion:
 beagle-xesam:
 beagle:
 bigboard:

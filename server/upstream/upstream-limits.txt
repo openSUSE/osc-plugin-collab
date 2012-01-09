@@ -12,6 +12,8 @@
 
 # LaTeXPlugin has some tarballs with a date instead of version
 LaTeXPlugin:max|2000
+# bash-completion has some tarballs with a date instead of version
+bash-completion:max|2008
 # ht has some tarballs with a date instead of version
 ht:max|2000
 # libflashsupport has some tarballs with a date instead of version

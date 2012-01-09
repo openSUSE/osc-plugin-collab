@@ -96,6 +96,7 @@ babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
 banshee-community-extensions:subdirhttpls:http://download.banshee.fm/banshee-community-extensions/
+bash-completion:httpls:http://bash-completion.alioth.debian.org/files/
 blueproximity:sf:203022
 # bluez-gnome: We're using www2.kernel.org because the main kernel.org website makes everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
