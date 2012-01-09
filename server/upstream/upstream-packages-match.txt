@@ -41,6 +41,7 @@ acpid:
 aisleriot:
 alacarte:
 alarm-clock-applet:
+almanah:
 anjuta-extras:
 anjuta:
 apache-couchdb:couchdb
@@ -546,6 +547,7 @@ libthai:
 libunique:
 libunique|2:libunique1
 libvpx:
+libwacom:
 libwebp:
 libwnck:
 libwnck|2.90:libwnck2
@@ -862,7 +864,7 @@ yast2-control-center-gnome:
 #abispell:
 #accountsdialog:
 #acme:
-#almanah:
+#alleyoop:
 #ammonite:
 #anjal:
 #aravis:

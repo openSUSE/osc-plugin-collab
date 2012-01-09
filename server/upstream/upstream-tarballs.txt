@@ -338,6 +338,7 @@ libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
 libvpx:google:webm|libvpx
+libwacom:sf:69596|libwacom
 libwebp:google:webp|libwebp
 libxklavier:sf:319|libxklavier
 libzeitgeist:lp:libzeitgeist
