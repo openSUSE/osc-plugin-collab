@@ -405,7 +405,7 @@ procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 psmisc:sf:15273|psmisc
 pulseaudio:httpls:http://www.freedesktop.org/software/pulseaudio/releases/
-purple-plugin_pack:httpls:https://www.guifications.org/projects/purple-plugin-pack/files
+purple-plugin-pack:httpls:https://www.guifications.org/projects/purple-plugin-pack/files
 py2cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/

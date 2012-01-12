@@ -653,7 +653,7 @@ procmeter3:procmeter
 psiconv:
 psmisc:
 ptlib:libpt2
-purple-plugin_pack:
+purple-plugin-pack:
 pulseaudio:
 py2cairo:python-cairo
 pyatspi:python-atspi
