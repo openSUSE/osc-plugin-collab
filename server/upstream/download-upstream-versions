@@ -304,8 +304,25 @@ def _all_indexes(list, item, shift = 0):
 
 # based on code from convert-to-tarball.py
 def _get_version_from_files(modulename, location, files, limit):
+    def is_of_interest(modulename, file):
+        ''' The file is of interest if it contains the module name, and if
+            either the basename of the URI matches a tarball for this module,
+            or there's a query (like /download.cgi?filename=module-x.y.tar.gz)
+        '''
+        if not modulename in file:
+            return False
+
+        parsed = urlparse.urlparse(file)
+        if os.path.basename(parsed.path).startswith(modulename):
+            return True
+
+        if parsed.query:
+            return True
+
+        return False
+
     # Only include tarballs for the given module
-    tarballs = [file for file in files if modulename in file]
+    tarballs = [file for file in files if is_of_interest(modulename, file)]
 
     # Remove fragment identifiers (anchors)
     tarballs_new = []
