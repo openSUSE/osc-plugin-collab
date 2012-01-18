@@ -505,6 +505,7 @@ libgsf:
 libgtkhtml:
 libgtksourceviewmm:
 libgtop:
+libgusb:
 libgweather:
 libgxps:
 libinfinity:
