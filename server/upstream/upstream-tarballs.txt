@@ -159,8 +159,8 @@ eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 emerald:subdirhttpls:http://releases.compiz.org/components/emerald/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
-evolution-rss:httpls:http://gnome.eu.org/evo/index.php/Evolution_RSS_Reader_Plugin
-evolution-tray:httpls:http://gnome.eu.org/evo/index.php/Evolution_Tray
+evolution-rss:httpls:http://gnome.eu.org/index.php/Evolution_RSS_Reader_Plugin
+evolution-tray:httpls:http://gnome.eu.org/index.php/Evolution_Tray
 exempi:httpls:http://libopenraw.freedesktop.org/download/
 exiv2:httpls:http://www.exiv2.org/download.html
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
@@ -366,7 +366,7 @@ nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 njb-sharp:httpls:http://download.banshee.fm/legacy/njb-sharp/
 notify-osd:lp:notify-osd
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
-nspluginwrapper:httpls:http://gwenole.beauchesne.info/en/projects/nspluginwrapper
+nspluginwrapper:httpls:http://nspluginwrapper.org/download/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 ntfs-3g_ntfsprogs:httpls:http://www.tuxera.com/community/ntfs-3g-download/
 ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
@@ -440,7 +440,7 @@ shared-desktop-ontologies:sf:254113|shared-desktop-ontologies
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
-smuxi:httpls:http://www.smuxi.org/page/Download
+smuxi:httpls:http://www.smuxi.org/jaws/data/files/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|sofia-sip
 solang:httpls:http://projects.gnome.org/solang/download
