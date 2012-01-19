@@ -102,6 +102,7 @@ blueproximity:sf:203022
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
 bombermaze:sf:8614|bombermaze
 boot-mode-ui:google:loolixbodes|boot-mode-ui
+bot-sentry:sf:156021|bot-sentry
 brltty:httpls:http://mielke.cc/brltty/releases/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 cairo-compmgr:httpls:http://download.tuxfamily.org/ccm/cairo-compmgr/
@@ -226,6 +227,7 @@ google-gadgets-for-linux:google:google-gadgets-for-linux
 gourmet:sf:108118
 gpa:httpls:http://wald.intevation.org/frs/?group_id=13
 gparted:sf:115843
+gpick:google:gpick
 gpodder:httpls:http://download.berlios.de/gpodder/
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
 gq:sf:3805|GQ LDAP Client
@@ -350,6 +352,7 @@ m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 md5deep:sf:67079|md5deep
+media-explorer:httpls:http://media-explorer.org/releases/
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/

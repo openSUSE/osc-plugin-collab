@@ -75,6 +75,7 @@ blueproximity:
 bluez-gnome:
 bombermaze:
 boot-mode-ui:
+bot-sentry:
 brasero:
 brltty:
 bug-buddy:
@@ -204,6 +205,7 @@ gdome2:
 geany-plugins:
 geany:
 gedit-code-assistance:
+gedit-cossa:
 gedit-latex:
 gedit-plugins:
 gedit:
@@ -342,6 +344,7 @@ gobby|0.4:gobby04
 gobject-introspection:
 gocr:
 goffice:
+goffice|0.9:goffice-0_8
 gok:
 gonvert:
 goobox:
@@ -352,6 +355,7 @@ google-gadgets-for-linux:google-gadgets
 gourmet:
 gpa:
 gparted:
+gpick:
 gpodder:
 gpointing-device-settings:
 gq:
@@ -564,6 +568,7 @@ m4:
 mail-notification:
 mangler:
 md5deep:
+media-explorer:
 media-player-info:
 meld:
 memphis:
@@ -1119,7 +1124,6 @@ yast2-control-center-gnome:
 #ximian-setup-tools:
 #xml-i18n-tools:
 ## Added to ftp.gnome.org recently
-#gedit-cossa:
 #latexila:
 #glick2:
 
