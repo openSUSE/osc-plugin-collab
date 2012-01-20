@@ -1007,6 +1007,7 @@ yast2-control-center-gnome:
 #guile-gobject:
 #gupnp-vala:
 #guppi:
+#gwt-glom:
 #gxml:
 #gyrus:
 #hipo:
