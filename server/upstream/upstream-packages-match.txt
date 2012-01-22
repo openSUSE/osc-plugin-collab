@@ -764,7 +764,8 @@ transmission:
 tsclient:
 turpial:
 twitux:
-udisks:
+udisks|1.90:udisks
+udisks:udisks2
 uget:
 ulogd:ulogd2
 unico:

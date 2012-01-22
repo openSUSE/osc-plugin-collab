@@ -483,7 +483,8 @@ transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
 turpial:httpls:http://turpial.org.ve/files/sources/stable/
 twitux:sf:198704|twitux
-udisks:httpls:http://hal.freedesktop.org/releases/
+udisks|1.90:dualhttpls:http://hal.freedesktop.org/releases/|http://udisks.freedesktop.org/releases/
+udisks:httpls:http://udisks.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)
 ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
 unico:lp:unico
