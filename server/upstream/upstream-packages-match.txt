@@ -913,6 +913,7 @@ yast2-control-center-gnome:
 #evolution-couchdb:
 #evolution-data-server-dbus:
 #evolution-jescs:
+#evolution-kolab:
 #evolution-scalix:
 #firestarter:
 #fontilus:
