@@ -41,9 +41,12 @@ import re
 import sqlite3
 import time
 
+from posixpath import join as posixjoin
+
 import util
 
 FALLBACK_BRANCH_NAME = '__fallback__'
+CPAN_BRANCH_NAME = '__cpan__'
 MATCH_CHANGE_NAME = ''
 
 #######################################################################
@@ -231,11 +234,13 @@ class UpstreamDb:
         else:
             return ('', '')
 
-    def _update_upstream_data(self, branch, upstream_name_branches, is_fallback = False):
-        branch_path = os.path.join(self.dest_dir, branch)
+    def _update_upstream_data(self, branch_filename, upstream_name_branches, branch_db_name = ''):
+        branch_path = os.path.join(self.dest_dir, branch_filename)
 
-        if is_fallback:
-            branch = FALLBACK_BRANCH_NAME
+        if branch_db_name:
+            branch = branch_db_name
+        else:
+            branch = branch_filename
 
         if not os.path.exists(branch_path):
             print >> sys.stderr, 'No file available for requested branch %s, keeping previous data if available.' % (branch or 'fallback')
@@ -273,7 +278,7 @@ class UpstreamDb:
         # version there is lower than 1.2.10.
         real_upstream_data = {}
 
-        if is_fallback:
+        if branch == FALLBACK_BRANCH_NAME:
             # bad hack to support the fallback format with a regexp with the
             # same amount of groups in the match
             re_upstream_data = re.compile('^(,?)([^,]+),([^,]+)(,.*)?$')
@@ -297,12 +302,14 @@ class UpstreamDb:
             name = match.group(2)
             version = match.group(3)
 
-            if is_fallback:
+            if branch == FALLBACK_BRANCH_NAME:
                 url = ''
             elif match.group(1) == 'nonfgo':
                 url = match.group(4)
             elif match.group(1) == 'upstream':
                 url = ''
+            elif match.group(1) == 'cpan':
+                url = posixjoin('http://cpan.perl.org/CPAN/authors/id/', match.group(4))
             else:
                 versions = version.split('.')
                 if len(versions) == 1:
@@ -402,6 +409,9 @@ class UpstreamDb:
             return row[0]
         elif self._is_without_upstream(srcpackage):
             return srcpackage
+        # perl packaging policy: perl package names must match upstream class name
+        elif srcpackage.startswith('perl-'):
+            return srcpackage
         else:
             return ''
 
@@ -430,6 +440,8 @@ class UpstreamDb:
             (version, url) = ('', '')
 
         if not version:
+            if srcpackage.startswith('perl-') and branch != CPAN_BRANCH_NAME:
+                return self.get_upstream_data(CPAN_BRANCH_NAME, srcpackage, ignore_fallback)
             if self._is_without_upstream(name):
                 version = '--'
             elif not ignore_fallback:
@@ -487,7 +499,7 @@ class UpstreamDb:
             #changed[branch].extend([ row['srcpackage'] for row in self.cursor ])
             self.cursor.execute('''SELECT name FROM upstream
                         WHERE updated > ? AND branch = ?;''', (old_mtime, id))
-            if branch != FALLBACK_BRANCH_NAME:
+            if branch not in [FALLBACK_BRANCH_NAME, CPAN_BRANCH_NAME]:
                 for (name,) in self.cursor:
                     if match_cache.has_key(name):
                         changed[branch].extend(match_cache[name])
@@ -511,15 +523,18 @@ class UpstreamDb:
 
         upstream_name_branches = self._get_upstream_name_branches()
 
-        self._update_upstream_data('fallback', upstream_name_branches, True)
+        self._update_upstream_data('fallback', upstream_name_branches, FALLBACK_BRANCH_NAME)
+        self._update_upstream_data('cpan', upstream_name_branches, CPAN_BRANCH_NAME)
 
         branches = set([ project_configs[project].branch for project in project_configs.keys() ])
         for branch in branches:
             if branch:
                 self._update_upstream_data(branch, upstream_name_branches)
 
-        # add fallback branch
+        # add hard-coded branches
         branches.add(FALLBACK_BRANCH_NAME)
+        branches.add(CPAN_BRANCH_NAME)
+
         self._remove_old_branches(branches)
 
         self.db.commit()

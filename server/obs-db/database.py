@@ -2177,7 +2177,7 @@ class ObsDb:
                     if project.ignore_fallback:
                         continue
                 if branch != upstream.MATCH_CHANGE_NAME:
-                    if project.branch != branch and branch != upstream.FALLBACK_BRANCH_NAME:
+                    if project.branch != branch and branch not in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME]:
                         continue
 
                 self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
@@ -2234,7 +2234,7 @@ class ObsDb:
                     if project.ignore_fallback:
                         continue
                 if branch != upstream.MATCH_CHANGE_NAME:
-                    if project.branch != branch and branch != upstream.FALLBACK_BRANCH_NAME:
+                    if project.branch != branch and branch not in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME]:
                         continue
 
                 self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
@@ -2253,7 +2253,7 @@ class ObsDb:
                 self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))
 
                 for srcpackage in affected_srcpackages:
-                    if branch == upstream.FALLBACK_BRANCH_NAME and result[project.name].has_key(srcpackage):
+                    if branch in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME] and result[project.name].has_key(srcpackage):
                         continue
 
                     (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branch, srcpackage, project.ignore_fallback)
