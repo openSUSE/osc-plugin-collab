@@ -278,12 +278,7 @@ class UpstreamDb:
         # version there is lower than 1.2.10.
         real_upstream_data = {}
 
-        if branch == FALLBACK_BRANCH_NAME:
-            # bad hack to support the fallback format with a regexp with the
-            # same amount of groups in the match
-            re_upstream_data = re.compile('^(,?)([^,]+),([^,]+)(,.*)?$')
-        else:
-            re_upstream_data = re.compile('^([^:]*):([^:]+):([^:]+):(.*)$')
+        re_upstream_data = re.compile('^([^:]*):([^:]+):([^:]+):(.*)$')
 
         file = open(branch_path)
         while True:
@@ -302,7 +297,7 @@ class UpstreamDb:
             name = match.group(2)
             version = match.group(3)
 
-            if branch == FALLBACK_BRANCH_NAME:
+            if match.group(1) == 'fallback':
                 url = ''
             elif match.group(1) == 'nonfgo':
                 url = match.group(4)
