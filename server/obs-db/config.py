@@ -48,13 +48,12 @@ from osc import oscerr
 threads = 5
 
 [Defaults]
-branch = latest
+branches = latest, fallback
 
 [Project openSUSE:Factory]
 
 [Project GNOME:STABLE:2.32]
-branch = gnome-2-32
-ignore-fallback = true
+branches = gnome-2-32
 """
 
 #######################################################################
@@ -97,8 +96,8 @@ class ConfigProject:
 
     default_checkout_devel_projects = False
     default_parent = ''
-    default_branch = ''
-    default_ignore_fallback = False
+    default_branches = ''
+    _default_branches_helper = []
     default_force_project_parent = False
     default_lenient_delta = False
 
@@ -108,8 +107,7 @@ class ConfigProject:
         """ Set new default settings for projects. """
         cls.default_checkout_devel_projects = cp.safe_getboolean(section, 'checkout-devel-projects', cls.default_checkout_devel_projects)
         cls.default_parent = cp.safe_get(section, 'parent', cls.default_parent)
-        cls.default_branch = cp.safe_get(section, 'branch', cls.default_branch)
-        cls.default_ignore_fallback = cp.safe_getboolean(section, 'ignore-fallback', cls.default_ignore_fallback)
+        cls._default_branches_helper = cp.safe_get(section, 'branches', cls._default_branches_helper)
         cls.default_force_project_parent = cp.safe_getboolean(section, 'force-project-parent', cls.default_force_project_parent)
         cls.default_lenient_delta = cp.safe_getboolean(section, 'lenient-delta', cls.default_lenient_delta)
 
@@ -119,10 +117,12 @@ class ConfigProject:
 
         self.checkout_devel_projects = cp.safe_getboolean(section, 'checkout-devel-projects', self.default_checkout_devel_projects)
         self.parent = cp.safe_get(section, 'parent', self.default_parent)
-        self.branch = cp.safe_get(section, 'branch', self.default_branch)
-        self.ignore_fallback = cp.safe_getboolean(section, 'ignore-fallback', self.default_ignore_fallback)
+        self._branches_helper = cp.safe_get(section, 'branches', self._default_branches_helper)
         self.force_project_parent = cp.safe_getboolean(section, 'force-project-parent', self.default_force_project_parent)
         self.lenient_delta = cp.safe_getboolean(section, 'lenient-delta', self.default_lenient_delta)
+
+        if self._branches_helper:
+            self.branches = [ branch.strip() for branch in self._branches_helper.split(',') if branch ]
 
 
 #######################################################################

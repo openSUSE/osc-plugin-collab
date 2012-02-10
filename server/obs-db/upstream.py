@@ -45,9 +45,9 @@ from posixpath import join as posixjoin
 
 import util
 
-FALLBACK_BRANCH_NAME = '__fallback__'
-CPAN_BRANCH_NAME = '__cpan__'
 MATCH_CHANGE_NAME = ''
+# FIXME: we hardcode this list of branches since, well, there's no better way to do that :/
+BRANCHES_WITHOUT_PKG_MATCH = [ 'fallback', 'cpan' ]
 
 #######################################################################
 
@@ -126,7 +126,6 @@ class UpstreamDb:
             url TEXT,
             updated INTEGER
             );''')
-        # Note: the branch named FALLBACK_BRANCH_NAME will contain the fallback data
         self.cursor.execute('''CREATE TABLE branches (
             id INTEGER PRIMARY KEY,
             branch TEXT,
@@ -234,16 +233,11 @@ class UpstreamDb:
         else:
             return ('', '')
 
-    def _update_upstream_data(self, branch_filename, upstream_name_branches, branch_db_name = ''):
-        branch_path = os.path.join(self.dest_dir, branch_filename)
-
-        if branch_db_name:
-            branch = branch_db_name
-        else:
-            branch = branch_filename
+    def _update_upstream_data(self, branch, upstream_name_branches):
+        branch_path = os.path.join(self.dest_dir, branch)
 
         if not os.path.exists(branch_path):
-            print >> sys.stderr, 'No file available for requested branch %s, keeping previous data if available.' % (branch or 'fallback')
+            print >> sys.stderr, 'No file available for requested branch %s, keeping previous data if available.' % branch
             return
 
         (branch_id, branch_mtime) = self._get_branch_data(branch)
@@ -405,13 +399,38 @@ class UpstreamDb:
         row = self.cursor.fetchone()
         if row:
             return row[0]
-        elif self._is_without_upstream(srcpackage):
-            return srcpackage
-        # perl packaging policy: perl package names must match upstream class name
-        elif srcpackage.startswith('perl-'):
-            return srcpackage
         else:
             return ''
+
+    def _exist_in_branch_from_db(self, branch, name):
+        (branch_id, branch_mtime) = self._get_branch_data(branch)
+        if not branch_id:
+            return False
+
+        self.cursor.execute('''SELECT name FROM upstream WHERE
+            name = ? AND branch = ?;''', (name, branch_id))
+        row = self.cursor.fetchone()
+        if row:
+            return True
+        else:
+            return False
+
+    def exists_in_branches(self, branches, srcpackage):
+        if not self._open_db():
+            return False
+
+        name = self._get_upstream_name(srcpackage)
+
+        for branch in branches:
+            if branch in BRANCHES_WITHOUT_PKG_MATCH:
+                query_name = srcpackage
+            else:
+                query_name = name
+
+            if query_name and self._exist_in_branch_from_db(branch, query_name):
+                return True
+
+        return False
 
     def _get_data_from_db(self, branch, name):
         (branch_id, branch_mtime) = self._get_branch_data(branch)
@@ -426,24 +445,28 @@ class UpstreamDb:
         else:
             return ('', '')
 
-    def get_upstream_data(self, branch, srcpackage, ignore_fallback):
+    def get_upstream_data(self, branches, srcpackage):
         if not self._open_db():
             return ('', '', '')
 
         name = self._get_upstream_name(srcpackage)
 
-        if branch:
-            (version, url) = self._get_data_from_db(branch, name)
-        else:
-            (version, url) = ('', '')
+        (version, url) = ('', '')
+
+        for branch in branches:
+            if branch in BRANCHES_WITHOUT_PKG_MATCH:
+                query_name = srcpackage
+            else:
+                query_name = name
+
+            if query_name:
+                (version, url) = self._get_data_from_db(branch, query_name)
+            if version:
+                break
 
         if not version:
-            if srcpackage.startswith('perl-') and branch != CPAN_BRANCH_NAME:
-                return self.get_upstream_data(CPAN_BRANCH_NAME, srcpackage, ignore_fallback)
-            if self._is_without_upstream(name):
+            if self._is_without_upstream(srcpackage):
                 version = '--'
-            elif not ignore_fallback:
-                (version, url) = self._get_data_from_db(FALLBACK_BRANCH_NAME, srcpackage)
             else:
                 version = ''
 
@@ -497,15 +520,19 @@ class UpstreamDb:
             #changed[branch].extend([ row['srcpackage'] for row in self.cursor ])
             self.cursor.execute('''SELECT name FROM upstream
                         WHERE updated > ? AND branch = ?;''', (old_mtime, id))
-            if branch not in [FALLBACK_BRANCH_NAME, CPAN_BRANCH_NAME]:
+            if branch in BRANCHES_WITHOUT_PKG_MATCH:
+                for (name,) in self.cursor:
+                    changed[branch].append(name)
+            else:
                 for (name,) in self.cursor:
                     if match_cache.has_key(name):
                         changed[branch].extend(match_cache[name])
-            else:
-                for (name,) in self.cursor:
-                    changed[branch].append(name)
 
         self._debug_print('%d upstream(s) changed' % sum([ len(i) for i in changed.values() ]))
+
+        for branch in changed.keys():
+            if not changed[branch]:
+                del changed[branch]
 
         return changed
 
@@ -521,17 +548,14 @@ class UpstreamDb:
 
         upstream_name_branches = self._get_upstream_name_branches()
 
-        self._update_upstream_data('fallback', upstream_name_branches, FALLBACK_BRANCH_NAME)
-        self._update_upstream_data('cpan', upstream_name_branches, CPAN_BRANCH_NAME)
+        branches = []
+        for project in project_configs.keys():
+            branches.extend(project_configs[project].branches)
+        branches = set(branches)
 
-        branches = set([ project_configs[project].branch for project in project_configs.keys() ])
         for branch in branches:
             if branch:
                 self._update_upstream_data(branch, upstream_name_branches)
-
-        # add hard-coded branches
-        branches.add(FALLBACK_BRANCH_NAME)
-        branches.add(CPAN_BRANCH_NAME)
 
         self._remove_old_branches(branches)
 

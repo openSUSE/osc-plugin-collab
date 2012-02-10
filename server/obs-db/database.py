@@ -1167,8 +1167,8 @@ class SrcPackage(Base):
         self._analyze_meta(srcpackage_dir)
         self._get_rpmlint_errors()
 
-        if upstream_db and self.project.branch:
-            (self.upstream_name, self.upstream_version, self.upstream_url) = upstream_db.get_upstream_data(self.project.branch, self.name, self.project.ignore_fallback)
+        if upstream_db and self.project.branches:
+            (self.upstream_name, self.upstream_version, self.upstream_url) = upstream_db.get_upstream_data(self.project.branches, self.name)
 
         if self.project.parent and self.project.parent != self.project.name and not self.is_link and not self.error:
             self.error = 'not-link'
@@ -1655,10 +1655,7 @@ class Project(Base):
 
         # Various options set for this project
         self.parent = ''
-        self.branch = ''
-        # Should we ignore fallback upstream versions for packages in this
-        # project?
-        self.ignore_fallback = False
+        self.branches = []
         # Should we ignore the project/package a link points to and always use
         # the configured parent project of this project as parent for the
         # packages?
@@ -1680,7 +1677,7 @@ class Project(Base):
         cursor.execute('''INSERT INTO %s VALUES (
             NULL, ?, ?, ?
             );''' % self.sql_table,
-            (self.name, self.parent, self.branch == ''))
+            (self.name, self.parent, not self.branches))
         self._sql_update_last_id(cursor)
 
         for srcpackage in self.srcpackages:
@@ -1722,8 +1719,7 @@ class Project(Base):
 
         if not override_project_name and project_config.parent != self.name:
             self.parent = project_config.parent
-        self.branch = project_config.branch
-        self.ignore_fallback = project_config.ignore_fallback
+        self.branches = project_config.branches
         self.force_project_parent = project_config.force_project_parent
         self.lenient_delta = project_config.lenient_delta
 
@@ -1754,16 +1750,12 @@ class Project(Base):
                     parent = ''
                 self.parent = parent
 
-            elif line.startswith('branch='):
-                branch = line[len('branch='):]
-                if not branch:
-                    self.branch = ''
+            elif line.startswith('branches='):
+                branches = line[len('branches='):]
+                if not branches:
+                    self.branches = []
                     continue
-                self.branch = branch
-
-            elif line.startswith('ignore-fallback='):
-                ignore_fallback = line[len('ignore-fallback='):]
-                self.ignore_fallback = ignore_fallback.lower() in [ '1', 'true' ]
+                self.branches = [ branch for branch in branches.split(',') if branch ]
 
             elif line.startswith('force-project-parent='):
                 force_project_parent = line[len('force-project-parent='):]
@@ -2168,17 +2160,14 @@ class ObsDb:
 
         updated_projects = set()
 
-        for branch in branches.keys():
-            if not branches[branch]:
-                continue
+        for project in projects:
+            for branch in branches.keys():
+                if branch != upstream.MATCH_CHANGE_NAME and not branch in project.branches:
+                    continue
 
-            for project in projects:
-                if branch == upstream.FALLBACK_BRANCH_NAME:
-                    if project.ignore_fallback:
-                        continue
-                if branch != upstream.MATCH_CHANGE_NAME:
-                    if project.branch != branch and branch not in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME]:
-                        continue
+                branches_before = []
+                if branch in project.branches:
+                    branches_before = project.branches[:project.branches.index(branch)]
 
                 self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
                 srcpackages = [ name for (name,) in self._cursor ]
@@ -2195,7 +2184,10 @@ class ObsDb:
                 self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))
 
                 for srcpackage in affected_srcpackages:
-                    (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branch, srcpackage, project.ignore_fallback)
+                    if self.upstream.exists_in_branches(branches_before, srcpackage):
+                        continue
+
+                    (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branches, srcpackage)
                     self._cursor.execute('''UPDATE %s SET
                             upstream_name = ?, upstream_version = ?, upstream_url = ?
                             WHERE name = ? AND project = ?;''' % SrcPackage.sql_table,
@@ -2225,17 +2217,14 @@ class ObsDb:
 
         result = {}
 
-        for branch in branches.keys():
-            if not branches[branch]:
-                continue
+        for project in projects:
+            for branch in branches.keys():
+                if branch != upstream.MATCH_CHANGE_NAME and not branch in project.branches:
+                    continue
 
-            for project in projects:
-                if branch == upstream.FALLBACK_BRANCH_NAME:
-                    if project.ignore_fallback:
-                        continue
-                if branch != upstream.MATCH_CHANGE_NAME:
-                    if project.branch != branch and branch not in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME]:
-                        continue
+                branches_before = []
+                if branch in project.branches:
+                    branches_before = project.branches[:project.branches.index(branch)]
 
                 self._cursor.execute('''SELECT name FROM %s WHERE project = ?;''' % SrcPackage.sql_table, (project.sql_id,))
                 srcpackages = [ name for (name,) in self._cursor ]
@@ -2253,10 +2242,10 @@ class ObsDb:
                 self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))
 
                 for srcpackage in affected_srcpackages:
-                    if branch in [upstream.FALLBACK_BRANCH_NAME, upstream.CPAN_BRANCH_NAME] and result[project.name].has_key(srcpackage):
+                    if self.upstream.exists_in_branches(branches_before, srcpackage):
                         continue
 
-                    (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branch, srcpackage, project.ignore_fallback)
+                    (upstream_name, upstream_version, upstream_url) = self.upstream.get_upstream_data(project.branches, srcpackage)
                     result[project.name][srcpackage] = (upstream_version, upstream_url)
 
         return result
