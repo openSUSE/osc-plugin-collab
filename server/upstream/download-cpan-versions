@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2012, Novell, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+# USA
+#
+# (Licensed under the LGPLv2.1 or later)
+#
+#
+# Authors: Vincent Untz <vuntz@opensuse.org>
+#
+
+import os
+import socket
+import sys
+import time
+
+import StringIO
+import gzip
+import optparse
+import urllib2
+
+from util import *
+
+
+PACKAGE_DETAILS = 'http://www.cpan.org/modules/02packages.details.txt.gz'
+
+
+#######################################################################
+
+
+def parse_cpan_details():
+    tarballs = {}
+    last_updated = ''
+
+    fd = urllib2.urlopen(PACKAGE_DETAILS)
+    stream = StringIO.StringIO(fd.read())
+    fd.close()
+
+    gzipper = gzip.GzipFile(fileobj=stream)
+    in_classes_data = False
+
+    while True:
+        line = gzipper.readline()
+        if not line:
+            break
+
+        line = line.strip()
+        if not line:
+            # An empty line is what separate the global metadata from the details
+            # about all classes
+            if not in_classes_data:
+                in_classes_data = True
+            continue
+
+        # Skip comments
+        if line.startswith('#'):
+            continue
+
+        # Global metadata about the details
+        if not in_classes_data:
+            if line.startswith('Last-Updated:'):
+                last_updated = line[len('Last-Updated:'):].strip()
+            continue
+
+        ## Parse data about classes
+        # We only keep the first class for a given tarball (it's the more generic one)
+        # We ignore data when there's no version
+        data = line.split()
+        if len(data) != 3:
+            print >>sys.stderr, 'Cannot parse line: %s' % line
+            continue
+
+        (perl_class, version, tarball) = data
+        if version == 'undef':
+            continue
+
+        if tarballs.has_key(tarball):
+            continue
+
+        tarballs[tarball] = (perl_class, version)
+
+    gzipper.close()
+
+    return (last_updated, tarballs)
+
+
+def perl_class_to_package(perl_class):
+    return 'perl-' + perl_class.replace('::', '-')
+
+
+#######################################################################
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option('--debug', dest='debug',
+                      help='only handle the argument as input and output the result')
+    parser.add_option('--log', dest='log',
+                      help='log file to use (default: stderr)')
+    parser.add_option('--directory', dest='dir', default='.',
+                      help='directory where to find data and save data')
+    parser.add_option('--save-file', dest='save',
+                      help='path to the file where the results will be written')
+    parser.add_option('--only-if-old', action='store_true',
+                      default=False, dest='only_if_old',
+                      help='execute only if the pre-existing result file is older than 10 hours')
+
+    (options, args) = parser.parse_args()
+
+    directory = options.dir
+
+    if options.log:
+        path = os.path.realpath(options.log)
+        safe_mkdir_p(os.path.dirname(path))
+        sys.stderr = open(options.log, 'a')
+
+    if options.debug:
+        lines = [ options.debug + '\n' ]
+        out = sys.stdout
+
+    else:
+        if options.save:
+            save_file = options.save
+        else:
+            save_file = os.path.join(directory, 'versions-cpan')
+
+        if os.path.exists(save_file):
+            if not os.path.isfile(save_file):
+                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
+                sys.exit(1)
+            if options.only_if_old:
+                stats = os.stat(save_file)
+                # Quit if it's less than 12-hours old
+                if time.time() - stats.st_mtime < 3600 * 12:
+                    sys.exit(2)
+
+        else:
+            safe_mkdir_p(os.path.dirname(save_file))
+
+        out = open(save_file, 'w')
+
+    # The default timeout is just too long. Use 10 seconds instead.
+    socket.setdefaulttimeout(10)
+
+
+    try:
+        (last_updated, tarballs) = parse_cpan_details()
+    except urllib2.URLError, e:
+        print >>sys.stderr, 'Error when downloading CPAN metadata: %s' % e
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Error when downloading CPAN metadata: server sent %s' % e
+    else:
+        for (tarball, (perl_class, version)) in tarballs.iteritems():
+            out.write('cpan:%s:%s:%s\n' % (perl_class_to_package(perl_class), version, tarball))
+
+    if not options.debug:
+        out.close()
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass

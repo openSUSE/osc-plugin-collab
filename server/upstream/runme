@@ -143,6 +143,43 @@ download_gnome_version () {
     fi
 }
 
+download_cpan_version () {
+    DESTFILE=$CACHE_DIR/upstream/cpan
+    rm -f $DESTFILE.new
+
+    # -a will keep the mtime
+    test -f $DESTFILE && cp -a $DESTFILE $DESTFILE.new
+
+    LOG_OPTION=
+    if test "x$LOG_FILE" != "x"; then
+        LOG_OPTION="--log $LOG_FILE"
+    fi
+
+    $basedir/download-cpan-versions $LOG_OPTION \
+        --save-file=$DESTFILE.new \
+        --only-if-old
+
+    if test $? -eq 2; then
+        # No update was done (old file was not old enough)
+        return 2
+    fi
+
+    if test $? -ne 0; then
+        echo "Error while checking for new upstream versions on CPAN"
+        return 1
+    fi
+
+    sort -u $DESTFILE.new > $DESTFILE.new.sorted
+    mv $DESTFILE.new.sorted $DESTFILE.new
+
+    cmp --quiet $DESTFILE.new $DESTFILE
+    if test $? -ne 0; then
+        mv $DESTFILE.new $DESTFILE
+    else
+        rm -f $DESTFILE.new
+    fi
+}
+
 download_fallback_version () {
     DESTFILE=$CACHE_DIR/upstream/fallback
     rm -f $DESTFILE.new
@@ -229,6 +266,7 @@ download_gnome_version unstable-extras
 # Do this once, before the slow step
 concatenate_all_versions
 
+download_cpan_version
 download_fallback_version
 
 download_upstream_version
