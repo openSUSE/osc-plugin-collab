@@ -1,0 +1,152 @@
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et: coding=UTF-8
+
+#
+# Copyright (c) 2012, Novell, Inc.
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+# USA
+#
+# (Licensed under the LGPLv2.1 or later)
+#
+#
+# Authors: Vincent Untz <vuntz@opensuse.org>
+#
+
+import os
+import socket
+import sys
+import time
+
+import optparse
+import urllib2
+
+from util import *
+
+
+FALLBACK_URL = 'http://www.suse.de/~meissner/factory.upstream.lst'
+
+
+#######################################################################
+
+
+def parse_fallback_data():
+    metadatas = []
+
+    fd = urllib2.urlopen(FALLBACK_URL)
+
+    while True:
+        line = fd.readline()
+        if not line:
+            break
+
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+
+        data = line.split(',')
+        if len(data) < 2:
+            print >>sys.stderr, 'Cannot parse fallback line: %s' % line
+            continue
+
+        name = data[0]
+        version = data[1]
+
+        if not name or not version:
+            print >>sys.stderr, 'Fallback line with nothing useful: %s' % line
+            continue
+
+        metadatas.append((name, version))
+
+    fd.close()
+
+    metadatas.sort()
+
+    return metadatas
+
+
+#######################################################################
+
+
+def main(args):
+    parser = optparse.OptionParser()
+
+    parser.add_option('--debug', dest='debug',
+                      help='only handle the argument as input and output the result')
+    parser.add_option('--log', dest='log',
+                      help='log file to use (default: stderr)')
+    parser.add_option('--directory', dest='dir', default='.',
+                      help='directory where to find data and save data')
+    parser.add_option('--save-file', dest='save',
+                      help='path to the file where the results will be written')
+    parser.add_option('--only-if-old', action='store_true',
+                      default=False, dest='only_if_old',
+                      help='execute only if the pre-existing result file is older than 10 hours')
+
+    (options, args) = parser.parse_args()
+
+    directory = options.dir
+
+    if options.log:
+        path = os.path.realpath(options.log)
+        safe_mkdir_p(os.path.dirname(path))
+        sys.stderr = open(options.log, 'a')
+
+    if options.debug:
+        lines = [ options.debug + '\n' ]
+        out = sys.stdout
+
+    else:
+        if options.save:
+            save_file = options.save
+        else:
+            save_file = os.path.join(directory, 'versions-fallback')
+
+        if os.path.exists(save_file):
+            if not os.path.isfile(save_file):
+                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
+                sys.exit(1)
+            if options.only_if_old:
+                stats = os.stat(save_file)
+                # Quit if it's less than 2-hours old
+                if time.time() - stats.st_mtime < 3600 * 2:
+                    sys.exit(2)
+        else:
+            safe_mkdir_p(os.path.dirname(save_file))
+
+        out = open(save_file, 'w')
+
+    # The default timeout is just too long. Use 10 seconds instead.
+    socket.setdefaulttimeout(10)
+
+    try:
+        metadatas = parse_fallback_data()
+    except urllib2.URLError, e:
+        print >>sys.stderr, 'Error when downloading fallback metadata: %s' % e
+    except urllib2.HTTPError, e:
+        print >>sys.stderr, 'Error when downloading fallback metadata: server sent %s' % e
+    else:
+        for (name, version) in metadatas:
+            out.write('fallback:%s:%s:\n' % (name, version))
+
+    if not options.debug:
+        out.close()
+
+
+if __name__ == '__main__':
+    try:
+      main(sys.argv)
+    except KeyboardInterrupt:
+      pass

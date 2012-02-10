@@ -147,7 +147,21 @@ download_fallback_version () {
     DESTFILE=$CACHE_DIR/upstream/fallback
     rm -f $DESTFILE.new
 
-    wget -q -nc -O $DESTFILE.new http://www.suse.de/~meissner/factory.upstream.lst
+    # -a will keep the mtime
+    test -f $DESTFILE && cp -a $DESTFILE $DESTFILE.new
+
+    LOG_OPTION=
+    if test "x$LOG_FILE" != "x"; then
+        LOG_OPTION="--log $LOG_FILE"
+    fi
+
+    $basedir/download-fallback-versions $LOG_OPTION \
+        --save-file=$DESTFILE.new
+
+    if test $? -eq 2; then
+        # No update was done (old file was not old enough)
+        return 2
+    fi
 
     if test $? -ne 0; then
         echo "Error while checking for fallback of new upstream versions"
