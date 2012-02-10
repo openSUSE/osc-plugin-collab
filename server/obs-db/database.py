@@ -2205,7 +2205,7 @@ class ObsDb:
         branches = self.upstream.get_changed_packages(upstream_mtime)
 
         if not branches:
-            return []
+            return {}
 
         self._open_existing_db_if_necessary()
 
