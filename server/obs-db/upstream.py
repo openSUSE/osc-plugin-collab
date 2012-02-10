@@ -502,8 +502,8 @@ class UpstreamDb:
                     if match_cache.has_key(name):
                         changed[branch].extend(match_cache[name])
             else:
-                for row in self.cursor:
-                    changed[branch].append(row['name'])
+                for (name,) in self.cursor:
+                    changed[branch].append(name)
 
         self._debug_print('%d upstream(s) changed' % sum([ len(i) for i in changed.values() ]))
 
