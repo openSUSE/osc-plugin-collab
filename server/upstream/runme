@@ -132,6 +132,8 @@ download_gnome_version () {
     sed -i "s/^\(desktop:gst-plugins.*\)$/# \1/g;s/^\(desktop:gstreamer:.*\)$/# \1/g" $DESTFILE.new
     # We don't care about mobile stuff
     sed -i "s/^\(mobile:.*\)$/# \1/g" $DESTFILE.new
+    # Let's name the group fgo, instead of core, apps, extras, etc.
+    sed -i "s/^[^#:][^:]*:/fgo:/g" $DESTFILE.new
 
     cmp --quiet $DESTFILE.new $DESTFILE
     if test $? -ne 0; then
