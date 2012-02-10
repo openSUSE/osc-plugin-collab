@@ -161,11 +161,13 @@ download_cpan_version () {
 
     if test $? -eq 2; then
         # No update was done (old file was not old enough)
+        rm -f $DESTFILE.new
         return 2
     fi
 
     if test $? -ne 0; then
         echo "Error while checking for new upstream versions on CPAN"
+        rm -f $DESTFILE.new
         return 1
     fi
 
@@ -197,11 +199,13 @@ download_fallback_version () {
 
     if test $? -eq 2; then
         # No update was done (old file was not old enough)
+        rm -f $DESTFILE.new
         return 2
     fi
 
     if test $? -ne 0; then
         echo "Error while checking for fallback of new upstream versions"
+        rm -f $DESTFILE.new
         return 1
     fi
 
@@ -232,11 +236,13 @@ download_upstream_version () {
 
     if test $? -eq 2; then
         # No update was done (old file was not old enough)
+        rm -f $DESTFILE.new
         return 2
     fi
 
     if test $? -ne 0; then
         echo "Error while checking for new upstream versions"
+        rm -f $DESTFILE.new
         return 1
     fi
 
