@@ -1045,6 +1045,7 @@ yast2-control-center-gnome:
 #libgtcpsocket:
 #libgtkhtml-java:
 #libgtkmozembed-java:
+#libgtkmusic:
 #libmrproject:
 #libnotifymm:
 #libole2:
