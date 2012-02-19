@@ -239,12 +239,15 @@ grisbi:sf:93867|grisbi stable
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
 gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
+gst-plugins-bad|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-base|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
 gst-plugins-farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/gst-plugins-farsight/
 gst-plugins-gl:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-gl/
 gst-plugins-good:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
+gst-plugins-good|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-good/
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
+gst-plugins-ugly|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gst-rtsp:httpls:http://gstreamer.freedesktop.org/src/gst-rtsp/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
