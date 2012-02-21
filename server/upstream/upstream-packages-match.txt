@@ -1060,6 +1060,7 @@ yast2-control-center-gnome:
 #libzvt:
 #libzvt2:
 #linc:
+#linux-user-chroot:
 #lock-service:
 #longomatch:
 #loudmouth-ruby:
