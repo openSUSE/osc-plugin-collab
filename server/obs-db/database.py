@@ -1743,8 +1743,12 @@ class Project(Base):
         file.close()
 
         for line in lines:
-            line = line[:-1]
-            if line.startswith('parent='):
+            line = line[:-1].strip()
+
+            if not line or line.startswith('#'):
+                continue
+
+            elif line.startswith('parent='):
                 parent = line[len('parent='):]
                 if parent == self.name:
                     parent = ''
