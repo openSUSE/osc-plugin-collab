@@ -166,6 +166,7 @@ exempi:httpls:http://libopenraw.freedesktop.org/download/
 exiv2:httpls:http://www.exiv2.org/download.html
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
+farstream:httpls:http://freedesktop.org/software/farstream/releases/farstream/
 file-shrimp:google:loolixbodes|file-shrimp
 fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi

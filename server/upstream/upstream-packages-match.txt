@@ -175,6 +175,7 @@ exiv2:
 f-spot:
 farsight2:
 farsight:
+farstream:
 file-roller:
 file-shrimp:
 fillmore-lombard:
