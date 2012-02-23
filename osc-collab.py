@@ -2453,7 +2453,7 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
 
         match = re_spec_release.match(line)
         if match:
-            os.write(fdout, '%s1\n' % match.group(1))
+            os.write(fdout, '%s0\n' % match.group(1))
             continue
 
         match = re_spec_source.match(line)
