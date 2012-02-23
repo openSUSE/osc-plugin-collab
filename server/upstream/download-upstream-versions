@@ -428,14 +428,15 @@ def _get_version_from_sf_rss(modulename, id, limit):
 
     feed = feedparser.parse(url)
 
-    re_tarball = re.compile(r'^.*(?:/|%2F)'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(tar.*|t[bg]z2?)/')
+    re_tarball = re.compile(r'^.*(?:/|%2F)'+re.escape(modulename)+'[_-](([0-9]+[\.\-])*[0-9]+)\.(tar.*|t[bg]z2?)/')
 
     biggest = '0'
     location = None
     best_ext = None
 
     for entry in feed['entries']:
-        match = re_tarball.match(entry.link)
+        unquoted_link = urllib.unquote(entry.link)
+        match = re_tarball.match(unquoted_link)
         if not match:
             continue
 
@@ -493,7 +494,7 @@ def _get_version_from_google_atom(name, limit):
 
     feed = feedparser.parse(url)
 
-    version_re = re.compile('^\s*'+tarball+'[_-]((?:[0-9]+\.)*[0-9]+)\.tar.*')
+    version_re = re.compile('^\s*'+re.escape(tarball)+'[_-]((?:[0-9]+\.)*[0-9]+)\.tar.*')
     download_re = re.compile('<a href="([^"]*)">Download</a>')
 
     biggest = '0'
@@ -532,7 +533,7 @@ RDF_NS = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}'
 
 def _get_version_from_launchpad_series(project, limit, limit_data, series):
     url = 'https://launchpad.net/%s/%s/+rdf' % (project, series)
-    release_re = re.compile('^/%s/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % (project, series))
+    release_re = re.compile('^/%s/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % (re.escape(project), re.escape(series)))
     biggest = '0'
 
     fd = urllib2.urlopen(url)
@@ -566,7 +567,7 @@ def _get_version_from_launchpad(project, limit):
     (limit, limit_data) = _setup_limit(limit)
 
     url = 'https://launchpad.net/%s/+rdf' % project
-    series_re = re.compile('^/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % project)
+    series_re = re.compile('^/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % re.escape(project))
 
     fd = urllib2.urlopen(url)
     root = ET.parse(fd).getroot().find(LP_NS + 'Product')
