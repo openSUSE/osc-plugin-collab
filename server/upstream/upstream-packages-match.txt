@@ -148,6 +148,7 @@ dwarves:
 ed:
 eds-feed:evolution-galago
 eel:
+efax-gtk:
 eiciel:
 ekiga:
 emerald:compiz-emerald
@@ -533,6 +534,7 @@ libnfnetlink:
 libnice:
 libnjb:
 libnotify:
+libofetion:
 libofx:
 liboil:
 libopenraw:
@@ -589,6 +591,7 @@ mkvtoolnix:
 mobile-broadband-provider-info:
 mod_dnssd:apache2-mod_dnssd
 monsoon:
+moserial:
 mousetweaks:
 mozilla-bonobo:
 mrim-prpl:pidgin-mrim
@@ -626,6 +629,7 @@ obex-data-server:
 onboard:
 online-desktop:
 opal:
+openfetion:
 openobex:
 opensuse-font-fifth-leg:fifth-leg-font
 orc:
@@ -649,6 +653,7 @@ pidgin-birthday-reminder:
 pidgin-embeddedvideo:
 pidgin-facebookchat:
 pidgin-guifications:
+pidgin-openfetion:
 pidgin-otr:
 pidgin-sipe:
 pidgin:
@@ -763,6 +768,7 @@ telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
 the-board:
+tilda:
 tinyproxy:
 tomboy:
 totem-pl-parser:
@@ -796,6 +802,7 @@ vobject:
 vte:
 vte|0.29:vte2
 wadptr:
+weather-wallpaper:
 webkit:libwebkit
 webkit:libwebkit3
 wmakerconf:
@@ -1081,7 +1088,6 @@ yast2-control-center-gnome:
 #metatheme:
 #mlview:
 #model:
-#moserial:
 #mrproject:
 #nanny:
 #nautilus-gtkhtml:

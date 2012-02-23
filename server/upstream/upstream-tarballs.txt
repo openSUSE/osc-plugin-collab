@@ -157,6 +157,7 @@ drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 dwarves:httpls:http://fedorapeople.org/~acme/dwarves/
 ed:httpls:http://ftp.gnu.org/gnu/ed/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
+efax-gtk:sf:109982|efax-gtk
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 emerald:subdirhttpls:http://releases.compiz.org/components/emerald/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
@@ -332,6 +333,7 @@ libnfnetlink:httpls:http://ftp.netfilter.org/pub/libnfnetlink/
 libnice:httpls:http://nice.freedesktop.org/releases/
 libnjb:sf:32528|libnjb
 libnl:httpls:http://www.infradead.org/~tgr/libnl/
+libofetion:google:ofetion|libofetion
 libofx:sf:61170|libofx
 liboil:httpls:http://liboil.freedesktop.org/download/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
@@ -385,6 +387,7 @@ ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 obex-data-server:httpls:http://tadas.dailyda.com/software/
 onboard:lp:onboard
+openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 orc:httpls:http://code.entropywave.com/download/orc/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
@@ -402,6 +405,7 @@ pidgin-birthday-reminder:lp:pidgin-birthday-reminder
 pidgin-embeddedvideo:google:pidgin-embeddedvideo|pidgin-embeddedvideo
 pidgin-facebookchat:google:pidgin-facebookchat|pidgin-facebookchat-source
 pidgin-guifications:httpls:https://www.guifications.org/projects/gf2/files
+pidgin-openfetion:google:ofetion|pidgin-openfetion
 pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe
 pidgin:sf:235|Pidgin
@@ -487,6 +491,7 @@ telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut
 # telepathy-sofiasip: used to live at: telepathy-sofiasip:sf:191149
 telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
+tilda:sf:126081|tilda
 tinyproxy:httpls:https://banu.com/tinyproxy/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 transmageddon:httpls:http://www.linuxrising.org/files/
@@ -508,6 +513,7 @@ varnish:httpls:http://repo.varnish-cache.org/source/
 vboxgtk:google:vboxgtk
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
+weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
 webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
