@@ -401,12 +401,17 @@ def _fix_sf_location(url):
         #    http://downloads.sourceforge.net/project/gtkpod/gtkpod/gtkpod-2.0.2/gtkpod-2.0.2.tar.gz
 
         # strip leading 'http://sourceforge.net/projects/' and trailing '/download'
-        stripped = url[32:-9]
+        stripped = url[len('http://sourceforge.net/projects/'):-len('/download')]
         # find project name
         prjname = stripped[:stripped.find('/')]
         # find path to file
-        path = stripped[stripped.find('%2F') + 3:]
-        path = path.replace('%2F', '/')
+        files_index = stripped.find('/files%2F')
+        if files_index != -1:
+            path = stripped[files_index + len('/files%2F'):]
+            path = path.replace('%2F', '/')
+        else:
+            files_index = stripped.find('/files/')
+            path = stripped[files_index + len('/files/'):]
 
         return 'http://downloads.sourceforge.net/project/%s/%s' % (prjname, path)
 
@@ -423,7 +428,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
 
     feed = feedparser.parse(url)
 
-    re_tarball = re.compile(r'^.*%2F'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(tar.*|t[bg]z2?)/')
+    re_tarball = re.compile(r'^.*(?:/|%2F)'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(tar.*|t[bg]z2?)/')
 
     biggest = '0'
     location = None
