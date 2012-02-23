@@ -335,6 +335,7 @@ libnl:httpls:http://www.infradead.org/~tgr/libnl/
 libofx:sf:61170|libofx
 liboil:httpls:http://liboil.freedesktop.org/download/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
+libosinfo:httpls:https://fedorahosted.org/releases/l/i/libosinfo/
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 libproxy:google:libproxy
 libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
@@ -345,6 +346,9 @@ libssui:google:libssui
 libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
+libvirt:httpls:http://libvirt.org/sources/
+libvirt-cim:httpls:http://libvirt.org/sources/CIM/
+libvirt-glib:httpls:http://libvirt.org/sources/glib/
 libvpx:google:webm|libvpx
 libwacom:sf:69596|libwacom
 libwebp:google:webp|libwebp
@@ -457,6 +461,9 @@ sparkleshare:httpls:https://github.com/hbons/SparkleShare/downloads
 specto:httpls:http://specto.sourceforge.net/?go=download
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 spheres-and-crystals:sf:64400|spherecrystal
+spice:httpls:http://spice-space.org/download/releases/
+spice-gtk:httpls:http://spice-space.org/download/gtk/
+spice-protocol:httpls:http://spice-space.org/download/releases/
 sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
@@ -493,6 +500,7 @@ uget:sf:72252|Uget (stable)
 ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
 unico:lp:unico
 upower:httpls:http://upower.freedesktop.org/releases/
+usbredir:httpls:http://spice-space.org/download/usbredir/
 usbview:httpls:http://www.kroah.com/linux-usb/
 valencia:subdirhttpls:http://yorba.org/download/valencia/
 varnish:httpls:http://repo.varnish-cache.org/source/
