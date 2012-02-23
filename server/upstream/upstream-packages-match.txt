@@ -80,6 +80,7 @@ brasero:
 brltty:
 bug-buddy:
 byzanz:
+c++-gtk-utils:
 cairo-clock:
 cairo-compmgr:
 cairo:

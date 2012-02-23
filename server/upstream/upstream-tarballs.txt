@@ -104,6 +104,7 @@ bombermaze:sf:8614|bombermaze
 boot-mode-ui:google:loolixbodes|boot-mode-ui
 bot-sentry:sf:156021|bot-sentry
 brltty:httpls:http://mielke.cc/brltty/releases/
+c++-gtk-utils:sf:277143|cxx-gtk-utils
 cairo-clock:httpls:http://macslow.net/?page_id=23
 cairo-compmgr:httpls:http://download.tuxfamily.org/ccm/cairo-compmgr/
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
