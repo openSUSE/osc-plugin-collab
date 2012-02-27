@@ -145,6 +145,7 @@ dmlangsel:
 docky:
 dogtail:
 drapes:
+drwright:
 dwarves:
 ed:
 eds-feed:evolution-galago
@@ -924,7 +925,6 @@ yast2-control-center-gnome:
 #deskscribe:
 #discident-glib:
 #dots:
-#drwright:
 #dryad:
 #ease:
 #ee:
