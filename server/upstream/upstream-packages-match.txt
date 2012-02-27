@@ -691,11 +691,13 @@ pygoocanvas:python-goocanvas
 pygtk:python-gtk
 pygtkglext:python-gtkglext
 pygtksourceview:python-gtksourceview
+pymetar:python-pymetar
 pymsn:python-msn
 pyorbit:python-orbit
 pypoppler:
 pysmbc:python-smbc
 python-distutils-extra:
+python-espeak:
 python-virtkey:
 python-xlib:
 pywebkitgtk:python-webkitgtk

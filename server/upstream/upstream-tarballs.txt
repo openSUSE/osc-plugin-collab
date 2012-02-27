@@ -430,9 +430,11 @@ pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
 pyclutter:subdirhttpls:http://clutter-project.org/sources/pyclutter/
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pygtkglext:sf:54333|pygtkglext
+pymetar:httpls:http://www.schwarzvogel.de/pkgs/
 pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-distutils-extra:lp:python-distutils-extra
+python-espeak:lp:python-espeak
 python-virtkey:lp:python-virtkey
 python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
