@@ -209,6 +209,7 @@ gdome2:
 geany-plugins:
 geany:
 gedit-code-assistance:
+gedit-collaboration:
 gedit-cossa:
 gedit-latex:
 gedit-plugins:
@@ -757,6 +758,7 @@ synapse:
 system-config-printer:
 tangerine:
 tango-icon-theme:
+tasks:
 tasque:
 telepathy-butterfly:
 telepathy-farsight:
@@ -950,7 +952,6 @@ yast2-control-center-gnome:
 #garnome:
 #gazpacho:
 #gb:
-#gedit-collaboration:
 #gedit2:
 #gegl-vala:
 #geglmm:
@@ -1137,7 +1138,6 @@ yast2-control-center-gnome:
 #strongwind:
 #system-tools-backends:
 #system-tray-applet:
-#tasks:
 #telegnome:
 #themus:
 #toutdoux:
