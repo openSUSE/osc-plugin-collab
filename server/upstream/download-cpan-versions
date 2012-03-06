@@ -144,12 +144,12 @@ def main(args):
         if os.path.exists(save_file):
             if not os.path.isfile(save_file):
                 print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
-                sys.exit(1)
+                return 1
             if options.only_if_old:
                 stats = os.stat(save_file)
                 # Quit if it's less than 12-hours old
                 if time.time() - stats.st_mtime < 3600 * 12:
-                    sys.exit(2)
+                    return 2
 
         else:
             safe_mkdir_p(os.path.dirname(save_file))
@@ -159,6 +159,7 @@ def main(args):
     # The default timeout is just too long. Use 10 seconds instead.
     socket.setdefaulttimeout(10)
 
+    ret = 1
 
     try:
         (last_updated, tarballs) = parse_cpan_details()
@@ -169,13 +170,17 @@ def main(args):
     else:
         for (tarball, (perl_class, version)) in tarballs.iteritems():
             out.write('cpan:%s:%s:%s\n' % (perl_class_to_package(perl_class), version, tarball))
+        ret = 0
 
     if not options.debug:
         out.close()
 
+    return ret
+
 
 if __name__ == '__main__':
     try:
-      main(sys.argv)
+      ret = main(sys.argv)
+      sys.exit(ret)
     except KeyboardInterrupt:
       pass
