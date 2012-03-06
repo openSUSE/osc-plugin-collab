@@ -158,14 +158,15 @@ download_cpan_version () {
     $basedir/download-cpan-versions $LOG_OPTION \
         --save-file=$DESTFILE.new \
         --only-if-old
+    RETVAL=$?
 
-    if test $? -eq 2; then
+    if test $RETVAL -eq 2; then
         # No update was done (old file was not old enough)
         rm -f $DESTFILE.new
         return 2
     fi
 
-    if test $? -ne 0; then
+    if test $RETVAL -ne 0; then
         echo "Error while checking for new upstream versions on CPAN"
         rm -f $DESTFILE.new
         return 1
@@ -196,14 +197,15 @@ download_fallback_version () {
 
     $basedir/download-fallback-versions $LOG_OPTION \
         --save-file=$DESTFILE.new
+    RETVAL=$?
 
-    if test $? -eq 2; then
+    if test $RETVAL -eq 2; then
         # No update was done (old file was not old enough)
         rm -f $DESTFILE.new
         return 2
     fi
 
-    if test $? -ne 0; then
+    if test $RETVAL -ne 0; then
         echo "Error while checking for fallback of new upstream versions"
         rm -f $DESTFILE.new
         return 1
@@ -233,14 +235,15 @@ download_upstream_version () {
         --upstream-limits=$basedir/upstream-limits.txt \
         --save-file=$DESTFILE.new \
         --only-if-old --use-old-as-fallback
+    RETVAL=$?
 
-    if test $? -eq 2; then
+    if test $RETVAL -eq 2; then
         # No update was done (old file was not old enough)
         rm -f $DESTFILE.new
         return 2
     fi
 
-    if test $? -ne 0; then
+    if test $RETVAL -ne 0; then
         echo "Error while checking for new upstream versions"
         rm -f $DESTFILE.new
         return 1
