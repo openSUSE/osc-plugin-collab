@@ -418,6 +418,8 @@ polkit:httpls:http://hal.freedesktop.org/releases/
 poppler-data:httpls:http://poppler.freedesktop.org/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 posixovl:sf:255236
+powerpc-utils:sf:261744
+ppc64-diag:sf:44427
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 psmisc:sf:15273|psmisc

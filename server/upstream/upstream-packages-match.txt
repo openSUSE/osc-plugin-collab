@@ -671,6 +671,8 @@ polkit:
 poppler-data:
 poppler:
 posixovl:
+powerpc-utils:
+ppc64-diag:
 procmeter3:procmeter
 psiconv:
 psmisc:
