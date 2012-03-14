@@ -162,6 +162,7 @@ eog:
 epiphany-extensions:
 epiphany:
 esound:
+espeak-gui:
 evince:
 evolution-data-server:
 evolution-ews:

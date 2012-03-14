@@ -162,6 +162,7 @@ efax-gtk:sf:109982|efax-gtk
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
 emerald:subdirhttpls:http://releases.compiz.org/components/emerald/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
+espeak-gui:lp:espeak-gui
 evolution-rss:httpls:http://gnome.eu.org/index.php/Evolution_RSS_Reader_Plugin
 evolution-tray:httpls:http://gnome.eu.org/index.php/Evolution_Tray
 exempi:httpls:http://libopenraw.freedesktop.org/download/
