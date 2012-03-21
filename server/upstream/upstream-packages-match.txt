@@ -751,6 +751,7 @@ spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
 spice:
 spice-gtk:
 spice-protocol:
+ssh-contact:
 sshfp:
 startup-notification:
 sushi:

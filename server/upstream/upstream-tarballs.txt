@@ -474,6 +474,7 @@ spheres-and-crystals:sf:64400|spherecrystal
 spice:httpls:http://spice-space.org/download/releases/
 spice-gtk:httpls:http://spice-space.org/download/gtk/
 spice-protocol:httpls:http://spice-space.org/download/releases/
+ssh-contact:httpls:http://telepathy.freedesktop.org/releases/ssh-contact/
 sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
