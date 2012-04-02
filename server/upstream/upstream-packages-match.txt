@@ -551,6 +551,7 @@ libproxy:libproxy-plugins
 libpst:
 librep:
 librsvg:
+libsecret:
 libsexy:
 libsigc++:libsigc++2
 libsigc++|1.3:libsigc++12
