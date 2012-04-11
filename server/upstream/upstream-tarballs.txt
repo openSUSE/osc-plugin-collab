@@ -569,6 +569,7 @@ webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
 x11vnc:sf:32584|x11vnc
+xbitmaps:httpls:http://xorg.freedesktop.org/releases/individual/data/
 xcb-util:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xcb-util-image:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xcb-util-keysyms:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
@@ -578,6 +579,7 @@ xchat:subdirhttpls:http://www.xchat.org/files/source/
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
 xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
+xkeyboard-config:httpls:http://xorg.freedesktop.org/releases/individual/data/
 xosd:sf:124390|libxosd
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
 xtables-addons:sf:254159

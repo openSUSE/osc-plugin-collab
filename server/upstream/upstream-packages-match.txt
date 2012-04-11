@@ -863,6 +863,7 @@ webkit:libwebkit3
 wmakerconf:
 x-tile:
 x11vnc:
+xbitmaps:
 xcb-util:
 xcb-util-image:
 xcb-util-keysyms:
@@ -875,6 +876,7 @@ xdg-user-dirs-gtk:
 xdg-user-dirs:
 xdg-utils:
 xesam-tools:
+xkeyboard-config:
 xosd:
 xsane:
 xtables-addons:
