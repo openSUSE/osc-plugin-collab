@@ -613,6 +613,7 @@ libwacom:
 libwebp:
 libwnck:
 libwnck|2.90:libwnck2
+libxcb:
 libxkbfile:
 libxkbui:
 libxklavier:
@@ -862,6 +863,11 @@ webkit:libwebkit3
 wmakerconf:
 x-tile:
 x11vnc:
+xcb-util:
+xcb-util-image:
+xcb-util-keysyms:
+xcb-util-renderutil:
+xcb-util-wm:
 xchat-gnome:
 xchat:
 xdelta:

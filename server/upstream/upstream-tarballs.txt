@@ -397,6 +397,7 @@ libvirt:httpls:http://libvirt.org/sources/
 libvpx:google:webm|libvpx
 libwacom:sf:69596|libwacom
 libwebp:google:webp|libwebp
+libxcb:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 libxkbfile:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxkbui:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxklavier:sf:319|libxklavier
@@ -568,6 +569,11 @@ webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
 x11vnc:sf:32584|x11vnc
+xcb-util:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcb-util-image:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcb-util-keysyms:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcb-util-renderutil:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcb-util-wm:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
