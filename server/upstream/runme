@@ -267,6 +267,7 @@ mkdir -p $CACHE_DIR/upstream
 
 download_gnome_version 3.0
 download_gnome_version 3.2
+download_gnome_version 3.4
 download_gnome_version stable
 download_gnome_version unstable
 download_gnome_version stable-extras
