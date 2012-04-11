@@ -91,6 +91,7 @@ arista:httpls:http://www.transcoder.org/downloads/
 arping:httpls:http://www.habets.pp.se/synscan/files/
 asio:sf:122478|asio
 atheme-services:httpls:http://atheme.net/downloads/
+autocutsel:httpls:http://download.savannah.gnu.org/releases/autocutsel/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
@@ -341,6 +342,7 @@ libdaemon:httpls:http://0pointer.de/lennart/projects/libdaemon/
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
 libdmapsharing:httpls:http://flyn.org/projects/libdmapsharing/download.html
 libdmx:httpls:http://xorg.freedesktop.org/releases/individual/lib/
+libdrm:httpls:http://dri.freedesktop.org/libdrm/
 libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libedit:httpls:http://thrysoee.dk/editline/
