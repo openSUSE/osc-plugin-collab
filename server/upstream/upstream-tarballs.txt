@@ -86,6 +86,7 @@ accountsservice:httpls:http://www.freedesktop.org/software/accountsservice/
 acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
 alarm-clock-applet:lp:alarm-clock
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
+appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
 arping:httpls:http://www.habets.pp.se/synscan/files/
@@ -98,6 +99,9 @@ bakefile:sf:83016|bakefile
 balsa:httpls:http://pawsa.fedorapeople.org/balsa/download.html
 banshee-community-extensions:subdirhttpls:http://download.banshee.fm/banshee-community-extensions/
 bash-completion:httpls:http://bash-completion.alioth.debian.org/files/
+bdftopcf:httpls:http://xorg.freedesktop.org/releases/individual/app/
+beforelight:httpls:http://xorg.freedesktop.org/releases/individual/app/
+bitmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 blueproximity:sf:203022
 # bluez-gnome: We're using www2.kernel.org because the main kernel.org website makes everything crash from time to time
 bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
@@ -158,6 +162,7 @@ docky:lp:docky
 drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 dwarves:httpls:http://fedorapeople.org/~acme/dwarves/
 ed:httpls:http://ftp.gnu.org/gnu/ed/
+editres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 efax-gtk:sf:109982|efax-gtk
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
@@ -174,7 +179,10 @@ farstream:httpls:http://freedesktop.org/software/farstream/releases/farstream/
 file-shrimp:google:loolixbodes|file-shrimp
 fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
+fonttosfnt:httpls:http://xorg.freedesktop.org/releases/individual/app/
 frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
+fslsfonts:httpls:http://xorg.freedesktop.org/releases/individual/app/
+fstobdf:httpls:http://xorg.freedesktop.org/releases/individual/app/
 fyre:httpls:http://releases.navi.cx/fyre/
 g-wrap:httpls:http://download.savannah.gnu.org/releases/g-wrap/
 gaim-galago:httpls:http://www.galago-project.org/files/releases/source/gaim-galago/
@@ -283,6 +291,8 @@ gzip:httpls:http://ftp.gnu.org/gnu/gzip/
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 ht:sf:1066
 hxtools:httpls:http://dl.medozas.de/hxtools/
+iceauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
+ico:httpls:http://xorg.freedesktop.org/releases/individual/app/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 inkscape:sf:93438|inkscape
 intltool:lp:intltool
@@ -295,6 +305,7 @@ istanbul:httpls:http://live.gnome.org/Istanbul
 itstool:httpls:http://files.itstool.org/itstool/
 iwatch:sf:174218|iwatch
 kye:httpls:http://games.moria.org.uk/kye/download-install
+lbxproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libFS:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libHX:sf:254041
@@ -406,12 +417,17 @@ libxklavier:sf:319|libxklavier
 libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
+listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
+luit:httpls:http://xorg.freedesktop.org/releases/individual/app/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 md5deep:sf:67079|md5deep
 media-explorer:httpls:http://media-explorer.org/releases/
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
+mkcomposecache:httpls:http://xorg.freedesktop.org/releases/individual/app/
+mkfontdir:httpls:http://xorg.freedesktop.org/releases/individual/app/
+mkfontscale:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
@@ -434,14 +450,15 @@ ntfs-3g_ntfsprogs:httpls:http://www.tuxera.com/community/ntfs-3g-download/
 ntfs-config:httpls:http://flomertens.free.fr/ntfs-config/download.html
 obby:httpls:http://releases.0x539.de/obby/
 obex-data-server:httpls:http://tadas.dailyda.com/software/
+oclock:httpls:http://xorg.freedesktop.org/releases/individual/app/
 onboard:lp:onboard
 openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 orc:httpls:http://code.entropywave.com/download/orc/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
-paman:httpls:http://0pointer.de/lennart/projects/paman/
 pam_mount:sf:41452
+paman:httpls:http://0pointer.de/lennart/projects/paman/
 paprefs:httpls:http://freedesktop.org/software/pulseaudio/paprefs/
 papyon:httpls:http://www.freedesktop.org/software/papyon/releases/
 pavucontrol:httpls:http://freedesktop.org/software/pulseaudio/pavucontrol/
@@ -468,6 +485,7 @@ posixovl:sf:255236
 powerpc-utils:sf:261744
 ppc64-diag:sf:44427
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
+proxymngr:httpls:http://xorg.freedesktop.org/releases/individual/app/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
 psmisc:sf:15273|psmisc
 pulseaudio:httpls:http://www.freedesktop.org/software/pulseaudio/releases/
@@ -497,17 +515,24 @@ raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 recordmydesktop:sf:172357|recordmydesktop
 redland:httpls:http://download.librdf.org/source/
 rednotebook:sf:238077
+rendercheck:httpls:http://xorg.freedesktop.org/releases/individual/app/
 rep-gtk:httpls:http://download.tuxfamily.org/librep/rep-gtk/
+rgb:httpls:http://xorg.freedesktop.org/releases/individual/app/
 rlwrap:httpls:http://utopia.knoware.nl/~hlub/rlwrap/
+rstart:httpls:http://xorg.freedesktop.org/releases/individual/app/
 sawfish:httpls:http://download.tuxfamily.org/sawfish/
 schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
+sessreg:httpls:http://xorg.freedesktop.org/releases/individual/app/
+setxkbmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
 shared-color-targets:httpls:http://people.freedesktop.org/~hughsient/releases/
 shared-desktop-ontologies:sf:254113|shared-desktop-ontologies
 shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
+showfont:httpls:http://xorg.freedesktop.org/releases/individual/app/
 simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
+smproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 smuxi:httpls:http://www.smuxi.org/jaws/data/files/
 sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|sofia-sip
@@ -517,9 +542,9 @@ sparkleshare:httpls:https://github.com/hbons/SparkleShare/downloads
 specto:httpls:http://specto.sourceforge.net/?go=download
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 spheres-and-crystals:sf:64400|spherecrystal
-spice:httpls:http://spice-space.org/download/releases/
 spice-gtk:httpls:http://spice-space.org/download/gtk/
 spice-protocol:httpls:http://spice-space.org/download/releases/
+spice:httpls:http://spice-space.org/download/releases/
 ssh-contact:httpls:http://telepathy.freedesktop.org/releases/ssh-contact/
 sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
@@ -552,8 +577,9 @@ transmission:httpls:http://download.m0k.org/transmission/files/
 tsclient:sf:192483|tsclient
 turpial:httpls:http://turpial.org.ve/files/sources/stable/
 twitux:sf:198704|twitux
-udisks|1.90:dualhttpls:http://hal.freedesktop.org/releases/|http://udisks.freedesktop.org/releases/
+twm:httpls:http://xorg.freedesktop.org/releases/individual/app/
 udisks:httpls:http://udisks.freedesktop.org/releases/
+udisks|1.90:dualhttpls:http://hal.freedesktop.org/releases/|http://udisks.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)
 ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
 unico:lp:unico
@@ -564,20 +590,29 @@ valencia:subdirhttpls:http://yorba.org/download/valencia/
 varnish:httpls:http://repo.varnish-cache.org/source/
 # vboxgtk: used to live at: vboxgtk:sf:263334|vboxgtk
 vboxgtk:google:vboxgtk
+viewres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
 weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
 webkit:httpls:http://www.webkitgtk.org/?page=download
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
+x11perf:httpls:http://xorg.freedesktop.org/releases/individual/app/
 x11vnc:sf:32584|x11vnc
+xauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xbacklight:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xbiff:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xbitmaps:httpls:http://xorg.freedesktop.org/releases/individual/data/
-xcb-util:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcalc:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xcb-util-image:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xcb-util-keysyms:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xcb-util-renderutil:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xcb-util-wm:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+xcb-util:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
 xchat:subdirhttpls:http://www.xchat.org/files/source/
+xclipboard:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xclock:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xcmsdb:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
 xdg-utils:httpls:http://portland.freedesktop.org/wiki/
 xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
@@ -585,6 +620,11 @@ xkeyboard-config:httpls:http://xorg.freedesktop.org/releases/individual/data/
 xosd:sf:124390|libxosd
 xsane:httpls:http://www.xsane.org/cgi-bin/sitexplorer.cgi?/download/
 xtables-addons:sf:254159
+xvidtune:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xvinfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xwd:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xwininfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xwud:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xzgv:sf:203093|xzgv
 zeitgeist-datahub:lp:zeitgeist-datahub
 zeitgeist:lp:zeitgeist
