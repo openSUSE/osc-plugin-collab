@@ -418,7 +418,6 @@ libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
-luit:httpls:http://xorg.freedesktop.org/releases/individual/app/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
