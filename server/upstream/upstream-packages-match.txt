@@ -803,6 +803,7 @@ seahorse-sharing:
 seahorse:
 seed:
 seed:seed2
+scripts|xorg:xorg-scripts
 sessreg:
 setxkbmap:
 shared-color-profiles:

@@ -527,6 +527,8 @@ rstart:httpls:http://xorg.freedesktop.org/releases/individual/app/
 sawfish:httpls:http://download.tuxfamily.org/sawfish/
 schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
+# Use "|xorg" because scripts is a really generic name
+scripts|xorg:httpls:http://xorg.freedesktop.org/releases/individual/app/
 sessreg:httpls:http://xorg.freedesktop.org/releases/individual/app/
 setxkbmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
