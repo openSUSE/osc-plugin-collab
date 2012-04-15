@@ -191,6 +191,7 @@ file-shrimp:
 fillmore-lombard:
 flickrapi:python-flickrapi
 folks:
+font-util:
 fonttosfnt:
 frei0r-plugins:
 frogr:
@@ -205,6 +206,7 @@ galago-gtk-sharp:
 galago-sharp:
 gbrainy:
 gcalctool:
+gccmakedep:
 gconf-editor:
 gconfmm:
 gcr:
@@ -453,6 +455,7 @@ hyena:
 iceauth:
 ico:
 icon-naming-utils:
+imake:
 inkscape:
 intltool:
 ipod-sharp:
@@ -636,9 +639,11 @@ libzeitgeist:
 liferea:
 link-grammar:
 listres:
+lndir:
 loudmouth:
 m4:
 mail-notification:
+makedepend:
 mangler:
 md5deep:
 media-explorer:
@@ -952,6 +957,8 @@ xmessage:
 xmh:
 xmodmap:
 xmore:
+xorg-cf-files:
+xorg-sgml-doctools:
 xosd:
 xplsprinters:
 xpr:
@@ -971,6 +978,7 @@ xsetroot:
 xsm:
 xstdcmap:
 xtables-addons:
+xtrans:
 xtrap:
 xvidtune:
 xvinfo:

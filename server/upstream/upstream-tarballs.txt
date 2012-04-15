@@ -179,6 +179,7 @@ farstream:httpls:http://freedesktop.org/software/farstream/releases/farstream/
 file-shrimp:google:loolixbodes|file-shrimp
 fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
+font-util:httpls:http://xorg.freedesktop.org/releases/individual/font/
 fonttosfnt:httpls:http://xorg.freedesktop.org/releases/individual/app/
 frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
 fslsfonts:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -190,6 +191,7 @@ galago-daemon:httpls:http://www.galago-project.org/files/releases/source/galago-
 galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-gtk-sharp/
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://live.gnome.org/gbrainy
+gccmakedep:httpls:http://xorg.freedesktop.org/releases/individual/util/
 gcstar:httpls:http://download.gna.org/gcstar/
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://gdesklets.de/
@@ -294,6 +296,7 @@ hxtools:httpls:http://dl.medozas.de/hxtools/
 iceauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ico:httpls:http://xorg.freedesktop.org/releases/individual/app/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
+imake:httpls:http://xorg.freedesktop.org/releases/individual/util/
 inkscape:sf:93438|inkscape
 intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
@@ -418,9 +421,11 @@ libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
+lndir:httpls:http://xorg.freedesktop.org/releases/individual/util/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
+makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
 md5deep:sf:67079|md5deep
 media-explorer:httpls:http://media-explorer.org/releases/
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
@@ -655,6 +660,8 @@ xmessage:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmh:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmodmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmore:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xorg-cf-files:httpls:http://xorg.freedesktop.org/releases/individual/util/
+xorg-sgml-doctools:httpls:http://xorg.freedesktop.org/releases/individual/doc/
 xosd:sf:124390|libxosd
 xplsprinters:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xprehashprinterlist:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -674,6 +681,7 @@ xsetroot:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xsm:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xstdcmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xtables-addons:sf:254159
+xtrans:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 xtrap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xvidtune:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xvinfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
