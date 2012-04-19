@@ -881,6 +881,8 @@ def do_task(cache_dir, modulename, method, additional_info, fast_update, limits,
             print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
         except ftplib.all_errors, e:
             print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
+        except socket.timeout, e:
+            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
         except UpstreamRawDownloadError, e:
             print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e.msg)
         except UpstreamDownloadError, e:
@@ -929,6 +931,8 @@ def do_cache(cache_dir, url):
         error = str(e)
     except urllib2.HTTPError, e:
         error = 'server sent %s' % e.code
+    except socket.timeout, e:
+        error = str(e)
 
     if fin:
         fin.close()
