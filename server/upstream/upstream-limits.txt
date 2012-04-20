@@ -23,6 +23,7 @@ ht:max|2000
 libflashsupport:max|2000
 # libofx used 0.11 as 0.1.1...
 libofx:max|0.10
+xf86-video-mga:skip|1.9.99;1.9.100
 
 # we don't want unstable versions of the following modules
 gq:no-odd-unstable
