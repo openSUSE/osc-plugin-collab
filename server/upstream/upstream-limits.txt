@@ -9,6 +9,9 @@
 #  + not have a version greater or equal than a specified version.
 #    Use the "max|x.y" instruction for this behavior.
 #
+#  + not have specific versions.
+#    Use the "skip|x.y;a.b;..." instruction for this behavior
+#
 
 # LaTeXPlugin has some tarballs with a date instead of version
 LaTeXPlugin:max|2000

@@ -271,6 +271,9 @@ def _setup_limit(limit):
     elif limit[:4] == 'max|':
         limit_data = limit[4:]
         limit = 'max'
+    elif limit[:5] == 'skip|':
+        limit_data = limit[5:]
+        limit = 'skip'
     else:
         print >>sys.stderr, 'Unsupported limit: %s' % limit
         limit = None
@@ -297,6 +300,10 @@ def _respect_limit(version, limit, limit_data):
 
     elif limit == 'max':
         return version_gt(limit_data, version)
+
+    elif limit == 'skip':
+        skip_versions = [ x for x in limit_data.split(';') if x ]
+        return not (version in skip_versions)
 
     else:
         return False
