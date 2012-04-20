@@ -653,6 +653,7 @@ xf86-video-geode:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-glint:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-i128:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-intel:httpls:http://xorg.freedesktop.org/releases/individual/driver/
+xf86-video-ivtv:httpls:http://dl.ivtvdriver.org/xf86-video-ivtv/
 xf86-video-mach64:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-mga:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-neomagic:httpls:http://xorg.freedesktop.org/releases/individual/driver/
@@ -660,6 +661,7 @@ xf86-video-newport:httpls:http://xorg.freedesktop.org/releases/individual/driver
 xf86-video-nv:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-qxl:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-r128:httpls:http://xorg.freedesktop.org/releases/individual/driver/
+xf86-video-radeonhd:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-savage:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-siliconmotion:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-video-sis:httpls:http://xorg.freedesktop.org/releases/individual/driver/

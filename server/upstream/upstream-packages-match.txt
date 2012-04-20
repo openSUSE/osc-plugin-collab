@@ -949,6 +949,7 @@ xf86-video-geode:
 xf86-video-glint:
 xf86-video-i128:
 xf86-video-intel:
+xf86-video-ivtv:xorg-x11-driver-video-ivtv
 xf86-video-mach64:
 xf86-video-mga:
 xf86-video-neomagic:
@@ -956,6 +957,7 @@ xf86-video-newport:
 xf86-video-nv:
 xf86-video-qxl:
 xf86-video-r128:
+xf86-video-radeonhd:xorg-x11-driver-video-radeonhd
 xf86-video-savage:
 xf86-video-siliconmotion:
 xf86-video-sis:
