@@ -701,6 +701,7 @@ xmh:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmodmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmore:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xorg-cf-files:httpls:http://xorg.freedesktop.org/releases/individual/util/
+xorg-docs:httpls:http://xorg.freedesktop.org/releases/individual/doc/
 xorg-sgml-doctools:httpls:http://xorg.freedesktop.org/releases/individual/doc/
 xosd:sf:124390|libxosd
 xplsprinters:httpls:http://xorg.freedesktop.org/releases/individual/app/
