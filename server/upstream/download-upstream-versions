@@ -1014,12 +1014,13 @@ def thread_upstream(cache_dir, task, result, fast_update, limits, fallback_data)
 
 
 def start_threads(task_cache, cache_dir, task, result, fast_update, limits, fallback_data):
-    # First do all the cache tasks
-    for i in range(min(MAX_THREADS, task.qsize())):
-        t = threading.Thread(target=thread_cache, args=(task_cache, cache_dir))
-        t.start()
+    if cache_dir:
+        # First do all the cache tasks
+        for i in range(min(MAX_THREADS, task.qsize())):
+            t = threading.Thread(target=thread_cache, args=(task_cache, cache_dir))
+            t.start()
 
-    task_cache.join()
+        task_cache.join()
 
     # Then do all the remaining tasks
     for i in range(min(MAX_THREADS, task.qsize())):
@@ -1145,7 +1146,10 @@ def main(args):
         task.put((modulename, method, additional_info))
 
     # We'll have to remove this temporary cache
-    cache_dir = tempfile.mkdtemp(prefix='upstream-cache-', dir=os.path.dirname(save_file))
+    if not options.debug:
+        cache_dir = tempfile.mkdtemp(prefix='upstream-cache-', dir=os.path.dirname(save_file))
+    else:
+        cache_dir = None
 
     for url in to_cache:
         task_cache.put(url)
@@ -1167,7 +1171,8 @@ def main(args):
         result.task_done()
 
     # Remove temporary cache
-    shutil.rmtree(cache_dir)
+    if cache_dir:
+        shutil.rmtree(cache_dir)
 
     if not options.debug:
         out.close()
