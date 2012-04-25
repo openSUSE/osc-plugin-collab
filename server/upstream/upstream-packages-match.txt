@@ -373,6 +373,7 @@ google-gadgets-for-linux:google-gadgets
 gourmet:
 gpa:
 gparted:
+gpaste:
 gpick:
 gpodder:
 gpointing-device-settings:

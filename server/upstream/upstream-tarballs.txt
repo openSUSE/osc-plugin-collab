@@ -243,6 +243,7 @@ google-gadgets-for-linux:google:google-gadgets-for-linux
 gourmet:sf:108118
 gpa:httpls:http://wald.intevation.org/frs/?group_id=13
 gparted:sf:115843
+gpaste:httpls:https://github.com/Keruspe/GPaste/downloads
 gpick:google:gpick
 gpodder:httpls:http://download.berlios.de/gpodder/
 gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
