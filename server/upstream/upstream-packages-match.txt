@@ -235,6 +235,7 @@ gftp:
 ggz-client-libs:
 ghex:
 giggle:
+gimp-dds:
 gimp-gap:
 gimp-help:
 gimp-lqr-plugin:
@@ -732,6 +733,7 @@ pidgin-sipe:
 pidgin:
 pino:
 pinpoint:
+pithos:
 pitivi:
 pixman:
 pkg-config:

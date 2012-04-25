@@ -202,6 +202,7 @@ geeqie:sf:222125
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 gftp:httpls:http://gftp.seul.org/
 ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+gimp-dds:google:gimp-dds
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 gimp-lqr-plugin:httpls:http://liquidrescale.wikidot.com/en:download-page-sources
 gimp-save-for-web:httpls:http://registry.gimp.org/node/33
@@ -480,6 +481,7 @@ pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe
 pidgin:sf:235|Pidgin
 pino:google:pino-twitter|pino
+pithos:httpls:http://kevinmehall.net/p/pithos/release/
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 polkit-gnome:httpls:http://hal.freedesktop.org/releases/
