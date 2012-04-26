@@ -735,6 +735,7 @@ xwud:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xzgv:sf:203093|xzgv
 zeitgeist-datahub:lp:zeitgeist-datahub
 zeitgeist:lp:zeitgeist
+zim:httpls:http://zim-wiki.org/downloads/
 zlib:httpls:http://www.zlib.net/
 
 # Moved to ftp.gnome.org
