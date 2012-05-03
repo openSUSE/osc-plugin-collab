@@ -84,6 +84,7 @@ abiword-docs:httpls:http://abisource.com/downloads/abiword/latest/source/
 abiword:httpls:http://abisource.com/downloads/abiword/latest/source/
 accountsservice:httpls:http://www.freedesktop.org/software/accountsservice/
 acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
+aegisub:httpls:http://ftp.aegisub.org/pub/releases/
 alarm-clock-applet:lp:alarm-clock
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -353,6 +354,7 @@ libXxf86vm:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libatasmart:httpls:http://0pointer.de/public/
 libbraille:sf:17127|libbraille
+libbs2b:sf:151236
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
 libcompizconfig:subdirhttpls:http://releases.compiz.org/components/libcompizconfig/
 libdaemon:httpls:http://0pointer.de/lennart/projects/libdaemon/
@@ -424,6 +426,7 @@ libzeitgeist:lp:libzeitgeist
 liferea:sf:87005|Liferea Stable
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
+lmms:sf:105168
 lndir:httpls:http://xorg.freedesktop.org/releases/individual/util/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
 mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
@@ -436,6 +439,7 @@ mkcomposecache:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontdir:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontscale:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkvtoolnix:httpls:http://www.bunkus.org/videotools/mkvtoolnix/sources/
+moc:httpls:http://moc.daper.net/download
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
@@ -515,6 +519,7 @@ python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 qiv:httpls:http://spiegl.de/qiv/download/
+qmmp:httpls:http://qmmp.ylsoftware.com/files/
 radiotray:sf:295096
 raptor:httpls:http://download.librdf.org/source/
 rarian:httpls:http://rarian.freedesktop.org/Releases/
@@ -533,6 +538,7 @@ schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 # Use "|xorg" because scripts is a really generic name
 scripts|xorg:httpls:http://xorg.freedesktop.org/releases/individual/app/
+scummvm:sf:37116
 sessreg:httpls:http://xorg.freedesktop.org/releases/individual/app/
 setxkbmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 shared-color-profiles:httpls:http://people.freedesktop.org/~hughsient/releases/
@@ -558,6 +564,7 @@ spice:httpls:http://spice-space.org/download/releases/
 ssh-contact:httpls:http://telepathy.freedesktop.org/releases/ssh-contact/
 sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
+stk:httpls:https://ccrma.stanford.edu/software/stk/download.html
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
 synapse:lp:synapse-project

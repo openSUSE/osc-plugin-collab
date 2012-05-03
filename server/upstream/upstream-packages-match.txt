@@ -38,6 +38,7 @@ abiword:
 accerciser:
 accountsservice:
 acpid:
+aegisub:
 aisleriot:
 alacarte:
 alarm-clock-applet:
@@ -521,6 +522,7 @@ libbeagle:
 libbonobo:
 libbonoboui:
 libbraille:
+libbs2b:
 libbtctl:
 libcanberra:
 libchamplain:
@@ -642,6 +644,7 @@ libzeitgeist:
 liferea:
 link-grammar:
 listres:
+lmms:
 lndir:
 loudmouth:
 m4:
@@ -662,6 +665,7 @@ mkcomposecache:
 mkfontdir:
 mkfontscale:
 mkvtoolnix:
+moc:
 mobile-broadband-provider-info:
 mod_dnssd:apache2-mod_dnssd
 monsoon:
@@ -780,6 +784,7 @@ python-xlib:
 pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
 qiv:
+qmmp:
 radiotray:
 raptor:
 rarian:
@@ -801,6 +806,7 @@ sawfish:
 schismtracker:
 schroedinger:
 scrollkeeper:
+scummvm:
 seahorse-nautilus:
 seahorse-plugins:
 seahorse-sharing:
@@ -835,6 +841,7 @@ spice:
 ssh-contact:
 sshfp:
 startup-notification:
+stk:
 sushi:
 swfdec-gnome:
 swfdec-mozilla:
