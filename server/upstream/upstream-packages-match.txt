@@ -1311,6 +1311,7 @@ yast2-control-center-gnome:
 #opengl-glib:
 #orbit-python:
 #orbitcpp:
+#ostree:
 #pan:
 #panelmm:
 #paperbox:
