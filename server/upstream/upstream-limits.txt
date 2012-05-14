@@ -46,7 +46,7 @@ udisks|1.90:max|1.90
 #liferea:no-odd-unstable
 ## Modules that follow a six-months cycle, and will be released too late for
 ## next release
-#clutter:no-odd-unstable
+clutter:no-odd-unstable
 #folks:no-odd-unstable
 #gssdp:no-odd-unstable
 #gupnp:no-odd-unstable
@@ -57,4 +57,4 @@ udisks|1.90:max|1.90
 telepathy-glib:no-odd-unstable
 #telepathy-mission-control:no-odd-unstable
 #telepathy-sofiasip:no-odd-unstable
-webkit:no-odd-unstable:
+webkit:no-odd-unstable
