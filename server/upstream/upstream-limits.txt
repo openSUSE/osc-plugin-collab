@@ -54,6 +54,7 @@ udisks|1.90:max|1.90
 #libgdata:no-odd-unstable
 #pixman:no-odd-unstable
 #telepathy-gabble:no-odd-unstable
-#telepathy-glib:no-odd-unstable
+telepathy-glib:no-odd-unstable
 #telepathy-mission-control:no-odd-unstable
 #telepathy-sofiasip:no-odd-unstable
+webkit:no-odd-unstable:
