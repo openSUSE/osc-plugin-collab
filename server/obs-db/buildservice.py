@@ -870,7 +870,7 @@ class ObsCheckout:
 
         fout = open(filename, 'w')
         fout.write('parent=%s\n' % self.conf.projects[project].parent)
-        fout.write('branches=%s\n' % ','.join(self.conf.projects[project].branch))
+        fout.write('branches=%s\n' % ','.join(self.conf.projects[project].branches))
         fout.write('force-project-parent=%d\n' % self.conf.projects[project].force_project_parent)
         fout.write('lenient-delta=%d\n' % self.conf.projects[project].lenient_delta)
         fout.close()
