@@ -895,7 +895,7 @@ class ObsCheckout:
         filename = os.path.join(project_dir, '_pkglist')
 
         try:
-            url = osc_copy.makeurl(self.conf.apiurl, ['source', project])
+            url = osc_copy.makeurl(self.conf.apiurl, ['public', 'source', project])
             length = self._download_url_to_file(url, filename)
 
             if length == 0:
