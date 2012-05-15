@@ -305,7 +305,7 @@ class Runner:
                     changed = True
                     self.db.add_package(project, package)
                 elif self.conf.allow_project_catchup:
-                    self.db.add_project(project)
+                    self.db.update_project(project)
 
             return (False, changed)
 
