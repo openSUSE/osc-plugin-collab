@@ -128,22 +128,28 @@ class Runner:
         for line in lines:
             line = line[:-1]
             s = line.split('/')
-            if len(s) != 2:
-                if len(s) == 1:
-                    print >>sys.stderr, 'Cannot handle catchup line: %s (projects are ignored)' % line
-                else:
-                    print >>sys.stderr, 'Cannot handle catchup line: %s' % line
-                continue
-
-            (project, package) = s
-            if not project:
+            if len(s) not in [1, 2]:
                 print >>sys.stderr, 'Cannot handle catchup line: %s' % line
                 continue
-            if not package:
-                print >>sys.stderr, 'Cannot handle catchup line: %s (projects are ignored)' % line
-                continue
 
-            self._catchup.append((project, package))
+            if len(s) == 1:
+                if not self.conf.allow_project_catchup:
+                    print >>sys.stderr, 'Cannot handle catchup line: %s (per config, projects are ignored)' % line
+                    continue
+
+                (project,) = s
+                self._catchup.append((project, None))
+
+            elif len(s) == 2:
+                (project, package) = s
+                if not project:
+                    print >>sys.stderr, 'Cannot handle catchup line: %s' % line
+                    continue
+                if not package and not self.conf.allow_project_catchup:
+                    print >>sys.stderr, 'Cannot handle catchup line: %s (per config, projects are ignored)' % line
+                    continue
+
+                self._catchup.append((project, package))
 
         file.close()
 
@@ -226,8 +232,11 @@ class Runner:
                     raise RunnerException('Unhandled Hermes event type by mirror: %s' % event.__class__.__name__)
 
             for (project, package) in self._catchup:
-                self.obs.queue_checkout_package(project, package)
-                self.obs.queue_checkout_package_meta(project, package)
+                if package:
+                    self.obs.queue_checkout_package(project, package)
+                    self.obs.queue_checkout_package_meta(project, package)
+                elif self.conf.allow_project_catchup:
+                    self.obs.queue_checkout_project(project, force_simple_checkout=True)
 
         self.obs.run()
 
@@ -288,12 +297,15 @@ class Runner:
             db_projects = set(self.db.get_projects())
 
             for (project, package) in self._catchup:
-                if project not in db_projects:
-                    print >>sys.stderr, 'Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package)
-                    continue
+                if package:
+                    if project not in db_projects:
+                        print >>sys.stderr, 'Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package)
+                        continue
 
-                changed = True
-                self.db.add_package(project, package)
+                    changed = True
+                    self.db.add_package(project, package)
+                elif self.conf.allow_project_catchup:
+                    self.db.add_project(project)
 
             return (False, changed)
 
