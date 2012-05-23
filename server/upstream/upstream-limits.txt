@@ -51,6 +51,7 @@ clutter:no-odd-unstable
 #gssdp:no-odd-unstable
 #gupnp:no-odd-unstable
 #gupnp-av:no-odd-unstable
+gwibber:no-odd-unstable
 #libgdata:no-odd-unstable
 #pixman:no-odd-unstable
 #telepathy-gabble:no-odd-unstable
