@@ -1145,6 +1145,7 @@ yast2-control-center-gnome:
 #ease:
 #ee:
 #eggcups:
+#evolution-activesync:
 #evolution-caldav:
 #evolution-couchdb:
 #evolution-data-server-dbus:
