@@ -181,6 +181,10 @@ class Config:
             sys.stderr = oldstderr
             buffer.close()
             raise ConfigException(e)
+        except Exception, e:
+            sys.stderr = oldstderr
+            buffer.close()
+            raise e
 
         # Workaround to remove warning coming from osc.conf when we don't use
         # SSL checks
