@@ -538,7 +538,7 @@ class UpstreamDb:
 
     def update(self, project_configs, rebuild = False):
         if rebuild:
-            self._db_close()
+            self._close_db()
             if os.path.exists(self._dbfile):
                 os.unlink(self._dbfile)
 
