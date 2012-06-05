@@ -1290,6 +1290,7 @@ yast2-control-center-gnome:
 #libvtemm:
 #libxml2:
 #libxslt:
+#libzapojit:
 #libzvt:
 #libzvt2:
 #linc:
