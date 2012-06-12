@@ -1193,6 +1193,7 @@ yast2-control-center-gnome:
 #gnome-gpg:
 #gnome-guile:
 #gnome-hello:
+#gnome-initial-setup:
 #gnome-jabber:
 #gnome-keyring-manager:
 #gnome-launch-box:
