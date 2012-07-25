@@ -1182,6 +1182,7 @@ yast2-control-center-gnome:
 #gmf:
 #gmime:
 #gnome-admin:
+#gnome-boxes-nonfree:
 #gnome-braille:
 #gnome-chart:
 #gnome-chess:
