@@ -1115,13 +1115,24 @@ class SrcPackage(Base):
                 newattr = getattr(newitem, attr)
                 if oldattr < newattr:
                     olditem.sql_remove(cursor)
-                elif newattr > oldattr:
-                    newitem.sql_add(cursor)
-                    newitem = pop_first(copylist)
                 else:
-                    if olditem != newitem:
-                        olditem.sql_update_from(cursor, newitem)
-                    newitem = pop_first(copylist)
+                    if oldattr > newattr:
+                        while newitem and oldattr > newattr:
+                            newitem.sql_add(cursor)
+                            newitem = pop_first(copylist)
+                            newattr = getattr(newitem, attr)
+
+                    # not an 'else' since we do another loop above that
+                    # can change newattr
+                    if oldattr == newattr:
+                        if olditem != newitem:
+                            olditem.sql_update_from(cursor, newitem)
+                        newitem = pop_first(copylist)
+
+            # add remaining items
+            while newitem:
+                newitem.sql_add(cursor)
+                newitem = pop_first(copylist)
 
         update_list(cursor, self.packages, new_srcpackage.packages, 'name')
         update_list(cursor, self.sources,  new_srcpackage.sources,  'filename')
