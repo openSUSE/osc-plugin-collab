@@ -1120,7 +1120,8 @@ class SrcPackage(Base):
                         while newitem and oldattr > newattr:
                             newitem.sql_add(cursor)
                             newitem = pop_first(copylist)
-                            newattr = getattr(newitem, attr)
+                            if newitem:
+                                newattr = getattr(newitem, attr)
 
                     # not an 'else' since we do another loop above that
                     # can change newattr
