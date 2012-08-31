@@ -1325,6 +1325,7 @@ yast2-control-center-gnome:
 #ostree:
 #pan:
 #panelmm:
+#pangox-compat:
 #paperbox:
 #passepartout:
 #pkgconfig:
