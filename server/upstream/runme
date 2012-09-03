@@ -40,7 +40,7 @@ basedir=`dirname $0`
 ## Options
 # What's the current GNOME version in Factory
 # Note: when moving to unstable, also remove the unneeded limits in upstream-limits.txt
-GNOME_FACTORY_VERSION=stable
+GNOME_FACTORY_VERSION=unstable
 
 
 ## Basic setup
@@ -268,6 +268,7 @@ mkdir -p $CACHE_DIR/upstream
 download_gnome_version 3.0
 download_gnome_version 3.2
 download_gnome_version 3.4
+download_gnome_version 3.6
 download_gnome_version stable
 download_gnome_version unstable
 download_gnome_version stable-extras
