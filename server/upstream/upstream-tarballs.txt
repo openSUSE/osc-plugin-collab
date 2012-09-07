@@ -405,6 +405,7 @@ libpciaccess:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 libproxy:google:libproxy
 libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
+libpwquality:httpls:https://fedorahosted.org/releases/l/i/libpwquality/
 librep:httpls:http://download.tuxfamily.org/librep/
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/

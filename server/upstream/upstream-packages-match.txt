@@ -612,6 +612,7 @@ libplist:
 libproxy:
 libproxy:libproxy-plugins
 libpst:
+libpwquality:
 librep:
 librsvg:
 libsecret:
