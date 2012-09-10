@@ -434,7 +434,7 @@ mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
 md5deep:sf:67079|md5deep
-media-explorer:httpls:http://media-explorer.org/releases/
+media-explorer:httpls:https://github.com/media-explorer/media-explorer/downloads
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
 mkcomposecache:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontdir:httpls:http://xorg.freedesktop.org/releases/individual/app/
