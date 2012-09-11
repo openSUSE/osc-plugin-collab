@@ -446,7 +446,7 @@ monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
 mrim-prpl:google:mrim-prpl|mrim-prpl
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
-mx:subdirhttpls:http://source.clutter-project.org/sources/mx/
+mx:httpls:https://github.com/clutter-project/mx/downloads
 nautilus-search-tool:sf:149158|nautilus-search-tool
 nautilus-terminal:lp:nautilus-terminal
 neon:httpls:http://www.webdav.org/neon/
