@@ -491,7 +491,7 @@ pithos:httpls:http://kevinmehall.net/p/pithos/release/
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pkg-config:httpls:http://pkgconfig.freedesktop.org/releases/
 polkit-gnome:httpls:http://hal.freedesktop.org/releases/
-polkit:httpls:http://hal.freedesktop.org/releases/
+polkit:httpls:http://www.freedesktop.org/software/polkit/releases/
 poppler-data:httpls:http://poppler.freedesktop.org/
 poppler:httpls:http://poppler.freedesktop.org/releases.html
 posixovl:sf:255236
