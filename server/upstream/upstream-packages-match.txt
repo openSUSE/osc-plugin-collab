@@ -110,6 +110,7 @@ clutter:
 cogl:
 colorblind:
 colord:
+colord-gtk:
 comix:
 compiz-bcop:
 compiz-fusion-plugins-extra:
@@ -401,6 +402,7 @@ gst-plugins-ugly|0.10:gstreamer-0_10-plugins-ugly
 gst-python:python-gstreamer-0_10
 gst-rtsp:
 gstreamer:
+gstreamer:gstreamer-doc
 gstreamer|0.10:gstreamer-0_10
 gstreamer|0.10:gstreamer-0_10-doc
 gsynaptics:
@@ -450,6 +452,7 @@ gwget:
 gwibber:
 gypsy:
 gzip:
+harfbuzz:
 hamster-applet:
 hicolor-icon-theme:
 hippo-canvas:
@@ -642,6 +645,7 @@ libxkbui:
 libxklavier:
 libxml++:
 libxml:
+libzapojit:
 libzeitgeist:
 liferea:
 link-grammar:
@@ -864,6 +868,7 @@ telepathy-idle:
 telepathy-logger:
 telepathy-mission-control:
 telepathy-python:python-telepathy
+telepathy-rakia:
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
@@ -1294,7 +1299,6 @@ yast2-control-center-gnome:
 #libvtemm:
 #libxml2:
 #libxslt:
-#libzapojit:
 #libzvt:
 #libzvt2:
 #linc:

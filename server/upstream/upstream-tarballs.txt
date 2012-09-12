@@ -130,6 +130,7 @@ clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
 clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 colord:httpls:http://www.freedesktop.org/software/colord/releases/
+colord-gtk:httpls:http://www.freedesktop.org/software/colord/releases/
 comix:sf:146377
 compiz-bcop:subdirhttpls:http://releases.compiz.org/components/compiz-bcop/
 compiz-fusion-plugins-extra:subdirhttpls:http://releases.compiz.org/components/plugins-extra/
@@ -293,6 +294,7 @@ gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 gwibber:lp:gwibber
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
 gzip:httpls:http://ftp.gnu.org/gnu/gzip/
+harfbuzz:httpls:http://www.freedesktop.org/software/harfbuzz/release/
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 ht:sf:1066
 hxtools:httpls:http://dl.medozas.de/hxtools/
@@ -583,6 +585,7 @@ telepathy-logger:httpls:http://telepathy.freedesktop.org/releases/telepathy-logg
 # telepathy-mission-control: for the old 4.x branch: telepathy-mission-control:sf:190214|mission-control
 telepathy-mission-control:httpls:http://telepathy.freedesktop.org/releases/telepathy-mission-control/
 telepathy-python:httpls:http://telepathy.freedesktop.org/releases/telepathy-python/
+telepathy-rakia:httpls:http://telepathy.freedesktop.org/releases/telepathy-rakia/
 telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut/
 # telepathy-sofiasip: used to live at: telepathy-sofiasip:sf:191149
 telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
