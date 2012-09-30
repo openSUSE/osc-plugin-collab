@@ -725,6 +725,7 @@ pam_mount:
 paman:
 pango:
 pangomm:
+pangox-compat:
 paprefs:
 papyon:
 pavucontrol:
@@ -1331,7 +1332,6 @@ yast2-control-center-gnome:
 #ostree:
 #pan:
 #panelmm:
-#pangox-compat:
 #paperbox:
 #passepartout:
 #pkgconfig:
