@@ -615,7 +615,7 @@ viewres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
 weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
-webkit:httpls:http://www.webkitgtk.org/?page=download
+webkitgtk:httpls:http://webkitgtk.org/releases/
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
 x11perf:httpls:http://xorg.freedesktop.org/releases/individual/app/
