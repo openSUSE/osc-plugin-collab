@@ -45,6 +45,8 @@
 #     It can also contain the path for sourceforge projects using
 #     packages. In this case, the ids should be separated by a pipe:
 #     project_id|path
+#   * you can check the project_id by opening these URLs:
+#     http://sourceforge.net(jp)/api/project/name/$sf_project_name/json
 #
 # google:
 #   + use this when the upstream tarballs are hosted on code.google.com
@@ -86,6 +88,7 @@ accountsservice:httpls:http://www.freedesktop.org/software/accountsservice/
 acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
 aegisub:httpls:http://ftp.aegisub.org/pub/releases/
 alarm-clock-applet:lp:alarm-clock
+anthy:sf_jp:14|anthy
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
@@ -122,6 +125,7 @@ chmsee:google:chmsee
 claws-mail-extra-plugins:sf:25528|extra plugins
 claws-mail:sf:25528|Claws Mail
 cloop:httpls:http://debian-knoppix.alioth.debian.org/packages/cloop/
+cmuclmtk:sf:1904|cmuclmtk
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 colord:httpls:http://www.freedesktop.org/software/colord/releases/
 colord-gtk:httpls:http://www.freedesktop.org/software/colord/releases/
@@ -171,11 +175,29 @@ exiv2:httpls:http://www.exiv2.org/download.html
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
 farstream:httpls:http://freedesktop.org/software/farstream/releases/farstream/
+fcitx:httpls:http://fcitx.googlecode.com/files/fcitx-(.*)\_dict\.tar\.xz
+fcitx-anthy:google:fcitx|fcitx-anthy
+fcitx-chewing:google:fcitx|fcitx-chewing
+fcitx-cloudpinyin:google:fcitx|fcitx-cloudpinyin
+fcitx-configtool:google:fcitx|fcitx-configtool
+fcitx-fbterm:google:fcitx|fcitx-fbterm
+fcitx-googlepinyin:google:fcitx|fcitx-googlepinyin
+fcitx-hangul:google:fcitx|fcitx-hangul
+fcitx-libpinyin:google:fcitx|fcitx-libpinyin
+fcitx-m17n:google:fcitx|fcitx-m17n
+fcitx-rime:google:fcitx|fcitx-rime
+fcitx-sayura:google:fcitx|fcitx-sayura
+fcitx-sunpinyin:google:fcitx|fcitx-sunpinyin
+fcitx-table-extra:google:fcitx|fcitx-table-extra
+fcitx-table-other:google:fcitx|fcitx-table-other
+fcitx-ui-light:google:fcitx|fcitx-ui-light
+fcitx-unikey:google:fcitx|fcitx-unikey
 file-shrimp:google:loolixbodes|file-shrimp
 fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 font-util:httpls:http://xorg.freedesktop.org/releases/individual/font/
 fonttosfnt:httpls:http://xorg.freedesktop.org/releases/individual/app/
+freetype2:httpls:http://download.savannah.gnu.org/releases/freetype/freetype-(.*)\.tar\.bz2
 frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
 fslsfonts:httpls:http://xorg.freedesktop.org/releases/individual/app/
 fstobdf:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -187,6 +209,7 @@ galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/gala
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://live.gnome.org/gbrainy
 gccmakedep:httpls:http://xorg.freedesktop.org/releases/individual/util/
+gcin:httpls:http://www.csie.nctu.edu.tw/~cp76/gcin/download/gcin-(.*)\.tar\.xz
 gcstar:httpls:http://download.gna.org/gcstar/
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://gdesklets.de/
@@ -285,11 +308,33 @@ hamster-time-tracker:httpls:https://github.com/projecthamster/hamster/tags
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 ht:sf:1066
 hxtools:httpls:http://jftp.inai.de/hxtools/
+ibus:google:ibus
+ibus-anthy:google:ibus|ibus-anthy
+ibus-chewing:httpls:http://ibus.googlecode.com/files/ibus-chewing-(.*)-Source\.tar\.gz
+ibus-gjs:google:ibus|ibus-gjs
+ibus-googlepinyin:google:libgooglepinyin|ibus-googlepinyin
+ibus-hangul:google:ibus|ibus-hangul
+ibus-input-pad:google:input-pad|ibus-input-pad
+ibus-m17n:google:ibus|ibus-m17n
+ibus-pinyin:google:ibus|ibus-pinyin
+ibus-qt:httpls:http://ibus.googlecode.com/files/ibus-qt-(.*)-Source\.tar\.gz
+ibus-rime:google:rimeime|ibus-rime
+ibus-suninyin:google:sunpinyin|ibus-sunpinyin
+ibus-table:google:ibus|ibus-table
+ibus-table-chinese:httpls:http://ibus.googlecode.com/files/ibus-table-chinese-(.*)-Source\.tar\.gz
+ibus-table-extraphrase:google:ibus|ibus-table-extraphrase
+ibus-table-jyutping:google:ibus|ibus-table-jyutping
+ibus-table-others:google:ibus|ibus-table-others
+ibus-table-zhengma:google:ibus|ibus-table-zhengma
+ibus-table-zhuyin:google:ibus|ibus-table-zhuyin
+ibus-table-ziranma:google:ibus|ibus-table-ziranma
+ibus-unikey:google:ibus-unikey
 iceauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ico:httpls:http://xorg.freedesktop.org/releases/individual/app/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
 imake:httpls:http://xorg.freedesktop.org/releases/individual/util/
 inkscape:sf:93438|inkscape
+input-pad:google:input-pad
 intel-gpu-tools:httpls:http://xorg.freedesktop.org/releases/individual/app/
 intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
@@ -300,7 +345,10 @@ irda-utils:sf:5616|irda-utils
 istanbul:httpls:http://live.gnome.org/Istanbul
 itstool:httpls:http://files.itstool.org/itstool/
 iwatch:sf:174218|iwatch
+kcm-fcitx:google:fcitx|kcm-fcitx
+kimtoy:httpls:http://opendesktop.org/CONTENT/content-files/140967-kimtoy-(.*)\.tar\.bz2
 kye:httpls:http://games.moria.org.uk/kye/download-install
+kyotocabinet:httpls:http://fallabs.com/kyotocabinet/pkg/
 lbxproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ldtp:subdirhttpls:http://download.freedesktop.org/ldtp/
 libFS:httpls:http://xorg.freedesktop.org/releases/individual/lib/
@@ -345,6 +393,7 @@ libatasmart:httpls:http://0pointer.de/public/
 libbraille:sf:17127|libbraille
 libbs2b:sf:151236
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
+libchewing:httpls:https://github.com/downloads/chewing/libchewing/libchewing-(.*)\.tar\.bz2
 libcompizconfig:subdirhttpls:http://releases.compiz.org/components/libcompizconfig/
 libdaemon:httpls:http://0pointer.de/lennart/projects/libdaemon/
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
@@ -362,11 +411,13 @@ libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
 libggz:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
+libgooglepinyin:google:libgooglepinyin
 libgovirt:httpls:http://people.freedesktop.org/~teuf/govirt/
 libgpod:sf:67873|libgpod
 libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libgusb:httpls:http://people.freedesktop.org/~hughsient/releases/
+libhangul:google:libhangul
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|libiptcdata
 libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
@@ -391,11 +442,13 @@ liboldX:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libopenraw:httpls:http://libopenraw.freedesktop.org/download/
 libosinfo:httpls:https://fedorahosted.org/releases/l/i/libosinfo/
 libpciaccess:httpls:http://xorg.freedesktop.org/releases/individual/lib/
+libpinyin:httpls:http://github.com/libpinyin/libpinyin/downloads
 libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 libproxy:google:libproxy
 libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
 libpwquality:httpls:https://fedorahosted.org/releases/l/i/libpwquality/
 librep:httpls:http://download.tuxfamily.org/librep/
+librime:google:rimeime|librime
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
 libspectre:httpls:http://libspectre.freedesktop.org/releases/
 libssui:google:libssui
@@ -419,6 +472,9 @@ listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 lmms:sf:105168
 lndir:httpls:http://xorg.freedesktop.org/releases/individual/util/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
+m17n-contrib:httpls:http://www.m17n.org/m17n-lib-download/
+m17n-db:httpls:http://www.m17n.org/m17n-lib-download/
+m17n-lib:httpls:http://www.m17n.org/m17n-lib-download/
 mail-notification:httpls:http://www.nongnu.org/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
@@ -454,6 +510,7 @@ obby:httpls:http://releases.0x539.de/obby/
 obex-data-server:httpls:http://tadas.dailyda.com/software/
 oclock:httpls:http://xorg.freedesktop.org/releases/individual/app/
 onboard:lp:onboard
+opencc:google:opencc
 openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 opus:httpls:http://downloads.xiph.org/releases/opus/
@@ -488,6 +545,7 @@ poppler:httpls:http://poppler.freedesktop.org/releases.html
 posixovl:sf:255236
 powerpc-utils:sf:261744
 ppc64-diag:sf:44427
+presage:sf:172950|presage
 procmeter3:httpls:http://www.gedanken.demon.co.uk/download-procmeter/
 proxymngr:httpls:http://xorg.freedesktop.org/releases/individual/app/
 psiconv:httpls:http://software.frodo.looijaard.name/psiconv/download.php
@@ -526,6 +584,22 @@ rstart:httpls:http://xorg.freedesktop.org/releases/individual/app/
 sawfish:httpls:http://download.tuxfamily.org/sawfish/
 schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
+scim:sf:108454|scim
+scim-anthy:sf_jp:1415|scim-anthy
+scim-bridge:sf:108454|scim-bridge
+scim-canna:sf_jp:1415|scim-canna
+scim-chewing:httpls:https://github.com/downloads/chewing/scim-chewing/
+scim-hangul:sf:108454|scim-hangul
+scim-input-pad:sf:108454|scim-input-pad
+scim-m17n:sf:108454|scim-m17n
+scim-pinyin:sf:108454|scim-pinyin
+scim-qtimm:sf:108454|scim-qtimm
+scim-skk:sf_jp:1415|scim-skk
+scim-sunpinyin:google:sunpinyin|scim-sunpinyin
+scim-tables:sf:108454|scim-tables
+scim-tomoe:sf_jp:1415|scim-tomoe
+scim-uim:sf:108454|scim-uim
+scim-unikey:google:scim-unikey
 # Use "|xorg" because scripts is a really generic name
 scripts|xorg:httpls:http://xorg.freedesktop.org/releases/individual/app/
 scummvm:sf:37116
@@ -556,6 +630,7 @@ ssh-contact:httpls:http://telepathy.freedesktop.org/releases/ssh-contact/
 sshfp:ftpls:ftp://ftp.xelerance.com/sshfp/
 startup-notification:httpls:http://www.freedesktop.org/software/startup-notification/releases/
 stk:httpls:https://ccrma.stanford.edu/software/stk/download.html
+sunpinyin:google:sunpinyin
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
 synapse:lp:synapse-project
@@ -733,6 +808,7 @@ xwd:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xwininfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xwud:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xzgv:sf:203093|xzgv
+yaml-cpp:google:yaml-cpp
 zeitgeist-datahub:lp:zeitgeist-datahub
 zeitgeist:lp:zeitgeist
 zim:httpls:http://zim-wiki.org/downloads/
