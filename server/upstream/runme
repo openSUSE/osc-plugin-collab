@@ -40,7 +40,7 @@ basedir=`dirname $0`
 ## Options
 # What's the current GNOME version in Factory
 # Note: when moving to unstable, also remove the unneeded limits in upstream-limits.txt
-GNOME_FACTORY_VERSION=unstable
+GNOME_FACTORY_VERSION=stable
 
 
 ## Basic setup
