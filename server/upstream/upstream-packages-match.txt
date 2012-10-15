@@ -158,6 +158,7 @@ eel:
 efax-gtk:
 eiciel:
 ekiga:
+emacs:
 emerald:compiz-emerald
 emerillon:
 empathy:
@@ -243,6 +244,7 @@ gimp-lqr-plugin:
 gimp-save-for-web:
 gimp:
 gir-repository:
+git:
 gitg:
 giver:
 gjs:
@@ -681,6 +683,7 @@ mergeant:
 metacity:
 metatheme-Sonar:gtk2-metatheme-sonar
 metatheme-gilouche:gtk2-metatheme-gilouche
+mercurial:
 mkcomposecache:
 mkfontdir:
 mkfontscale:
@@ -804,6 +807,7 @@ pyxdg:python-xdg
 qiv:
 qmmp:
 quadrapassel:
+quilt:
 radiotray:
 raptor:
 rarian:
@@ -888,6 +892,7 @@ telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
 the-board:
+tig:
 tilda:
 tinyproxy:
 tomboy:
@@ -918,6 +923,7 @@ valencia:
 varnish:
 vboxgtk:
 viewres:
+vim:
 vinagre:
 vino:
 virtkey:python-virtkey

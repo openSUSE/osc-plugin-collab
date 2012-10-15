@@ -160,6 +160,7 @@ editres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 eds-feed:httpls:http://www.galago-project.org/files/releases/source/eds-feed/
 efax-gtk:sf:109982|efax-gtk
 eiciel:httpls:http://rofi.roger-ferrer.org/eiciel/download/
+emacs:ftpls:ftp://ftp.gnu.org/gnu/emacs/
 emerald:subdirhttpls:http://releases.compiz.org/components/emerald/
 enchant:subdirhttpls:http://www.abisource.com/downloads/enchant/
 espeak-gui:lp:espeak-gui
@@ -202,6 +203,7 @@ gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 gimp-lqr-plugin:httpls:http://liquidrescale.wikidot.com/en:download-page-sources
 gimp-save-for-web:httpls:http://registry.gimp.org/node/33
 gimp:ftpls:ftp://ftp.gimp.org/pub/gimp/stable
+git:google:git-core|git
 giver:google:giver
 gkrellm:httpls:http://members.dslextreme.com/users/billw/gkrellm/gkrellm.html
 glabels:sf:46122|glabels
@@ -423,6 +425,7 @@ makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
 md5deep:sf:67079|md5deep
 media-explorer:httpls:https://github.com/media-explorer/media-explorer/downloads
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
+mercurial:httpls:http://mercurial.selenic.com/release/
 mkcomposecache:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontdir:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontscale:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -505,6 +508,7 @@ pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
 qiv:httpls:http://spiegl.de/qiv/download/
 qmmp:httpls:http://qmmp.ylsoftware.com/files/
+quilt:httpls:http://download.savannah.gnu.org/releases/quilt/
 radiotray:sf:295096
 raptor:httpls:http://download.librdf.org/source/
 rarian:httpls:http://rarian.freedesktop.org/Releases/
@@ -573,6 +577,7 @@ telepathy-salut:httpls:http://telepathy.freedesktop.org/releases/telepathy-salut
 # telepathy-sofiasip: used to live at: telepathy-sofiasip:sf:191149
 telepathy-sofiasip:httpls:http://telepathy.freedesktop.org/releases/telepathy-sofiasip/
 telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-engine/
+tig:httpls:http://jonas.nitro.dk/tig/releases/
 tilda:sf:126081|tilda
 tinyproxy:httpls:https://banu.com/tinyproxy/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
@@ -595,6 +600,7 @@ varnish:httpls:http://repo.varnish-cache.org/source/
 # vboxgtk: used to live at: vboxgtk:sf:263334|vboxgtk
 vboxgtk:google:vboxgtk
 viewres:httpls:http://xorg.freedesktop.org/releases/individual/app/
+vim:ftpls:ftp://ftp.vim.org/pub/vim/unix/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
 weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
