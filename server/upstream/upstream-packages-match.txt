@@ -1295,6 +1295,7 @@ yast2-control-center-gnome:
 #libmrproject:
 #libnotifymm:
 #libole2:
+#libqmi:
 #libunicode:
 #libvte-java:
 #libvtemm:
