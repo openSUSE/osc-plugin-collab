@@ -456,6 +456,7 @@ oclock:httpls:http://xorg.freedesktop.org/releases/individual/app/
 onboard:lp:onboard
 openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
+opus:httpls:http://downloads.xiph.org/releases/opus/
 orc:httpls:http://code.entropywave.com/download/orc/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/

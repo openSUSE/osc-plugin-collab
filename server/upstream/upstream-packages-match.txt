@@ -734,6 +734,7 @@ opal:
 openfetion:
 openobex:
 opensuse-font-fifth-leg:fifth-leg-font
+opus:
 orc:
 orca:
 p11-kit:
