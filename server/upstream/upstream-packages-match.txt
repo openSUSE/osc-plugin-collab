@@ -1216,6 +1216,7 @@ yast2-control-center-gnome:
 #gnome-network:
 #gnome-objc:
 #gnome-perfmeter:
+#gnome-photos:
 #gnome-pim:
 #gnome-print:
 #gnome-specimen:
