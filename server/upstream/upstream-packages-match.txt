@@ -1125,6 +1125,7 @@ yast2-control-center-gnome:
 #at-poke:
 #banter:
 #battfink:
+#bijiben:
 #billreminder:
 #blam:
 #bonobo:
