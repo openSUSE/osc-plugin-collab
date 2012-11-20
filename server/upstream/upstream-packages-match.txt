@@ -1200,6 +1200,7 @@ yast2-control-center-gnome:
 #gnome-db:
 #gnome-debug:
 #gnome-file-selector:
+#gnome-getting-started-docs:
 #gnome-gpg:
 #gnome-guile:
 #gnome-hello:
