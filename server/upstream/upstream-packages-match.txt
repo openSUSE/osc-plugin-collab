@@ -191,6 +191,7 @@ farstream:
 file-roller:
 file-shrimp:
 fillmore-lombard:
+five-or-more:
 flickrapi:python-flickrapi
 folks:
 font-util:
@@ -302,13 +303,16 @@ gnome-icon-theme:
 gnome-js-common:
 gnome-keyring-sharp:
 gnome-keyring:
+gnome-klotski:
 gnome-libs:
 gnome-mag:
+gnome-mahjongg:
 gnome-main-menu:
 gnome-media:
 gnome-menus:
 gnome-menus|3.1:gnome-menus-legacy
 gnome-mime-data:
+gnome-mines:
 gnome-mount:
 gnome-netstatus:
 gnome-nettool:
@@ -336,9 +340,11 @@ gnome-shell:
 gnome-speech:
 gnome-spell:gnome-spell2
 gnome-subtitles:
+gnome-sudoku:
 gnome-system-log:
 gnome-system-monitor:
 gnome-terminal:
+gnome-tetravex:
 gnome-themes-extras:
 gnome-themes-standard:
 gnome-themes:
@@ -649,6 +655,7 @@ libxml:
 libzapojit:
 libzeitgeist:
 liferea:
+lightsoff:
 link-grammar:
 listres:
 lmms:
@@ -851,6 +858,7 @@ sshfp:
 startup-notification:
 stk:
 sushi:
+swell-foop:
 swfdec-gnome:
 swfdec-mozilla:
 swfdec:
