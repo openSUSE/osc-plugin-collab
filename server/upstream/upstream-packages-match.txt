@@ -196,6 +196,7 @@ flickrapi:python-flickrapi
 folks:
 font-util:
 fonttosfnt:
+four-in-a-row:
 frei0r-plugins:
 frogr:
 fslsfonts:
@@ -316,6 +317,7 @@ gnome-mines:
 gnome-mount:
 gnome-netstatus:
 gnome-nettool:
+gnome-nibbles:
 gnome-online-accounts:
 gnome-packagekit:
 gnome-panel:
@@ -328,6 +330,7 @@ gnome-python-desktop:
 gnome-python-extras:python-gnome-extras
 gnome-python:python-gnome
 gnome-reset:
+gnome-robots:
 gnome-schedule:
 gnome-screensaver:
 gnome-screenshot:
@@ -466,6 +469,7 @@ hippo-canvas:
 ht:
 hxtools:
 hyena:
+iagno:
 iceauth:
 ico:
 icon-naming-utils:
@@ -800,6 +804,7 @@ pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
 qiv:
 qmmp:
+quadrapassel:
 radiotray:
 raptor:
 rarian:
@@ -864,6 +869,7 @@ swfdec-mozilla:
 swfdec:
 synapse:
 system-config-printer:
+tali:
 tangerine:
 tango-icon-theme:
 tasks:
