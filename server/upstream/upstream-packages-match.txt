@@ -1371,6 +1371,7 @@ yast2-control-center-gnome:
 #regexxer:
 #rep-gtk-gnome2:
 #rygel-gst-0-10-media-engine:
+#rygel-gst-0-10-plugins:
 #sapwood:
 #sawfish-gnome2:
 #scaffold:
