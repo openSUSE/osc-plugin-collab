@@ -1370,6 +1370,7 @@ yast2-control-center-gnome:
 #radioactive:
 #regexxer:
 #rep-gtk-gnome2:
+#rygel-gst-0-10-media-engine:
 #sapwood:
 #sawfish-gnome2:
 #scaffold:
