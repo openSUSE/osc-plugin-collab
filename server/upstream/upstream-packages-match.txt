@@ -360,6 +360,7 @@ gnome-vfs-obexftp:
 gnome-vfs:gnome-vfs2
 gnome-vfsmm:
 gnome-video-effects:
+gnome-weather:
 gnome-web-photo:
 gnome-zeitgeist:
 gnomeicu:
