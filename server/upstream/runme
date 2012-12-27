@@ -257,6 +257,7 @@ download_upstream_version () {
     fi
 }
 
+mkdir -p $CACHE_DIR/status
 mkdir -p $CACHE_DIR/upstream
 
 ## Discontinued
@@ -286,11 +287,21 @@ if test $? -eq 0; then
     concatenate_all_versions
 fi
 
-# Check that we have everything in the match database
-for i in `grep -v '^#' $CACHE_DIR/upstream/latest | grep ':' | cut -d ':' -f 2`; do
-    re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
-    grep -q -E "^(# ?)?$re_i[:|]" $basedir/upstream-packages-match.txt
-    if test $? -ne 0; then
-        echo $i not in $basedir/upstream-packages-match.txt
-    fi
-done
+# Check that we have everything in the match database; we only do this once per
+# day to avoid sending mails every X minutes.
+MATCH_CHECK_TIMESTAMP=0
+MATCH_CHECK_FILE="$CACHE_DIR/status/upstream-match-check"
+if test -f "$MATCH_CHECK_FILE"; then
+    MATCH_CHECK_TIMESTAMP=`stat --format="%Y" "$MATCH_CHECK_FILE"`
+    MATCH_CHECK_TIMESTAMP=`echo "$MATCH_CHECK_TIMESTAMP + 24 * 3600" | bc`
+fi
+if test "$MATCH_CHECK_TIMESTAMP" -lt "`date +%s`"; then
+    for i in `grep -v '^#' $CACHE_DIR/upstream/latest | grep ':' | cut -d ':' -f 2`; do
+        re_i=`echo $i | sed 's/\+/\\\\\\+/g'`
+        grep -q -E "^(# ?)?$re_i[:|]" $basedir/upstream-packages-match.txt
+        if test $? -ne 0; then
+            echo $i not in $basedir/upstream-packages-match.txt
+        fi
+    done
+    echo "Last check for upstream match database completeness: `date --rfc-3339=seconds`" > "$MATCH_CHECK_FILE"
+fi
