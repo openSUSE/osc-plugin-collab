@@ -36,7 +36,7 @@ import urllib2
 from util import *
 
 
-FALLBACK_URL = 'http://www.suse.de/~meissner/factory.upstream.lst'
+FALLBACK_URL = 'http://users.suse.com/~meissner/factory.upstream.lst'
 
 
 #######################################################################
