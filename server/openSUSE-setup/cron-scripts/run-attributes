@@ -1,0 +1,21 @@
+#!/bin/sh
+
+TOP_DIR=`dirname $0`
+
+if test ! -f "${TOP_DIR}/common"; then
+	echo "No common infrastructure available."
+	exit 1
+fi
+
+. "${TOP_DIR}/common"
+
+# 30 minutes max
+setup 1800
+
+${PRE_CMD} "${OSC_PLUGIN_COLLAB_DIR}/server/obs-db/runme-attributes" -o "${OBS_CONF}" -s -l $LOGFILE
+
+if test $? -ne 0; then
+	echo "Error during the attributes update."
+fi
+
+cleanup

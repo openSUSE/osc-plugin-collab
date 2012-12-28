@@ -1,0 +1,96 @@
+setup() {
+	MAXTIME=$1
+
+	if test "x$MAXTIME" = "x"; then
+		echo "Maximum execution time for $0 is not set."
+		exit 1
+	fi
+
+	# the PATH is set to the strict minimum in cronjobs
+	export PATH=${HOME}/bin:$PATH
+
+	NAME=`basename $0`
+	TOP_DIR=`dirname $0`
+	LOGFILE="${TOP_DIR}/logs/$NAME.log"
+	LOCKFILE="${TOP_DIR}/locks/$NAME.lock"
+
+	### Values to setup
+
+	## A helper that will kill the process it launches after $MAXTIME, to
+	## avoid stuck processes.
+	#WATCHDOG_CMD="${TOP_DIR}/excubitor -d $MAXTIME --"
+
+	## Common directories / files
+	#COLLAB_DATA_DIR="${HOME}/collab-data"
+	#OBS_CONF="${COLLAB_DATA_DIR}/obs.conf"
+	#OSC_PLUGIN_COLLAB_DIR="${HOME}/src/osc-plugin-collab"
+
+	## OBS_UPLOAD_URL should stay empty if there is no need to upload the
+	## resulting obs.db anywhere
+	#OBS_UPLOAD_URL=
+
+	if test -z "$COLLAB_DATA_DIR"; then
+		echo "COLLAB_DATA_DIR is not set."
+		exit 1
+	fi
+
+	if test -z "$OBS_CONF"; then
+		echo "OBS_CONF is not set."
+		exit 1
+	fi
+
+	if test -z "$OBS_CONF"; then
+		echo "OSC_PLUGIN_COLLAB_DIR is not set."
+		exit 1
+	fi
+
+	LOCK_CMD=
+	HAVE_DOTLOCKFILE=0
+	HAVE_WITHLOCK=0
+	which dotlockfile &> /dev/null && HAVE_DOTLOCKFILE=1
+	which withlock &> /dev/null && HAVE_WITHLOCK=1
+
+	if test "$HAVE_DOTLOCKFILE" -eq 1; then
+		# we need a lock to avoid concurrent instances
+		# Note that with -p, we won't lock if the process that created the lock
+		# file does not exist anymore
+		dotlockfile -p -l -r 0 $LOCKFILE
+
+		if test $? -ne 0; then
+			exit
+		fi
+	elif test "$HAVE_WITHLOCK" -eq 1; then
+		LOCK_CMD="withlock $LOCKFILE"
+	else
+		echo "No lock program available; dotlockfile or withlock must be installed."
+		exit 1
+	fi
+
+	if test -f $LOGFILE; then
+		SIZE=`du -s $LOGFILE | cut -f 1`
+		if test $SIZE -gt 200000; then
+			today=`date +%Y%m%d`
+			mv $LOGFILE $LOGFILE.$today
+			gzip $LOGFILE.$today
+		fi
+	else
+		mkdir -p `dirname $LOGFILE`
+	fi
+
+	PRE_CMD="${LOCK_CMD} ${WATCHDOG_CMD}"
+
+	echo "=== Start (`date`) ===" >> $LOGFILE
+}
+
+cleanup() {
+	echo "=== End (`date`) ===" >> $LOGFILE
+
+	if test "$HAVE_DOTLOCKFILE" -eq 1; then
+		if test "x$LOCKFILE" = "x"; then
+			echo "Internal error: LOCKFILE is not set."
+			exit 1
+		fi
+
+		dotlockfile -u $LOCKFILE
+	fi
+}

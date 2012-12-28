@@ -1,0 +1,15 @@
+MAILTO="devnull@opensuse.org"
+
+## Note: we don't use */20 to control our timing, especially as the order in
+## which scripts are run matters: run-upstream should be run before run-obs,
+## which should be run before run-attributes.
+
+# Update upstream data every twenty minutes
+1,21,41   *       *       *       *       ${HOME}/src/cron-scripts/run-upstream
+# Update obs db every twenty minutes
+6,26,46 *       *       *       *       ${HOME}/src/cron-scripts/run-obs
+# Update obs attributes every twenty minutes
+9,29,49   *       *       *       *       ${HOME}/src/cron-scripts/run-attributes
+
+## This can be used to automatically update from git
+##@daily  ${HOME}/src/cron-scripts/run-updategit

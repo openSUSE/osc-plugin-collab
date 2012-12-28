@@ -1,0 +1,29 @@
+#!/bin/sh
+
+TOP_DIR=`dirname $0`
+
+if test ! -f "${TOP_DIR}/common"; then
+	echo "No common infrastructure available."
+	exit 1
+fi
+
+. "${TOP_DIR}/common"
+
+# 10 minutes max -- for an update with hermes, that should be more than enough
+setup 600
+
+${PRE_CMD} "${OSC_PLUGIN_COLLAB_DIR}/server/obs-db/runme" -o "${OBS_CONF}" -s -l $LOGFILE
+
+if test $? -eq 0; then
+	if test -n "${OBS_UPLOAD_URL}"; then
+		curl --silent --show-error -F destfile=obs.db -F dbfile="@${COLLAB_DATA_DIR}/cache/db/obs.db" ${OBS_UPLOAD_URL}
+	fi
+else
+	if test -n "${OBS_UPLOAD_URL}"; then
+		echo "Error during the database update, database not uploaded."
+	else
+		echo "Error during the database update."
+	fi
+fi
+
+cleanup

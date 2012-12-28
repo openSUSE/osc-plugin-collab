@@ -108,6 +108,12 @@ obs-db/
         Miscellaneous functions that make life easier.
 
 
+openSUSE-setup/
+    Contains a near real-life example of how the server is setup for
+    osc-collab.opensuse.org. See openSUSE-setup/README for more
+    information.
+
+
 upstream/
     download-upstream-versions:
         Download information about the latest versions of various
@@ -126,6 +132,7 @@ upstream/
 
     upstream-tarballs.txt:
         Information about where to find the latest upstream tarballs.
+
 
 web/
     Contains the web API that the osc collab plugin connects to. To
