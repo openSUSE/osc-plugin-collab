@@ -749,7 +749,7 @@ class OscCollabObs:
 
 class OscCollabApi:
 
-    _api_url = 'http://tmp.vuntz.net/opensuse-packages/api'
+    _api_url = 'http://osc-collab.opensuse.org/api'
     _supported_api = '0.2'
     _supported_api_major = '0'
 
