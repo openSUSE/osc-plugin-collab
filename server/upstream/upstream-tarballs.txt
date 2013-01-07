@@ -557,7 +557,7 @@ sobby:httpls:http://releases.0x539.de/sobby/
 sofia-sip:sf:143636|sofia-sip
 solang:httpls:http://projects.gnome.org/solang/download
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
-sparkleshare:httpls:https://github.com/hbons/SparkleShare/downloads
+sparkleshare-linux:httpls:https://github.com/hbons/SparkleShare/downloads
 specto:httpls:http://specto.sourceforge.net/?go=download
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 spheres-and-crystals:sf:64400|spherecrystal

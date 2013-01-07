@@ -852,7 +852,7 @@ sofia-sip:
 solang:
 sound-juicer:
 sound-theme-freedesktop:
-sparkleshare:
+sparkleshare-linux:sparkleshare
 specto:
 speech-dispatcher:
 spheres-and-crystals:gtk2-metatheme-spheres-and-crystals
