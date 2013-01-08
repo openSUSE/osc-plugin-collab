@@ -137,6 +137,8 @@ class Package:
         self.parent_version = None
         self.upstream_url = None
         self.has_delta = False
+        self.error = None
+        self.error_details = None
 
         if node is not None:
             self.name = node.get('name')
@@ -165,6 +167,14 @@ class Package:
             delta = node.find('delta')
             if delta is not None:
                 self.has_delta = True
+
+            error = node.find('error')
+            if error is not None:
+                self.error = error.get('type')
+                self.error_details = error.text or ''
+            else:
+                self.error = ''
+                self.error_details = ''
 
             if not self.version:
                 self.version = ''
@@ -261,7 +271,14 @@ def get_table_for_project(project, only_missing_upstream, only_missing_parent, u
         row = '<tr><td%s>%s</td>' % (style, escape(package.name))
         if parent:
             row += '<td>%s</td>' % (escape(package.parent_version),)
-        row += '<td>%s</td>' % escape(package.version)
+
+        if not package.error:
+            row += '<td>%s</td>' % escape(package.version)
+        elif package.error_details:
+            row += '<td title="%s">%s</td>' % (escape(package.error_details), '(broken)')
+        else:
+            row += '<td title="%s">%s</td>' % (escape(package.error), '(broken)')
+
         if use_upstream:
             if package.upstream_url and package.upstream_url != '':
                 version_cell = '<a href="' + escape(package.upstream_url) + '">' + escape(package.upstream_version) + '</a>'
