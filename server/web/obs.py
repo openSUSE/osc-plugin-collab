@@ -283,15 +283,6 @@ def get_table_for_project(project, only_missing_upstream, only_missing_parent, u
 
 form = cgi.FieldStorage()
 
-# Be a little bit nice to old osc gnome versions by not sending them stuff they
-# won't understand
-if form.has_key('format') and form.getfirst('format') == 'csv':
-    print 'Content-type: text/plain'
-    print
-
-    print '# Please update osc gnome (osc-plugins-gnome package in openSUSE:Tools project)'
-    sys.exit(0)
-
 if form.has_key('future'):
     use_future = True
 else:
