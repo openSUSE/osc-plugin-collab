@@ -1230,6 +1230,10 @@ class SrcPackage(Base):
                             self.error = 'not-in-parent'
                         elif error.find('could not apply patch') != -1:
                             self.error = 'need-merge-with-parent'
+                        elif error.find('conflict in file') != -1:
+                            self.error = 'need-merge-with-parent'
+                        else:
+                            self.error = 'unknown-error'
                         self.error_details = error
 
                     if self.error:
@@ -1369,6 +1373,10 @@ class SrcPackage(Base):
         return diff
 
     def _analyze_specs(self, srcpackage_dir):
+        # If there's an error, then nothing to do: the package is broken anyway
+        if self.is_link and self.error:
+            return
+
         # Only look at one spec file, since the build service works this way.
         # By default, we take the spec file with the same name as the source
         # package; if it doesn't exist, we take the first one.
