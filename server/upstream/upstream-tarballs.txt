@@ -551,6 +551,7 @@ shared-mime-info:httpls:http://people.freedesktop.org/~hadess/
 shotwell:subdirhttpls:http://yorba.org/download/shotwell/
 showfont:httpls:http://xorg.freedesktop.org/releases/individual/app/
 simple-ccsm:subdirhttpls:http://releases.compiz.org/components/simple-ccsm/
+simple-scan:lp:simple-scan
 smproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 smuxi:httpls:http://www.smuxi.org/jaws/data/files/
 sobby:httpls:http://releases.0x539.de/sobby/
@@ -751,7 +752,6 @@ zlib:httpls:http://www.zlib.net/
 
 # Moved to ftp.gnome.org
 #byzanz:httpls:http://people.freedesktop.org/~company/byzanz/
-#simple-scan:lp:simple-scan
 
 ## We are upstream, with no tarball
 beagle-index:upstream:
