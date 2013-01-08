@@ -357,7 +357,8 @@ class HermesReader:
             elif not error_encoded:
                 print >> sys.stderr, 'Buggy hermes message %d (%s): "%s".' % (id, entry['updated'], entry['title'])
                 print >> sys.stderr, '----------'
-                print >> sys.stderr, '%s' % entry['summary']
+                for line in entry['summary'].split('\n'):
+                    print >> sys.stderr, '> %s' % line
                 print >> sys.stderr, '----------'
 
             if id > self.last_known_id:
