@@ -126,6 +126,8 @@ class Runner:
         file = open(self._status_catchup)
         lines = file.readlines()
 
+        catchup = set()
+
         for line in lines:
             line = line[:-1]
             s = line.split('/')
@@ -139,7 +141,7 @@ class Runner:
                     continue
 
                 (project,) = s
-                self._catchup.append((project, None))
+                catchup.add((project, None))
 
             elif len(s) == 2:
                 (project, package) = s
@@ -150,7 +152,9 @@ class Runner:
                     print >>sys.stderr, 'Cannot handle catchup line: %s (per config, projects are ignored)' % line
                     continue
 
-                self._catchup.append((project, package))
+                catchup.add((project, package))
+
+        self._catchup = list(catchup)
 
         file.close()
 
