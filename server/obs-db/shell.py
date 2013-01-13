@@ -418,6 +418,16 @@ class Runner:
                 else:
                     raise RunnerException('Unhandled Hermes event type by XML generator: %s' % event.__class__.__name__)
 
+            for (project, package) in self._catchup:
+                # do not handle packages that had an issue while mirroring
+                if self._had_mirror_error(project, package):
+                    continue
+
+                if package:
+                    changed_projects.add(project)
+                elif self.conf.allow_project_catchup:
+                    changed_projects.add(project)
+
         self.xml.run(self.db.get_cursor(), changed_projects)
 
 
