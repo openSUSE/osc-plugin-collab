@@ -990,13 +990,17 @@ class ObsCheckout:
         """
         project_dir = os.path.join(self.dest_dir, project)
 
+        # Check now whether the directory exists, since we might create it
+        # while creating the project config
+        exists = os.path.exists(project_dir)
+
         if not no_config:
             if parent:
                 self._copy_project_config(project, parent)
             else:
                 self._write_project_config(project)
 
-        if os.path.exists(project_dir) and not force_simple_checkout:
+        if exists and not force_simple_checkout:
             debug_thread('main', 'Queuing check for %s' % (project,))
             self.queue_check_project(project, primary)
         else:
