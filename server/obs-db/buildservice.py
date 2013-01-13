@@ -227,6 +227,8 @@ class ObsCheckout:
 
         self.queue = Queue.Queue()
         self.queue2 = Queue.Queue()
+        self.error_queue = Queue.Queue()
+        self.errors = set()
         self.socket_timeouts = []
         self.socket_timeouts_lock = None
 
@@ -332,7 +334,8 @@ class ObsCheckout:
             elif try_again:
                 self._get_file(project, package, filename, size, revision, False)
             else:
-                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s' % (filename, package, project, e)
+                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s (queueing for next run)' % (filename, package, project, e)
+                self.error_queue.put((project, package))
 
             return
 
@@ -369,7 +372,8 @@ class ObsCheckout:
             elif revision:
                 print >>sys.stderr, 'Cannot download file list of %s from %s with specified revision: %s' % (package, project, e)
             else:
-                print >>sys.stderr, 'Cannot download file list of %s from %s: %s' % (package, project, e)
+                print >>sys.stderr, 'Cannot download file list of %s from %s: %s (queueing for next run)' % (package, project, e)
+                self.error_queue.put((project, package))
 
             return None
 
@@ -598,7 +602,8 @@ class ObsCheckout:
             elif try_again:
                 self.checkout_package_meta(project, package, False)
             else:
-                print >>sys.stderr, 'Cannot get metadata of package %s in %s: %s' % (package, project, e)
+                print >>sys.stderr, 'Cannot get metadata of package %s in %s: %s (queueing for next run)' % (package, project, e)
+                self.error_queue.put((project, package))
 
             return
 
@@ -778,7 +783,7 @@ class ObsCheckout:
             return
 
 
-    def run(self):
+    def _run_helper(self):
         if self.socket_timeouts != []:
             print >>sys.stderr, 'Internal error: list of socket timeouts is not empty before running'
             return
@@ -852,7 +857,18 @@ class ObsCheckout:
             debug_thread('main', 'Working on second queue')
             self.queue = self.queue2
             self.queue2 = Queue.Queue()
-            self.run()
+            self._run_helper()
+
+
+    def run(self):
+        # we need a helper since the helper can call itself, and we want to
+        # look at the error queue at the very end
+        self._run_helper()
+
+        self.errors.clear()
+        while not self.error_queue.empty():
+            (project, package) = self.error_queue.get()
+            self.errors.add((project, package or ''))
 
 
     def _write_project_config(self, project):

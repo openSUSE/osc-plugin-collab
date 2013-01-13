@@ -78,6 +78,7 @@ class Runner:
 
         self._status_file = os.path.join(self.conf.cache_dir, 'status', 'last')
         self._status_catchup = os.path.join(self.conf.cache_dir, 'status', 'catchup')
+        self._mirror_error = os.path.join(self.conf.cache_dir, 'status', 'mirror-error')
         self._mirror_dir = os.path.join(self.conf.cache_dir, 'obs-mirror')
         self._upstream_dir = os.path.join(self.conf.cache_dir, 'upstream')
         self._db_dir = os.path.join(self.conf.cache_dir, 'db')
@@ -160,6 +161,52 @@ class Runner:
                 os.unlink(self._status_catchup)
             except Exception, e:
                 print >>sys.stderr, 'Cannot remove catchup file: %s' % e
+
+
+    def _had_mirror_error(self, project, package):
+        """ Check if we had an error on mirror for this package. """
+        if (project, package) in self.obs.errors:
+            return True
+        # just to be on the safe side, for project checks, we check with both
+        # None and '' as package.
+        if package is None and (project, '') in self.obs.errors:
+            return True
+        return False
+
+
+    def _write_mirror_error(self):
+        if len(self.obs.errors) == 0:
+            return
+
+        # note that we append
+        fout = open(self._mirror_error, 'a')
+        for (project, package) in self.obs.errors:
+            if package:
+                fout.write('%s/%s\n' % (project, package))
+            else:
+                fout.write('%s\n' % project)
+        fout.close()
+
+
+    def _move_mirror_error_to_catchup(self):
+        if not os.path.exists(self._mirror_error):
+            return
+
+        # we don't do a simple cp, but copy the content since we want to append
+        # if the catchup file already exists
+
+        fin = open(self._mirror_error)
+        lines = fin.readlines()
+        fin.close
+
+        fout = open(self._status_catchup, 'a')
+        fout.writelines(lines)
+        fout.close()
+
+        try:
+            os.unlink(self._mirror_error)
+        except Exception, e:
+            print >>sys.stderr, 'Cannot remove mirror-error file: %s' % e
 
 
     def _run_mirror(self, conf_changed):
@@ -272,6 +319,10 @@ class Runner:
                 if not os.path.exists(project_dir):
                     continue
 
+                # do not handle packages that had an issue while mirroring
+                if self._had_mirror_error(event.project, event.package):
+                    continue
+
                 changed = True
 
                 if isinstance(event, hermes.HermesEventCommit):
@@ -297,6 +348,10 @@ class Runner:
             db_projects = set(self.db.get_projects())
 
             for (project, package) in self._catchup:
+                # do not handle packages that had an issue while mirroring
+                if self._had_mirror_error(project, package):
+                    continue
+
                 if package:
                     if project not in db_projects:
                         print >>sys.stderr, 'Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package)
@@ -338,6 +393,10 @@ class Runner:
                 # (ie, there's no checkout)
                 project_dir = os.path.join(self._mirror_dir, event.project)
                 if not os.path.exists(project_dir):
+                    continue
+
+                # do not handle packages that had an issue while mirroring
+                if self._had_mirror_error(event.project, event.package):
                     continue
 
                 if isinstance(event, hermes.HermesEventCommit):
@@ -465,6 +524,7 @@ class Runner:
         if not self.conf.mirror_only_new and not self.conf.skip_mirror:
             # we don't want to lose events if we went to fast mode once
             self._status['mirror'] = self.hermes.last_known_id
+        self._write_mirror_error()
         self._write_status()
 
         # Update/create the upstream database
@@ -517,6 +577,7 @@ class Runner:
         self._status['opensuse-mtime'] = new_opensuse_mtime
 
         self._empty_catchup()
+        self._move_mirror_error_to_catchup()
         self._write_status()
 
 
