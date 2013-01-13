@@ -156,6 +156,11 @@ class Runner:
 
 
     def _empty_catchup(self):
+        # do not remove the catchup file if something still needs it on next
+        # run
+        if self.conf.skip_mirror or self.conf.skip_db or self.conf.skip_xml:
+            return
+
         if os.path.exists(self._status_catchup):
             try:
                 os.unlink(self._status_catchup)
