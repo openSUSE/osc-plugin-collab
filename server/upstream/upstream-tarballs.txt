@@ -295,6 +295,7 @@ gwibber:lp:gwibber
 gypsy:httpls:http://gypsy.freedesktop.org/releases/
 gzip:httpls:http://ftp.gnu.org/gnu/gzip/
 harfbuzz:httpls:http://www.freedesktop.org/software/harfbuzz/release/
+hamster-time-tracker:httpls:https://github.com/projecthamster/hamster/tags
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 ht:sf:1066
 hxtools:httpls:http://dl.medozas.de/hxtools/
