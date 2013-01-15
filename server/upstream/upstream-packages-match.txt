@@ -800,7 +800,6 @@ pypoppler:
 pysmbc:python-smbc
 python-distutils-extra:
 python-espeak:
-python-virtkey:
 python-xlib:
 pywebkitgtk:python-webkitgtk
 pyxdg:python-xdg
@@ -923,6 +922,7 @@ vboxgtk:
 viewres:
 vinagre:
 vino:
+virtkey:python-virtkey
 vobject:
 vte:
 vte|0.29:vte2

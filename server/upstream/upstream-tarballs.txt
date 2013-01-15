@@ -518,7 +518,7 @@ pymsn:httpls:http://telepathy.freedesktop.org/releases/pymsn/
 pysmbc:httpls:http://cyberelk.net/tim/data/pysmbc/
 python-distutils-extra:lp:python-distutils-extra
 python-espeak:lp:python-espeak
-python-virtkey:lp:python-virtkey
+virtkey:lp:virtkey
 python-xlib:sf:10350|python-xlib
 pywebkitgtk:google:pywebkitgtk
 pyxdg:httpls:http://www.freedesktop.org/wiki/Software/pyxdg
