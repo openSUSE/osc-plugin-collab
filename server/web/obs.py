@@ -272,12 +272,13 @@ def get_table_for_project(project, only_missing_upstream, only_missing_parent, u
         if parent:
             row += '<td>%s</td>' % (escape(package.parent_version),)
 
-        if not package.error:
-            row += '<td>%s</td>' % escape(package.version)
-        elif package.error_details:
-            row += '<td title="%s">%s</td>' % (escape(package.error_details), '(broken)')
+        if package.error in ['not-in-parent', 'need-merge-with-parent']:
+            if package.error_details:
+                row += '<td title="%s">%s</td>' % (escape(package.error_details), '(broken)')
+            else:
+                row += '<td title="%s">%s</td>' % (escape(package.error), '(broken)')
         else:
-            row += '<td title="%s">%s</td>' % (escape(package.error), '(broken)')
+            row += '<td>%s</td>' % escape(package.version)
 
         if use_upstream:
             if package.upstream_url and package.upstream_url != '':
