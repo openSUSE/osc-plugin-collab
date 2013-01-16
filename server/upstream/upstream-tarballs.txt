@@ -125,9 +125,6 @@ chmsee:google:chmsee
 claws-mail-extra-plugins:sf:25528|extra plugins
 claws-mail:sf:25528|Claws Mail
 cloop:httpls:http://debian-knoppix.alioth.debian.org/packages/cloop/
-clutter-gst:subdirhttpls:http://clutter-project.org/sources/clutter-gst/
-clutter-gtk:subdirhttpls:http://clutter-project.org/sources/clutter-gtk/
-clutter:subdirhttpls:http://clutter-project.org/sources/clutter/
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 colord:httpls:http://www.freedesktop.org/software/colord/releases/
 colord-gtk:httpls:http://www.freedesktop.org/software/colord/releases/
@@ -203,7 +200,7 @@ geany:httpls:http://download.geany.org/
 geeqie:sf:222125
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 gftp:httpls:http://gftp.seul.org/
-ggz-client-libs:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+ggz-client-libs:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 gimp-dds:google:gimp-dds
 gimp-help:ftpls:ftp://ftp.gimp.org/pub/gimp/help/
 gimp-lqr-plugin:httpls:http://liquidrescale.wikidot.com/en:download-page-sources
@@ -256,7 +253,6 @@ gramps:sf:25770
 # grisbi: we really only want stable versions
 grisbi:sf:93867|grisbi stable
 gromit:httpls:http://www.home.unix-ag.org/simon/gromit/
-gssdp:httpls:http://gupnp.org/download/
 gst-plugins-bad:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-bad|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-bad/
 gst-plugins-base:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-base/
@@ -283,12 +279,6 @@ gtkpbbuttons:sf:47862|gtkpbbuttons
 gtkpod:sf:67873|gtkpod
 gtkspell:sf:7896
 guake:trac:http://guake.org/downloads
-gupnp-av:httpls:http://gupnp.org/download/
-gupnp-dlna:httpls:http://gupnp.org/download/
-gupnp-igd:httpls:http://gupnp.org/download/
-gupnp-tools:httpls:http://gupnp.org/download/
-gupnp-ui:httpls:http://gupnp.org/download?keys=gupnp-ui
-gupnp:httpls:http://gupnp.org/download/
 gurlchecker:httpls:http://labs.libre-entreprise.org/frs/?group_id=7
 gwenhywfar:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 gwibber:lp:gwibber
@@ -375,7 +365,7 @@ libgadu:httpls:http://toxygen.net/libgadu/files/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
-libggz:subdirhttpls:http://ftp.belnet.be/packages/ggzgamingzone/ggz/
+libggz:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgpod:sf:67873|libgpod
 libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
@@ -508,9 +498,6 @@ pulseaudio:httpls:http://www.freedesktop.org/software/pulseaudio/releases/
 purple-plugin-pack:httpls:https://www.guifications.org/projects/purple-plugin-pack/files
 py2cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
 pycairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
-pyclutter-gst:subdirhttpls:http://clutter-project.org/sources/pyclutter-gst/
-pyclutter-gtk:subdirhttpls:http://clutter-project.org/sources/pyclutter-gtk/
-pyclutter:subdirhttpls:http://clutter-project.org/sources/pyclutter/
 pycups:httpls:http://cyberelk.net/tim/data/pycups/
 pygtkglext:sf:54333|pygtkglext
 pymetar:httpls:http://www.schwarzvogel.de/pkgs/
@@ -647,7 +634,6 @@ xditview:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdm:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdpyinfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xedit:httpls:http://xorg.freedesktop.org/releases/individual/app/
-xesam-tools:httpls:http://xesam.org/people/kamstrup/xesam-tools/
 xev:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xeyes:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xf86dga:httpls:http://xorg.freedesktop.org/releases/individual/app/

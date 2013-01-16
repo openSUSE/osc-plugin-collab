@@ -781,9 +781,6 @@ purple-plugin-pack:
 py2cairo:python-cairo
 pyatspi:python-atspi
 pycairo:python3-cairo
-pyclutter-gst:python-clutter-gst
-pyclutter-gtk:python-clutter-gtk
-pyclutter:python-clutter
 pycups:python-cups
 pygobject:python-gobject
 pygobject:python3-gobject
@@ -962,7 +959,6 @@ xditview:
 xdm:
 xdpyinfo:
 xedit:
-xesam-tools:
 xev:
 xeyes:
 xf86dga:
