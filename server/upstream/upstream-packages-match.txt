@@ -1180,6 +1180,7 @@ yast2-control-center-gnome:
 #garnome:
 #gazpacho:
 #gb:
+#gcab:
 #gedit2:
 #gegl-vala:
 #geglmm:
