@@ -104,10 +104,7 @@ bdftopcf:httpls:http://xorg.freedesktop.org/releases/individual/app/
 beforelight:httpls:http://xorg.freedesktop.org/releases/individual/app/
 bitmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
 blueproximity:sf:203022
-# bluez-gnome: We're using www2.kernel.org because the main kernel.org website makes everything crash from time to time
-bluez-gnome:httpls:http://www2.kernel.org/pub/linux/bluetooth/
 bombermaze:sf:8614|bombermaze
-boot-mode-ui:google:loolixbodes|boot-mode-ui
 bot-sentry:sf:156021|bot-sentry
 brltty:httpls:http://mielke.cc/brltty/releases/
 c++-gtk-utils:sf:277143|cxx-gtk-utils
@@ -133,14 +130,13 @@ compiz-bcop:subdirhttpls:http://releases.compiz.org/components/compiz-bcop/
 compiz-fusion-plugins-extra:subdirhttpls:http://releases.compiz.org/components/plugins-extra/
 compiz-fusion-plugins-main:subdirhttpls:http://releases.compiz.org/components/plugins-main/
 compiz-fusion-plugins-unsupported:subdirhttpls:http://releases.compiz.org/components/plugins-unsupported/
-compiz:subdirhttpls:http://releases.compiz-fusion.org/core/
+compiz:subdirhttpls:http://releases.compiz.org/core/
 compizconfig-backend-gconf:subdirhttpls:http://releases.compiz.org/components/compizconfig-backend-gconf/
 compizconfig-backend-kconfig:subdirhttpls:http://releases.compiz.org/components/compizconfig-backend-kconfig/
 compizconfig-python:subdirhttpls:http://releases.compiz.org/components/compizconfig-python/
 computertemp:httpls:http://computertemp.berlios.de/download.php
 conglomerate:sf:82766|Conglomerate XML Editor
 conntrack-tools:httpls:http://ftp.netfilter.org/pub/conntrack-tools/
-contact-lookup-applet:httpls:http://www.burtonini.com/computing/
 csmash:sf:4179|CannonSmash
 cups-pk-helper:httpls:http://www.freedesktop.org/software/cups-pk-helper/releases/
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
@@ -158,7 +154,6 @@ ding:httpls:http://ftp.tu-chemnitz.de/pub/Local/urz/ding/
 djvulibre:sf:32953|DjVuLibre
 dmlangsel:google:loolixbodes|dmlangsel
 docky:lp:docky
-drapes:subdirhttpls:http://drapes.mindtouchsoftware.com/release/
 dwarves:httpls:http://fedorapeople.org/~acme/dwarves/
 ed:httpls:http://ftp.gnu.org/gnu/ed/
 editres:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -199,6 +194,7 @@ geany-plugins:httpls:http://plugins.geany.org/geany-plugins/
 geany:httpls:http://download.geany.org/
 geeqie:sf:222125
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
+geoclue:httpls:http://www.freedesktop.org/wiki/Software/GeoClue
 gftp:httpls:http://gftp.seul.org/
 ggz-client-libs:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 gimp-dds:google:gimp-dds
@@ -222,12 +218,11 @@ gnome-do-plugins:lp:do-plugins
 gnome-do:lp:do
 gnome-gmail-notifier:google:gnome-gmail-notifier
 gnome-gmail:sf:277145
-gnome-keyring-sharp:httpls:http://ftp.novell.com/pub/mono/sources/gnome-keyring-sharp/
+gnome-keyring-sharp:httpls:http://download.mono-project.com/sources/gnome-keyring-sharp/
 gnome-mount:httpls:http://hal.freedesktop.org/releases/
 gnome-presence-applet:httpls:http://www.galago-project.org/files/releases/source/gnome-presence-applet/
 gnome-schedule:sf:112183
 gnome-subtitles:sf:129996
-gnome-zeitgeist:lp:gnome-zeitgeist
 gnomeicu:sf:237
 gnonlin:httpls:http://gstreamer.freedesktop.org/src/gnonlin/
 # gnucash: Not updated anymore: gnucash:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
@@ -244,8 +239,7 @@ gpa:httpls:http://wald.intevation.org/frs/?group_id=13
 gparted:sf:115843
 gpaste:httpls:https://github.com/Keruspe/GPaste/downloads
 gpick:google:gpick
-gpodder:httpls:http://download.berlios.de/gpodder/
-gpointing-device-settings:httpls:http://live.gnome.org/GPointingDeviceSettings
+gpodder:httpls:http://gpodder.org/src/
 gq:sf:3805|GQ LDAP Client
 # gqview: note that we don't care about stable vs unstable
 gqview:sf:4050
@@ -288,7 +282,7 @@ harfbuzz:httpls:http://www.freedesktop.org/software/harfbuzz/release/
 hamster-time-tracker:httpls:https://github.com/projecthamster/hamster/tags
 hicolor-icon-theme:httpls:http://icon-theme.freedesktop.org/releases/
 ht:sf:1066
-hxtools:httpls:http://dl.medozas.de/hxtools/
+hxtools:httpls:http://jftp.inai.de/hxtools/
 iceauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ico:httpls:http://xorg.freedesktop.org/releases/individual/app/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
@@ -297,7 +291,7 @@ inkscape:sf:93438|inkscape
 intel-gpu-tools:httpls:http://xorg.freedesktop.org/releases/individual/app/
 intltool:lp:intltool
 ipod-sharp:httpls:http://download.banshee-project.org/ipod-sharp/
-iproute2:httpls:http://devresources.linuxfoundation.org/dev/iproute2/download/
+iproute2:httpls:http://kernel.org/pub/linux/utils/net/iproute2/
 iptables:httpls:http://ftp.netfilter.org/pub/iptables/
 iptraf-ng:httpls:https://fedorahosted.org/iptraf-ng/wiki/Download
 irda-utils:sf:5616|irda-utils
@@ -359,7 +353,6 @@ libdv:sf:4393|libdv
 libebml:httpls:http://dl.matroska.org/downloads/libebml/
 libedit:httpls:http://thrysoee.dk/editline/
 libesmtp:httpls:http://www.stafford.uklinux.net/libesmtp/download.html
-libflashsupport:svnls:https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 libfontenc:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libgadu:httpls:http://toxygen.net/libgadu/files/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
@@ -423,7 +416,7 @@ listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 lmms:sf:105168
 lndir:httpls:http://xorg.freedesktop.org/releases/individual/util/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
-mail-notification:httpls:http://savannah.nongnu.org/download/mailnotify/
+mail-notification:httpls:http://www.nongnu.org/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
 md5deep:sf:67079|md5deep
@@ -547,7 +540,7 @@ sofia-sip:sf:143636|sofia-sip
 solang:httpls:http://projects.gnome.org/solang/download
 sound-theme-freedesktop:dualhttpls:http://people.freedesktop.org/~mccann/dist/|http://www.freedesktop.org/wiki/Specifications/sound-theme-spec
 sparkleshare-linux:httpls:https://github.com/hbons/SparkleShare/downloads
-specto:httpls:http://specto.sourceforge.net/?go=download
+specto:google:specto
 speech-dispatcher:httpls:http://www.freebsoft.org/pub/projects/speechd/
 spheres-and-crystals:sf:64400|spherecrystal
 spice-gtk:httpls:http://spice-space.org/download/gtk/
@@ -629,7 +622,7 @@ xcursorgen:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xcursor-themes:httpls:http://xorg.freedesktop.org/releases/individual/data/
 xdbedizzy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdg-user-dirs:httpls:http://user-dirs.freedesktop.org/releases/
-xdg-utils:httpls:http://portland.freedesktop.org/wiki/
+xdg-utils:httpls:http://portland.freedesktop.org/download/
 xditview:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdm:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xdpyinfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -789,8 +782,6 @@ xdelta:google:xdelta|xdelta
 #QtCurve-Gtk3:httpls:http://www.kde-look.org/content/download.php?content=40492&id=4
 ## dopi is dead: no upstream homepage anymore
 #dopi:httpls:http://www.snorp.net/files/dopi/
-## Known to be broken :/
-geoclue:httpls:http://folks.o-hand.com/jku/geoclue-releases/
 ## Server is down
 #metatheme-Sonar:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.2/metatheme/
 #metatheme-gilouche:httpls:http://forgeftp.novell.com/opensuse-art/openSUSE11.1/metatheme/

@@ -78,9 +78,7 @@ beforelight:
 bigboard:
 bitmap:
 blueproximity:
-bluez-gnome:
 bombermaze:
-boot-mode-ui:
 bot-sentry:
 brasero:
 brltty:
@@ -124,7 +122,6 @@ computertemp:
 conduit:
 conglomerate:
 conntrack-tools:
-contact-lookup-applet:
 csmash:
 cups-pk-helper:
 d-feet:
@@ -151,7 +148,6 @@ djvulibre:
 dmlangsel:
 docky:
 dogtail:
-drapes:
 drwright:
 dwarves:
 ed:
@@ -362,7 +358,6 @@ gnome-vfsmm:
 gnome-video-effects:
 gnome-weather:
 gnome-web-photo:
-gnome-zeitgeist:
 gnomeicu:
 gnonlin:
 gnopernicus:
@@ -390,7 +385,6 @@ gparted:
 gpaste:
 gpick:
 gpodder:
-gpointing-device-settings:
 gq:
 gqview:
 gramps:
@@ -556,7 +550,6 @@ libebml:
 libedit:
 libepc:
 libesmtp:
-libflashsupport:
 libfontenc:
 libgadu:
 libgail-gnome:
