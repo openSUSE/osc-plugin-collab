@@ -1327,6 +1327,7 @@ yast2-control-center-gnome:
 #mlview:
 #model:
 #mrproject:
+#msitools:
 #nanny:
 #nautilus-gtkhtml:
 #nautilus-image-converter:
