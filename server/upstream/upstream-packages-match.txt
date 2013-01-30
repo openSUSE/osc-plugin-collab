@@ -1337,6 +1337,7 @@ yast2-control-center-gnome:
 #network-manager-netbook:
 #oaf:
 #ocrfeeder:
+#office-runner:
 #ontv:
 #opengl-glib:
 #orbit-python:
