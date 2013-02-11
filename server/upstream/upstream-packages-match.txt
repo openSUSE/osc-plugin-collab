@@ -1158,6 +1158,7 @@ yast2-control-center-gnome:
 #dots:
 #dryad:
 #ease:
+#easytag:
 #ee:
 #eggcups:
 #evolution-activesync:
