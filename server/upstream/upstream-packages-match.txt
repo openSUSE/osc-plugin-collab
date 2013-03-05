@@ -920,6 +920,8 @@ wadptr:
 weather-wallpaper:
 webkitgtk:libwebkit
 webkitgtk:libwebkit3
+webkitgtk:webkitgtk
+webkitgtk:webkitgtk3
 wmakerconf:
 x-tile:
 x11perf:
