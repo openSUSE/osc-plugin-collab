@@ -76,6 +76,7 @@ beagle-xesam:
 beagle:
 beforelight:
 bigboard:
+bijiben:
 bitmap:
 blueproximity:
 bombermaze:
@@ -271,6 +272,7 @@ gnome-bluetooth:
 gnome-boxes:
 gnome-build:
 gnome-calculator:
+gnome-chess:
 gnome-clocks:
 gnome-color-chooser:
 gnome-color-manager:
@@ -486,6 +488,7 @@ jhbuild:
 json-glib:
 krb5-auth-dialog:
 kye:
+lasem:
 lbxproxy:
 ldtp:
 libFS:
@@ -580,6 +583,7 @@ libgnomeprintui:
 libgnomesu:
 libgnomeui:
 libgnomeuimm:
+libgovirt:
 libgpod:
 libgrss:
 libgsasl:
@@ -1132,7 +1136,6 @@ yast2-control-center-gnome:
 #at-poke:
 #banter:
 #battfink:
-#bijiben:
 #billreminder:
 #blam:
 #bonobo:
@@ -1204,7 +1207,6 @@ yast2-control-center-gnome:
 #gnome-boxes-nonfree:
 #gnome-braille:
 #gnome-chart:
-#gnome-chess:
 #gnome-core:
 #gnome-crash:
 #gnome-db:
@@ -1283,7 +1285,6 @@ yast2-control-center-gnome:
 #java-libglom:
 #kbdraw:
 #kiwi:
-#lasem:
 #libPropList:
 #libbonobomm:
 #libbonobouimm:

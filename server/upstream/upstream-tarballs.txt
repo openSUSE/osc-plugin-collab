@@ -360,6 +360,7 @@ libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
 libggz:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
+libgovirt:httpls:http://people.freedesktop.org/~teuf/govirt/
 libgpod:sf:67873|libgpod
 libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
