@@ -39,9 +39,9 @@ from cgi import escape
 
 import libdbcore
 
-def get_project_selector(current_project = None, db = None, use_future = False):
+def get_project_selector(current_project = None, db = None):
     if not db:
-        db = libdbcore.ObsDb(use_future)
+        db = libdbcore.ObsDb()
     db.cursor.execute('''SELECT name FROM %s ORDER BY UPPER(name);''' % libdbcore.table_project)
     s = ''
     s += '<form action="%s">\n' % escape(os.environ['SCRIPT_NAME'])

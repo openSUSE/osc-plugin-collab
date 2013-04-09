@@ -141,8 +141,7 @@ class ApiGeneric:
         self.protocol = protocol
         self.args = args
         self.form = form
-        self.future = form.has_key('future')
-        self.db = libdbcore.ObsDb(self.future)
+        self.db = libdbcore.ObsDb()
 
     def __del__(self):
         del self.db
@@ -243,7 +242,7 @@ class ApiInfo(ApiGeneric):
             self.output.add_node(node)
 
     def _list_project(self, project):
-        info = libinfoxml.InfoXml(self.db, self.future)
+        info = libinfoxml.InfoXml(self.db)
         try:
             node = info.get_project_node(project)
             self.output.add_node(node)
@@ -252,7 +251,7 @@ class ApiInfo(ApiGeneric):
             self.output.set_result(False, e.msg)
 
     def _list_package(self, project, package):
-        info = libinfoxml.InfoXml(self.db, self.future)
+        info = libinfoxml.InfoXml(self.db)
         try:
             prj_node = info.get_project_node(project, False)
             pkg_node = info.get_package_node(project, package)

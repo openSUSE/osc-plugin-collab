@@ -212,8 +212,8 @@ def get_colortype(package, parent, use_upstream):
 #######################################################################
 
 
-def get_table_for_project(project, only_missing_upstream, only_missing_parent, use_future):
-    info = libinfoxml.InfoXml(use_future = use_future)
+def get_table_for_project(project, only_missing_upstream, only_missing_parent):
+    info = libinfoxml.InfoXml()
     try:
         node = info.get_project_node(project)
     except libinfoxml.InfoXmlException, e:
@@ -301,22 +301,17 @@ def get_table_for_project(project, only_missing_upstream, only_missing_parent, u
 
 form = cgi.FieldStorage()
 
-if form.has_key('future'):
-    use_future = True
-else:
-    use_future = False
-
 only_missing_upstream = libhttp.get_arg_bool(form, 'missing-upstream', False)
 only_missing_parent = libhttp.get_arg_bool(form, 'missing-parent', False)
 
 libhttp.print_html_header()
 
 project = libhttp.get_project(form)
-table = get_table_for_project(project, only_missing_upstream, only_missing_parent, use_future)
+table = get_table_for_project(project, only_missing_upstream, only_missing_parent)
 
 libhttp.print_header('Versions of packages in the Build Service for project %s' % escape(project))
 
-print libdbhtml.get_project_selector(current_project = project, use_future = use_future)
+print libdbhtml.get_project_selector(current_project = project)
 print table
 
 libhttp.print_foot(additional_box = get_legend_box())

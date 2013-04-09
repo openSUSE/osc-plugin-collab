@@ -48,7 +48,6 @@ import config
 
 
 _db_file = os.path.join(config.datadir, 'obs.db')
-_db_file_future = os.path.join(config.datadir, 'obs-future.db')
 
 table_file = 'file'
 table_source = 'source'
@@ -68,13 +67,8 @@ pkg_query = 'SELECT %s.* FROM %s, %s WHERE %s.name = ? AND %s.name = ? AND %s.pr
 #######################################################################
 
 
-def get_db_mtime(raw = False, use_future = False):
-    if use_future:
-        db_file = _db_file_future
-    else:
-        db_file = _db_file
-
-    mtime = time.gmtime(os.stat(db_file)[ST_MTIME])
+def get_db_mtime(raw = False):
+    mtime = time.gmtime(os.stat(_db_file)[ST_MTIME])
 
     if raw:
         return mtime
@@ -99,15 +93,11 @@ class ObsDbException(Exception):
 
 class ObsDb:
 
-    def __init__(self, use_future = False):
-        if use_future:
-            db_file = _db_file_future
-        else:
-            db_file = _db_file
+    def __init__(self):
         if not os.path.exists(_db_file):
             raise ObsDbException('Database unavailable')
 
-        self.conn = sqlite3.connect(db_file)
+        self.conn = sqlite3.connect(_db_file)
         if not self.conn:
             raise ObsDbException('Database unavailable')
 

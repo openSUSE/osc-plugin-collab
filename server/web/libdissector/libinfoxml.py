@@ -74,9 +74,9 @@ class InfoXml:
 
     version_query = 'SELECT %s.version FROM %s, %s WHERE %s.name = ? AND %s.name = ? AND %s.project = %s.id ;' % (libdbcore.table_srcpackage, libdbcore.table_project, libdbcore.table_srcpackage, libdbcore.table_project, libdbcore.table_srcpackage, libdbcore.table_srcpackage, libdbcore.table_project)
 
-    def __init__(self, obsdb = None, use_future = False):
+    def __init__(self, obsdb = None):
         if not obsdb:
-            self.obsdb = libdbcore.ObsDb(use_future)
+            self.obsdb = libdbcore.ObsDb()
         else:
             if not isinstance(obsdb, libdbcore.ObsDb):
                 raise TypeError, 'obsdb must be a ObsDb instance'

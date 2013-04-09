@@ -190,18 +190,13 @@ def get_page_content(db, project, srcpackage, tag):
 
 form = cgi.FieldStorage()
 
-if form.has_key('future'):
-    use_future = True
-else:
-    use_future = False
-
 libhttp.print_html_header()
 
 project = libhttp.get_project(form)
 srcpackage = libhttp.get_srcpackage(form)
 tag = libhttp.get_arg(form, 'tag')
 
-db = libdbcore.ObsDb(use_future)
+db = libdbcore.ObsDb()
 
 title = get_page_title(project, srcpackage, tag)
 content = get_page_content(db, project, srcpackage, tag)
