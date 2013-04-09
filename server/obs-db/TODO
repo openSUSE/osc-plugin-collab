@@ -22,14 +22,6 @@ upstream:
    what upstream metadata got removed, which might result in stale attributes.
 
 general:
-!+ make it possible to queue tasks for a next run. Examples:
-    - _analyze_files/_analyze_spec: if a file doesn't exist
-    - buildservice: if a download fails
-   Those tasks could be written to a file.
-   Note that for the buildservice, we will want to use a queue to store the
-   data since it will be done in various threads.
-   We will need to make sure the database updates those packages on the next
-   run too, even if there's no hermes event.
 !+ add a --deep-check mode. It would use the buildservice.py infrastructure to
    browse all packages of all projects, and check that the files all have the
    right md5. If not, it would queue packages for the next run. Or create tool
