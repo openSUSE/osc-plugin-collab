@@ -19,6 +19,8 @@ LaTeXPlugin:max|2000
 bash-completion:max|2008
 # ht has some tarballs with a date instead of version
 ht:max|2000
+# iptables has a 030513 tarball...
+iptables:max|10000
 # libflashsupport has some tarballs with a date instead of version
 libflashsupport:max|2000
 # libofx used 0.11 as 0.1.1...
