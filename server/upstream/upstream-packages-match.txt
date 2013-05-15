@@ -307,12 +307,14 @@ gnome-libs:
 gnome-mag:
 gnome-mahjongg:
 gnome-main-menu:
+gnome-maps:
 gnome-media:
 gnome-menus:
 gnome-menus|3.1:gnome-menus-legacy
 gnome-mime-data:
 gnome-mines:
 gnome-mount:
+gnome-music:
 gnome-netstatus:
 gnome-nettool:
 gnome-nibbles:
@@ -320,6 +322,7 @@ gnome-online-accounts:
 gnome-packagekit:
 gnome-panel:
 gnome-phone-manager:
+gnome-photos:
 gnome-pilot-conduits:
 gnome-pilot:
 gnome-power-manager:
@@ -777,6 +780,7 @@ pulseaudio:
 purple-plugin-pack:
 py2cairo:python-cairo
 pyatspi:python-atspi
+pyatspi:python3-atspi
 pycairo:python3-cairo
 pycups:python-cups
 pygobject:python-gobject
@@ -1229,7 +1233,6 @@ yast2-control-center-gnome:
 #gnome-network:
 #gnome-objc:
 #gnome-perfmeter:
-#gnome-photos:
 #gnome-pim:
 #gnome-print:
 #gnome-specimen:
@@ -1293,6 +1296,7 @@ yast2-control-center-gnome:
 #libcm:
 #libeds-java:
 #libgda-uimm:
+#libgit2-glib:
 #libgnetwork:
 #libgnome2:
 #libgnomecanvas2:
@@ -1368,6 +1372,7 @@ yast2-control-center-gnome:
 #radioactive:
 #regexxer:
 #rep-gtk-gnome2:
+#rygel-gst-0-10-fullscreen-renderer:
 #rygel-gst-0-10-media-engine:
 #rygel-gst-0-10-plugins:
 #sapwood:
