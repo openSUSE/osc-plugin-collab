@@ -1215,6 +1215,7 @@ yast2-control-center-gnome:
 #gnome-crash:
 #gnome-db:
 #gnome-debug:
+#gnome-desktop-testing:
 #gnome-file-selector:
 #gnome-getting-started-docs:
 #gnome-gpg:
