@@ -288,7 +288,7 @@ gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gst-rtsp:httpls:http://gstreamer.freedesktop.org/src/gst-rtsp/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gstreamer|0.10:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
-gsynaptics:httpls:http://sourceforge.jp/projects/gsynaptics/files/
+gsynaptics:sf_jp:gsynaptics
 gtg:lp:gtg
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice
 gtk-recordmydesktop:sf:172357|gtk-recordMyDesktop
