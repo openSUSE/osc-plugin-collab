@@ -77,14 +77,6 @@ def _line_is_comment(line):
 
 # Fix some locations to point to what are really downloads.
 def _location_fix(location):
-    sf_jp = re.compile('^http://sourceforge.jp/projects/([^/]+)/downloads/([^/]+)/([^/]+)$')
-
-    match = sf_jp.match(location)
-    if match:
-        # Unfortunate, but there's no other solution than to use a specific
-        # mirror
-        return 'http://globalbase.dl.sourceforge.jp/%s/%s/%s' % (match.group(1), match.group(2), match.group(3))
-
     return location
 
 
@@ -519,6 +511,31 @@ def _get_version_from_sf_rss(modulename, id, limit):
 #######################################################################
 
 
+def _fix_sf_jp_location(location, project):
+    sf_jp = re.compile('^http://sourceforge.jp/projects/%s/downloads/([^/]+)/([^/]+)$' % project)
+    match = sf_jp.match(location)
+    if match:
+        return 'http://sourceforge.jp/frs/redir.php?m=jaist&f=%%2F%s%%2F%s%%2F%s' % (project, match.group(1), match.group(2))
+
+    return location
+
+
+def _get_version_from_sf_jp(cache_dir, modulename, project, limit):
+    url = 'http://sourceforge.jp/projects/%s/releases/' % project
+    (location, files) = _get_files_from_http(url, cache_dir)
+
+    # there's a trailing slash that will break _get_version_from_files(). For instance:
+    # http://sourceforge.jp/projects/scim-imengine/downloads/29155/scim-canna-1.0.1.tar.gz/
+    files = [ f[:-1] for f in files ]
+    (location, version) = _get_version_from_files(modulename, location, files, limit)
+
+    location = _fix_sf_jp_location(location, project)
+    return (location, version)
+
+
+#######################################################################
+
+
 def _get_version_from_google_atom(name, limit):
     (limit, limit_data) = _setup_limit(limit)
 
@@ -745,7 +762,7 @@ def get_upstream_version(cache_dir, modulename, method, additional_info, limit):
     # for branches, get the real modulename
     modulename = modulename.split('|')[0]
 
-    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'google', 'lp', 'trac' ]:
+    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'sf_jp', 'google', 'lp', 'trac' ]:
         print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
 
@@ -795,6 +812,9 @@ def get_upstream_version(cache_dir, modulename, method, additional_info, limit):
 
     elif method == 'sf':
         return _get_version_from_sf_rss(modulename, additional_info, limit)
+
+    elif method == 'sf_jp':
+        return _get_version_from_sf_jp(cache_dir, modulename, additional_info, limit)
 
     elif method == 'google':
         return _get_version_from_google_atom(additional_info, limit)
