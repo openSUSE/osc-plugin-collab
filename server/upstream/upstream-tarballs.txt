@@ -321,7 +321,7 @@ ibus-m17n:google:ibus|ibus-m17n
 ibus-pinyin:google:ibus|ibus-pinyin
 ibus-qt:google:ibus|ibus-qt
 ibus-rime:google:rimeime|ibus-rime
-ibus-suninyin:google:sunpinyin|ibus-sunpinyin
+ibus-sunpinyin:google:sunpinyin|ibus-sunpinyin
 ibus-table:google:ibus|ibus-table
 ibus-table-chinese:google:ibus|ibus-table-chinese
 ibus-table-extraphrase:google:ibus|ibus-table-extraphrase

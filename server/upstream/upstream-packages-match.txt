@@ -214,7 +214,7 @@ folks:
 font-util:
 fonttosfnt:
 four-in-a-row:
-freetype2:freetype
+freetype:freetype2
 frei0r-plugins:
 frogr:
 fslsfonts:
