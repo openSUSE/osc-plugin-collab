@@ -45,8 +45,10 @@
 #     It can also contain the path for sourceforge projects using
 #     packages. In this case, the ids should be separated by a pipe:
 #     project_id|path
-#   * you can check the project_id by opening these URLs:
-#     http://sourceforge.net(jp)/api/project/name/$sf_project_name/json
+#
+# sf_jp:
+#   + use this when the upstream tarballs are hosted on sourceforge.jp
+#   + the info field should be the project in sourceforge.jp
 #
 # google:
 #   + use this when the upstream tarballs are hosted on code.google.com
@@ -88,7 +90,7 @@ accountsservice:httpls:http://www.freedesktop.org/software/accountsservice/
 acpid:httpls:http://tedfelix.com/linux/acpid-netlink.html
 aegisub:httpls:http://ftp.aegisub.org/pub/releases/
 alarm-clock-applet:lp:alarm-clock
-anthy:sf_jp:14|anthy
+anthy:sf_jp:anthy
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
@@ -175,7 +177,7 @@ exiv2:httpls:http://www.exiv2.org/download.html
 farsight2:httpls:http://farsight.freedesktop.org/releases/farsight2/
 farsight:httpls:http://farsight.freedesktop.org/releases/obsolete/farsight/
 farstream:httpls:http://freedesktop.org/software/farstream/releases/farstream/
-fcitx:httpls:http://fcitx.googlecode.com/files/fcitx-(.*)\_dict\.tar\.xz
+fcitx:google:fcitx
 fcitx-anthy:google:fcitx|fcitx-anthy
 fcitx-chewing:google:fcitx|fcitx-chewing
 fcitx-cloudpinyin:google:fcitx|fcitx-cloudpinyin
@@ -197,7 +199,7 @@ fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 font-util:httpls:http://xorg.freedesktop.org/releases/individual/font/
 fonttosfnt:httpls:http://xorg.freedesktop.org/releases/individual/app/
-freetype2:httpls:http://download.savannah.gnu.org/releases/freetype/freetype-(.*)\.tar\.bz2
+freetype:httpls:http://download.savannah.gnu.org/releases/freetype/
 frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
 fslsfonts:httpls:http://xorg.freedesktop.org/releases/individual/app/
 fstobdf:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -209,7 +211,7 @@ galago-gtk-sharp:httpls:http://www.galago-project.org/files/releases/source/gala
 galago-sharp:httpls:http://www.galago-project.org/files/releases/source/galago-sharp/
 gbrainy:httpls:http://live.gnome.org/gbrainy
 gccmakedep:httpls:http://xorg.freedesktop.org/releases/individual/util/
-gcin:httpls:http://www.csie.nctu.edu.tw/~cp76/gcin/download/gcin-(.*)\.tar\.xz
+gcin:httpls:http://www.csie.nctu.edu.tw/~cp76/gcin/download/
 gcstar:httpls:http://download.gna.org/gcstar/
 gdata.py:google:gdata-python-client|gdata
 gdesklets:httpls:http://gdesklets.de/
@@ -310,18 +312,18 @@ ht:sf:1066
 hxtools:httpls:http://jftp.inai.de/hxtools/
 ibus:google:ibus
 ibus-anthy:google:ibus|ibus-anthy
-ibus-chewing:httpls:http://ibus.googlecode.com/files/ibus-chewing-(.*)-Source\.tar\.gz
+ibus-chewing:google:ibus|ibus-chewing
 ibus-gjs:google:ibus|ibus-gjs
 ibus-googlepinyin:google:libgooglepinyin|ibus-googlepinyin
 ibus-hangul:google:ibus|ibus-hangul
 ibus-input-pad:google:input-pad|ibus-input-pad
 ibus-m17n:google:ibus|ibus-m17n
 ibus-pinyin:google:ibus|ibus-pinyin
-ibus-qt:httpls:http://ibus.googlecode.com/files/ibus-qt-(.*)-Source\.tar\.gz
+ibus-qt:google:ibus|ibus-qt
 ibus-rime:google:rimeime|ibus-rime
 ibus-suninyin:google:sunpinyin|ibus-sunpinyin
 ibus-table:google:ibus|ibus-table
-ibus-table-chinese:httpls:http://ibus.googlecode.com/files/ibus-table-chinese-(.*)-Source\.tar\.gz
+ibus-table-chinese:google:ibus|ibus-table-chinese
 ibus-table-extraphrase:google:ibus|ibus-table-extraphrase
 ibus-table-jyutping:google:ibus|ibus-table-jyutping
 ibus-table-others:google:ibus|ibus-table-others
@@ -346,7 +348,7 @@ istanbul:httpls:http://live.gnome.org/Istanbul
 itstool:httpls:http://files.itstool.org/itstool/
 iwatch:sf:174218|iwatch
 kcm-fcitx:google:fcitx|kcm-fcitx
-kimtoy:httpls:http://opendesktop.org/CONTENT/content-files/140967-kimtoy-(.*)\.tar\.bz2
+kimtoy:httpls:http://kde-apps.org/content/download.php?content=140967&id=1
 kye:httpls:http://games.moria.org.uk/kye/download-install
 kyotocabinet:httpls:http://fallabs.com/kyotocabinet/pkg/
 lbxproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -393,7 +395,7 @@ libatasmart:httpls:http://0pointer.de/public/
 libbraille:sf:17127|libbraille
 libbs2b:sf:151236
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
-libchewing:httpls:https://github.com/downloads/chewing/libchewing/libchewing-(.*)\.tar\.bz2
+libchewing:google:chewing|libchewing
 libcompizconfig:subdirhttpls:http://releases.compiz.org/components/libcompizconfig/
 libdaemon:httpls:http://0pointer.de/lennart/projects/libdaemon/
 libdatrie:httpls:http://linux.thai.net/~thep/datrie/datrie.html
@@ -472,9 +474,9 @@ listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 lmms:sf:105168
 lndir:httpls:http://xorg.freedesktop.org/releases/individual/util/
 m4:httpls:http://ftp.gnu.org/gnu/m4/
-m17n-contrib:httpls:http://www.m17n.org/m17n-lib-download/
-m17n-db:httpls:http://www.m17n.org/m17n-lib-download/
-m17n-lib:httpls:http://www.m17n.org/m17n-lib-download/
+m17n-contrib:httpls:http://download.savannah.gnu.org/releases/m17n/
+m17n-db:httpls:http://download.savannah.gnu.org/releases/m17n/
+m17n-lib:httpls:http://download.savannah.gnu.org/releases/m17n/
 mail-notification:httpls:http://www.nongnu.org/mailnotify/
 mangler:httpls:http://www.mangler.org/downloads/
 makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
@@ -585,19 +587,19 @@ sawfish:httpls:http://download.tuxfamily.org/sawfish/
 schismtracker:httpls:http://schismtracker.org/dl/
 schroedinger:httpls:http://diracvideo.org/download/schroedinger/
 scim:sf:108454|scim
-scim-anthy:sf_jp:1415|scim-anthy
+scim-anthy:sf_jp:scim-imengine
 scim-bridge:sf:108454|scim-bridge
-scim-canna:sf_jp:1415|scim-canna
-scim-chewing:httpls:https://github.com/downloads/chewing/scim-chewing/
+scim-canna:sf_jp:scim-imengine
+scim-chewing:google:chewing|scim-chewing
 scim-hangul:sf:108454|scim-hangul
 scim-input-pad:sf:108454|scim-input-pad
 scim-m17n:sf:108454|scim-m17n
 scim-pinyin:sf:108454|scim-pinyin
 scim-qtimm:sf:108454|scim-qtimm
-scim-skk:sf_jp:1415|scim-skk
+scim-skk:sf_jp:scim-imengine
 scim-sunpinyin:google:sunpinyin|scim-sunpinyin
 scim-tables:sf:108454|scim-tables
-scim-tomoe:sf_jp:1415|scim-tomoe
+scim-tomoe:sf_jp:scim-imengine
 scim-uim:sf:108454|scim-uim
 scim-unikey:google:scim-unikey
 # Use "|xorg" because scripts is a really generic name

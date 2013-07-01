@@ -214,7 +214,7 @@ folks:
 font-util:
 fonttosfnt:
 four-in-a-row:
-freetype2:
+freetype2:freetype
 frei0r-plugins:
 frogr:
 fslsfonts:
@@ -506,7 +506,7 @@ ibus-pinyin:
 ibus-qt:
 ibus-rime:
 ibus-sunpinyin:
-ibus-talbe:
+ibus-table:
 ibus-table-chinese:
 ibus-table-extraphrase:
 ibus-table-jyutping:
@@ -514,7 +514,7 @@ ibus-table-others:
 ibus-table-zhengma:
 ibus-table-zhuyin:
 ibus-table-ziranma:
-ibus-table-unikey:
+ibus-unikey:
 iceauth:
 ico:
 icon-naming-utils:
