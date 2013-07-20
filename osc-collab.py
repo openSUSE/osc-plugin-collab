@@ -75,13 +75,8 @@ _osc_collab_osc_conffile = None
 def init():
     global _osc_collab_helpers
 
-    try:
-        for helper in _osc_collab_helpers:
-            conf.DEFAULTS['exclude_glob'] += ' %s' % helper
-    except:
-        # compatibility with osc <= 0.121
-        for helper in _osc_collab_helpers:
-            exclude_stuff.append(helper)
+    for helper in _osc_collab_helpers:
+        conf.DEFAULTS['exclude_glob'] += ' %s' % helper
 
 
 class OscCollabError(Exception):
@@ -658,32 +653,12 @@ class OscCollabObs:
 
     @classmethod
     def change_request_state(cls, id, new_state, message, superseded_by=None):
-        try:
-            _collab_change_request_state = change_request_state
-        except NameError, e:
-            # in osc <= 0.120, change_request_state was named
-            # change_submit_request_state
-            _collab_change_request_state = change_submit_request_state
-            # don't think old osc supported superseding...
-            if new_state == 'superseded':
-                new_state = 'revoked'
-
         if new_state != 'superseded':
-            result = _collab_change_request_state(cls.apiurl, id, new_state, message)
+            result = change_request_state(cls.apiurl, id, new_state, message)
         else:
-            result = _collab_change_request_state(cls.apiurl, id, new_state, message, supersed=superseded_by)
+            result = change_request_state(cls.apiurl, id, new_state, message, supersed=superseded_by)
 
-        try:
-            # before osc 0.129, we had the full XML
-            root = ET.fromstring(result)
-            if not 'code' in root.keys() or root.get('code') != 'ok':
-                print >>sys.stderr, 'Cannot change request %s: %s' % (id, result)
-                return False
-
-            return True
-        except SyntaxError:
-            # starting with osc 0.129, we just have the result code
-            return result == 'ok'
+        return result == 'ok'
 
 
     @classmethod
