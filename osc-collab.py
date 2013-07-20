@@ -34,7 +34,29 @@
 # Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
+import ConfigParser
+import difflib
+import httplib
+import locale
+import re
+import select
+import shutil
+import subprocess
+import tarfile
+import tempfile
+import time
+import urllib
+import urllib2
+import urlparse
+
+try:
+    import rpm
+    have_rpm = True
+except ImportError:
+    have_rpm = False
+
 from osc import cmdln
+
 
 OSC_COLLAB_VERSION = '0.98'
 
@@ -45,7 +67,14 @@ for suffix in [ 'NEWS', 'ChangeLog', 'configure' ]:
     for prefix in _osc_collab_helper_prefixes:
         _osc_collab_helpers.append(prefix + suffix)
 
+_osc_collab_alias = 'collab'
+_osc_collab_config_parser = None
+_osc_collab_osc_conffile = None
+
+
 def init():
+    global _osc_collab_helpers
+
     try:
         for helper in _osc_collab_helpers:
             conf.DEFAULTS['exclude_glob'] += ' %s' % helper
@@ -76,7 +105,7 @@ class OscCollabCompressError(OscCollabError):
     pass
 
 
-def _collab_exception_print(self, e, message = ''):
+def _collab_exception_print(e, message = ''):
     if message == None:
         message = ''
 
@@ -86,24 +115,6 @@ def _collab_exception_print(self, e, message = ''):
         print >>sys.stderr, message + str(e)
     else:
         print >>sys.stderr, message + e.__class__.__name__
-
-
-#######################################################################
-
-
-class OscCollabImport:
-
-    _imported_modules = {}
-
-    @classmethod
-    def m_import(cls, module):
-        if not cls._imported_modules.has_key(module):
-            try:
-                cls._imported_modules[module] = __import__(module)
-            except ImportError:
-                cls._imported_modules[module] = None
-
-        return cls._imported_modules[module]
 
 
 #######################################################################
@@ -322,13 +333,6 @@ class OscCollabProject(dict):
 
 class OscCollabPackage:
 
-    _import = None
-
-    @classmethod
-    def init(cls, parent):
-        cls._import = parent.OscCollabImport.m_import
-
-
     def __init__(self, node, project):
         self.name = None
         self.version = None
@@ -400,8 +404,7 @@ class OscCollabPackage:
 
 
     def _compare_versions_a_gt_b(self, a, b):
-        rpm = self._import('rpm')
-        if rpm:
+        if have_rpm:
             # We're not really interested in the epoch or release parts of the
             # complete version because they're not relevant when comparing to
             # upstream version
@@ -503,17 +506,11 @@ class OscCollabPackage:
 
 class OscCollabObs:
 
-    Cache = None
-    Request = None
-    _import = None
     apiurl = None
 
 
     @classmethod
-    def init(cls, parent, apiurl):
-        cls.Cache = parent.OscCollabCache
-        cls.Request = parent.OscCollabRequest
-        cls._import = parent.OscCollabImport.m_import
+    def init(cls, apiurl):
         cls.apiurl = apiurl
 
 
@@ -521,17 +518,12 @@ class OscCollabObs:
     def get_meta(cls, project):
         what = 'metadata of packages in %s' % project
 
-        urllib = cls._import('urllib')
-        if not urllib:
-            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
-            return None
-
         # download the data (cache for 2 days)
         url = makeurl(cls.apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
         filename = '%s-meta.obs' % project
         max_age_minutes = 3600 * 24 * 2
 
-        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+        return OscCollabCache.get_from_obs(url, filename, max_age_minutes, what)
 
 
     @classmethod
@@ -543,16 +535,11 @@ class OscCollabObs:
         filename = '%s-build-results.obs' % project
         max_age_minutes = 3600 * 2
 
-        return cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+        return OscCollabCache.get_from_obs(url, filename, max_age_minutes, what)
 
 
     @classmethod
     def _get_request_list_url(cls, project, package, type, what):
-        urllib = cls._import('urllib')
-        if not urllib:
-            print >>sys.stderr, 'Cannot get %s: incomplete python installation.' % what
-            return None
-
         match = '(state/@name=\'new\'%20or%20state/@name=\'review\')'
         match += '%20and%20'
         match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
@@ -574,7 +561,7 @@ class OscCollabObs:
             return requests
 
         for node in collection.findall('request'):
-            requests.append(cls.Request(node))
+            requests.append(OscCollabRequest(node))
 
         return requests
 
@@ -609,7 +596,7 @@ class OscCollabObs:
             filename = '%s-requests-%s.obs' % (project, type)
         max_age_minutes = 60 * 10
 
-        file = cls.Cache.get_from_obs(url, filename, max_age_minutes, what)
+        file = OscCollabCache.get_from_obs(url, filename, max_age_minutes, what)
 
         if not file or not os.path.exists(file):
             return []
@@ -666,7 +653,7 @@ class OscCollabObs:
 
         fin.close()
 
-        return cls.Request(node)
+        return OscCollabRequest(node)
 
 
     @classmethod
@@ -755,29 +742,26 @@ class OscCollabApi:
     _supported_api = '0.2'
     _supported_api_major = '0'
 
-    def __init__(self, parent, apiurl = None):
-        self.Error = parent.OscCollabWebError
-        self.Cache = parent.OscCollabCache
-        self.Reservation = parent.OscCollabReservation
-        self.Comment = parent.OscCollabComment
-        self.Project = parent.OscCollabProject
-        self.Package = parent.OscCollabPackage
+    @classmethod
+    def init(cls, apiurl = None):
         if apiurl:
-            self._api_url = apiurl
+            cls._api_url = apiurl
 
 
-    def _append_data_to_url(self, url, data):
+    @classmethod
+    def _append_data_to_url(cls, url, data):
         if url.find('?') != -1:
             return '%s&%s' % (url, data)
         else:
             return '%s?%s' % (url, data)
 
 
-    def _get_api_url_for(self, api, project = None, projects = None, package = None, need_package_for_multiple_projects = True):
+    @classmethod
+    def _get_api_url_for(cls, api, project = None, projects = None, package = None, need_package_for_multiple_projects = True):
         if not project and len(projects) == 1:
             project = projects[0]
 
-        items = [ self._api_url, api ]
+        items = [ cls._api_url, api ]
         if project:
             items.append(project)
         if package:
@@ -785,34 +769,38 @@ class OscCollabApi:
         url = '/'.join(items)
 
         if not project and (not need_package_for_multiple_projects or package) and projects:
-            data = urlencode({'version': self._supported_api, 'project': projects}, True)
-            url = self._append_data_to_url(url, data)
+            data = urlencode({'version': cls._supported_api, 'project': projects}, True)
+            url = cls._append_data_to_url(url, data)
         else:
-            data = urlencode({'version': self._supported_api})
-            url = self._append_data_to_url(url, data)
+            data = urlencode({'version': cls._supported_api})
+            url = cls._append_data_to_url(url, data)
 
         return url
 
 
-    def _get_info_url(self, project = None, projects = None, package = None):
-        return self._get_api_url_for('info', project, projects, package, True)
+    @classmethod
+    def _get_info_url(cls, project = None, projects = None, package = None):
+        return cls._get_api_url_for('info', project, projects, package, True)
 
 
-    def _get_reserve_url(self, project = None, projects = None, package = None):
-        return self._get_api_url_for('reserve', project, projects, package, False)
+    @classmethod
+    def _get_reserve_url(cls, project = None, projects = None, package = None):
+        return cls._get_api_url_for('reserve', project, projects, package, False)
 
 
-    def _get_comment_url(self, project = None, projects = None, package = None):
-        return self._get_api_url_for('comment', project, projects, package, False)
+    @classmethod
+    def _get_comment_url(cls, project = None, projects = None, package = None):
+        return cls._get_api_url_for('comment', project, projects, package, False)
 
 
-    def _get_root_for_url(self, url, error_prefix, post_data = None, cache_file = None, cache_age = 10):
+    @classmethod
+    def _get_root_for_url(cls, url, error_prefix, post_data = None, cache_file = None, cache_age = 10):
         if post_data and type(post_data) != dict:
-            raise self.Error('%s: Internal error when posting data' % error_prefix)
+            raise OscCollabWebError('%s: Internal error when posting data' % error_prefix)
 
         try:
             if cache_file and not post_data:
-                fd = self.Cache.get_url_fd_with_cache(url, cache_file, cache_age)
+                fd = OscCollabCache.get_url_fd_with_cache(url, cache_file, cache_age)
             else:
                 if post_data:
                     data = urlencode(post_data)
@@ -820,15 +808,15 @@ class OscCollabApi:
                     data = None
                 fd = urllib2.urlopen(url, data)
         except urllib2.HTTPError, e:
-            raise self.Error('%s: %s' % (error_prefix, e.msg))
+            raise OscCollabWebError('%s: %s' % (error_prefix, e.msg))
 
         try:
             root = ET.parse(fd).getroot()
         except SyntaxError:
-            raise self.Error('%s: malformed reply from server.' % error_prefix)
+            raise OscCollabWebError('%s: malformed reply from server.' % error_prefix)
 
         if root.tag != 'api' or not root.get('version'):
-            raise self.Error('%s: invalid reply from server.' % error_prefix)
+            raise OscCollabWebError('%s: invalid reply from server.' % error_prefix)
 
         version = root.get('version')
         version_items = version.split('.')
@@ -836,47 +824,50 @@ class OscCollabApi:
             try:
                 int(item)
             except ValueError:
-                raise self.Error('%s: unknown protocol used by server.' % error_prefix)
+                raise OscCollabWebError('%s: unknown protocol used by server.' % error_prefix)
         protocol = int(version_items[0])
-        if int(version_items[0]) != int(self._supported_api_major):
-            raise self.Error('%s: unknown protocol used by server.' % error_prefix)
+        if int(version_items[0]) != int(cls._supported_api_major):
+            raise OscCollabWebError('%s: unknown protocol used by server.' % error_prefix)
 
         result = root.find('result')
         if result is None or not result.get('ok'):
-            raise self.Error('%s: reply from server with no result summary.' % error_prefix)
+            raise OscCollabWebError('%s: reply from server with no result summary.' % error_prefix)
 
         if result.get('ok') != 'true':
             if result.text:
-                raise self.Error('%s: %s' % (error_prefix, result.text))
+                raise OscCollabWebError('%s: %s' % (error_prefix, result.text))
             else:
-                raise self.Error('%s: unknown error in the request.' % error_prefix)
+                raise OscCollabWebError('%s: unknown error in the request.' % error_prefix)
 
         return root
 
 
-    def _meta_append_no_devel_project(self, url, no_devel_project):
+    @classmethod
+    def _meta_append_no_devel_project(cls, url, no_devel_project):
         if not no_devel_project:
             return url
 
         data = urlencode({'ignoredevel': 'true'})
-        return self._append_data_to_url(url, data)
+        return cls._append_data_to_url(url, data)
 
 
-    def _parse_reservation_node(self, node):
-        reservation = self.Reservation(node = node)
+    @classmethod
+    def _parse_reservation_node(cls, node):
+        reservation = OscCollabReservation(node = node)
         if not reservation.project or not reservation.package:
             return None
 
         return reservation
 
 
-    def get_reserved_packages(self, projects):
-        url = self._get_reserve_url(projects = projects)
-        root = self._get_root_for_url(url, 'Cannot get list of reserved packages')
+    @classmethod
+    def get_reserved_packages(cls, projects):
+        url = cls._get_reserve_url(projects = projects)
+        root = cls._get_root_for_url(url, 'Cannot get list of reserved packages')
 
         reserved_packages = []
         for reservation in root.findall('reservation'):
-            item = self._parse_reservation_node(reservation)
+            item = cls._parse_reservation_node(reservation)
             if item is None or not item.user:
                 continue
             reserved_packages.append(item)
@@ -884,16 +875,17 @@ class OscCollabApi:
         return reserved_packages
 
 
-    def is_package_reserved(self, projects, package, no_devel_project = False):
+    @classmethod
+    def is_package_reserved(cls, projects, package, no_devel_project = False):
         '''
             Only returns something if the package is really reserved.
         '''
-        url = self._get_reserve_url(projects = projects, package = package)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot look if package %s is reserved' % package)
+        url = cls._get_reserve_url(projects = projects, package = package)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot look if package %s is reserved' % package)
 
         for reservation in root.findall('reservation'):
-            item = self._parse_reservation_node(reservation)
+            item = cls._parse_reservation_node(reservation)
             if item is None or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
@@ -904,55 +896,59 @@ class OscCollabApi:
         return None
 
 
-    def reserve_package(self, projects, package, username, no_devel_project = False):
-        url = self._get_reserve_url(projects = projects, package = package)
+    @classmethod
+    def reserve_package(cls, projects, package, username, no_devel_project = False):
+        url = cls._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'set', 'user': username})
-        url = self._append_data_to_url(url, data)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot reserve package %s' % package)
+        url = cls._append_data_to_url(url, data)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot reserve package %s' % package)
 
         for reservation in root.findall('reservation'):
-            item = self._parse_reservation_node(reservation)
+            item = cls._parse_reservation_node(reservation)
             if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
-                raise self.Error('Cannot reserve package %s: unknown error' % package)
+                raise OscCollabWebError('Cannot reserve package %s: unknown error' % package)
             if item.user != username:
-                raise self.Error('Cannot reserve package %s: already reserved by %s' % (package, item.user))
+                raise OscCollabWebError('Cannot reserve package %s: already reserved by %s' % (package, item.user))
             return item
 
 
-    def unreserve_package(self, projects, package, username, no_devel_project = False):
-        url = self._get_reserve_url(projects = projects, package = package)
+    @classmethod
+    def unreserve_package(cls, projects, package, username, no_devel_project = False):
+        url = cls._get_reserve_url(projects = projects, package = package)
         data = urlencode({'cmd': 'unset', 'user': username})
-        url = self._append_data_to_url(url, data)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot unreserve package %s' % package)
+        url = cls._append_data_to_url(url, data)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot unreserve package %s' % package)
 
         for reservation in root.findall('reservation'):
-            item = self._parse_reservation_node(reservation)
+            item = cls._parse_reservation_node(reservation)
             if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if item.user:
-                raise self.Error('Cannot unreserve package %s: reserved by %s' % (package, item.user))
+                raise OscCollabWebError('Cannot unreserve package %s: reserved by %s' % (package, item.user))
             return item
 
 
-    def _parse_comment_node(self, node):
-        comment = self.Comment(node = node)
+    @classmethod
+    def _parse_comment_node(cls, node):
+        comment = OscCollabComment(node = node)
         if not comment.project or not comment.package:
             return None
 
         return comment
 
 
-    def get_commented_packages(self, projects):
-        url = self._get_comment_url(projects = projects)
-        root = self._get_root_for_url(url, 'Cannot get list of commented packages')
+    @classmethod
+    def get_commented_packages(cls, projects):
+        url = cls._get_comment_url(projects = projects)
+        root = cls._get_root_for_url(url, 'Cannot get list of commented packages')
 
         commented_packages = []
         for comment in root.findall('comment'):
-            item = self._parse_comment_node(comment)
+            item = cls._parse_comment_node(comment)
             if item is None or not item.user or not item.comment:
                 continue
             commented_packages.append(item)
@@ -960,16 +956,17 @@ class OscCollabApi:
         return commented_packages
 
 
-    def get_package_comment(self, projects, package, no_devel_project = False):
+    @classmethod
+    def get_package_comment(cls, projects, package, no_devel_project = False):
         '''
             Only returns something if the package is really commented.
         '''
-        url = self._get_comment_url(projects = projects, package = package)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot look if package %s is commented' % package)
+        url = cls._get_comment_url(projects = projects, package = package)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot look if package %s is commented' % package)
 
         for comment in root.findall('comment'):
-            item = self._parse_comment_node(comment)
+            item = cls._parse_comment_node(comment)
             if item is None or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user or not item.comment:
@@ -980,45 +977,48 @@ class OscCollabApi:
         return None
 
 
-    def set_package_comment(self, projects, package, username, comment, no_devel_project = False):
+    @classmethod
+    def set_package_comment(cls, projects, package, username, comment, no_devel_project = False):
         if not comment:
-            raise self.Error('Cannot set comment on package %s: empty comment' % package)
+            raise OscCollabWebError('Cannot set comment on package %s: empty comment' % package)
 
-        url = self._get_comment_url(projects = projects, package = package)
+        url = cls._get_comment_url(projects = projects, package = package)
         data = urlencode({'cmd': 'set', 'user': username})
-        url = self._append_data_to_url(url, data)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot set comment on package %s' % package, post_data = {'comment': comment})
+        url = cls._append_data_to_url(url, data)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot set comment on package %s' % package, post_data = {'comment': comment})
 
         for comment in root.findall('comment'):
-            item = self._parse_comment_node(comment)
+            item = cls._parse_comment_node(comment)
             if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if not item.user:
-                raise self.Error('Cannot set comment on package %s: unknown error' % package)
+                raise OscCollabWebError('Cannot set comment on package %s: unknown error' % package)
             if item.user != username:
-                raise self.Error('Cannot set comment on package %s: already commented by %s' % (package, item.user))
+                raise OscCollabWebError('Cannot set comment on package %s: already commented by %s' % (package, item.user))
             return item
 
 
-    def unset_package_comment(self, projects, package, username, no_devel_project = False):
-        url = self._get_comment_url(projects = projects, package = package)
+    @classmethod
+    def unset_package_comment(cls, projects, package, username, no_devel_project = False):
+        url = cls._get_comment_url(projects = projects, package = package)
         data = urlencode({'cmd': 'unset', 'user': username})
-        url = self._append_data_to_url(url, data)
-        url = self._meta_append_no_devel_project(url, no_devel_project)
-        root = self._get_root_for_url(url, 'Cannot unset comment on package %s' % package)
+        url = cls._append_data_to_url(url, data)
+        url = cls._meta_append_no_devel_project(url, no_devel_project)
+        root = cls._get_root_for_url(url, 'Cannot unset comment on package %s' % package)
 
         for comment in root.findall('comment'):
-            item = self._parse_comment_node(comment)
+            item = cls._parse_comment_node(comment)
             if not item or (no_devel_project and not item.is_relevant(projects, package)):
                 continue
             if item.user:
-                raise self.Error('Cannot unset comment on package %s: commented by %s' % (package, item.user))
+                raise OscCollabWebError('Cannot unset comment on package %s: commented by %s' % (package, item.user))
             return item
 
 
-    def _parse_package_node(self, node, project):
-        package = self.Package(node, project)
+    @classmethod
+    def _parse_package_node(cls, node, project):
+        package = OscCollabPackage(node, project)
         if not package.name:
             return None
 
@@ -1028,7 +1028,8 @@ class OscCollabApi:
         return package
 
 
-    def _parse_missing_package_node(self, node, project):
+    @classmethod
+    def _parse_missing_package_node(cls, node, project):
         name = node.get('name')
         parent_project = node.get('parent_project')
         parent_package = node.get('parent_package') or name
@@ -1039,28 +1040,30 @@ class OscCollabApi:
         project.missing_packages.append((name, parent_project, parent_package))
 
 
-    def _parse_project_node(self, node):
-        project = self.Project(node)
+    @classmethod
+    def _parse_project_node(cls, node):
+        project = OscCollabProject(node)
         if not project.name:
             return None
 
         for package in node.findall('package'):
-            self._parse_package_node(package, project)
+            cls._parse_package_node(package, project)
 
         missing = node.find('missing')
         if missing is not None:
             for package in missing.findall('package'):
-                self._parse_missing_package_node(package, project)
+                cls._parse_missing_package_node(package, project)
 
         return project
 
 
-    def get_project_details(self, project):
-        url = self._get_info_url(project = project)
-        root = self._get_root_for_url(url, 'Cannot get information of project %s' % project, cache_file = project + '.xml')
+    @classmethod
+    def get_project_details(cls, project):
+        url = cls._get_info_url(project = project)
+        root = cls._get_root_for_url(url, 'Cannot get information of project %s' % project, cache_file = project + '.xml')
 
         for node in root.findall('project'):
-            item = self._parse_project_node(node)
+            item = cls._parse_project_node(node)
             if item is None or item.name != project:
                 continue
             return item
@@ -1068,12 +1071,13 @@ class OscCollabApi:
         return None
 
 
-    def get_package_details(self, projects, package):
-        url = self._get_info_url(projects = projects, package = package)
-        root = self._get_root_for_url(url, 'Cannot get information of package %s' % package)
+    @classmethod
+    def get_package_details(cls, projects, package):
+        url = cls._get_info_url(projects = projects, package = package)
+        root = cls._get_root_for_url(url, 'Cannot get information of package %s' % package)
 
         for node in root.findall('project'):
-            item = self._parse_project_node(node)
+            item = cls._parse_project_node(node)
             if item is None or item.name not in projects:
                 continue
 
@@ -1090,13 +1094,11 @@ class OscCollabApi:
 class OscCollabCache:
 
     _cache_dir = None
-    _import = None
     _ignore_cache = False
     _printed = False
 
     @classmethod
-    def init(cls, parent, ignore_cache):
-        cls._import = parent.OscCollabImport.m_import
+    def init(cls, ignore_cache):
         cls._ignore_cache = ignore_cache
         cls._cleanup_old_cache()
 
@@ -1165,16 +1167,12 @@ class OscCollabCache:
             return True
 
         stats = os.stat(cache)
-        time = cls._import('time')
 
-        if time:
-            now = time.time()
-            if now - stats.st_mtime > maxage:
-                return True
-            # Back to the future?
-            elif now < stats.st_mtime:
-                return True
-        else:
+        now = time.time()
+        if now - stats.st_mtime > maxage:
+            return True
+        # Back to the future?
+        elif now < stats.st_mtime:
             return True
 
         return False
@@ -1265,7 +1263,7 @@ class OscCollabCache:
 #######################################################################
 
 
-def _collab_is_program_in_path(self, program):
+def _collab_is_program_in_path(program):
     if not os.environ.has_key('PATH'):
         return False
 
@@ -1279,14 +1277,14 @@ def _collab_is_program_in_path(self, program):
 #######################################################################
 
 
-def _collab_find_request_to(self, package, requests):
+def _collab_find_request_to(package, requests):
     for request in requests:
         if request.target_package == package:
             return request
     return None
 
 
-def _collab_has_request_from(self, package, requests):
+def _collab_has_request_from(package, requests):
     for request in requests:
         if request.source_package == package:
             return True
@@ -1296,7 +1294,7 @@ def _collab_has_request_from(self, package, requests):
 #######################################################################
 
 
-def _collab_table_get_maxs(self, init, list):
+def _collab_table_get_maxs(init, list):
     if len(list) == 0:
         return ()
 
@@ -1312,7 +1310,7 @@ def _collab_table_get_maxs(self, init, list):
     return tuple(maxs)
 
 
-def _collab_table_get_template(self, *args):
+def _collab_table_get_template(*args):
     if len(args) == 0:
         return ''
 
@@ -1326,7 +1324,7 @@ def _collab_table_get_template(self, *args):
     return template
 
 
-def _collab_table_print_header(self, template, title):
+def _collab_table_print_header(template, title):
     if len(title) == 0:
         return
 
@@ -1344,12 +1342,12 @@ def _collab_table_print_header(self, template, title):
 #######################################################################
 
 
-def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo_internal(apiurl, all_reserved, all_commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     # get all versions of packages
     try:
-        prj = self._collab_api.get_project_details(project)
+        prj = OscCollabApi.get_project_details(project)
         prj.strip_internal_links()
-    except self.OscCollabWebError, e:
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return (None, None)
 
@@ -1364,7 +1362,7 @@ def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, sh
     commented_packages = firstline_comments.keys()
 
     # get the packages submitted
-    requests_to = self.OscCollabObs.get_request_list_to(project)
+    requests_to = OscCollabObs.get_request_list_to(project)
 
     parent_project = None
     packages = []
@@ -1408,7 +1406,7 @@ def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, sh
             package.version_print += ' (d)'
             package.upstream_version_print += ' (d)'
 
-        if self._collab_find_request_to(package.name, requests_to) != None:
+        if _collab_find_request_to(package.name, requests_to) != None:
             if exclude_submitted:
                 continue
             package.version_print += ' (s)'
@@ -1436,14 +1434,14 @@ def _collab_todo_internal(self, apiurl, all_reserved, all_commented, project, sh
 #######################################################################
 
 
-def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
+def _collab_todo(apiurl, projects, show_details, ignore_comments, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel):
     packages = []
     parent_project = None
 
     # get the list of reserved packages
     try:
-        reserved = self._collab_api.get_reserved_packages(projects)
-    except self.OscCollabWebError, e:
+        reserved = OscCollabApi.get_reserved_packages(projects)
+    except OscCollabWebError, e:
         reserved = []
         print >>sys.stderr, e.msg
 
@@ -1451,12 +1449,12 @@ def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_
     commented = []
     if not ignore_comments:
         try:
-            commented = self._collab_api.get_commented_packages(projects)
-        except self.OscCollabWebError, e:
+            commented = OscCollabApi.get_commented_packages(projects)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
 
     for project in projects:
-        (new_parent_project, project_packages) = self._collab_todo_internal(apiurl, reserved, commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
+        (new_parent_project, project_packages) = _collab_todo_internal(apiurl, reserved, commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
         if not project_packages:
             continue
         packages.extend(project_packages)
@@ -1490,18 +1488,18 @@ def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_
     if show_comments:
         if parent_project:
             title = ('Package', parent_project, project_header, 'Upstream', 'Comment')
-            (max_package, max_parent, max_devel, max_upstream, max_comment) = self._collab_table_get_maxs(title, lines)
+            (max_package, max_parent, max_devel, max_upstream, max_comment) = _collab_table_get_maxs(title, lines)
         else:
             title = ('Package', project_header, 'Upstream', 'Comment')
-            (max_package, max_devel, max_upstream, max_comment) = self._collab_table_get_maxs(title, lines)
+            (max_package, max_devel, max_upstream, max_comment) = _collab_table_get_maxs(title, lines)
             max_parent = 0
     else:
         if parent_project:
             title = ('Package', parent_project, project_header, 'Upstream')
-            (max_package, max_parent, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
+            (max_package, max_parent, max_devel, max_upstream) = _collab_table_get_maxs(title, lines)
         else:
             title = ('Package', project_header, 'Upstream')
-            (max_package, max_devel, max_upstream) = self._collab_table_get_maxs(title, lines)
+            (max_package, max_devel, max_upstream) = _collab_table_get_maxs(title, lines)
             max_parent = 0
         max_comment = 0
 
@@ -1512,16 +1510,16 @@ def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_
 
     if show_comments:
         if parent_project:
-            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version, max_comment)
+            print_line = _collab_table_get_template(max_package, max_version, max_version, max_version, max_comment)
         else:
-            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_comment)
+            print_line = _collab_table_get_template(max_package, max_version, max_version, max_comment)
     else:
         if parent_project:
-            print_line = self._collab_table_get_template(max_package, max_version, max_version, max_version)
+            print_line = _collab_table_get_template(max_package, max_version, max_version, max_version)
         else:
-            print_line = self._collab_table_get_template(max_package, max_version, max_version)
+            print_line = _collab_table_get_template(max_package, max_version, max_version)
 
-    self._collab_table_print_header(print_line, title)
+    _collab_table_print_header(print_line, title)
 
     for line in lines:
         if not parent_project:
@@ -1537,18 +1535,18 @@ def _collab_todo(self, apiurl, projects, show_details, ignore_comments, exclude_
 #######################################################################
 
 
-def _collab_todoadmin_internal(self, apiurl, project, include_upstream):
+def _collab_todoadmin_internal(apiurl, project, include_upstream):
 
     try:
-        prj = self._collab_api.get_project_details(project)
+        prj = OscCollabApi.get_project_details(project)
         prj.strip_internal_links()
-    except self.OscCollabWebError, e:
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return []
 
     # get the packages submitted to/from
-    requests_to = self.OscCollabObs.get_request_list_to(project)
-    requests_from = self.OscCollabObs.get_request_list_from(project)
+    requests_to = OscCollabObs.get_request_list_to(project)
+    requests_from = OscCollabObs.get_request_list_from(project)
 
     lines = []
 
@@ -1566,7 +1564,7 @@ def _collab_todoadmin_internal(self, apiurl, project, include_upstream):
 
         if package.has_delta:
             # FIXME: we should check the request is to the parent project
-            if not self._collab_has_request_from(package.name, requests_from):
+            if not _collab_has_request_from(package.name, requests_from):
                 if not package.is_link:
                     message = 'Is not a link to %s and has a delta (synchronize the packages)' % package.project.parent
                 elif not package.project.is_toplevel():
@@ -1576,7 +1574,7 @@ def _collab_todoadmin_internal(self, apiurl, project, include_upstream):
                     # be submitted
                     message = 'Is a link with delta (maybe submit changes to %s)' % package.parent_project
 
-        request = self._collab_find_request_to(package.name, requests_to)
+        request = _collab_find_request_to(package.name, requests_to)
         if request is not None:
             message = 'Needs to be reviewed (request id: %s)' % request.req_id
 
@@ -1618,11 +1616,11 @@ def _collab_todoadmin_internal(self, apiurl, project, include_upstream):
 #######################################################################
 
 
-def _collab_todoadmin(self, apiurl, projects, include_upstream):
+def _collab_todoadmin(apiurl, projects, include_upstream):
     lines = []
 
     for project in projects:
-        project_lines = self._collab_todoadmin_internal(apiurl, project, include_upstream)
+        project_lines = _collab_todoadmin_internal(apiurl, project, include_upstream)
         lines.extend(project_lines)
 
     if len(lines) == 0:
@@ -1635,14 +1633,14 @@ def _collab_todoadmin(self, apiurl, projects, include_upstream):
 
     # print headers
     title = ('Project', 'Package', 'Details')
-    (max_project, max_package, max_details) = self._collab_table_get_maxs(title, lines)
+    (max_project, max_package, max_details) = _collab_table_get_maxs(title, lines)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_details = min(max_details, 65)
 
-    print_line = self._collab_table_get_template(max_project, max_package, max_details)
-    self._collab_table_print_header(print_line, title)
+    print_line = _collab_table_get_template(max_project, max_package, max_details)
+    _collab_table_print_header(print_line, title)
     for line in lines:
         print print_line % line
 
@@ -1650,10 +1648,10 @@ def _collab_todoadmin(self, apiurl, projects, include_upstream):
 #######################################################################
 
 
-def _collab_listreserved(self, projects):
+def _collab_listreserved(projects):
     try:
-        reserved_packages = self._collab_api.get_reserved_packages(projects)
-    except self.OscCollabWebError, e:
+        reserved_packages = OscCollabApi.get_reserved_packages(projects)
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -1665,14 +1663,14 @@ def _collab_listreserved(self, projects):
     # if changing the order here, then we need to change __getitem__ of
     # Reservation in the same way
     title = ('Project', 'Package', 'Reserved by')
-    (max_project, max_package, max_username) = self._collab_table_get_maxs(title, reserved_packages)
+    (max_project, max_package, max_username) = _collab_table_get_maxs(title, reserved_packages)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_username = min(max_username, 28)
 
-    print_line = self._collab_table_get_template(max_project, max_package, max_username)
-    self._collab_table_print_header(print_line, title)
+    print_line = _collab_table_get_template(max_project, max_package, max_username)
+    _collab_table_print_header(print_line, title)
 
     for reservation in reserved_packages:
         if reservation.user:
@@ -1682,11 +1680,11 @@ def _collab_listreserved(self, projects):
 #######################################################################
 
 
-def _collab_isreserved(self, projects, packages, no_devel_project = False):
+def _collab_isreserved(projects, packages, no_devel_project = False):
     for package in packages:
         try:
-            reservation = self._collab_api.is_package_reserved(projects, package, no_devel_project = no_devel_project)
-        except self.OscCollabWebError, e:
+            reservation = OscCollabApi.is_package_reserved(projects, package, no_devel_project = no_devel_project)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1702,11 +1700,11 @@ def _collab_isreserved(self, projects, packages, no_devel_project = False):
 #######################################################################
 
 
-def _collab_reserve(self, projects, packages, username, no_devel_project = False):
+def _collab_reserve(projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            reservation = self._collab_api.reserve_package(projects, package, username, no_devel_project = no_devel_project)
-        except self.OscCollabWebError, e:
+            reservation = OscCollabApi.reserve_package(projects, package, username, no_devel_project = no_devel_project)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1715,17 +1713,17 @@ def _collab_reserve(self, projects, packages, username, no_devel_project = False
         else:
             print 'Package %s reserved for 36 hours.' % package
         print 'Do not forget to unreserve the package when done with it:'
-        print '    osc %s unreserve %s' % (self._osc_collab_alias, package)
+        print '    osc %s unreserve %s' % (_osc_collab_alias, package)
 
 
 #######################################################################
 
 
-def _collab_unreserve(self, projects, packages, username, no_devel_project = False):
+def _collab_unreserve(projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            self._collab_api.unreserve_package(projects, package, username, no_devel_project = no_devel_project)
-        except self.OscCollabWebError, e:
+            OscCollabApi.unreserve_package(projects, package, username, no_devel_project = no_devel_project)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1735,10 +1733,10 @@ def _collab_unreserve(self, projects, packages, username, no_devel_project = Fal
 #######################################################################
 
 
-def _collab_listcommented(self, projects):
+def _collab_listcommented(projects):
     try:
-        commented_packages = self._collab_api.get_commented_packages(projects)
-    except self.OscCollabWebError, e:
+        commented_packages = OscCollabApi.get_commented_packages(projects)
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -1750,15 +1748,15 @@ def _collab_listcommented(self, projects):
     # if changing the order here, then we need to change __getitem__ of
     # Comment in the same way
     title = ('Project', 'Package', 'Commented by', 'Comment')
-    (max_project, max_package, max_username, max_comment) = self._collab_table_get_maxs(title, commented_packages)
+    (max_project, max_package, max_username, max_comment) = _collab_table_get_maxs(title, commented_packages)
     # trim to a reasonable max
     max_project = min(max_project, 28)
     max_package = min(max_package, 48)
     max_username = min(max_username, 28)
     max_comment = min(max_comment, 65)
 
-    print_line = self._collab_table_get_template(max_project, max_package, max_username, max_comment)
-    self._collab_table_print_header(print_line, title)
+    print_line = _collab_table_get_template(max_project, max_package, max_username, max_comment)
+    _collab_table_print_header(print_line, title)
 
     for comment in commented_packages:
         if comment.user:
@@ -1768,11 +1766,11 @@ def _collab_listcommented(self, projects):
 #######################################################################
 
 
-def _collab_comment(self, projects, packages, no_devel_project = False):
+def _collab_comment(projects, packages, no_devel_project = False):
     for package in packages:
         try:
-            comment = self._collab_api.get_package_comment(projects, package, no_devel_project = no_devel_project)
-        except self.OscCollabWebError, e:
+            comment = OscCollabApi.get_package_comment(projects, package, no_devel_project = no_devel_project)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1795,10 +1793,10 @@ def _collab_comment(self, projects, packages, no_devel_project = False):
 #######################################################################
 
 
-def _collab_commentset(self, projects, package, username, comment, no_devel_project = False):
+def _collab_commentset(projects, package, username, comment, no_devel_project = False):
     try:
-        comment = self._collab_api.set_package_comment(projects, package, username, comment, no_devel_project = no_devel_project)
-    except self.OscCollabWebError, e:
+        comment = OscCollabApi.set_package_comment(projects, package, username, comment, no_devel_project = no_devel_project)
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -1807,17 +1805,17 @@ def _collab_commentset(self, projects, package, username, comment, no_devel_proj
     else:
         print 'Comment on package %s set.' % package
     print 'Do not forget to unset comment on the package when done with it:'
-    print '    osc %s commentunset %s' % (self._osc_collab_alias, package)
+    print '    osc %s commentunset %s' % (_osc_collab_alias, package)
 
 
 #######################################################################
 
 
-def _collab_commentunset(self, projects, packages, username, no_devel_project = False):
+def _collab_commentunset(projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
-            self._collab_api.unset_package_comment(projects, package, username, no_devel_project = no_devel_project)
-        except self.OscCollabWebError, e:
+            OscCollabApi.unset_package_comment(projects, package, username, no_devel_project = no_devel_project)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             continue
 
@@ -1827,14 +1825,14 @@ def _collab_commentunset(self, projects, packages, username, no_devel_project = 
 #######################################################################
 
 
-def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False, no_reserve = False, no_devel_project = False, no_branch = False):
+def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_reserve = False, no_devel_project = False, no_branch = False):
     if not no_devel_project:
         initial_pkg = pkg
         while pkg.devel_project:
             previous_pkg = pkg
             try:
-                pkg = self._collab_api.get_package_details(pkg.devel_project, pkg.devel_package or pkg.name)
-            except self.OscCollabWebError, e:
+                pkg = OscCollabApi.get_package_details(pkg.devel_project, pkg.devel_package or pkg.name)
+            except OscCollabWebError, e:
                 pkg = None
 
             if not pkg:
@@ -1855,12 +1853,12 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
     # Is it reserved? Note that we have already looked for the devel project,
     # so we force the project/package here.
     try:
-        reservation = self._collab_api.is_package_reserved((project,), package, no_devel_project = True)
+        reservation = OscCollabApi.is_package_reserved((project,), package, no_devel_project = True)
         if reservation:
             reserved_by = reservation.user
         else:
             reserved_by = None
-    except self.OscCollabWebError, e:
+    except OscCollabWebError, e:
         print >>sys.stderr, e.msg
         return (False, None, None)
 
@@ -1876,11 +1874,11 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
         try:
             # Note that we have already looked for the devel project, so we
             # force the project/package here.
-            self._collab_api.reserve_package((project,), package, username, no_devel_project = True)
+            OscCollabApi.reserve_package((project,), package, username, no_devel_project = True)
             print 'Package %s has been reserved for 36 hours.' % package
             print 'Do not forget to unreserve the package when done with it:'
-            print '    osc %s unreserve %s' % (self._osc_collab_alias, package)
-        except self.OscCollabWebError, e:
+            print '    osc %s unreserve %s' % (_osc_collab_alias, package)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             if not ignore_reserved:
                 return (False, None, None)
@@ -1899,7 +1897,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
                 return (False, None, None)
 
             # We had a 404: it means the branched package doesn't exist yet
-            (branch_project, branch_package) = self.OscCollabObs.branch_package(project, package, no_devel_project)
+            (branch_project, branch_package) = OscCollabObs.branch_package(project, package, no_devel_project)
             if not branch_project or not branch_package:
                 print >>sys.stderr, 'Error while branching package %s: incomplete reply from build service' % (package,)
                 return (False, None, None)
@@ -1929,7 +1927,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (checkout_dir, obs_package.name, obs_package.prjname)
             return (False, None, None)
 
-        if self._collab_osc_package_pending_commit(obs_package):
+        if _collab_osc_package_pending_commit(obs_package):
             print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (checkout_dir,)
             return (False, None, None)
 
@@ -1947,7 +1945,7 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             print 'Package %s has been updated.' % branch_package
         except Exception, e:
             message = 'Error while updating package %s: ' % branch_package
-            self._collab_exception_print(e, message)
+            _collab_exception_print(e, message)
             return (False, None, None)
 
     else:
@@ -1960,18 +1958,18 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
             # results in possibly mixing packages from different projects,
             # which makes package tracking not work at all.
             old_tracking = conf.config['do_package_tracking']
-            conf.config['do_package_tracking'] = self._collab_get_config_bool(apiurl, 'collab_do_package_tracking', default = False)
+            conf.config['do_package_tracking'] = _collab_get_config_bool(apiurl, 'collab_do_package_tracking', default = False)
             checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
             print 'Package %s has been checked out.' % branch_package
         except Exception, e:
             message = 'Error while checking out package %s: ' % branch_package
-            self._collab_exception_print(e, message)
+            _collab_exception_print(e, message)
             return (False, None, None)
 
     # remove old helper files
     for file in os.listdir(checkout_dir):
-        for helper in self._osc_collab_helpers:
+        for helper in _osc_collab_helpers:
             if file == helper:
                 path = os.path.join(checkout_dir, file)
                 os.unlink(path)
@@ -1983,10 +1981,10 @@ def _collab_setup_internal(self, apiurl, username, pkg, ignore_reserved = False,
 #######################################################################
 
 
-def _collab_get_package_with_valid_project(self, projects, package):
+def _collab_get_package_with_valid_project(projects, package):
     try:
-        pkg = self._collab_api.get_package_details(projects, package)
-    except self.OscCollabWebError, e:
+        pkg = OscCollabApi.get_package_details(projects, package)
+    except OscCollabWebError, e:
         pkg = None
 
     if pkg is None or pkg.project is None or not pkg.project.name:
@@ -1999,8 +1997,8 @@ def _collab_get_package_with_valid_project(self, projects, package):
 #######################################################################
 
 
-def _print_comment_after_setup(self, pkg, no_devel_project):
-    comment = self._collab_api.get_package_comment(pkg.project.name, pkg.name, no_devel_project = no_devel_project)
+def _print_comment_after_setup(pkg, no_devel_project):
+    comment = OscCollabApi.get_package_comment(pkg.project.name, pkg.name, no_devel_project = no_devel_project)
     if comment:
         if comment.date:
             date_str = ' on %s' % comment.date
@@ -2014,33 +2012,29 @@ def _print_comment_after_setup(self, pkg, no_devel_project):
 #######################################################################
 
 
-def _collab_setup(self, apiurl, username, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
-    pkg = self._collab_get_package_with_valid_project(projects, package)
+def _collab_setup(apiurl, username, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
+    pkg = _collab_get_package_with_valid_project(projects, package)
     if not pkg:
         return
     project = pkg.project.name
 
-    (setup, branch_project, branch_package) = self._collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
+    (setup, branch_project, branch_package) = _collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
     if not setup:
         return
     print 'Package %s has been prepared for work.' % branch_package
 
     if not ignore_comment:
-        self._print_comment_after_setup(pkg, no_devel_project)
+        _print_comment_after_setup(pkg, no_devel_project)
 
 
 #######################################################################
 
 
-def _collab_download_internal(self, url, dest_dir):
+def _collab_download_internal(url, dest_dir):
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
-    urlparse = self.OscCollabImport.m_import('urlparse')
-    if not urlparse:
-        raise self.OscCollabDownloadError('Cannot download %s: incomplete python installation.' % url)
-
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urlparse(url)
     basename = os.path.basename(parsed_url.path)
     if not basename:
         # FIXME: workaround until we get a upstream_basename property for each
@@ -2055,7 +2049,7 @@ def _collab_download_internal(self, url, dest_dir):
                 basename = os.path.basename(value)
 
     if not basename:
-        raise self.OscCollabDownloadError('Cannot download %s: no basename in URL.' % url)
+        raise OscCollabDownloadError('Cannot download %s: no basename in URL.' % url)
 
     dest_file = os.path.join(dest_dir, basename)
     # we download the file again if it already exists. Maybe the upstream
@@ -2067,7 +2061,7 @@ def _collab_download_internal(self, url, dest_dir):
     try:
         fin = urllib2.urlopen(url)
     except urllib2.HTTPError, e:
-        raise self.OscCollabDownloadError('Cannot download %s: %s' % (url, e.msg))
+        raise OscCollabDownloadError('Cannot download %s: %s' % (url, e.msg))
 
     fout = open(dest_file, 'wb')
 
@@ -2081,7 +2075,7 @@ def _collab_download_internal(self, url, dest_dir):
             fin.close()
             fout.close()
             os.unlink(dest_file)
-            raise self.OscCollabDownloadError('Error while downloading %s: %s' % (url, e.msg))
+            raise OscCollabDownloadError('Error while downloading %s: %s' % (url, e.msg))
 
     fin.close()
     fout.close()
@@ -2092,7 +2086,7 @@ def _collab_download_internal(self, url, dest_dir):
 #######################################################################
 
 
-def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
+def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
     def _cleanup(old, new, tmpdir):
         if old:
             old.close()
@@ -2102,12 +2096,6 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 
     def _lzma_hack(filename, tmpdir):
         if not filename.endswith('.xz'):
-            return filename
-
-        shutil = self.OscCollabImport.m_import('shutil')
-        subprocess = self.OscCollabImport.m_import('subprocess')
-
-        if not shutil or not subprocess:
             return filename
 
         dest = os.path.join(tmpdir, os.path.basename(filename))
@@ -2147,9 +2135,6 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
             tar.extract(tarinfo, path)
 
     def _diff_files(old, new, dest):
-        difflib = self.OscCollabImport.m_import('difflib')
-        shutil = self.OscCollabImport.m_import('shutil')
-
         if not new:
             return (False, False)
         if not old:
@@ -2201,7 +2186,7 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
                 # write the cache
                 pass_one_done = True
 
-                note = '# Note by osc %s: here is the complete diff for reference.' % self._osc_collab_alias
+                note = '# Note by osc %s: here is the complete diff for reference.' % _osc_collab_alias
                 header = ''
                 for i in range(len(note)):
                     header += '#'
@@ -2225,14 +2210,6 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 
         return (True, True)
 
-
-    tempfile = self.OscCollabImport.m_import('tempfile')
-    shutil = self.OscCollabImport.m_import('shutil')
-    tarfile = self.OscCollabImport.m_import('tarfile')
-    difflib = self.OscCollabImport.m_import('difflib')
-
-    if not tempfile or not shutil or not tarfile or not difflib:
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: incomplete python installation.')
 
     # FIXME: only needed until we switch to python >= 3.3
     lzma_hack = not hasattr(tarfile.TarFile, 'xzopen')
@@ -2262,10 +2239,10 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
             new = tarfile.open(new_tarball)
         except tarfile.TarError, e:
             _cleanup(old, new, tmpdir)
-            raise self.OscCollabDiffError('Error when opening %s: %s' % (new_tarball_basename, e))
+            raise OscCollabDiffError('Error when opening %s: %s' % (new_tarball_basename, e))
     else:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no new tarball.')
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: no new tarball.')
 
     # make sure we have at least a subdirectory in tmpdir, since we'll extract
     # files from two tarballs that might conflict
@@ -2281,7 +2258,7 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
         _extract_files (new, new_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in'])
     except (tarfile.ReadError, EOFError):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: %s is not a valid tarball.' % err_tarball)
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: %s is not a valid tarball.' % err_tarball)
 
     if old:
         old.close()
@@ -2293,17 +2270,17 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
     # find toplevel NEWS/ChangeLog/configure.{ac,in} in the new tarball
     if not os.path.exists(new_dir):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
 
     new_dir_files = os.listdir(new_dir)
     if len(new_dir_files) != 1:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_subdir = os.path.join(new_dir, new_dir_files[0])
     if not os.path.isdir(new_subdir):
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: unexpected file hierarchy in %s.' % new_tarball_basename)
 
     new_news = os.path.join(new_subdir, 'NEWS')
     if not os.path.exists(new_news) or not os.path.isfile(new_news):
@@ -2319,7 +2296,7 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 
     if not new_news and not new_changelog and not new_configure:
         _cleanup(old, new, tmpdir)
-        raise self.OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
+        raise OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
 
     # find toplevel NEWS/ChangeLog/configure.{ac,in} in the old tarball
     # not fatal
@@ -2350,9 +2327,9 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 
     # Choose the most appropriate prefix for helper files, based on the alias
     # that was used by the user
-    helper_prefix = self._osc_collab_helper_prefixes[0]
-    for prefix in self._osc_collab_helper_prefixes:
-        if self._osc_collab_alias in prefix:
+    helper_prefix = _osc_collab_helper_prefixes[0]
+    for prefix in _osc_collab_helper_prefixes:
+        if _osc_collab_alias in prefix:
             helper_prefix = prefix
             break
 
@@ -2375,7 +2352,7 @@ def _collab_extract_diff_internal(self, directory, old_tarball, new_tarball):
 #######################################################################
 
 
-def _collab_subst_defines(self, s, defines):
+def _collab_subst_defines(s, defines):
     '''Replace macros like %{version} and %{name} in strings. Useful
        for sources and patches '''
     for key in defines.keys():
@@ -2386,19 +2363,12 @@ def _collab_subst_defines(self, s, defines):
     return s
 
 
-def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
+def _collab_update_spec(spec_file, upstream_url, upstream_version):
     if not os.path.exists(spec_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
         return (False, None, None, False)
     elif not os.path.isfile(spec_file):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
-        return (False, None, None, False)
-
-    tempfile = self.OscCollabImport.m_import('tempfile')
-    re = self.OscCollabImport.m_import('re')
-
-    if not tempfile or not re:
-        print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(spec_file)
         return (False, None, None, False)
 
     re_spec_header_with_version = re.compile('^(# spec file for package \S*) \(Version \S*\)(.*)', re.IGNORECASE)
@@ -2436,7 +2406,7 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
 
         match = re_spec_define.match(line)
         if match:
-            defines[match.group(1)] = self._collab_subst_defines(match.group(2), defines)
+            defines[match.group(1)] = _collab_subst_defines(match.group(2), defines)
             os.write(fdout, line)
             continue
 
@@ -2449,7 +2419,7 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
         match = re_spec_version.match(line)
         if match:
             defines['version'] = match.group(2)
-            old_version = self._collab_subst_defines(match.group(2), defines)
+            old_version = _collab_subst_defines(match.group(2), defines)
             os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
             continue
 
@@ -2515,20 +2485,12 @@ def _collab_update_spec(self, spec_file, upstream_url, upstream_version):
 #######################################################################
 
 
-def _collab_update_changes(self, changes_file, upstream_version, email):
+def _collab_update_changes(changes_file, upstream_version, email):
     if not os.path.exists(changes_file):
         print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(changes_file)
         return False
     elif not os.path.isfile(changes_file):
         print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(changes_file)
-        return False
-
-    tempfile = self.OscCollabImport.m_import('tempfile')
-    time = self.OscCollabImport.m_import('time')
-    locale = self.OscCollabImport.m_import('locale')
-
-    if not tempfile or not time or not locale:
-        print >>sys.stderr, 'Cannot update %s: incomplete python installation.' % os.path.basename(changes_file)
         return False
 
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(changes_file))
@@ -2568,18 +2530,10 @@ def _collab_update_changes(self, changes_file, upstream_version, email):
 #######################################################################
 
 
-def _collab_quilt_package(self, spec_file):
+def _collab_quilt_package(spec_file):
     def _cleanup(null, tmpdir):
         null.close()
         shutil.rmtree(tmpdir)
-
-    subprocess = self.OscCollabImport.m_import('subprocess')
-    shutil = self.OscCollabImport.m_import('shutil')
-    tempfile = self.OscCollabImport.m_import('tempfile')
-
-    if not subprocess or not shutil or not tempfile:
-        print >>sys.stderr, 'Cannot try to apply patches: incomplete python installation.'
-        return False
 
     null = open('/dev/null', 'w')
     tmpdir = tempfile.mkdtemp(prefix = 'osc-collab-')
@@ -2624,17 +2578,17 @@ def _collab_quilt_package(self, spec_file):
 #######################################################################
 
 
-def _collab_update(self, apiurl, username, email, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
+def _collab_update(apiurl, username, email, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
     if len(projects) == 1:
         project = projects[0]
 
         try:
-            pkg = self._collab_api.get_package_details(project, package)
-        except self.OscCollabWebError, e:
+            pkg = OscCollabApi.get_package_details(project, package)
+        except OscCollabWebError, e:
             print >>sys.stderr, e.msg
             return
     else:
-        pkg = self._collab_get_package_with_valid_project(projects, package)
+        pkg = _collab_get_package_with_valid_project(projects, package)
         if not pkg:
             return
         project = pkg.project.name
@@ -2660,7 +2614,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
         print 'Package %s is already up-to-date.' % package
         return
 
-    (setup, branch_project, branch_package) = self._collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
+    (setup, branch_project, branch_package) = _collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
     if not setup:
         return
 
@@ -2671,7 +2625,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     spec_file = os.path.join(package_dir, package + '.spec')
     if not os.path.exists(spec_file) and package != branch_package:
         spec_file = os.path.join(package_dir, branch_package + '.spec')
-    (updated, old_tarball, old_version, define_in_source) = self._collab_update_spec(spec_file, pkg.upstream_url, pkg.upstream_version)
+    (updated, old_tarball, old_version, define_in_source) = _collab_update_spec(spec_file, pkg.upstream_url, pkg.upstream_version)
     if old_tarball:
         old_tarball_with_dir = os.path.join(package_dir, old_tarball)
     else:
@@ -2700,7 +2654,7 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     changes_file = os.path.join(package_dir, package + '.changes')
     if not os.path.exists(changes_file) and package != branch_package:
         changes_file = os.path.join(package_dir, branch_package + '.changes')
-    if self._collab_update_changes(changes_file, pkg.upstream_version, email):
+    if _collab_update_changes(changes_file, pkg.upstream_version, email):
         print '%s has been prepared.' % os.path.basename(changes_file)
 
     # warn if there are other spec files which might need an update
@@ -2717,8 +2671,8 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     print 'Looking for the upstream tarball...'
     try:
-        upstream_tarball = self._collab_download_internal(pkg.upstream_url, package_dir)
-    except self.OscCollabDownloadError, e:
+        upstream_tarball = _collab_download_internal(pkg.upstream_url, package_dir)
+    except OscCollabDownloadError, e:
         print >>sys.stderr, e.msg
         return
 
@@ -2744,8 +2698,8 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
     # not fatal if fails
     print 'Extracting useful diff between tarballs (NEWS, ChangeLog, configure.{ac,in})...'
     try:
-        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff) = self._collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
-    except self.OscCollabDiffError, e:
+        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff) = _collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+    except OscCollabDiffError, e:
         print >>sys.stderr, e.msg
     else:
         if news_created:
@@ -2778,9 +2732,9 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
     # try applying the patches with rpm quilt
     # not fatal if fails
-    if self._collab_is_program_in_path('quilt'):
+    if _collab_is_program_in_path('quilt'):
         print 'Running quilt...'
-        if self._collab_quilt_package(spec_file):
+        if _collab_quilt_package(spec_file):
             print 'Patches still apply.'
         else:
             print 'WARNING: make sure that all patches apply before submitting.'
@@ -2807,10 +2761,10 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 
 
     print 'Package %s has been prepared for the update.' % branch_package
-    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), self._osc_collab_alias)
+    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), _osc_collab_alias)
 
     if not ignore_comment:
-        self._print_comment_after_setup(pkg, no_devel_project)
+        _print_comment_after_setup(pkg, no_devel_project)
 
     # TODO add a note about checking if patches are still needed, buildrequires
     # & requires
@@ -2819,14 +2773,14 @@ def _collab_update(self, apiurl, username, email, projects, package, ignore_rese
 #######################################################################
 
 
-def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = False):
+def _collab_forward(apiurl, user, projects, request_id, no_supersede = False):
     try:
         int_request_id = int(request_id)
     except ValueError:
         print >>sys.stderr, '%s is not a valid request id.' % (request_id)
         return
 
-    request = self.OscCollabObs.get_request(request_id)
+    request = OscCollabObs.get_request(request_id)
     if request is None:
         return
 
@@ -2845,11 +2799,11 @@ def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = Fal
         return
 
     try:
-        pkg = self._collab_api.get_package_details((dest_project,), dest_package)
+        pkg = OscCollabApi.get_package_details((dest_project,), dest_package)
         if not pkg or not pkg.parent_project:
             print >>sys.stderr, 'No parent project for %s/%s.' % (dest_project, dest_package)
             return
-    except self.OscCollabWebError, e:
+    except OscCollabWebError, e:
         print >>sys.stderr, 'Cannot get parent project of %s/%s.' % (dest_project, dest_package)
         return
 
@@ -2863,7 +2817,7 @@ def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = Fal
         print >>sys.stderr, 'Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project)
         return
 
-    if not self.OscCollabObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
+    if not OscCollabObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
         return
 
     # TODO: cancel old requests from request.dst_project to parent project
@@ -2876,14 +2830,14 @@ def _collab_forward(self, apiurl, user, projects, request_id, no_supersede = Fal
     print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
 
     if not no_supersede:
-        for old_id in self.OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
+        for old_id in OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
             print 'Previous submission request %s has been superseded.' % old_id
 
 
 #######################################################################
 
 
-def _collab_osc_package_pending_commit(self, osc_package):
+def _collab_osc_package_pending_commit(osc_package):
     # ideally, we could use osc_package.todo, but it's not set by default.
     # So we just look at all files.
     for filename in osc_package.filenamelist + osc_package.filenamelist_unvers:
@@ -2894,7 +2848,7 @@ def _collab_osc_package_pending_commit(self, osc_package):
     return False
 
 
-def _collab_osc_package_commit(self, osc_package, msg):
+def _collab_osc_package_commit(osc_package, msg):
     osc_package.commit(msg)
     # See bug #436932: Package.commit() leads to outdated internal data.
     osc_package.update_datastructs()
@@ -2903,16 +2857,11 @@ def _collab_osc_package_commit(self, osc_package, msg):
 #######################################################################
 
 
-def _collab_package_set_meta(self, apiurl, project, package, meta, error_msg_prefix = ''):
+def _collab_package_set_meta(apiurl, project, package, meta, error_msg_prefix = ''):
     if error_msg_prefix:
         error_str = error_msg_prefix + ': %s'
     else:
         error_str = 'Cannot set metadata for %s in %s: %%s' % (package, project)
-
-    tempfile = self.OscCollabImport.m_import('tempfile')
-    if not tempfile:
-        print >>sys.stderr, error_str % 'incomplete python installation.'
-        return False
 
     (fdout, tmp) = tempfile.mkstemp()
     os.write(fdout, meta)
@@ -2931,7 +2880,7 @@ def _collab_package_set_meta(self, apiurl, project, package, meta, error_msg_pre
     return not failed
 
 
-def _collab_enable_build(self, apiurl, project, package, meta, repos, archs):
+def _collab_enable_build(apiurl, project, package, meta, repos, archs):
     if len(archs) == 0:
         return (True, False)
 
@@ -3003,13 +2952,13 @@ def _collab_enable_build(self, apiurl, project, package, meta, repos, archs):
     meta_xml.write(buf)
     meta = buf.getvalue()
 
-    if self._collab_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
+    if _collab_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
         return (True, True)
     else:
         return (False, False)
 
 
-def _collab_get_latest_package_rev_built(self, apiurl, project, repo, arch, package, verbose_error = True):
+def _collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error = True):
     url = makeurl(apiurl, ['build', project, repo, arch, package, '_history'])
 
     try:
@@ -3042,7 +2991,7 @@ def _collab_get_latest_package_rev_built(self, apiurl, project, repo, arch, pack
     return (True, srcmd5, rev)
 
 
-def _collab_print_build_status(self, build_state, header, error_line, hint = False):
+def _collab_print_build_status(build_state, header, error_line, hint = False):
     def get_str_repo_arch(repo, arch, show_repos):
         if show_repos:
             return '%s/%s' % (repo, arch)
@@ -3101,10 +3050,7 @@ def _collab_print_build_status(self, build_state, header, error_line, hint = Fal
                 print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, arch)
 
 
-def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, verbose_error):
-    time = self.OscCollabImport.m_import('time')
-    httplib = self.OscCollabImport.m_import('httplib')
-
+def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, verbose_error):
     try:
         results = show_results_meta(apiurl, project, package=package)
         if len(results) == 0:
@@ -3231,7 +3177,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
         # build is done, but is it for the latest version?
         elif value in ['succeeded']:
             # check that the build is for the version we have
-            (success, built_srcmd5, built_rev) = self._collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
+            (success, built_srcmd5, built_rev) = _collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, verbose_error)
 
             if not success:
                 detailed_results[repo][arch]['status'] = 'succeeded, but maybe not up-to-date'
@@ -3254,10 +3200,7 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
         if not scheduler_active and need_rebuild and state[repo][arch]['rebuild'] == 0:
             bs_not_ready = True
 
-            if not time:
-                print 'Triggering rebuild for %s' % (arch,)
-            else:
-                print 'Triggering rebuild for %s as of %s' % (arch, time.strftime('%X (%x)', time.localtime()))
+            print 'Triggering rebuild for %s as of %s' % (arch, time.strftime('%X (%x)', time.localtime()))
 
             try:
                 rebuild(apiurl, project, package, repo, arch)
@@ -3314,17 +3257,10 @@ def _collab_build_get_results(self, apiurl, project, repos, package, archs, srcm
     return (bs_not_ready, build_successful, error_counter, state)
 
 
-def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5, rev):
+def _collab_build_wait_loop(apiurl, project, repos, package, archs, srcmd5, rev):
     # seconds we wait before looking at the results on the build service
     check_frequency = 60
     max_errors = 10
-
-    select = self.OscCollabImport.m_import('select')
-    time = self.OscCollabImport.m_import('time')
-    if not select or not time:
-        print >>sys.stderr, 'Cannot monitor build for package in the build service: incomplete python installation.'
-        return (False, {})
-
 
     build_successful = False
     print_status = False
@@ -3363,7 +3299,7 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
                 # one turn
                 last_check = now
 
-                (need_to_continue, build_successful, error_counter, state) = self._collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, print_status)
+                (need_to_continue, build_successful, error_counter, state) = _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, print_status)
 
                 # just stop if there are too many errors
                 if error_counter > max_errors:
@@ -3376,7 +3312,7 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
 
             if print_status:
                 header = 'Status as of %s [checking the status every %d seconds]' % (time.strftime('%X (%x)', time.localtime(last_check)), check_frequency)
-                self._collab_print_build_status(state, header, 'no results returned by the build service')
+                _collab_print_build_status(state, header, 'no results returned by the build service')
 
             if not need_to_continue:
                 break
@@ -3412,7 +3348,7 @@ def _collab_build_wait_loop(self, apiurl, project, repos, package, archs, srcmd5
 #######################################################################
 
 
-def _collab_autodetect_repo(self, apiurl, project):
+def _collab_autodetect_repo(apiurl, project):
     try:
         meta_lines = show_project_meta(apiurl, project)
         meta = ''.join(meta_lines)
@@ -3459,14 +3395,14 @@ def _collab_autodetect_repo(self, apiurl, project):
 #######################################################################
 
 
-def _collab_build_internal(self, apiurl, osc_package, repos, archs):
+def _collab_build_internal(apiurl, osc_package, repos, archs):
     project = osc_package.prjname
     package = osc_package.name
 
     if '!autodetect!' in repos:
         print 'Autodetecting the most appropriate repository for the build...'
         repos.remove('!autodetect!')
-        repo = self._collab_autodetect_repo(apiurl, project)
+        repo = _collab_autodetect_repo(apiurl, project)
         if repo:
             repos.append(repo)
 
@@ -3486,21 +3422,21 @@ def _collab_build_internal(self, apiurl, osc_package, repos, archs):
         return False
 
     meta = ''.join(meta_lines)
-    (success, changed_meta) = self._collab_enable_build(apiurl, project, package, meta, repos, archs)
+    (success, changed_meta) = _collab_enable_build(apiurl, project, package, meta, repos, archs)
     if not success:
         return False
 
     # loop to periodically check the status of the build (and eventually
     # trigger rebuilds if necessary)
-    (build_success, build_state) = self._collab_build_wait_loop(apiurl, project, repos, package, archs, osc_package.srcmd5, osc_package.rev)
+    (build_success, build_state) = _collab_build_wait_loop(apiurl, project, repos, package, archs, osc_package.srcmd5, osc_package.rev)
 
     if not build_success:
-        self._collab_print_build_status(build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
+        _collab_print_build_status(build_state, 'Status', 'no status known: osc got interrupted?', hint=True)
 
     # disable build for package in this project if we manually enabled it
     # (we just reset to the old settings)
     if changed_meta:
-        self._collab_package_set_meta(apiurl, project, package, meta, 'Error while resetting build settings of package on the build service')
+        _collab_package_set_meta(apiurl, project, package, meta, 'Error while resetting build settings of package on the build service')
 
     return build_success
 
@@ -3508,7 +3444,7 @@ def _collab_build_internal(self, apiurl, osc_package, repos, archs):
 #######################################################################
 
 
-def _collab_build(self, apiurl, user, projects, msg, repos, archs):
+def _collab_build(apiurl, user, projects, msg, repos, archs):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -3521,13 +3457,13 @@ def _collab_build(self, apiurl, user, projects, msg, repos, archs):
     committed = False
 
     # commit if there are local changes
-    if self._collab_osc_package_pending_commit(osc_package):
+    if _collab_osc_package_pending_commit(osc_package):
         if not msg:
             msg = edit_message()
-        self._collab_osc_package_commit(osc_package, msg)
+        _collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs)
+    build_success = _collab_build_internal(apiurl, osc_package, repos, archs)
 
     if build_success:
         print 'Package successfully built on the build service.'
@@ -3536,7 +3472,7 @@ def _collab_build(self, apiurl, user, projects, msg, repos, archs):
 #######################################################################
 
 
-def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False, no_supersede = False):
+def _collab_build_submit(apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False, no_supersede = False):
     try:
         osc_package = filedir_to_pac('.')
     except oscerr.NoWorkingCopy, e:
@@ -3576,11 +3512,11 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
     committed = False
 
     # commit if there are local changes
-    if self._collab_osc_package_pending_commit(osc_package):
-        self._collab_osc_package_commit(osc_package, msg)
+    if _collab_osc_package_pending_commit(osc_package):
+        _collab_osc_package_commit(osc_package, msg)
         committed = True
 
-    build_success = self._collab_build_internal(apiurl, osc_package, repos, archs)
+    build_success = _collab_build_internal(apiurl, osc_package, repos, archs)
 
     # if build successful, submit
     if build_success:
@@ -3592,20 +3528,20 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
         print 'Package submitted to %s (request id: %s).' % (parent_project, result)
 
         if not no_supersede:
-            for old_id in self.OscCollabObs.supersede_old_requests(user, parent_project, package, result):
+            for old_id in OscCollabObs.supersede_old_requests(user, parent_project, package, result):
                 print 'Previous submission request %s has been superseded.' % old_id
 
         if forward:
             # we volunteerly restrict the project list to parent_project for
             # self-consistency and more safety
-            self._collab_forward(apiurl, user, [ parent_project ], result, no_supersede = no_supersede)
+            _collab_forward(apiurl, user, [ parent_project ], result, no_supersede = no_supersede)
 
         if not no_unreserve:
             try:
-                reservation = self._collab_api.is_package_reserved((parent_project,), package, no_devel_project = True)
+                reservation = OscCollabApi.is_package_reserved((parent_project,), package, no_devel_project = True)
                 if reservation and reservation.user == user:
-                    self._collab_unreserve((parent_project,), (package,), user, no_devel_project = True)
-            except self.OscCollabWebError, e:
+                    _collab_unreserve((parent_project,), (package,), user, no_devel_project = True)
+            except OscCollabWebError, e:
                 print >>sys.stderr, e.msg
     else:
         print 'Package was not submitted to %s' % parent_project
@@ -3629,26 +3565,13 @@ def _collab_build_submit(self, apiurl, user, projects, msg, repos, archs, forwar
 #######################################################################
 
 
-def _collab_get_conf_file(self):
-    # See get_config() in osc/conf.py and postoptparse() in
-    # osc/commandline.py
-    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
-    return os.path.expanduser(conffile)
-
-
-#######################################################################
-
-
 # Unfortunately, as of Python 2.5, ConfigParser does not know how to
 # preserve a config file: it removes comments and reorders stuff.
 # This is a dumb function to append a value to a section in a config file.
-def _collab_add_config_option(self, section, key, value):
-    tempfile = self.OscCollabImport.m_import('tempfile')
-    if not tempfile:
-        print >>sys.stderr, 'Cannot update your configuration: incomplete python installation.'
-        return
+def _collab_add_config_option(section, key, value):
+    global _osc_collab_osc_conffile
 
-    conffile = self._collab_get_conf_file()
+    conffile = _osc_collab_osc_conffile
 
     if not os.path.exists(conffile):
         lines = [ ]
@@ -3708,7 +3631,7 @@ def _collab_add_config_option(self, section, key, value):
 #######################################################################
 
 
-def _collab_get_compatible_apiurl_for_config(self, config, apiurl):
+def _collab_get_compatible_apiurl_for_config(config, apiurl):
     if apiurl is None:
         return None
 
@@ -3726,11 +3649,7 @@ def _collab_get_compatible_apiurl_for_config(self, config, apiurl):
 
     # old osc (0.110) was adding the host to the tuple without the http
     # part, ie just the host
-    urlparse = self.OscCollabImport.m_import('urlparse')
-    if urlparse:
-        apiurl = urlparse.urlparse(apiurl).netloc
-    else:
-        apiurl = None
+    apiurl = urlparse(apiurl).netloc
 
     if apiurl and config.has_section(apiurl):
         return apiurl
@@ -3738,26 +3657,25 @@ def _collab_get_compatible_apiurl_for_config(self, config, apiurl):
     return None
 
 
-def _collab_get_config_parser(self):
-    if self.__dict__.has_key('_collab_config_parser'):
-        return self._collab_config_parser
+def _collab_get_config_parser():
+    global _osc_collab_config_parser
+    global _osc_collab_osc_conffile
 
-    ConfigParser = self.OscCollabImport.m_import('ConfigParser')
-    if not ConfigParser:
-        return None
+    if _osc_collab_config_parser is not None:
+        return _osc_collab_config_parser
 
-    conffile = self._collab_get_conf_file()
-    self._collab_config_parser = ConfigParser.SafeConfigParser()
-    self._collab_config_parser.read(conffile)
-    return self._collab_config_parser
+    conffile = _osc_collab_osc_conffile
+    _osc_collab_config_parser = ConfigParser.SafeConfigParser()
+    _osc_collab_config_parser.read(conffile)
+    return _osc_collab_config_parser
 
 
-def _collab_get_config(self, apiurl, key, default = None):
-    config = self._collab_get_config_parser()
+def _collab_get_config(apiurl, key, default = None):
+    config = _collab_get_config_parser()
     if not config:
         return default
 
-    apiurl = self._collab_get_compatible_apiurl_for_config(config, apiurl)
+    apiurl = _collab_get_compatible_apiurl_for_config(config, apiurl)
     if apiurl and config.has_option(apiurl, key):
         return config.get(apiurl, key)
     elif config.has_option('general', key):
@@ -3766,8 +3684,8 @@ def _collab_get_config(self, apiurl, key, default = None):
         return default
 
 
-def _collab_get_config_bool(self, apiurl, key, default = None):
-    value = self._collab_get_config(apiurl, key, default)
+def _collab_get_config_bool(apiurl, key, default = None):
+    value = _collab_get_config(apiurl, key, default)
     if type(value) == bool:
         return value
 
@@ -3779,7 +3697,7 @@ def _collab_get_config_bool(self, apiurl, key, default = None):
         pass
     return False
 
-def _collab_get_config_list(self, apiurl, key, default = None):
+def _collab_get_config_list(apiurl, key, default = None):
     def split_items(line):
         items = line.split(';')
         # remove all empty items
@@ -3790,7 +3708,7 @@ def _collab_get_config_list(self, apiurl, key, default = None):
                 break
         return items
 
-    line = self._collab_get_config(apiurl, key, default)
+    line = _collab_get_config(apiurl, key, default)
 
     items = split_items(line)
     if not items and default:
@@ -3804,27 +3722,27 @@ def _collab_get_config_list(self, apiurl, key, default = None):
 #######################################################################
 
 
-def _collab_migrate_gnome_config(self, apiurl):
+def _collab_migrate_gnome_config(apiurl):
     for key in [ 'archs', 'apiurl', 'email', 'projects' ]:
-        if self._collab_get_config(apiurl, 'collab_' + key) is not None:
+        if _collab_get_config(apiurl, 'collab_' + key) is not None:
             continue
         elif not conf.config.has_key('gnome_' + key):
             continue
-        self._collab_add_config_option(apiurl, 'collab_' + key, conf.config['gnome_' + key])
+        _collab_add_config_option(apiurl, 'collab_' + key, conf.config['gnome_' + key])
 
     # migrate repo to repos
-    if self._collab_get_config(apiurl, 'collab_repos') is None and conf.config.has_key('gnome_repo'):
-        self._collab_add_config_option(apiurl, 'collab_repos', conf.config['gnome_repo'] + ';')
+    if _collab_get_config(apiurl, 'collab_repos') is None and conf.config.has_key('gnome_repo'):
+        _collab_add_config_option(apiurl, 'collab_repos', conf.config['gnome_repo'] + ';')
 
 
 #######################################################################
 
 
-def _collab_ensure_email(self, apiurl):
-    email = self._collab_get_config(apiurl, 'email')
+def _collab_ensure_email(apiurl):
+    email = _collab_get_config(apiurl, 'email')
     if email:
         return email
-    email = self._collab_get_config(apiurl, 'collab_email')
+    email = _collab_get_config(apiurl, 'collab_email')
     if email:
         return email
 
@@ -3832,7 +3750,7 @@ def _collab_ensure_email(self, apiurl):
     if email == '':
         return 'EMAIL@DOMAIN'
 
-    self._collab_add_config_option(apiurl, 'collab_email', email)
+    _collab_add_config_option(apiurl, 'collab_email', email)
 
     return email
 
@@ -3840,7 +3758,7 @@ def _collab_ensure_email(self, apiurl):
 #######################################################################
 
 
-def _collab_parse_arg_packages(self, packages):
+def _collab_parse_arg_packages(packages):
     def remove_trailing_slash(s):
         if s.endswith('/'):
             return s[:-1]
@@ -3997,21 +3915,23 @@ def do_collab(self, subcmd, opts, *args):
     """
 
     # uncomment this when profiling is needed
-    #self.gtime = self.OscCollabImport.m_import('time')
-    #self.gref = self.gtime.time()
-    #print "%.3f - %s" % (self.gtime.time()-self.gref, 'start')
+    #self.ref = time.time()
+    #print "%.3f - %s" % (time.time()-self.ref, 'start')
+
+    global _osc_collab_alias
+    global _osc_collab_osc_conffile
 
     init()
 
-    self._osc_collab_alias = self.lastcmd[0]
+    _osc_collab_alias = self.lastcmd[0]
 
     if opts.version:
-        print self.OSC_COLLAB_VERSION
+        print OSC_COLLAB_VERSION
         return
 
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'listcommented', 'lc', 'comment', 'c', 'commentset', 'cs', 'commentunset', 'cu', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
     if not args or args[0] not in cmds:
-        raise oscerr.WrongArgs('Unknown %s action. Choose one of %s.' % (self._osc_collab_alias, ', '.join(cmds)))
+        raise oscerr.WrongArgs('Unknown %s action. Choose one of %s.' % (_osc_collab_alias, ', '.join(cmds)))
 
     cmd = args[0]
 
@@ -4039,98 +3959,102 @@ def do_collab(self, subcmd, opts, *args):
     apiurl = conf.config['apiurl']
     user = conf.config['user']
 
-    self._collab_migrate_gnome_config(apiurl)
-    email = self._collab_ensure_email(apiurl)
+    # See get_config() in osc/conf.py and postoptparse() in
+    # osc/commandline.py
+    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
+    _osc_collab_osc_conffile = os.path.expanduser(conffile)
+
+    _collab_migrate_gnome_config(apiurl)
+    email = _collab_ensure_email(apiurl)
 
     if opts.apiurl:
         collab_apiurl = opts.apiurl
     else:
-        collab_apiurl = self._collab_get_config(apiurl, 'collab_apiurl')
+        collab_apiurl = _collab_get_config(apiurl, 'collab_apiurl')
 
     if len(opts.projects) != 0:
         projects = opts.projects
     else:
-        projects = self._collab_get_config_list(apiurl, 'collab_projects', 'openSUSE:Factory')
+        projects = _collab_get_config_list(apiurl, 'collab_projects', 'openSUSE:Factory')
 
     if len(opts.repos) != 0:
         repos = opts.repos
     else:
-        repos = self._collab_get_config_list(apiurl, 'collab_repos', '!autodetect!')
+        repos = _collab_get_config_list(apiurl, 'collab_repos', '!autodetect!')
 
     if len(opts.archs) != 0:
         archs = opts.archs
     else:
-        archs = self._collab_get_config_list(apiurl, 'collab_archs', 'i586;x86_64;')
+        archs = _collab_get_config_list(apiurl, 'collab_archs', 'i586;x86_64;')
 
-    details = self._collab_get_config_bool(apiurl, 'collab_details', False)
+    details = _collab_get_config_bool(apiurl, 'collab_details', False)
     if details and opts.no_details:
         details = False
     elif not details and opts.details:
         details = True
 
-    self._collab_api = self.OscCollabApi(self, collab_apiurl)
-    self.OscCollabCache.init(self, opts.no_cache)
-    self.OscCollabObs.init(self, apiurl)
-    self.OscCollabPackage.init(self)
+    OscCollabApi.init(collab_apiurl)
+    OscCollabCache.init(opts.no_cache)
+    OscCollabObs.init(apiurl)
 
     # Do the command
     if cmd in ['todo', 't']:
-        self._collab_todo(apiurl, projects, details, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
+        _collab_todo(apiurl, projects, details, opts.ignore_comments, opts.exclude_commented, opts.exclude_reserved, opts.exclude_submitted, opts.exclude_devel)
 
     elif cmd in ['todoadmin', 'ta']:
-        self._collab_todoadmin(apiurl, projects, opts.include_upstream)
+        _collab_todoadmin(apiurl, projects, opts.include_upstream)
 
     elif cmd in ['listreserved', 'lr']:
-        self._collab_listreserved(projects)
+        _collab_listreserved(projects)
 
     elif cmd in ['isreserved', 'ir']:
-        packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_isreserved(projects, packages, no_devel_project = opts.no_devel_project)
+        packages = _collab_parse_arg_packages(args[1:])
+        _collab_isreserved(projects, packages, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['reserve', 'r']:
-        packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_reserve(projects, packages, user, no_devel_project = opts.no_devel_project)
+        packages = _collab_parse_arg_packages(args[1:])
+        _collab_reserve(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['unreserve', 'u']:
-        packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_unreserve(projects, packages, user, no_devel_project = opts.no_devel_project)
+        packages = _collab_parse_arg_packages(args[1:])
+        _collab_unreserve(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['listcommented', 'lc']:
-        self._collab_listcommented(projects)
+        _collab_listcommented(projects)
 
     elif cmd in ['comment', 'c']:
-        packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_comment(projects, packages, no_devel_project = opts.no_devel_project)
+        packages = _collab_parse_arg_packages(args[1:])
+        _collab_comment(projects, packages, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['commentset', 'cs']:
-        packages = self._collab_parse_arg_packages(args[1])
+        packages = _collab_parse_arg_packages(args[1])
         if len(args) - 1 == 1:
             comment = edit_message()
         else:
             comment = args[2]
-        self._collab_commentset(projects, packages, user, comment, no_devel_project = opts.no_devel_project)
+        _collab_commentset(projects, packages, user, comment, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['commentunset', 'cu']:
-        packages = self._collab_parse_arg_packages(args[1:])
-        self._collab_commentunset(projects, packages, user, no_devel_project = opts.no_devel_project)
+        packages = _collab_parse_arg_packages(args[1:])
+        _collab_commentunset(projects, packages, user, no_devel_project = opts.no_devel_project)
 
     elif cmd in ['setup', 's']:
-        package = self._collab_parse_arg_packages(args[1])
-        self._collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
+        package = _collab_parse_arg_packages(args[1])
+        _collab_setup(apiurl, user, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
 
     elif cmd in ['update', 'up']:
-        package = self._collab_parse_arg_packages(args[1])
-        self._collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
+        package = _collab_parse_arg_packages(args[1])
+        _collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
-        self._collab_forward(apiurl, user, projects, request_id, no_supersede = opts.no_supersede)
+        _collab_forward(apiurl, user, projects, request_id, no_supersede = opts.no_supersede)
 
     elif cmd in ['build', 'b']:
-        self._collab_build(apiurl, user, projects, opts.msg, repos, archs)
+        _collab_build(apiurl, user, projects, opts.msg, repos, archs)
 
     elif cmd in ['buildsubmit', 'bs']:
-        self._collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward, no_unreserve = opts.no_unreserve, no_supersede = opts.no_supersede)
+        _collab_build_submit(apiurl, user, projects, opts.msg, repos, archs, forward = opts.forward, no_unreserve = opts.no_unreserve, no_supersede = opts.no_supersede)
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
