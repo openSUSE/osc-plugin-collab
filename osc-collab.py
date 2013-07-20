@@ -56,6 +56,7 @@ except ImportError:
     have_rpm = False
 
 from osc import cmdln
+from osc import conf
 
 
 OSC_COLLAB_VERSION = '0.98'
@@ -66,17 +67,12 @@ _osc_collab_helpers = []
 for suffix in [ 'NEWS', 'ChangeLog', 'configure' ]:
     for prefix in _osc_collab_helper_prefixes:
         _osc_collab_helpers.append(prefix + suffix)
+for helper in _osc_collab_helpers:
+    conf.DEFAULTS['exclude_glob'] += ' %s' % helper
 
 _osc_collab_alias = 'collab'
 _osc_collab_config_parser = None
 _osc_collab_osc_conffile = None
-
-
-def init():
-    global _osc_collab_helpers
-
-    for helper in _osc_collab_helpers:
-        conf.DEFAULTS['exclude_glob'] += ' %s' % helper
 
 
 class OscCollabError(Exception):
@@ -3895,8 +3891,6 @@ def do_collab(self, subcmd, opts, *args):
 
     global _osc_collab_alias
     global _osc_collab_osc_conffile
-
-    init()
 
     _osc_collab_alias = self.lastcmd[0]
 
