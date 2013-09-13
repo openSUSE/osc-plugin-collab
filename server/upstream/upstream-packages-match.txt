@@ -322,6 +322,7 @@ gnome-gmail:
 gnome-icon-theme-extras:
 gnome-icon-theme-symbolic:
 gnome-icon-theme:
+gnome-initial-setup:
 gnome-js-common:
 gnome-keyring-sharp:
 gnome-keyring:
@@ -364,6 +365,7 @@ gnome-settings-daemon:
 gnome-sharp:gnome-sharp2
 gnome-shell-extensions:
 gnome-shell:
+gnome-software:
 gnome-speech:
 gnome-spell:gnome-spell2
 gnome-subtitles:
