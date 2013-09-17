@@ -343,6 +343,7 @@ gnome-netstatus:
 gnome-nettool:
 gnome-nibbles:
 gnome-online-accounts:
+gnome-online-miners:
 gnome-packagekit:
 gnome-panel:
 gnome-phone-manager:
