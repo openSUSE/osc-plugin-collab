@@ -285,6 +285,7 @@ gst-plugins-good|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-go
 gst-plugins-ugly:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-plugins-ugly|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-plugins-ugly/
 gst-python:httpls:http://gstreamer.freedesktop.org/src/gst-python/
+gst-python|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gst-rtsp:httpls:http://gstreamer.freedesktop.org/src/gst-rtsp/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gstreamer|0.10:httpls:http://gstreamer.freedesktop.org/src/gstreamer/

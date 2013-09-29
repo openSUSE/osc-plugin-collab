@@ -435,7 +435,9 @@ gst-plugins-good:gstreamer-plugins-good
 gst-plugins-good|0.10:gstreamer-0_10-plugins-good
 gst-plugins-ugly:gstreamer-plugins-ugly
 gst-plugins-ugly|0.10:gstreamer-0_10-plugins-ugly
-gst-python:python-gstreamer-0_10
+gst-python:python-gstreamer
+gst-python:python3-gstreamer
+gst-python|0.10:python-gstreamer-0_10
 gst-rtsp:
 gstreamer:
 gstreamer:gstreamer-doc
