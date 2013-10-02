@@ -33,6 +33,7 @@ swfdec:no-odd-unstable
 swfdec-mozilla:no-odd-unstable
 
 # branches
+geoclue|1.0:max|1.90
 gobby|0.4:max|0.4.90
 gst-plugins-bad|0.10:max|0.11.0
 gst-plugins-base|0.10:max|0.11.0

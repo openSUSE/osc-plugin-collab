@@ -252,7 +252,8 @@ gedit:
 geeqie:
 gegl:
 genius:
-geoclue:
+geoclue:geoclue2
+geoclue|1.0:geoclue
 geocode-glib:
 gftp:
 ggz-client-libs:

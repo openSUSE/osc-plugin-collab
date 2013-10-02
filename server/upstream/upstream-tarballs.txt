@@ -221,6 +221,7 @@ geany:httpls:http://download.geany.org/
 geeqie:sf:222125
 gegl:subdirhttpls:http://ftp.gtk.org/pub/gegl/
 geoclue:httpls:http://www.freedesktop.org/wiki/Software/GeoClue
+geoclue|1.0:httpls:http://people.freedesktop.org/~hadess/
 gftp:httpls:http://gftp.seul.org/
 ggz-client-libs:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 gimp-dds:google:gimp-dds
