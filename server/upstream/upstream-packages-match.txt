@@ -309,12 +309,14 @@ gnome-desktop:gnome-desktop
 gnome-desktop|2.90:gnome-desktop2
 gnome-devel-docs:
 gnome-dictionary:
+gnome-directory-thumbnailer:
 gnome-disk-utility:
 gnome-do-plugins:
 gnome-do:
 gnome-doc-utils:
 gnome-documents:
 gnome-dvb-daemon:
+gnome-epub-thumbnailer:
 gnome-font-viewer:
 gnome-games-extra-data:
 gnome-games:
