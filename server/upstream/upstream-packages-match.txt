@@ -47,6 +47,7 @@ anjuta-extras:
 anjuta:
 anthy:
 apache-couchdb:couchdb
+appdata-tools:
 appres:
 aqbanking:
 arista:
@@ -243,6 +244,7 @@ gdm:
 gdome2:
 geany-plugins:
 geany:
+geary:
 gedit-code-assistance:
 gedit-collaboration:
 gedit-cossa:
@@ -255,6 +257,7 @@ genius:
 geoclue:geoclue2
 geoclue|1.0:geoclue
 geocode-glib:
+gfbgraph:
 gftp:
 ggz-client-libs:
 ghex:
@@ -331,6 +334,7 @@ gnome-keyring-sharp:
 gnome-keyring:
 gnome-klotski:
 gnome-libs:
+gnome-logs:
 gnome-mag:
 gnome-mahjongg:
 gnome-main-menu:
@@ -626,6 +630,7 @@ libgee:
 libgexiv2:
 libggz:ggz
 libghttp:
+libgit2-glib:
 libglade:libglade2
 libglademm:
 libgnome-keyring:
@@ -762,6 +767,7 @@ mtr:
 muine:
 murrine:gtk2-engine-murrine
 mutter:
+mutter-wayland:
 mx:
 nautilus-actions:
 nautilus-cd-burner:
@@ -831,6 +837,7 @@ pitivi:
 pixman:
 pkg-config:
 planner:
+polari:
 polkit-gnome:
 polkit:
 poppler-data:
