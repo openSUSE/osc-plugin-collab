@@ -92,6 +92,7 @@ aegisub:httpls:http://ftp.aegisub.org/pub/releases/
 alarm-clock-applet:lp:alarm-clock
 anthy:sf_jp:anthy
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
+appdata-tools:httpls:http://people.freedesktop.org/~hughsient/releases/
 appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
