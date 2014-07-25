@@ -291,6 +291,7 @@ gst-python|0.10:httpls:http://gstreamer.freedesktop.org/src/gst-python/
 gst-rtsp:httpls:http://gstreamer.freedesktop.org/src/gst-rtsp/
 gstreamer:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
 gstreamer|0.10:httpls:http://gstreamer.freedesktop.org/src/gstreamer/
+gstreamer-editing-services:httpls:http://gstreamer.freedesktop.org/src/gstreamer-editing-services/
 gsynaptics:sf_jp:gsynaptics
 gtg:lp:gtg
 gtk-engines-cleanice:sf:57808|gtk-engines-cleanice

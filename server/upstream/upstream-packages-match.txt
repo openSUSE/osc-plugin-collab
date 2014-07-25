@@ -453,6 +453,7 @@ gstreamer:
 gstreamer:gstreamer-doc
 gstreamer|0.10:gstreamer-0_10
 gstreamer|0.10:gstreamer-0_10-doc
+gstreamer-editing-services:
 gsynaptics:
 gtetrinet:
 gtg:
