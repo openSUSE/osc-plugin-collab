@@ -38,6 +38,7 @@ abiword:
 accerciser:
 accountsservice:
 acpid:
+adwaita-icon-theme:
 aegisub:
 aisleriot:
 alacarte:
@@ -92,6 +93,7 @@ cairo-clock:
 cairo-compmgr:
 cairo:
 cairomm:
+california:
 cantarell-fonts:
 caribou:
 ccgfs:
@@ -374,6 +376,7 @@ gnome-sharp:gnome-sharp2
 gnome-shell-extensions:
 gnome-shell:
 gnome-software:
+gnome-sound-recorder:
 gnome-speech:
 gnome-spell:gnome-spell2
 gnome-subtitles:
@@ -450,6 +453,7 @@ gstreamer:
 gstreamer:gstreamer-doc
 gstreamer|0.10:gstreamer-0_10
 gstreamer|0.10:gstreamer-0_10-doc
+gstreamer-editing-services:
 gsynaptics:
 gtetrinet:
 gtg:
@@ -502,6 +506,7 @@ hamster-applet:
 hamster-time-tracker:
 hicolor-icon-theme:
 hippo-canvas:
+hitori:
 ht:
 hxtools:
 hyena:
@@ -843,6 +848,7 @@ polkit:
 poppler-data:
 poppler:
 posixovl:
+postr:
 powerpc-utils:
 ppc64-diag:
 presage:
