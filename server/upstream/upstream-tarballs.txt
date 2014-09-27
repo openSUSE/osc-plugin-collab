@@ -686,6 +686,7 @@ vim:ftpls:ftp://ftp.vim.org/pub/vim/unix/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
 weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
+webkitgtk|2.4:httpls:http://webkitgtk.org/releases/
 webkitgtk:httpls:http://webkitgtk.org/releases/
 wmakerconf:sf:196469|wmakerconf
 x-tile:httpls:http://www.giuspen.com/software/
