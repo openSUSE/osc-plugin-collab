@@ -237,7 +237,7 @@ class UpstreamDb:
         branch_path = os.path.join(self.dest_dir, branch)
 
         if not os.path.exists(branch_path):
-            print >> sys.stderr, 'No file available for requested branch %s, keeping previous data if available.' % branch
+            print >> sys.stderr, 'No file %s available for requested branch %s, keeping previous data if available.' % (branch_path, branch)
             return
 
         (branch_id, branch_mtime) = self._get_branch_data(branch)
