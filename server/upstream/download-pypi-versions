@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2014, SUSE LINUX Products GmbH
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this library; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+# USA
+#
+# (Licensed under the LGPLv2.1 or later)
+#
+#
+# Authors: Thomas Bechtold <tbechtold@suse.com>
+#
+
+import argparse
+import os
+import sys
+import time
+from multiprocessing import Pool
+
+try:
+    import xmlrpclib
+except ImportError:
+    # Python3 support
+    import xmlrpc.client as xmlrpclib
+
+
+XMLRPC_SERVER_PROXY = 'https://pypi.python.org/pypi'
+
+
+def __get_package_list():
+    """get a list with packages available on pypi"""
+    client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+    packages_list = client.list_packages()
+    return packages_list
+
+
+def __get_package_info(package):
+    """get highest sdist package version for the given package name"""
+    info = dict()
+    client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+    releases = client.package_releases(package)
+    if len(releases) > 0:
+        info['version'] = releases[0]
+        for data in client.release_urls(package, info['version']):
+            if data['packagetype'] == 'sdist':
+                info['url'] = data['url']
+                info['name'] = package
+                return info
+    # no sdist package version found.
+    return None
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Get package version from pypi')
+    parser.add_argument(
+        '--save-file', default='versions-pypi',
+        help='path to the file where the results will be written')
+    parser.add_argument(
+        '--log', default=sys.stderr,
+        help='log file to use (default: stderr)')
+    parser.add_argument(
+        '--only-if-old', action='store_true', default=False,
+        help='execute only if the pre-existing result file is older than 12 hours')
+
+
+    args = vars(parser.parse_args())
+
+    # check file age
+    if os.path.exists(args['save_file']):
+        if not os.path.isfile(args['save_file']):
+            sys.stderr.write('Save file %s is not a regular file.\n' % args['save_file'])
+            sys.exit(1)
+        if args['only_if_old']:
+            stats = os.stat(args['save_file'])
+            # Quit if it's less than 12-hours old
+            if time.time() - stats.st_mtime < 3600 * 12:
+                sys.exit(2)
+
+    try:
+        if args['log'] != sys.stderr:
+            sys_stderr = sys.stderr
+            sys.stderr = open(args['log'], 'a')
+
+        with open(args['save_file'], "w") as o:
+            pack_list = __get_package_list()
+            sys.stderr.write(
+                "Found %s packages. Getting packages details...\n" %
+                (len(pack_list)))
+            p = Pool(50)
+            res = p.map(__get_package_info, pack_list)
+
+            for pack_info in res:
+                if pack_info:
+                    #FIXME(toabctl): check somehow if py2 and py3 versions are
+                    # available currently just write python- and
+                    # python3- names so both versions can be checked
+                    o.write("pypi:python-%(name)s:%(version)s:%(url)s\n" %
+                            pack_info)
+                    o.write("pypi:python3-%(name)s:%(version)s:%(url)s\n" %
+                            pack_info)
+    finally:
+        if args['log'] != sys.stderr:
+            sys.stderr.close()
+            sys.stderr = sys_stderr
+
+    sys.exit(0)

@@ -47,7 +47,7 @@ import util
 
 MATCH_CHANGE_NAME = ''
 # FIXME: we hardcode this list of branches since, well, there's no better way to do that :/
-BRANCHES_WITHOUT_PKG_MATCH = [ 'fallback', 'cpan' ]
+BRANCHES_WITHOUT_PKG_MATCH = [ 'fallback', 'cpan', 'pypi' ]
 
 #######################################################################
 
@@ -299,6 +299,8 @@ class UpstreamDb:
                 url = ''
             elif match.group(1) == 'cpan':
                 url = posixjoin('http://cpan.perl.org/CPAN/authors/id/', match.group(4))
+            elif match.group(1) == 'pypi':
+                url = match.group(4)
             elif match.group(1) == 'fgo':
                 versions = version.split('.')
                 if len(versions) == 1:
