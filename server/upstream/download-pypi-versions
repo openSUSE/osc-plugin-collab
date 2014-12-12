@@ -25,6 +25,7 @@
 #
 
 import argparse
+import functools
 import os
 import sys
 import time
@@ -40,6 +41,158 @@ except ImportError:
 XMLRPC_SERVER_PROXY = 'https://pypi.python.org/pypi'
 
 
+@functools.total_ordering
+class PackageInfo(object):
+    """Represents a package info"""
+    def __init__(self, type_, name, version, url):
+        self.type = type_.strip()
+        self.name = name.strip()  # the original name from pypi (without python3- or python- prefix)
+        self.version = version.strip()
+        self.url = url.strip()
+
+    def __repr__(self):
+        return "PackageInfo obj <%s:%s:%s:%s>" % (self.type, self.name, self.version, self.url)
+
+    def __eq__(self, other):
+        if hasattr(other, 'name'):
+            return self.name == other.name
+
+    def __lt__(self, other):
+        if hasattr(other, 'name'):
+            return self.name < other.name
+
+
+def __get_save_file_serial_name(save_file):
+    """filename to use to store the latest used changelog serial from pypi"""
+    return save_file + "-changelog-serial"
+
+
+def __get_cached_changelog_last_serial(save_file):
+    """try to read the latest changelog serial and return
+    the number or None if not available"""
+    serial_file = __get_save_file_serial_name(save_file)
+    if os.path.exists(serial_file):
+        with open(serial_file, 'r') as f:
+            return int(f.readline())
+    # no changelog serial available
+    return None
+
+
+def __write_cached_changelog_last_serial(save_file, changelog_serial=None):
+    """update the cached changelog serial with the current serial from pypi"""
+    if not changelog_serial:
+        client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+        changelog_serial = str(client.changelog_last_serial())
+
+    serial_file = __get_save_file_serial_name(save_file)
+    with open(serial_file, 'w') as sf:
+        sf.write("%s\n" % changelog_serial)
+
+
+def __read_pypi_package_file(save_file):
+    """read the given pypi file into a list of PackageInfo objs"""
+    packages = list()
+    with open(save_file, "r") as f:
+        for line in f.readlines():
+            if line.startswith('#'):
+                continue
+            pack_info = PackageInfo(*line.split(':', 3))
+            # skip python3-* lines
+            if pack_info.name.startswith('python3-'):
+                continue
+            # remove python- prefix
+            if pack_info.name.startswith('python-'):
+                pack_info.name = pack_info.name.replace('python-', '', 1)
+            # now pack_info.name should have the original name from pypi
+            packages.append(pack_info)
+    return packages
+
+
+def __write_pypi_package_file(save_file, packages):
+    """write the pypi file. packages is a list of PackageInfo objs"""
+    with open(save_file, "w") as o:
+        for pi in sorted(packages):
+            if pi:
+                # FIXME(toabctl): check somehow if py2 and py3 versions are
+                # available currently just write python- and
+                # python3- names so both versions can be checked
+                o.write("%s:python-%s:%s:%s\n" %
+                        (pi.type, pi.name, pi.version, pi.url))
+                o.write("%s:python3-%s:%s:%s\n" %
+                        (pi.type, pi.name, pi.version, pi.url))
+
+
+def __create_pypi_package_file(save_file):
+    """create a new file with version information for pypi packages.
+    This step is expensive because it fetches the package list
+    from pypi (> 50000 packages) and then does a request for
+    every package to get the version information."""
+    try:
+        pack_list = __get_package_list()
+        sys.stderr.write(
+            "Found %s packages. Getting packages details...\n" %
+            (len(pack_list)))
+        p = Pool(50)
+        packages = p.map(__get_package_info, pack_list)
+        __write_pypi_package_file(save_file, packages)
+    except Exception as e:
+        sys.stderr.write("Error while creating the initial pypi file: %s\n" % e)
+        # something wrong - delete the serial file so in the next run the
+        # the file will be recreated
+        serial_file = __get_save_file_serial_name(save_file)
+        os.remove(serial_file)
+    else:
+        sys.stderr.write("Initial pypi file '%s' created\n" % save_file)
+
+
+def __find_package_name_index(packages, name):
+    """find the given name in the packages list or None if not found"""
+    for i, pack in enumerate(packages):
+        if pack.name == name:
+            return i
+    return None
+
+
+def __update_pypi_package_file(save_file, current_changelog):
+    """update information of an exisiting file"""
+    try:
+        if os.path.exists(save_file):
+            packages = __read_pypi_package_file(save_file)
+            client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+            changes = client.changelog_since_serial(current_changelog)
+            handled_changes = 0
+            sys.stderr.write("Started processing %s change requests...\n" % len(changes))
+            for (name, version, timestamp, action, serial) in changes:
+                # TODO(toabctl): do it in parallel to improve speed
+                if action == 'remove':
+                    handled_changes += 1
+                    index = __find_package_name_index(packages, name)
+                    if index:
+                        del packages[index]
+                elif action == 'new release':
+                    handled_changes += 1
+                    updated_pack_info = __get_package_info(name)
+                    if updated_pack_info:
+                        index = __find_package_name_index(packages, name)
+                        if index:
+                            packages[index] = updated_pack_info
+                        else:
+                            packages.append(updated_pack_info)
+                else:
+                    pass
+            # write the new file with the updated package list
+            __write_pypi_package_file(save_file, packages)
+        else:
+            raise Exception("Can not update '%s'. File does not exist" % save_file)
+    except Exception as e:
+        # reset changelog serial because something was wrong an we don't want to miss changes
+        __write_cached_changelog_last_serial(save_file, changelog_serial=current_changelog)
+        sys.stderr.write("pypi file update for '%s' failed: %s.\nReset changelog serial to %s\n"
+                         % (save_file, e, current_changelog))
+    else:
+        sys.stderr.write("pypi file update for '%s' succesful. Handled %s changes\n" % (save_file, handled_changes))
+
+
 def __get_package_list():
     """get a list with packages available on pypi"""
     client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
@@ -49,16 +202,15 @@ def __get_package_list():
 
 def __get_package_info(package):
     """get highest sdist package version for the given package name"""
-    info = dict()
-    client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
-    releases = client.package_releases(package)
-    if len(releases) > 0:
-        info['version'] = releases[0]
-        for data in client.release_urls(package, info['version']):
-            if data['packagetype'] == 'sdist':
-                info['url'] = data['url']
-                info['name'] = package
-                return info
+    try:
+        client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+        releases = client.package_releases(package)
+        if len(releases) > 0:
+            for data in client.release_urls(package, releases[0]):
+                if data['packagetype'] == 'sdist':
+                    return PackageInfo('pypi', package, releases[0], data['url'])
+    except Exception as e:
+        sys.stderr.write("can not get information for package '%s': %s\n" % (package, e))
     # no sdist package version found.
     return None
 
@@ -95,23 +247,11 @@ if __name__ == "__main__":
             sys_stderr = sys.stderr
             sys.stderr = open(args['log'], 'a')
 
-        with open(args['save_file'], "w") as o:
-            pack_list = __get_package_list()
-            sys.stderr.write(
-                "Found %s packages. Getting packages details...\n" %
-                (len(pack_list)))
-            p = Pool(50)
-            res = p.map(__get_package_info, pack_list)
-
-            for pack_info in res:
-                if pack_info:
-                    #FIXME(toabctl): check somehow if py2 and py3 versions are
-                    # available currently just write python- and
-                    # python3- names so both versions can be checked
-                    o.write("pypi:python-%(name)s:%(version)s:%(url)s\n" %
-                            pack_info)
-                    o.write("pypi:python3-%(name)s:%(version)s:%(url)s\n" %
-                            pack_info)
+        current_changelog = __get_cached_changelog_last_serial(args['save_file'])
+        if current_changelog:
+            __update_pypi_package_file(args['save_file'], current_changelog)
+        else:
+            __create_pypi_package_file(args['save_file'])
     finally:
         if args['log'] != sys.stderr:
             sys.stderr.close()
