@@ -127,6 +127,11 @@ def __create_pypi_package_file(save_file):
     This step is expensive because it fetches the package list
     from pypi (> 50000 packages) and then does a request for
     every package to get the version information."""
+
+    # get current changelog serial and store in file before doing anything
+    # else so we can't lose some changes while we create the file
+    __write_cached_changelog_last_serial(save_file)
+
     try:
         pack_list = __get_package_list()
         sys.stderr.write(
