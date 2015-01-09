@@ -95,7 +95,7 @@ class ObsDb:
 
     def __init__(self):
         if not os.path.exists(_db_file):
-            raise ObsDbException('Database unavailable')
+            raise ObsDbException('Database %s unavailable' % (os.path.abspath(_db_file)))
 
         self.conn = sqlite3.connect(_db_file)
         if not self.conn:
