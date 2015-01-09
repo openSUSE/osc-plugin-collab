@@ -193,6 +193,7 @@ def __update_pypi_package_file(save_file, current_changelog):
         if os.path.exists(save_file):
             packages = __read_pypi_package_file(save_file)
             client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+            changelog_serial = str(client.changelog_last_serial())
             changes = client.changelog_since_serial(current_changelog)
             handled_changes = 0
             sys.stderr.write("Started processing %s change requests...\n" % len(changes))
@@ -216,13 +217,12 @@ def __update_pypi_package_file(save_file, current_changelog):
                     pass
             # write the new file with the updated package list
             __write_pypi_package_file(save_file, packages)
+            __write_cached_changelog_last_serial(save_file, changelog_serial=changelog_serial)
         else:
             raise Exception("Can not update '%s'. File does not exist" % save_file)
     except Exception as e:
-        # reset changelog serial because something was wrong an we don't want to miss changes
-        __write_cached_changelog_last_serial(save_file, changelog_serial=current_changelog)
-        sys.stderr.write("pypi file update for '%s' failed: %s.\nReset changelog serial to %s\n"
-                         % (save_file, e, current_changelog))
+        sys.stderr.write("pypi file update for '%s' failed: %s.\n"
+                         % (save_file, e))
     else:
         sys.stderr.write("pypi file update for '%s' successful. Handled %s changes\n" % (save_file, handled_changes))
 
