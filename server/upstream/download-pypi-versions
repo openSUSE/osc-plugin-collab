@@ -224,7 +224,7 @@ def __update_pypi_package_file(save_file, current_changelog):
         sys.stderr.write("pypi file update for '%s' failed: %s.\nReset changelog serial to %s\n"
                          % (save_file, e, current_changelog))
     else:
-        sys.stderr.write("pypi file update for '%s' succesful. Handled %s changes\n" % (save_file, handled_changes))
+        sys.stderr.write("pypi file update for '%s' successful. Handled %s changes\n" % (save_file, handled_changes))
 
 
 def __get_package_list():
