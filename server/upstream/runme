@@ -315,10 +315,11 @@ download_gnome_version 3.8
 download_gnome_version 3.8-extras
 download_gnome_version 3.12
 download_gnome_version 3.12-extras
-download_gnome_version stable
-download_gnome_version unstable
-download_gnome_version stable-extras
-download_gnome_version unstable-extras
+# Disabled because of infrastructure change on GNOME servers
+#download_gnome_version stable
+#download_gnome_version unstable
+#download_gnome_version stable-extras
+#download_gnome_version unstable-extras
 
 # Do this once, before the slow step
 concatenate_all_versions
