@@ -18,6 +18,7 @@ Gtk2:perl-Gtk2
 LaTeXPlugin:gedit-latex-plugin
 LibRaw:libraw
 ModemManager:
+NetworkManager-iodine:
 NetworkManager-openconnect:
 NetworkManager-openswan:
 NetworkManager-openvpn:
@@ -303,6 +304,7 @@ gnome-build:
 gnome-calculator:
 gnome-chess:
 gnome-clocks:
+gnome-code-assistance:
 gnome-color-chooser:
 gnome-color-manager:
 gnome-colors:gnome-colors-icon-theme
@@ -325,6 +327,7 @@ gnome-epub-thumbnailer:
 gnome-font-viewer:
 gnome-games-extra-data:
 gnome-games:
+gnome-getting-started-docs:
 gnome-gmail-notifier:
 gnome-gmail:
 gnome-icon-theme-extras:
@@ -347,6 +350,7 @@ gnome-menus|3.1:gnome-menus-legacy
 gnome-mime-data:
 gnome-mines:
 gnome-mount:
+gnome-multi-writer:
 gnome-music:
 gnome-netstatus:
 gnome-nettool:
@@ -383,6 +387,7 @@ gnome-subtitles:
 gnome-sudoku:
 gnome-system-log:
 gnome-system-monitor:
+gnome-taquin:
 gnome-terminal:
 gnome-tetravex:
 gnome-themes-extras:
@@ -414,6 +419,7 @@ gocr:
 goffice:
 goffice|0.9:goffice-0_8
 gok:
+gom:
 gonvert:
 goobox:
 goocanvas:
@@ -659,6 +665,7 @@ libgpod:
 libgrss:
 libgsasl:
 libgsf:
+libgsystem:
 libgtkhtml:
 libgtksourceviewmm:
 libgtop:
@@ -674,6 +681,7 @@ liblouis:
 liblouis:python-louis
 libmatroska:
 libmcs:
+libmediaart:
 libmnl:
 libmodman:
 libmowgli:
