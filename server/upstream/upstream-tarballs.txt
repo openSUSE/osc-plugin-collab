@@ -80,7 +80,8 @@ DeviceKit:httpls:http://hal.freedesktop.org/releases/
 LaTeXPlugin:sf:204144
 LibRaw:httpls:http://www.libraw.org/download
 NetworkManager-strongswan:httpls:http://download.strongswan.org/NetworkManager/
-PackageKit:httpls:http://www.packagekit.org/releases/
+PackageKit:httpls:http://www.freedesktop.org/software/PackageKit/releases/
+PackageKit-Qt:httpls:http://www.freedesktop.org/software/PackageKit/releases/
 PolicyKit-gnome:httpls:http://hal.freedesktop.org/releases/
 QtCurve-Gtk2:httpls:http://www.kde-look.org/content/download.php?content=40492&id=3
 UPnP-Inspector:httpls:http://coherence.beebits.net/download/
@@ -94,6 +95,7 @@ anthy:sf_jp:anthy
 apache-couchdb:httpls:http://couchdb.apache.org/downloads.html
 appdata-tools:httpls:http://people.freedesktop.org/~hughsient/releases/
 appres:httpls:http://xorg.freedesktop.org/releases/individual/app/
+appstream-glib:httpls:http://people.freedesktop.org/~hughsient/appstream-glib/releases/
 aqbanking:httpls:http://www.aquamaniac.de/sites/download/packages.php?showall=1
 arista:httpls:http://www.transcoder.org/downloads/
 arping:httpls:http://www.habets.pp.se/synscan/files/
@@ -429,6 +431,7 @@ libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
 liblbxutil:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 liblouis:google:liblouis
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
+libmbim:httpls:http://www.freedesktop.org/software/libmbim/
 libmcs:httpls:http://distfiles.atheme.org/
 libmnl:httpls:http://ftp.netfilter.org/pub/libmnl/
 libmodman:google:libmodman
@@ -452,6 +455,7 @@ libplist:httpls:http://github.com/JonathanBeck/libplist/downloads
 libproxy:google:libproxy
 libpst:httpls:http://www.five-ten-sg.com/libpst/packages/
 libpwquality:httpls:https://fedorahosted.org/releases/l/i/libpwquality/
+libqmi:httpls:http://www.freedesktop.org/software/libqmi/
 librep:httpls:http://download.tuxfamily.org/librep/
 librime:google:rimeime|librime
 libsexy:httpls:http://releases.chipx86.com/libsexy/libsexy/
@@ -460,6 +464,7 @@ libssui:google:libssui
 libtasn1:httpls:http://ftp.gnu.org/gnu/libtasn1/
 libtelepathy:httpls:http://telepathy.freedesktop.org/releases/libtelepathy/
 libthai:httpls:http://linux.thai.net/pub/thailinux/software/libthai/
+libturpial:httpls:http://files.turpial.org.ve/sources/stable/
 libvirt-cim:httpls:http://libvirt.org/sources/CIM/
 libvirt-glib:httpls:http://libvirt.org/sources/glib/
 libvirt:httpls:http://libvirt.org/sources/
@@ -467,6 +472,7 @@ libvpx:google:webm|libvpx
 libwacom:sf:69596|libwacom
 libwebp:google:webp|libwebp
 libxcb:httpls:http://xorg.freedesktop.org/releases/individual/xcb/
+libxkbcommon:httpls:http://xkbcommon.org/download/
 libxkbfile:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxkbui:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxklavier:sf:319|libxklavier
@@ -495,6 +501,7 @@ moc:httpls:http://moc.daper.net/download
 mod_dnssd:httpls:http://0pointer.de/lennart/projects/mod_dnssd/
 monsoon:httpls:http://www.monsoon-project.org/jaws/index.php?page/Download
 mozilla-bonobo:httpls:http://download.savannah.gnu.org/releases/moz-bonobo/
+mbpurple:google:microblog-purple|mbpurple
 mrim-prpl:google:mrim-prpl|mrim-prpl
 mtr:ftpls:ftp://ftp.bitwizard.nl/mtr/
 mx:httpls:https://github.com/clutter-project/mx/downloads
@@ -520,6 +527,7 @@ openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 opus:httpls:http://downloads.xiph.org/releases/opus/
 orc:httpls:http://code.entropywave.com/download/orc/
+osm-gps-map:httpls:https://github.com/nzjrs/osm-gps-map/releases/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
 pam_mount:sf:41452
@@ -671,6 +679,7 @@ twm:httpls:http://xorg.freedesktop.org/releases/individual/app/
 udisks:httpls:http://udisks.freedesktop.org/releases/
 udisks|1.90:dualhttpls:http://hal.freedesktop.org/releases/|http://udisks.freedesktop.org/releases/
 uget:sf:72252|Uget (stable)
+uhttpmock:httpls:https://tecnocode.co.uk/downloads/uhttpmock/
 ulogd:httpls:http://ftp.netfilter.org/pub/ulogd/
 unico:lp:unico
 upower:httpls:http://upower.freedesktop.org/releases/
