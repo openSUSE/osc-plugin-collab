@@ -45,6 +45,8 @@
 #     It can also contain the path for sourceforge projects using
 #     packages. In this case, the ids should be separated by a pipe:
 #     project_id|path
+#   + Project ID can be found by going to http://sourceforge.net/rest/p/<project_name>?doap
+#     (i.e. http://sourceforge.net/rest/p/swig?doap), and searching for the <sf:id> field
 #
 # sf_jp:
 #   + use this when the upstream tarballs are hosted on sourceforge.jp
@@ -646,7 +648,7 @@ stk:httpls:https://ccrma.stanford.edu/software/stk/download.html
 sunpinyin:google:sunpinyin
 swfdec-mozilla:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec-mozilla/
 swfdec:subdirhttpls:http://swfdec.freedesktop.org/download/swfdec/
-swig:sf:swig
+swig:sf:1645
 synapse:lp:synapse-project
 system-config-printer:subdirhttpls:http://cyberelk.net/tim/data/system-config-printer/
 tangerine:lp:tangerine
