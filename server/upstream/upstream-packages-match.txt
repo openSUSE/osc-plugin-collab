@@ -60,6 +60,7 @@ at-spi:
 atheme-services:atheme
 atk:
 atkmm:
+atomix:
 audiofile:
 autocutsel:
 avahi:
