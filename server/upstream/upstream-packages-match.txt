@@ -297,6 +297,7 @@ gnome-activity-journal:
 gnome-applets:
 gnome-audio:
 gnome-backgrounds:
+gnome-battery-bench:
 gnome-blog:
 gnome-bluetooth:
 gnome-boxes:
