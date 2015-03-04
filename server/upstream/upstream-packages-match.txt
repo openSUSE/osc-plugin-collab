@@ -299,6 +299,7 @@ gnome-bluetooth:
 gnome-boxes:
 gnome-build:
 gnome-calculator:
+gnome-characters:
 gnome-chess:
 gnome-clocks:
 gnome-color-chooser:
