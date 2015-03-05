@@ -64,6 +64,7 @@ at-spi:
 atheme-services:atheme
 atk:
 atkmm:
+atomix:
 audiofile:
 autocutsel:
 avahi:
@@ -300,6 +301,7 @@ gnome-activity-journal:
 gnome-applets:
 gnome-audio:
 gnome-backgrounds:
+gnome-battery-bench:
 gnome-blog:
 gnome-bluetooth:
 gnome-boxes:
