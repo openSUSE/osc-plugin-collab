@@ -989,6 +989,7 @@ swell-foop:
 swfdec-gnome:
 swfdec-mozilla:
 swfdec:
+swig:
 synapse:
 system-config-printer:
 tali:
@@ -1227,11 +1228,18 @@ gnome-patch-translation:
 gnome-shell-search-provider-openSUSE-packages:
 gos-wallpapers:
 gtk2-themes:
+libsolv:
+libzypp:
+libzypp-bindings:
+libzypp-testsuite-tools:
 metacity-themes:
 opt_gnome-compat:
 tennebon-dynamic-wallpaper:
 translation-update:
+yast2:
 yast2-control-center-gnome:
+zypp-plugin:
+zypper:
 
 ##
 ## Packages that we removed
