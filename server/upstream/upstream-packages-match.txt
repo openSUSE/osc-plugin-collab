@@ -307,6 +307,8 @@ gnome-bluetooth:
 gnome-boxes:
 gnome-build:
 gnome-calculator:
+gnome-calendar:
+gnome-characters:
 gnome-chess:
 gnome-clocks:
 gnome-code-assistance:
