@@ -140,6 +140,7 @@ dasher:
 dbus-glib:dbus-1-glib
 dbus:dbus-1
 dconf:
+dconf-editor:
 dd_rescue:
 ddrescue:gnu_ddrescue
 decibel-audio-player:
@@ -161,6 +162,7 @@ docky:
 dogtail:
 drwright:
 dwarves:
+easytag:
 ed:
 editres:
 eds-feed:evolution-galago
@@ -820,6 +822,7 @@ nss-mdns:
 ntfs-3g_ntfsprogs:ntfs-3g
 ntfs-3g_ntfsprogs:ntfs-3g_ntfsprogs
 ntfs-config:
+nuntius:
 obby:
 obex-data-server:
 oclock:
@@ -834,6 +837,7 @@ opus:
 orc:
 orca:
 osm-gps-map:
+ostree:
 p11-kit:
 padevchooser:
 pam_mount:
@@ -1083,6 +1087,7 @@ xcursor-themes:
 xcursorgen:
 xdbedizzy:
 xdelta:
+xdg-app:
 xdg-user-dirs-gtk:
 xdg-user-dirs:
 xdg-utils:
