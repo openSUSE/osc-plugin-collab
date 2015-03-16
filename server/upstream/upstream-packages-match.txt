@@ -684,6 +684,8 @@ libgusb:
 libgweather:
 libgxps:
 libhangul:
+libical:
+libical-glib:
 libinfinity:
 libiptcdata:
 libjingle:
