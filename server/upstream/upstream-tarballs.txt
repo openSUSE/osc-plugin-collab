@@ -427,6 +427,7 @@ libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
 libgusb:httpls:http://people.freedesktop.org/~hughsient/releases/
 libhangul:google:libhangul
+libical:sf:16077
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|libiptcdata
 libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
