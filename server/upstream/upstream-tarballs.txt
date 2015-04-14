@@ -268,7 +268,7 @@ gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
 gonvert:httpls:http://www.unihedron.com/projects/gonvert/downloads/
 google-gadgets-for-linux:google:google-gadgets-for-linux
 gourmet:sf:108118
-gpa:httpls:http://wald.intevation.org/frs/?group_id=13
+gpa:ftpls:ftp://ftp.gnupg.org/gcrypt/gpa/
 gparted:sf:115843
 gpaste:httpls:https://github.com/Keruspe/GPaste/downloads
 gpick:google:gpick
