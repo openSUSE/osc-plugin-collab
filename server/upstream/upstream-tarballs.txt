@@ -262,6 +262,7 @@ gnonlin:httpls:http://gstreamer.freedesktop.org/src/gnonlin/
 gnucash:sf:192|gnucash (stable)
 # gnucash-docs: Not updated anymore: gnucash-docs:httpls:http://www.gnucash.org/pub/gnucash/sources/stable/
 gnucash-docs:sf:192|gnucash-docs
+gnupg:ftpls:ftp://ftp.gnupg.org/gcrypt/gnupg/
 gobby:httpls:http://releases.0x539.de/gobby/
 gobby|0.4:httpls:http://releases.0x539.de/gobby/
 gocr:httpls:http://www-e.uni-magdeburg.de/jschulen/ocr/download.html
@@ -271,6 +272,7 @@ gourmet:sf:108118
 gpa:ftpls:ftp://ftp.gnupg.org/gcrypt/gpa/
 gparted:sf:115843
 gpaste:httpls:https://github.com/Keruspe/GPaste/downloads
+gpgme:ftpls:ftp://ftp.gnupg.org/gcrypt/gpgme/
 gpick:google:gpick
 gpodder:httpls:http://gpodder.org/src/
 gq:sf:3805|GQ LDAP Client
@@ -399,6 +401,7 @@ libXxf86dga:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libXxf86misc:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libXxf86vm:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
+libassuan:ftpls:ftp://ftp.gnupg.org/gcrypt/libassuan/
 libatasmart:httpls:http://0pointer.de/public/
 libbraille:sf:17127|libbraille
 libbs2b:sf:151236
@@ -418,10 +421,12 @@ libfontenc:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libgadu:httpls:http://toxygen.net/libgadu/files/
 libgalago-gtk:httpls:http://www.galago-project.org/files/releases/source/libgalago-gtk/
 libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
+libgcrypt:ftpls:ftp://ftp.gnupg.org/gcrypt/libgcrypt/
 libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
 libggz:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgooglepinyin:google:libgooglepinyin
+libgpg-error:ftpls:ftp://ftp.gnupg.org/gcrypt/libgpg-error/
 libgpod:sf:67873|libgpod
 libgrss:httpls:http://gtk.mplat.es/libgrss/tarballs/
 libgsasl:httpls:http://ftp.gnu.org/pub/gnu/gsasl/
@@ -431,6 +436,7 @@ libical:sf:16077
 libinfinity:httpls:http://releases.0x539.de/libinfinity/
 libiptcdata:sf:130582|libiptcdata
 libjingle:httpls:http://farsight.freedesktop.org/releases/obsolete/libjingle/
+libksba:ftpls:ftp://ftp.gnupg.org/gcrypt/libksba/
 liblbxutil:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 liblouis:google:liblouis
 libmatroska:httpls:http://dl.matroska.org/downloads/libmatroska/
@@ -517,6 +523,7 @@ nimbus:httpls:http://dlc.sun.com/osol/jds/downloads/extras/nimbus/
 njb-sharp:httpls:http://download.banshee.fm/legacy/njb-sharp/
 notify-osd:lp:notify-osd
 notify-python:httpls:http://www.galago-project.org/files/releases/source/notify-python/
+npth:ftpls:ftp://ftp.gnupg.org/gcrypt/npth/
 nspluginwrapper:httpls:http://nspluginwrapper.org/download/
 nss-mdns:httpls:http://0pointer.de/lennart/projects/nss-mdns/
 ntfs-3g_ntfsprogs:httpls:http://www.tuxera.com/community/ntfs-3g-download/
@@ -550,6 +557,7 @@ pidgin-openfetion:google:ofetion|pidgin-openfetion
 pidgin-otr:httpls:http://www.cypherpunks.ca/otr/
 pidgin-sipe:sf:194563|sipe
 pidgin:sf:235|Pidgin
+pinentry:ftpls:ftp://ftp.gnupg.org/gcrypt/pinentry/
 pino:google:pino-twitter|pino
 pithos:httpls:http://kevinmehall.net/p/pithos/release/
 pixman:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/

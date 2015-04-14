@@ -420,6 +420,7 @@ gnote:
 gnucash-docs:
 gnucash:
 gnumeric:
+gnupg:gpg2
 gob2:
 gobby:
 gobby|0.4:gobby04
