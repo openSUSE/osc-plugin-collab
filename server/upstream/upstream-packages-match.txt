@@ -694,7 +694,7 @@ libical-glib:
 libinfinity:
 libiptcdata:
 libjingle:
-libksba
+libksba:
 liblbxutil:
 liblouis:
 liblouis:python-louis
