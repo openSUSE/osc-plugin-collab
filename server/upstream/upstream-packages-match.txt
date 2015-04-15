@@ -420,6 +420,7 @@ gnote:
 gnucash-docs:
 gnucash:
 gnumeric:
+gnupg:gpg2
 gob2:
 gobby:
 gobby|0.4:gobby04
@@ -439,6 +440,7 @@ gourmet:
 gpa:
 gparted:
 gpaste:
+gpgme:
 gpick:
 gpodder:
 gq:
@@ -615,6 +617,7 @@ libXxf86misc:
 libXxf86vm:
 libao-pulse:
 libart_lgpl:
+libassuan:
 libatasmart:
 libbeagle:
 libbonobo:
@@ -643,6 +646,7 @@ libgadu:
 libgail-gnome:
 libgalago-gtk:
 libgalago:
+libgcrypt:
 libgda:
 libgda|3.99:libgda3
 libgdamm:
@@ -671,6 +675,7 @@ libgnomeui:
 libgnomeuimm:
 libgooglepinyin:
 libgovirt:
+libgpg-error:
 libgpod:
 libgrss:
 libgsasl:
@@ -689,6 +694,7 @@ libical-glib:
 libinfinity:
 libiptcdata:
 libjingle:
+libksba:
 liblbxutil:
 liblouis:
 liblouis:python-louis
@@ -819,6 +825,7 @@ njb-sharp:
 notification-daemon:
 notify-osd:
 notify-python:python-notify
+npth:
 nspluginwrapper:
 nss-mdns:
 ntfs-3g_ntfsprogs:ntfs-3g
@@ -864,6 +871,7 @@ pidgin-openfetion:
 pidgin-otr:
 pidgin-sipe:
 pidgin:
+pinentry:
 pino:
 pinpoint:
 pithos:
