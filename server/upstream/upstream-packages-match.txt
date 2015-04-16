@@ -306,6 +306,7 @@ gnome-blog:
 gnome-bluetooth:
 gnome-boxes:
 gnome-build:
+gnome-builder:
 gnome-calculator:
 gnome-calendar:
 gnome-characters:
