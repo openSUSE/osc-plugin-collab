@@ -104,6 +104,7 @@ arping:httpls:http://www.habets.pp.se/synscan/files/
 asio:sf:122478|asio
 atheme-services:httpls:http://atheme.net/downloads/
 autocutsel:httpls:http://download.savannah.gnu.org/releases/autocutsel/
+autofs:httpls:https://kernel.org/pub/linux/daemons/autofs/v5/
 avahi:httpls:http://avahi.org/download/
 babl:subdirhttpls:http://ftp.gtk.org/pub/babl/
 bakefile:sf:83016|bakefile
@@ -112,12 +113,17 @@ banshee-community-extensions:subdirhttpls:http://download.banshee.fm/banshee-com
 bash-completion:httpls:http://bash-completion.alioth.debian.org/files/
 bdftopcf:httpls:http://xorg.freedesktop.org/releases/individual/app/
 beforelight:httpls:http://xorg.freedesktop.org/releases/individual/app/
+bfsync:httpls:http://space.twc.de/~stefan/bfsync/
+bindfs:httpls:http://bindfs.org/downloads/
 bitmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
+blktrace:httpls:http://brick.kernel.dk/snaps/
 blueproximity:sf:203022
 bombermaze:sf:8614|bombermaze
 bot-sentry:sf:156021|bot-sentry
 brltty:httpls:http://mielke.cc/brltty/releases/
 c++-gtk-utils:sf:277143|cxx-gtk-utils
+c-ares:httpls:http://c-ares.haxx.se/download/
+cachefilesd:httpls:http://people.redhat.com/~dhowells/fscache/
 cairo-clock:httpls:http://macslow.net/?page_id=23
 cairo-compmgr:httpls:http://download.tuxfamily.org/ccm/cairo-compmgr/
 cairo:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/releases/
@@ -125,6 +131,7 @@ cairomm:dualhttpls:http://cairographics.org/snapshots/|http://cairographics.org/
 ccgfs:sf:207310
 ccsm:subdirhttpls:http://releases.compiz.org/components/ccsm/
 cdecl:httpls:http://www.gtlib.cc.gatech.edu/pub/Linux/devel/lang/c/
+cdfs:httpls:https://users.elis.ugent.be/~mronsse/cdfs/download/
 check:sf:28255|check
 cherrytree:httpls:http://www.giuspen.com/software/
 chmlib:httpls:http://www.jedrea.com/chmlib/
@@ -132,6 +139,7 @@ chmsee:google:chmsee
 claws-mail-extra-plugins:sf:25528|extra plugins
 claws-mail:sf:25528|Claws Mail
 cloop:httpls:http://debian-knoppix.alioth.debian.org/packages/cloop/
+cmsfs:httpls:http://www.linuxvm.org/Patches
 cmuclmtk:sf:1904|cmuclmtk
 colorblind:httpls:https://alioth.debian.org/frs/?group_id=31117
 colord:httpls:http://www.freedesktop.org/software/colord/releases/
@@ -148,8 +156,10 @@ compizconfig-python:subdirhttpls:http://releases.compiz.org/components/compizcon
 computertemp:httpls:http://computertemp.berlios.de/download.php
 conglomerate:sf:82766|Conglomerate XML Editor
 conntrack-tools:httpls:http://ftp.netfilter.org/pub/conntrack-tools/
+cromfs:httpls:http://bisqwit.iki.fi/source/cromfs.html
 csmash:sf:4179|CannonSmash
 cups-pk-helper:httpls:http://www.freedesktop.org/software/cups-pk-helper/releases/
+davfs2:httpls:http://download.savannah.gnu.org/releases/davfs2/
 dbus-glib:httpls:http://dbus.freedesktop.org/releases/dbus-glib/
 dbus:httpls:http://dbus.freedesktop.org/releases/dbus/
 dd_rescue:httpls:http://garloff.de/kurt/linux/ddrescue/
@@ -163,6 +173,7 @@ devilspie:httpls:http://www.burtonini.com/computing/
 diffutils:httpls:http://ftp.gnu.org/gnu/diffutils/
 ding:httpls:http://ftp.tu-chemnitz.de/pub/Local/urz/ding/
 djvulibre:sf:32953|DjVuLibre
+dmapi:ftpls:ftp://oss.sgi.com/projects/xfs/cmd_tars/
 dmlangsel:google:loolixbodes|dmlangsel
 docky:lp:docky
 dwarves:httpls:http://fedorapeople.org/~acme/dwarves/
@@ -403,6 +414,7 @@ libXxf86vm:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libao-pulse:httpls:http://0pointer.de/lennart/projects/libao-pulse/
 libassuan:ftpls:ftp://ftp.gnupg.org/gcrypt/libassuan/
 libatasmart:httpls:http://0pointer.de/public/
+libatomic_ops:httpls:http://www.ivmaisoft.com/_bin/atomic_ops/
 libbraille:sf:17127|libbraille
 libbs2b:sf:151236
 libcanberra:httpls:http://0pointer.de/lennart/projects/libcanberra/
@@ -537,6 +549,7 @@ openfetion:google:ofetion|openfetion
 openobex:httpls:http://www.kernel.org/pub/linux/bluetooth/
 opus:httpls:http://downloads.xiph.org/releases/opus/
 orc:httpls:http://code.entropywave.com/download/orc/
+ori:httpls:https://bitbucket.org/orifs/ori/downloads/
 osm-gps-map:httpls:https://github.com/nzjrs/osm-gps-map/releases/
 p11-kit:httpls:http://p11-glue.freedesktop.org/releases/
 padevchooser:httpls:http://0pointer.de/lennart/projects/padevchooser/
@@ -681,6 +694,7 @@ telepathy-stream-engine:httpls:http://telepathy.freedesktop.org/releases/stream-
 tig:httpls:http://jonas.nitro.dk/tig/releases/
 tilda:sf:126081|tilda
 tinyproxy:httpls:https://banu.com/tinyproxy/
+tokyocabinet:httpls:http://fallabs.com/tokyocabinet/
 traffic-vis:httpls:http://www.mindrot.org/traffic-vis.html
 transmageddon:httpls:http://www.linuxrising.org/files/
 transmission:httpls:http://download.m0k.org/transmission/files/
@@ -703,6 +717,7 @@ varnish:httpls:http://repo.varnish-cache.org/source/
 vboxgtk:google:vboxgtk
 viewres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 vim:ftpls:ftp://ftp.vim.org/pub/vim/unix/
+vmfs-tools:httpls:http://glandium.org/projects/vmfs-tools/
 vobject:httpls:http://vobject.skyhouseconsulting.com/
 wadptr:httpls:http://soulsphere.org/projects/wadptr/
 weather-wallpaper:httpls:http://mundogeek.net/weather-wallpaper/
@@ -781,7 +796,9 @@ xfd:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xfindproxy:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xfontsel:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xfs:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xfsdump:ftpls:ftp://oss.sgi.com/projects/xfs/cmd_tars/
 xfsinfo:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xfsprogs:ftpls:ftp://oss.sgi.com/projects/xfs/cmd_tars/
 xfwp:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xgamma:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xgc:httpls:http://xorg.freedesktop.org/releases/individual/app/
