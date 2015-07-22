@@ -39,6 +39,12 @@
 #     https://svn.revolutionlinux.com/MILLE/XTERM/trunk/libflashsupport/Tarballs/
 #   + the info field should be the URL of the svn directory
 #
+# github::
+#   + use this when the tarballs are hosted on github
+#   + all tags that match accepted version schema are considered
+#   + works for projects that do not do the github-style releases
+#   + the expected url schema is https://github.com/project/repository/releases
+#
 # sf:
 #   + use this when the upstream tarballs are hosted on sourceforge
 #   + the info field should be the project id in sourceforge

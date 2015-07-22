@@ -425,6 +425,85 @@ def _get_version_from_files(modulename, location, files, limit):
 
 #######################################################################
 
+def _get_version_from_github(modulename, location, files, limit):
+    ''' Look up tar.gz links on github pages based on tags. Note, that the tags
+        do not have to be the github-style releases.
+	The tag naming should follow the standard version scheme, with or without
+	the 'v' prefix. The resulting url might not contain the modulename string,
+	but the Location: http header will.
+    '''
+    #FIXME: this is simplified version of _get_version_from_files, not optimal
+    def is_of_interest(modulename, file):
+        ''' The file is of interest if it contains the module name, and if
+            either the basename of the URI matches a tarball for this module,
+            or there's a query (like /download.cgi?filename=module-x.y.tar.gz)
+        '''
+        if not modulename in file:
+            return False
+
+	if re.search(r''+modulename+'.*tar\.gz$', file):
+	    return True
+
+        return False
+
+    # Only include tarballs for the given module
+    tarballs = [file for file in files if is_of_interest(modulename, file)]
+
+    # Remove fragment identifiers (anchors)
+    tarballs_new = []
+    for tarball in tarballs:
+        index = tarball.rfind('#')
+        if index != -1:
+            tarball = tarball[:index]
+        tarballs_new.append(tarball)
+    tarballs = tarballs_new
+
+    re_tarball = r'^.*'+modulename+'/archive/v?(([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
+    # Don't include -beta -installer -stub-installer and all kinds of
+    # other weird-named tarballs
+    tarballs = filter(lambda t: re.search(re_tarball, t), tarballs)
+
+    versions = map(lambda t: re.sub(re_tarball, r'\1', t), tarballs)
+
+    if not len(versions):
+        raise UpstreamDownloadError('No versions found')
+
+    version = _get_latest_version(versions, limit)
+
+    if not version:
+        raise UpstreamDownloadError('No version found respecting the limits')
+
+    indexes = _all_indexes(versions, version)
+    # the list is not in the right order, because of the way we build the list
+    indexes.reverse()
+
+    latest = [tarballs[index] for index in indexes]
+    tarballs = [file for file in latest if file.endswith('.tar.gz')]
+
+    if not tarballs:
+        raise UpstreamDownloadError('No tarball found for version %s' % version)
+
+    # at this point, all the tarballs we have are relevant, so just take the
+    # first one
+    tarball = tarballs[0]
+
+    if urlparse.urlparse(tarball).scheme != '':
+        # full URI
+        location = tarball
+    else:
+        # remove files from location when we know it's not a directory
+        if len(location) > 5 and location[-5:] in [ '.html' ]:
+            last_slash = location.rfind('/')
+            if last_slash != -1:
+                location = location[:last_slash + 1]
+        # add potentially missing slash to the directory
+        if location[-1:] != '/':
+            location = location + '/'
+        location = urlparse.urljoin(location, tarball)
+
+    return (location, version)
+
+#######################################################################
 
 def _fix_sf_location(url):
     if url and url.startswith('http://sourceforge.net/projects/') and url.endswith('/download'):
@@ -762,7 +841,7 @@ def get_upstream_version(cache_dir, modulename, method, additional_info, limit):
     # for branches, get the real modulename
     modulename = modulename.split('|')[0]
 
-    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'sf_jp', 'google', 'lp', 'trac' ]:
+    if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'sf_jp', 'google', 'lp', 'trac', 'github' ]:
         print >>sys.stderr, 'Unsupported method: %s' % method
         return (None, None)
 
@@ -825,6 +904,9 @@ def get_upstream_version(cache_dir, modulename, method, additional_info, limit):
     elif method == 'trac':
         return _get_version_from_trac(modulename, additional_info, limit)
 
+    elif method == 'github':
+        (location, files) = _get_files_from_http(additional_info, cache_dir)
+        return _get_version_from_github(modulename, location, files, limit)
 
 #######################################################################
 
