@@ -67,6 +67,7 @@ atkmm:
 atomix:
 audiofile:
 autocutsel:
+autofs:
 avahi:
 avahi:avahi-glib2
 avahi:avahi-mono
@@ -83,9 +84,12 @@ bdftopcf:
 beagle-xesam:
 beagle:
 beforelight:
+bfsync:
+bindfs:
 bigboard:
 bijiben:
 bitmap:
+blktrace:
 blueproximity:
 bombermaze:
 bot-sentry:
@@ -94,6 +98,8 @@ brltty:
 bug-buddy:
 byzanz:
 c++-gtk-utils:
+c-ares:libcares2
+cachefilesd:
 cairo-clock:
 cairo-compmgr:
 cairo:
@@ -104,6 +110,7 @@ caribou:
 ccgfs:
 ccsm:compizconfig-settings-manager
 cdecl:
+cdfs:
 check:
 cheese:
 cherrytree:
@@ -115,6 +122,7 @@ cloop:
 clutter-gst:
 clutter-gtk:
 clutter:
+cmsfs:
 cmuclmtk:
 cogl:
 colorblind:
@@ -133,8 +141,10 @@ computertemp:
 conduit:
 conglomerate:
 conntrack-tools:
+cromfs:
 csmash:
 cups-pk-helper:
+davfs2:
 d-feet:
 dasher:
 dbus-glib:dbus-1-glib
@@ -157,6 +167,7 @@ dia:
 diffutils:
 ding:
 djvulibre:
+dmapi:
 dmlangsel:
 docky:
 dogtail:
@@ -620,6 +631,7 @@ libao-pulse:
 libart_lgpl:
 libassuan:
 libatasmart:
+libatomic_ops:
 libbeagle:
 libbonobo:
 libbonoboui:
@@ -846,6 +858,7 @@ opensuse-font-fifth-leg:fifth-leg-font
 opus:
 orc:
 orca:
+ori:
 osm-gps-map:
 ostree:
 p11-kit:
@@ -1150,7 +1163,9 @@ xfd:
 xfindproxy:
 xfontsel:
 xfs:
+xfsdump:
 xfsinfo:
+xfsprogs:
 xfwp:
 xgamma:
 xgc:
