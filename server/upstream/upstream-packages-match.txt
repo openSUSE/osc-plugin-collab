@@ -414,6 +414,7 @@ gnome-tetravex:
 gnome-themes-extras:
 gnome-themes-standard:
 gnome-themes:
+gnome-todo:
 gnome-tweak-tool:
 gnome-user-docs:
 gnome-user-share:
