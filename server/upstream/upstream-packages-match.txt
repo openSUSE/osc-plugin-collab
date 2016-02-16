@@ -660,6 +660,7 @@ libgadu:
 libgail-gnome:
 libgalago-gtk:
 libgalago:
+libgames-support:
 libgcrypt:
 libgda:
 libgda|3.99:libgda3
