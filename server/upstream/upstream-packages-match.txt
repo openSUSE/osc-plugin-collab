@@ -310,6 +310,7 @@ gmime:
 gnac:
 gnet:
 gnokii:
+gnome-2048:
 gnome-activity-journal:
 gnome-applets:
 gnome-audio:
