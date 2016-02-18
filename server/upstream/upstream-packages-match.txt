@@ -167,6 +167,7 @@ dia:
 diffutils:
 ding:
 djvulibre:
+dleyna-server:
 dmapi:
 dmlangsel:
 docky:
@@ -248,6 +249,7 @@ galago-daemon:
 galago-gtk-sharp:
 galago-sharp:
 gbrainy:
+gcab:
 gcalctool:
 gccmakedep:
 gcin:
@@ -289,6 +291,7 @@ gimp-lqr-plugin:
 gimp-save-for-web:
 gimp:
 gir-repository:
+girl:
 git:
 gitg:
 giver:
@@ -376,6 +379,7 @@ gnome-multi-writer:
 gnome-music:
 gnome-netstatus:
 gnome-nettool:
+gnome-news:
 gnome-nibbles:
 gnome-online-accounts:
 gnome-online-miners:
@@ -465,6 +469,8 @@ grilo:
 grisbi:
 gromit:
 gsettings-desktop-schemas:
+gsound:
+gspell:
 gssdp:
 gst-plugins-bad:gstreamer-plugins-bad
 gst-plugins-bad|0.10:gstreamer-0_10-plugins-bad
@@ -567,6 +573,7 @@ ibus-unikey:
 iceauth:
 ico:
 icon-naming-utils:
+iio-sensor-proxy:
 imake:
 inkscape:
 input-pad:
@@ -589,6 +596,7 @@ krb5-auth-dialog:
 kye:
 kyotocabinet:
 lasem:
+latexila:
 lbxproxy:
 ldtp:
 libFS:
@@ -671,6 +679,7 @@ libgee:
 libgexiv2:
 libggz:ggz
 libghttp:
+libgit2:
 libgit2-glib:
 libglade:libglade2
 libglademm:
@@ -1130,6 +1139,7 @@ xf86dga:
 xf86-input-evdev:
 xf86-input-joystick:
 xf86-input-keyboard:
+xf86-input-libinput:
 xf86-input-mouse:
 xf86-input-synaptics:
 xf86-input-vmmouse:
@@ -1362,7 +1372,6 @@ zypper:
 #garnome:
 #gazpacho:
 #gb:
-#gcab:
 #gedit2:
 #gegl-vala:
 #geglmm:
@@ -1450,7 +1459,6 @@ zypper:
 #gxml:
 #gyrus:
 #hipo:
-#hitori:
 #imlib:
 #iogrind:
 #jamboree:
@@ -1468,7 +1476,6 @@ zypper:
 #libcm:
 #libeds-java:
 #libgda-uimm:
-#libgit2-glib:
 #libgnetwork:
 #libgnome2:
 #libgnomecanvas2:
@@ -1522,7 +1529,6 @@ zypper:
 #opengl-glib:
 #orbit-python:
 #orbitcpp:
-#ostree:
 #pan:
 #panelmm:
 #paperbox:
@@ -1570,7 +1576,6 @@ zypper:
 #ximian-setup-tools:
 #xml-i18n-tools:
 ## Added to ftp.gnome.org recently
-#latexila:
 #glick2:
 
 # Other gnome-related upstreams with no package in openSUSE

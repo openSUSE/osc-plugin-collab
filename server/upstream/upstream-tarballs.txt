@@ -355,6 +355,7 @@ ibus-unikey:google:ibus-unikey
 iceauth:httpls:http://xorg.freedesktop.org/releases/individual/app/
 ico:httpls:http://xorg.freedesktop.org/releases/individual/app/
 icon-naming-utils:httpls:http://tango.freedesktop.org/releases/
+iio-sensor-proxy:httpls:https://github.com/hadess/iio-sensor-proxy/releases
 imake:httpls:http://xorg.freedesktop.org/releases/individual/util/
 inkscape:sf:93438|inkscape
 input-pad:google:input-pad
@@ -436,6 +437,7 @@ libgalago:httpls:http://www.galago-project.org/files/releases/source/libgalago/
 libgcrypt:ftpls:ftp://ftp.gnupg.org/gcrypt/libgcrypt/
 libgexiv2:subdirhttpls:http://yorba.org/download/gexiv2/
 libggz:subdirhttpls:http://mirrors.ibiblio.org/ggzgamingzone/ggz/
+libgit2:htpls:https://github.com/libgit2/libgit2/releases/
 libgnomesu:httpls:http://members.chello.nl/~h.lai/libgnomesu/
 libgooglepinyin:google:libgooglepinyin
 libgpg-error:ftpls:ftp://ftp.gnupg.org/gcrypt/libgpg-error/
@@ -758,6 +760,7 @@ xf86dga:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xf86-input-evdev:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-input-joystick:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-input-keyboard:httpls:http://xorg.freedesktop.org/releases/individual/driver/
+xf86-input-libinput:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-input-mouse:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-input-synaptics:httpls:http://xorg.freedesktop.org/releases/individual/driver/
 xf86-input-vmmouse:httpls:http://xorg.freedesktop.org/releases/individual/driver/
