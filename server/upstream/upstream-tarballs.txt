@@ -500,7 +500,7 @@ libxkbfile:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxkbui:httpls:http://xorg.freedesktop.org/releases/individual/lib/
 libxklavier:sf:319|libxklavier
 libzeitgeist:lp:libzeitgeist
-liferea:sf:87005|Liferea Stable
+liferea:httpls:https://github.com/lwindolf/liferea/releases/
 link-grammar:subdirhttpls:http://www.abisource.com/downloads/link-grammar/
 listres:httpls:http://xorg.freedesktop.org/releases/individual/app/
 lmms:sf:105168
