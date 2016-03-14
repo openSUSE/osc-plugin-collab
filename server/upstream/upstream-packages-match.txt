@@ -758,7 +758,8 @@ librime:
 librsvg:
 libsecret:
 libsexy:
-libsigc++:libsigc++2
+libsigc++:libsigc++3
+libsigc++|2.99:libsigc++2
 libsigc++|1.3:libsigc++12
 libslab:
 libsocialweb:
