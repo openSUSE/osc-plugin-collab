@@ -845,7 +845,7 @@ nemiver:
 neon:
 net6:
 netspeed_applet:gnome-netspeed-applet
-network-manager-applet:NetworkManager-gnome
+network-manager-applet:NetworkManager-applet
 nimbus:gtk2-metatheme-nimbus
 njb-sharp:
 notification-daemon:
