@@ -495,9 +495,10 @@ gsynaptics:
 gtetrinet:
 gtg:
 gthumb:
-gtk+:gtk3
 gtk+|1.3:gtk
 gtk+|2.90:gtk2
+gtk+|3.89:gtk3
+gtk+:gtk4
 gtk-doc:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-engines|2.90:gtk2-engines
@@ -516,9 +517,10 @@ gtkmm:gtkmm3
 gtkmm|2.90:gtkmm2
 gtkpbbuttons:
 gtkpod:
-gtksourceview:
 gtksourceview|1.9:gtksourceview18
 gtksourceview|2.90:gtksourceview2
+gtksourceview|3.90:gktsourceview
+gtksourceview:gtksourceview4
 gtksourceviewmm:
 gtksourceviewmm|2.90:gtksourceviewmm2
 gtkspell:
