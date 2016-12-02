@@ -513,7 +513,8 @@ gtkimageview:
 gtkmathview:
 gtkmm-documentation:
 gtkmm-documentation|2.90:gtkmm2-documentation
-gtkmm:gtkmm3
+gtkmm:gtkmm4
+gtkmm|3.89:gtkmm3
 gtkmm|2.90:gtkmm2
 gtkpbbuttons:
 gtkpod:
