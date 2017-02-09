@@ -520,7 +520,7 @@ gtkpbbuttons:
 gtkpod:
 gtksourceview|1.9:gtksourceview18
 gtksourceview|2.90:gtksourceview2
-gtksourceview|3.90:gktsourceview
+gtksourceview|3.90:gtksourceview
 gtksourceview:gtksourceview4
 gtksourceviewmm:
 gtksourceviewmm|2.90:gtksourceviewmm2
