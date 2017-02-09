@@ -509,9 +509,9 @@ class Runner:
         else:
             new_opensuse_mtime = -1
 
-        conf_changed = ((not self.conf.ignore_conf_mtime and
-                         self._status['conf-mtime'] != new_conf_mtime) or
-                        self._status['opensuse-mtime'] != new_opensuse_mtime)
+        conf_changed = (not self.conf.ignore_conf_mtime and
+                        (self._status['conf-mtime'] != new_conf_mtime or
+                        self._status['opensuse-mtime'] != new_opensuse_mtime))
 
         # keep in sync this boolean expression and the one used in _run_mirror
         if self.conf.no_full_check and (self._status['mirror'] == -1 or conf_changed):
