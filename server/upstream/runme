@@ -315,8 +315,6 @@ mkdir -p $CACHE_DIR/upstream
 
 download_gnome_version 3.12
 download_gnome_version 3.12-extras
-download_gnome_version 3.20
-download_gnome_version 3.20-extras
 # Disabled because of infrastructure change on GNOME servers
 #download_gnome_version stable
 #download_gnome_version unstable
