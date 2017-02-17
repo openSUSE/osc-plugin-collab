@@ -892,6 +892,7 @@ pavumeter:
 pcre:
 pdfmod:
 pessulus:
+phodav:
 pidgin-advanced-sound-notification:
 pidgin-birthday-reminder:
 pidgin-embeddedvideo:
@@ -1035,6 +1036,7 @@ swfdec-mozilla:
 swfdec:
 swig:
 synapse:
+sysprof:
 system-config-printer:
 tali:
 tangerine:
