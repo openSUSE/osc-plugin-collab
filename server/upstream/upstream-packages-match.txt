@@ -394,6 +394,7 @@ gnome-presence-applet:
 gnome-python-desktop:
 gnome-python-extras:python-gnome-extras
 gnome-python:python-gnome
+gnome-recipes:
 gnome-reset:
 gnome-robots:
 gnome-schedule:
