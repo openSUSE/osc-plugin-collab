@@ -969,6 +969,7 @@ rednotebook:
 rendercheck:
 rep-gtk:
 rest:librest
+retro-gtk:
 rgb:
 rhythmbox:
 rlwrap:
