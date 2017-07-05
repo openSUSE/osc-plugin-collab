@@ -515,7 +515,7 @@ makedepend:httpls:http://xorg.freedesktop.org/releases/individual/util/
 md5deep:sf:67079|md5deep
 media-explorer:httpls:https://github.com/media-explorer/media-explorer/downloads
 media-player-info:httpls:http://www.freedesktop.org/software/media-player-info/
-mercurial:httpls:http://mercurial.selenic.com/release/
+mercurial:httpls:https://www.mercurial-scm.org/release/
 mkcomposecache:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontdir:httpls:http://xorg.freedesktop.org/releases/individual/app/
 mkfontscale:httpls:http://xorg.freedesktop.org/releases/individual/app/
