@@ -1062,6 +1062,7 @@ telepathy-rakia:
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
+tepl:
 the-board:
 tig:
 tilda:
