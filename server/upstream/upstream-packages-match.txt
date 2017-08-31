@@ -1072,7 +1072,7 @@ tomboy:
 totem-pl-parser:
 totem:
 tracker:
-tracker:tracker-extras
+tracker-miners:
 traffic-vis:
 transmageddon:
 transmission:
