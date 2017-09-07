@@ -597,6 +597,7 @@ itstool:
 iwatch:
 jhbuild:
 json-glib:
+jsonrpc-glib:
 kcm-fcitx:
 kimtoy:
 krb5-auth-dialog:
@@ -682,6 +683,7 @@ libgda:
 libgda|3.99:libgda3
 libgdamm:
 libgdata:
+libdazzle:
 libgee:
 libgexiv2:
 libggz:ggz
@@ -1062,6 +1064,7 @@ telepathy-rakia:
 telepathy-salut:
 telepathy-sofiasip:
 telepathy-stream-engine:
+template-glib:
 tepl:
 the-board:
 tig:
