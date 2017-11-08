@@ -64,7 +64,7 @@ OSC_COLLAB_VERSION = '0.99'
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
 _osc_collab_helpers = []
-for suffix in [ 'NEWS', 'ChangeLog', 'configure' ]:
+for suffix in [ 'NEWS', 'ChangeLog', 'configure', 'meson', 'meson_options' ]:
     for prefix in _osc_collab_helper_prefixes:
         _osc_collab_helpers.append(prefix + suffix)
 for helper in _osc_collab_helpers:
@@ -2223,10 +2223,10 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
     try:
         if old:
             err_tarball = os.path.basename(old_tarball)
-            _extract_files (old, old_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in'])
+            _extract_files (old, old_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in', 'meson.build', 'meson_options.txt'])
 
         err_tarball = new_tarball_basename
-        _extract_files (new, new_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in'])
+        _extract_files (new, new_dir, ['NEWS', 'ChangeLog', 'configure.ac', 'configure.in', 'meson.build', 'meson_options.txt'])
     except (tarfile.ReadError, EOFError):
         _cleanup(old, new, tmpdir)
         raise OscCollabDiffError('Cannot extract useful diff between tarballs: %s is not a valid tarball.' % err_tarball)
@@ -2264,8 +2264,14 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
         new_configure = os.path.join(new_subdir, 'configure.in')
         if not os.path.exists(new_configure) or not os.path.isfile(new_configure):
             new_configure = None
+    new_meson = os.path.join(new_subdir, 'meson.build')
+    if not os.path.exists(new_meson) or not os.path.isfile(new_meson):
+        new_meson = None
+    new_mesonopt = os.path.join(new_subdir, 'meson_options.txt')
+    if not os.path.exists(new_mesonopt) or not os.path.isfile(new_mesonopt):
+        new_mesonopt = None
 
-    if not new_news and not new_changelog and not new_configure:
+    if not new_news and not new_changelog and not new_configure and not new_meson and not new_mesonopt:
         _cleanup(old, new, tmpdir)
         raise OscCollabDiffError('Cannot extract useful diff between tarballs: no relevant files found in %s.' % new_tarball_basename)
 
@@ -2274,6 +2280,8 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
     old_news = None
     old_changelog = None
     old_configure = None
+    old_meson = None
+    old_mesonopt = None
 
     if os.path.exists(old_dir):
         old_dir_files = os.listdir(old_dir)
@@ -2294,7 +2302,12 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
                 old_configure = os.path.join(old_subdir, 'configure.in')
                 if not os.path.exists(old_configure) or not os.path.isfile(old_configure):
                     old_configure = None
-
+            old_meson = os.path.join(old_subdir, 'meson.build')
+            if not os.path.exists(old_meson) or not os.path.isfile(old_meson):
+                old_meson = None
+            old_mesonopt = os.path.join(old_subdir, 'meson_options.txt')
+            if not os.path.exists(old_mesonopt) or not os.path.isfile(old_mesonopt):
+                old_mesonopt = None
 
     # Choose the most appropriate prefix for helper files, based on the alias
     # that was used by the user
@@ -2311,13 +2324,17 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
     (changelog_created, changelog_is_diff) = _diff_files(old_changelog, new_changelog, changelog)
     configure = os.path.join(directory, helper_prefix + 'configure')
     (configure_created, configure_is_diff) = _diff_files(old_configure, new_configure, configure)
+    meson = os.path.join(directory, helper_prefix + 'meson')
+    (meson_created, meson_is_diff) = _diff_files(old_meson, new_meson, meson)
+    mesonopt = os.path.join(directory, helper_prefix + 'meson_options')
+    (mesonopt_created, mesonopt_is_diff) = _diff_files(old_mesonopt, new_mesonopt, mesonopt)
 
     # Note: we make osc ignore those helper file we created by modifying
     # the exclude list of osc.core. See the top of this file.
 
     _cleanup(old, new, tmpdir)
 
-    return (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff)
+    return (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff, meson, meson_created, meson_is_diff, mesonopt, mesonopt_created, mesonopt_is_diff)
 
 
 #######################################################################
@@ -2669,7 +2686,7 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
     # not fatal if fails
     print 'Extracting useful diff between tarballs (NEWS, ChangeLog, configure.{ac,in})...'
     try:
-        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff) = _collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
+        (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff, meson, meson_created, meson_is_diff, mesonopt, mesonopt_created, mesonopt_is_diff) = _collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
     except OscCollabDiffError, e:
         print >>sys.stderr, e.msg
     else:
@@ -2699,6 +2716,24 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
                 print 'Complete configure.{ac,in} of %s is available in %s' % (upstream_tarball_basename, configure_basename)
         else:
             print 'No configure.{ac,in} information found (tarball is probably not using autotools).'
+
+        if meson_created:
+            meson_basename = os.path.basename(meson)
+            if meson_is_diff:
+                print 'Diff in meson.build between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, meson_basename)
+            else:
+                print 'Complete meson.build of %s is available in %s' % (upstream_tarball_basename, meson_basename)
+        else:
+            print 'No meson.build information found (tarball is probably not using meson).'
+
+        if mesonopt_created:
+            mesonopt_basename = os.path.basename(mesonopt)
+            if mesonopt_is_diff:
+                print 'Diff in meson_options.txt between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, mesonopt_basename)
+            else:
+                print 'Complete meson_options.txt of %s is available in %s' % (upstream_tarball_basename, mesonopt_basename)
+        else:
+            print 'No meson_options.txt information found (tarball is probably not using meson or the build has no options).'
 
 
     # try applying the patches with rpm quilt
