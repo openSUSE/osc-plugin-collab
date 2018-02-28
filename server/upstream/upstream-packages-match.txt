@@ -95,6 +95,7 @@ bombermaze:
 bot-sentry:
 brasero:
 brltty:
+buildstream:BuildStream
 bug-buddy:
 byzanz:
 c++-gtk-utils:
@@ -596,7 +597,6 @@ iso-codes:
 istanbul:
 itstool:
 iwatch:
-jhbuild:
 json-glib:
 jsonrpc-glib:
 kcm-fcitx:
@@ -1311,6 +1311,7 @@ zypper:
 # gnome-cups-manager:
 # gnome-volume-manager:
 # gst-pulse:gstreamer-0_10-pulse
+# jhbuild:
 # last-exit:
 # libssui:
 # libsvg:
