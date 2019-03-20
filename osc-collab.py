@@ -3965,7 +3965,8 @@ def do_collab(self, subcmd, opts, *args):
 
     # See get_config() in osc/conf.py and postoptparse() in
     # osc/commandline.py
-    conffile = self.options.conffile or os.environ.get('OSC_CONFIG', '~/.oscrc')
+    # Added test to check both locations for oscrc configuration file.
+    conffile = identify_conf()
     _osc_collab_osc_conffile = os.path.expanduser(conffile)
 
     _collab_migrate_gnome_config(apiurl)
@@ -4062,3 +4063,14 @@ def do_collab(self, subcmd, opts, *args):
 
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
+
+def identify_conf():
+    # needed for compat reasons(users may have their oscrc still in ~
+    if 'OSC_CONFIG' in os.environ:
+        return os.environ.get('OSC_CONFIG')
+    if os.path.exists(os.path.expanduser('~/.oscrc')):
+        conffile = '~/.oscrc'
+    else:
+        conffile = os.environ.get('XDG_CONFIG_HOME', '~/.config') + '/osc/oscrc'
+
+    return conffile
