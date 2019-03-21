@@ -3966,7 +3966,10 @@ def do_collab(self, subcmd, opts, *args):
     # See get_config() in osc/conf.py and postoptparse() in
     # osc/commandline.py
     # Added test to check both locations for oscrc configuration file.
-    conffile = identify_conf()
+    if self.options.conffile:
+        conffile = self.options.conffile
+    else:
+        conffile = identify_conf()
     _osc_collab_osc_conffile = os.path.expanduser(conffile)
 
     _collab_migrate_gnome_config(apiurl)
