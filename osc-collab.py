@@ -69,7 +69,7 @@ from osc import cmdln
 from osc import conf
 
 
-OSC_COLLAB_VERSION = '0.101'
+OSC_COLLAB_VERSION = '0.102'
 
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
