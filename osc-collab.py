@@ -34,9 +34,7 @@
 # Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
-import ConfigParser
 import difflib
-import httplib
 import locale
 import re
 import select
@@ -46,8 +44,20 @@ import tarfile
 import tempfile
 import time
 import urllib
-import urllib2
-import urlparse
+
+try:
+    import configparser
+    from http.client import BadStatusLine
+    from urllib.error import HTTPError
+    from urllib.parse import quote, urlparse
+    from urllib.request import urlopen
+except ImportError:
+    # python 2.x
+    import ConfigParser
+    from httplib import BadStatusLine
+    from urllib import quote
+    from urllib2 import HTTPError, urlopen
+    from urlparse import urlparse
 
 try:
     import rpm
@@ -101,11 +111,11 @@ def _collab_exception_print(e, message = ''):
         message = ''
 
     if hasattr(e, 'msg'):
-        print >>sys.stderr, message + e.msg
+        print(message + e.msg, file=sys.stderr)
     elif str(e) != '':
-        print >>sys.stderr, message + str(e)
+        print(message + str(e), file=sys.stderr)
     else:
-        print >>sys.stderr, message + e.__class__.__name__
+        print(message + e.__class__.__name__, file=sys.stderr)
 
 
 #######################################################################
@@ -284,7 +294,7 @@ class OscCollabProject(dict):
 
     def strip_internal_links(self):
         to_rm = []
-        for package in self.itervalues():
+        for package in self.values():
             if package.parent_project == self.name:
                 to_rm.append(package.name)
         for name in to_rm:
@@ -510,7 +520,7 @@ class OscCollabObs:
         what = 'metadata of packages in %s' % project
 
         # download the data (cache for 2 days)
-        url = makeurl(cls.apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+        url = makeurl(cls.apiurl, ['search', 'package'], ['match=%s' % quote('@project=\'%s\'' % project)])
         filename = '%s-meta.obs' % project
         max_age_minutes = 3600 * 24 * 2
 
@@ -533,10 +543,10 @@ class OscCollabObs:
     def _get_request_list_url(cls, project, package, type, what):
         match = '(state/@name=\'new\'%20or%20state/@name=\'review\')'
         match += '%20and%20'
-        match += 'action/%s/@project=\'%s\'' % (type, urllib.quote(project))
+        match += 'action/%s/@project=\'%s\'' % (type, quote(project))
         if package:
             match += '%20and%20'
-            match += 'action/%s/@package=\'%s\'' % (type, urllib.quote(package))
+            match += 'action/%s/@package=\'%s\'' % (type, quote(package))
 
         return makeurl(cls.apiurl, ['search', 'request'], ['match=%s' % match])
 
@@ -547,8 +557,8 @@ class OscCollabObs:
 
         try:
             collection = ET.parse(f).getroot()
-        except SyntaxError, e:
-            print >>sys.stderr, 'Cannot parse %s: %s' % (what, e.msg)
+        except SyntaxError as e:
+            print('Cannot parse %s: %s' % (what, e.msg), file=sys.stderr)
             return requests
 
         for node in collection.findall('request'):
@@ -563,8 +573,8 @@ class OscCollabObs:
 
         try:
             fin = http_GET(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get %s: %s' % (what, e.msg)
+        except HTTPError as e:
+            print('Cannot get %s: %s' % (what, e.msg), file=sys.stderr)
             return []
 
         requests = cls._parse_request_list_internal(fin, what)
@@ -606,7 +616,7 @@ class OscCollabObs:
         elif type == 'target':
             what = 'list of requests to %s' % what_helper
         else:
-            print >>sys.stderr, 'Internal error when getting request list: unknown type \"%s\".' % type
+            print('Internal error when getting request list: unknown type \"%s\".' % type, file=sys.stderr)
             return None
 
         if use_cache:
@@ -631,15 +641,15 @@ class OscCollabObs:
 
         try:
             fin = http_GET(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get request %s: %s' % (id, e.msg)
+        except HTTPError as e:
+            print('Cannot get request %s: %s' % (id, e.msg), file=sys.stderr)
             return None
 
         try:
             node = ET.parse(fin).getroot()
-        except SyntaxError, e:
+        except SyntaxError as e:
             fin.close()
-            print >>sys.stderr, 'Cannot parse request %s: %s' % (id, e.msg)
+            print('Cannot parse request %s: %s' % (id, e.msg), file=sys.stderr)
             return None
 
         fin.close()
@@ -676,15 +686,15 @@ class OscCollabObs:
 
         try:
             fin = http_POST(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot branch package %s: %s' % (package, e.msg)
+        except HTTPError as e:
+            print('Cannot branch package %s: %s' % (package, e.msg), file=sys.stderr)
             return (None, None)
 
         try:
             node = ET.parse(fin).getroot()
-        except SyntaxError, e:
+        except SyntaxError as e:
             fin.close()
-            print >>sys.stderr, 'Cannot branch package %s: %s' % (package, e.msg)
+            print('Cannot branch package %s: %s' % (package, e.msg), file=sys.stderr)
             return (None, None)
 
         fin.close()
@@ -774,11 +784,11 @@ class OscCollabApi:
                 fd = OscCollabCache.get_url_fd_with_cache(url, cache_file, cache_age)
             else:
                 if post_data:
-                    data = urlencode(post_data)
+                    data = urlencode(post_data).encode('utf-8')
                 else:
                     data = None
-                fd = urllib2.urlopen(url, data)
-        except urllib2.HTTPError, e:
+                fd = urlopen(url, data)
+        except HTTPError as e:
             raise OscCollabWebError('%s: %s' % (error_prefix, e.msg))
 
         try:
@@ -1078,13 +1088,13 @@ class OscCollabCache:
     def _print_message(cls):
         if not cls._printed:
             cls._printed = True
-            print 'Downloading data in a cache. It might take a few seconds...'
+            print('Downloading data in a cache. It might take a few seconds...')
 
 
     @classmethod
     def _get_xdg_cache_home(cls):
         dir = None
-        if os.environ.has_key('XDG_CACHE_HOME'):
+        if 'XDG_CACHE_HOME' in os.environ:
             dir = os.environ['XDG_CACHE_HOME']
             if dir == '':
                 dir = None
@@ -1154,7 +1164,7 @@ class OscCollabCache:
         if cls._need_update(filename, max_age_minutes * 60):
             # no cache available
             cls._print_message()
-            fd = urllib2.urlopen(url)
+            fd = urlopen(url)
             cls._write(filename, fin = fd)
 
         return open(os.path.join(cls._get_xdg_cache_dir(), filename))
@@ -1172,8 +1182,8 @@ class OscCollabCache:
 
         try:
             fin = http_GET(url)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Cannot get %s: %s' % (what, e.msg)
+        except HTTPError as e:
+            print('Cannot get %s: %s' % (what, e.msg), file=sys.stderr)
             return None
 
         fout = open(cache, 'w')
@@ -1183,12 +1193,12 @@ class OscCollabCache:
                 bytes = fin.read(500 * 1024)
                 if len(bytes) == 0:
                     break
-                fout.write(bytes)
-            except urllib2.HTTPError, e:
+                fout.write(bytes.decode('utf-8'))
+            except HTTPError as e:
                 fin.close()
                 fout.close()
                 os.unlink(cache)
-                print >>sys.stderr, 'Error while downloading %s: %s' % (what, e.msg)
+                print('Error while downloading %s: %s' % (what, e.msg), file=sys.stderr)
                 return None
 
         fin.close()
@@ -1200,7 +1210,7 @@ class OscCollabCache:
     @classmethod
     def _write(cls, filename, fin = None):
         if not fin:
-            print >>sys.stderr, 'Internal error when saving a cache: no data.'
+            print('Internal error when saving a cache: no data.', file=sys.stderr)
             return False
 
         cachedir = cls._get_xdg_cache_dir()
@@ -1208,7 +1218,7 @@ class OscCollabCache:
             os.makedirs(cachedir)
 
         if not os.path.isdir(cachedir):
-            print >>sys.stderr, 'Cache directory %s is not a directory.' % cachedir
+            print('Cache directory %s is not a directory.' % cachedir, file=sys.stderr)
             return False
 
         cache = os.path.join(cachedir, filename)
@@ -1222,8 +1232,8 @@ class OscCollabCache:
                     bytes = fin.read(500 * 1024)
                     if len(bytes) == 0:
                         break
-                    fout.write(bytes)
-                except urllib2.HTTPError, e:
+                    fout.write(bytes.decode('utf-8'))
+                except HTTPError as e:
                     fout.close()
                     os.unlink(cache)
                     raise e
@@ -1235,7 +1245,7 @@ class OscCollabCache:
 
 
 def _collab_is_program_in_path(program):
-    if not os.environ.has_key('PATH'):
+    if not 'PATH' in os.environ:
         return False
 
     for path in os.environ['PATH'].split(':'):
@@ -1306,8 +1316,8 @@ def _collab_table_print_header(template, title):
     for i in range(len(title)):
         dashes = dashes + very_long_dash
 
-    print template % title
-    print dash_template % dashes
+    print(template % title)
+    print(dash_template % dashes)
 
 
 #######################################################################
@@ -1318,8 +1328,8 @@ def _collab_todo_internal(apiurl, all_reserved, all_commented, project, show_det
     try:
         prj = OscCollabApi.get_project_details(project)
         prj.strip_internal_links()
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return (None, None)
 
     # get the list of reserved packages for this project
@@ -1338,7 +1348,7 @@ def _collab_todo_internal(apiurl, all_reserved, all_commented, project, show_det
     parent_project = None
     packages = []
 
-    for package in prj.itervalues():
+    for package in prj.values():
         if not package.needs_update() and package.name not in commented_packages:
             continue
 
@@ -1412,17 +1422,17 @@ def _collab_todo(apiurl, projects, show_details, ignore_comments, exclude_commen
     # get the list of reserved packages
     try:
         reserved = OscCollabApi.get_reserved_packages(projects)
-    except OscCollabWebError, e:
+    except OscCollabWebError as e:
         reserved = []
-        print >>sys.stderr, e.msg
+        print(e.msg, file=sys.stderr)
 
     # get the list of commented packages
     commented = []
     if not ignore_comments:
         try:
             commented = OscCollabApi.get_commented_packages(projects)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
 
     for project in projects:
         (new_parent_project, project_packages) = _collab_todo_internal(apiurl, reserved, commented, project, show_details, exclude_commented, exclude_reserved, exclude_submitted, exclude_devel)
@@ -1436,7 +1446,7 @@ def _collab_todo(apiurl, projects, show_details, ignore_comments, exclude_commen
             parent_project = 'Parent Project'
 
     if len(packages) == 0:
-        print 'Nothing to do.'
+        print('Nothing to do.')
         return
 
     show_comments = not (ignore_comments or exclude_commented) and show_details
@@ -1500,7 +1510,7 @@ def _collab_todo(apiurl, projects, show_details, ignore_comments, exclude_commen
             else:
                 (package, parent_version, devel_version, upstream_version) = line
                 line = (package, devel_version, upstream_version)
-        print print_line % line
+        print(print_line % line)
 
 
 #######################################################################
@@ -1511,8 +1521,8 @@ def _collab_todoadmin_internal(apiurl, project, include_upstream):
     try:
         prj = OscCollabApi.get_project_details(project)
         prj.strip_internal_links()
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return []
 
     # get the packages submitted to/from
@@ -1521,7 +1531,7 @@ def _collab_todoadmin_internal(apiurl, project, include_upstream):
 
     lines = []
 
-    for package in prj.itervalues():
+    for package in prj.values():
         message = None
 
         # We look for all possible messages. The last message overwrite the
@@ -1595,7 +1605,7 @@ def _collab_todoadmin(apiurl, projects, include_upstream):
         lines.extend(project_lines)
 
     if len(lines) == 0:
-        print 'Nothing to do.'
+        print('Nothing to do.')
         return
 
     # the first element in the tuples is the package name, so it will sort
@@ -1613,7 +1623,7 @@ def _collab_todoadmin(apiurl, projects, include_upstream):
     print_line = _collab_table_get_template(max_project, max_package, max_details)
     _collab_table_print_header(print_line, title)
     for line in lines:
-        print print_line % line
+        print(print_line % line)
 
 
 #######################################################################
@@ -1622,12 +1632,12 @@ def _collab_todoadmin(apiurl, projects, include_upstream):
 def _collab_listreserved(projects):
     try:
         reserved_packages = OscCollabApi.get_reserved_packages(projects)
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return
 
     if len(reserved_packages) == 0:
-        print 'No package reserved.'
+        print('No package reserved.')
         return
 
     # print headers
@@ -1645,7 +1655,7 @@ def _collab_listreserved(projects):
 
     for reservation in reserved_packages:
         if reservation.user:
-            print print_line % (reservation.project, reservation.package, reservation.user)
+            print(print_line % (reservation.project, reservation.package, reservation.user))
 
 
 #######################################################################
@@ -1655,17 +1665,17 @@ def _collab_isreserved(projects, packages, no_devel_project = False):
     for package in packages:
         try:
             reservation = OscCollabApi.is_package_reserved(projects, package, no_devel_project = no_devel_project)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             continue
 
         if not reservation:
-            print 'Package %s is not reserved.' % package
+            print('Package %s is not reserved.' % package)
         else:
             if reservation.project not in projects or reservation.package != package:
-                print 'Package %s in %s (devel package for %s) is reserved by %s.' % (reservation.package, reservation.project, package, reservation.user)
+                print('Package %s in %s (devel package for %s) is reserved by %s.' % (reservation.package, reservation.project, package, reservation.user))
             else:
-                print 'Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user)
+                print('Package %s in %s is reserved by %s.' % (package, reservation.project, reservation.user))
 
 
 #######################################################################
@@ -1675,16 +1685,16 @@ def _collab_reserve(projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
             reservation = OscCollabApi.reserve_package(projects, package, username, no_devel_project = no_devel_project)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             continue
 
         if reservation.project not in projects or reservation.package != package:
-            print 'Package %s in %s (devel package for %s) reserved for 36 hours.' % (reservation.package, reservation.project, package)
+            print('Package %s in %s (devel package for %s) reserved for 36 hours.' % (reservation.package, reservation.project, package))
         else:
-            print 'Package %s reserved for 36 hours.' % package
-        print 'Do not forget to unreserve the package when done with it:'
-        print '    osc %s unreserve %s' % (_osc_collab_alias, package)
+            print('Package %s reserved for 36 hours.' % package)
+        print('Do not forget to unreserve the package when done with it:')
+        print('    osc %s unreserve %s' % (_osc_collab_alias, package))
 
 
 #######################################################################
@@ -1694,11 +1704,11 @@ def _collab_unreserve(projects, packages, username, no_devel_project = False):
     for package in packages:
         try:
             OscCollabApi.unreserve_package(projects, package, username, no_devel_project = no_devel_project)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             continue
 
-        print 'Package %s unreserved.' % package
+        print('Package %s unreserved.' % package)
 
 
 #######################################################################
@@ -1707,12 +1717,12 @@ def _collab_unreserve(projects, packages, username, no_devel_project = False):
 def _collab_listcommented(projects):
     try:
         commented_packages = OscCollabApi.get_commented_packages(projects)
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return
 
     if len(commented_packages) == 0:
-        print 'No package commented.'
+        print('No package commented.')
         return
 
     # print headers
@@ -1731,7 +1741,7 @@ def _collab_listcommented(projects):
 
     for comment in commented_packages:
         if comment.user:
-            print print_line % (comment.project, comment.package, comment.user, comment.firstline)
+            print(print_line % (comment.project, comment.package, comment.user, comment.firstline))
 
 
 #######################################################################
@@ -1741,12 +1751,12 @@ def _collab_comment(projects, packages, no_devel_project = False):
     for package in packages:
         try:
             comment = OscCollabApi.get_package_comment(projects, package, no_devel_project = no_devel_project)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             continue
 
         if not comment:
-            print 'Package %s is not commented.' % package
+            print('Package %s is not commented.' % package)
         else:
             if comment.date:
                 date_str = ' on %s' % comment.date
@@ -1754,11 +1764,11 @@ def _collab_comment(projects, packages, no_devel_project = False):
                 date_str = ''
 
             if comment.project not in projects or comment.package != package:
-                print 'Package %s in %s (devel package for %s) is commented by %s%s:' % (comment.package, comment.project, package, comment.user, date_str)
-                print comment.indent()
+                print('Package %s in %s (devel package for %s) is commented by %s%s:' % (comment.package, comment.project, package, comment.user, date_str))
+                print(comment.indent())
             else:
-                print 'Package %s in %s is commented by %s%s:' % (package, comment.project, comment.user, date_str)
-                print comment.indent()
+                print('Package %s in %s is commented by %s%s:' % (package, comment.project, comment.user, date_str))
+                print(comment.indent())
 
 
 #######################################################################
@@ -1767,16 +1777,16 @@ def _collab_comment(projects, packages, no_devel_project = False):
 def _collab_commentset(projects, package, username, comment, no_devel_project = False):
     try:
         comment = OscCollabApi.set_package_comment(projects, package, username, comment, no_devel_project = no_devel_project)
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return
 
     if comment.project not in projects or comment.package != package:
-        print 'Comment on package %s in %s (devel package for %s) set.' % (comment.package, comment.project, package)
+        print('Comment on package %s in %s (devel package for %s) set.' % (comment.package, comment.project, package))
     else:
-        print 'Comment on package %s set.' % package
-    print 'Do not forget to unset comment on the package when done with it:'
-    print '    osc %s commentunset %s' % (_osc_collab_alias, package)
+        print('Comment on package %s set.' % package)
+    print('Do not forget to unset comment on the package when done with it:')
+    print('    osc %s commentunset %s' % (_osc_collab_alias, package))
 
 
 #######################################################################
@@ -1786,11 +1796,11 @@ def _collab_commentunset(projects, packages, username, no_devel_project = False)
     for package in packages:
         try:
             OscCollabApi.unset_package_comment(projects, package, username, no_devel_project = no_devel_project)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             continue
 
-        print 'Comment on package %s unset.' % package
+        print('Comment on package %s unset.' % package)
 
 
 #######################################################################
@@ -1803,18 +1813,18 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
             previous_pkg = pkg
             try:
                 pkg = OscCollabApi.get_package_details(pkg.devel_project, pkg.devel_package or pkg.name)
-            except OscCollabWebError, e:
+            except OscCollabWebError as e:
                 pkg = None
 
             if not pkg:
-                print >>sys.stderr, 'Cannot find information on %s/%s (development package for %s/%s). You can use --nodevelproject to ignore the development package.' % (previous_pkg.project.name, previous_pkg.name, initial_pkg.project.name, initial_pkg.name)
+                print('Cannot find information on %s/%s (development package for %s/%s). You can use --nodevelproject to ignore the development package.' % (previous_pkg.project.name, previous_pkg.name, initial_pkg.project.name, initial_pkg.name), file=sys.stderr)
                 break
 
         if not pkg:
             return (False, None, None)
 
         if initial_pkg != pkg:
-            print 'Using development package %s/%s for %s/%s.' % (pkg.project.name, pkg.name, initial_pkg.project.name, initial_pkg.name)
+            print('Using development package %s/%s for %s/%s.' % (pkg.project.name, pkg.name, initial_pkg.project.name, initial_pkg.name))
 
     project = pkg.project.name
     package = pkg.name
@@ -1829,28 +1839,28 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
             reserved_by = reservation.user
         else:
             reserved_by = None
-    except OscCollabWebError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabWebError as e:
+        print(e.msg, file=sys.stderr)
         return (False, None, None)
 
     # package already reserved, but not by us
     if reserved_by and reserved_by != username:
         if not ignore_reserved:
-            print 'Package %s is already reserved by %s.' % (package, reserved_by)
+            print('Package %s is already reserved by %s.' % (package, reserved_by))
             return (False, None, None)
         else:
-            print 'WARNING: package %s is already reserved by %s.' % (package, reserved_by)
+            print('WARNING: package %s is already reserved by %s.' % (package, reserved_by))
     # package not reserved
     elif not reserved_by and not no_reserve:
         try:
             # Note that we have already looked for the devel project, so we
             # force the project/package here.
             OscCollabApi.reserve_package((project,), package, username, no_devel_project = True)
-            print 'Package %s has been reserved for 36 hours.' % package
-            print 'Do not forget to unreserve the package when done with it:'
-            print '    osc %s unreserve %s' % (_osc_collab_alias, package)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+            print('Package %s has been reserved for 36 hours.' % package)
+            print('Do not forget to unreserve the package when done with it:')
+            print('    osc %s unreserve %s' % (_osc_collab_alias, package))
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             if not ignore_reserved:
                 return (False, None, None)
 
@@ -1862,21 +1872,21 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
             branch_project = expected_branch_project
             branch_package = package
             # it worked, we already have the branch
-        except urllib2.HTTPError, e:
+        except HTTPError as e:
             if e.code != 404:
-                print >>sys.stderr, 'Error while checking if package %s was already branched: %s' % (package, e.msg)
+                print('Error while checking if package %s was already branched: %s' % (package, e.msg), file=sys.stderr)
                 return (False, None, None)
 
             # We had a 404: it means the branched package doesn't exist yet
             (branch_project, branch_package) = OscCollabObs.branch_package(project, package, no_devel_project)
             if not branch_project or not branch_package:
-                print >>sys.stderr, 'Error while branching package %s: incomplete reply from build service' % (package,)
+                print('Error while branching package %s: incomplete reply from build service' % (package,), file=sys.stderr)
                 return (False, None, None)
 
             if package != branch_package:
-                print 'Package %s has been branched in %s/%s.' % (package, branch_project, branch_package)
+                print('Package %s has been branched in %s/%s.' % (package, branch_project, branch_package))
             else:
-                print 'Package %s has been branched in project %s.' % (branch_package, branch_project)
+                print('Package %s has been branched in project %s.' % (branch_package, branch_project))
     else:
             branch_project = project
             branch_package = package
@@ -1887,19 +1897,19 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
     if os.path.exists(checkout_dir):
         # maybe we already checked it out before?
         if not os.path.isdir(checkout_dir):
-            print >>sys.stderr, 'File %s already exists but is not a directory.' % checkout_dir
+            print('File %s already exists but is not a directory.' % checkout_dir, file=sys.stderr)
             return (False, None, None)
         elif not is_package_dir(checkout_dir):
-            print >>sys.stderr, 'Directory %s already exists but is not a checkout of a Build Service package.' % checkout_dir
+            print('Directory %s already exists but is not a checkout of a Build Service package.' % checkout_dir, file=sys.stderr)
             return (False, None, None)
 
         obs_package = filedir_to_pac(checkout_dir)
         if obs_package.name != branch_package or obs_package.prjname != branch_project:
-            print >>sys.stderr, 'Directory %s already exists but is a checkout of package %s from project %s.' % (checkout_dir, obs_package.name, obs_package.prjname)
+            print('Directory %s already exists but is a checkout of package %s from project %s.' % (checkout_dir, obs_package.name, obs_package.prjname), file=sys.stderr)
             return (False, None, None)
 
         if _collab_osc_package_pending_commit(obs_package):
-            print >>sys.stderr, 'Directory %s contains some uncommitted changes.' % (checkout_dir,)
+            print('Directory %s contains some uncommitted changes.' % (checkout_dir,), file=sys.stderr)
             return (False, None, None)
 
         # update the package
@@ -1913,8 +1923,8 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
                 rev = show_upstream_xsrcmd5(apiurl, branch_project, branch_package)
 
             obs_package.update(rev)
-            print 'Package %s has been updated.' % branch_package
-        except Exception, e:
+            print('Package %s has been updated.' % branch_package)
+        except Exception as e:
             message = 'Error while updating package %s: ' % branch_package
             _collab_exception_print(e, message)
             return (False, None, None)
@@ -1932,8 +1942,8 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
             conf.config['do_package_tracking'] = _collab_get_config_bool(apiurl, 'collab_do_package_tracking', default = False)
             checkout_package(apiurl, branch_project, branch_package, expand_link=True)
             conf.config['do_package_tracking'] = old_tracking
-            print 'Package %s has been checked out.' % branch_package
-        except Exception, e:
+            print('Package %s has been checked out.' % branch_package)
+        except Exception as e:
             message = 'Error while checking out package %s: ' % branch_package
             _collab_exception_print(e, message)
             return (False, None, None)
@@ -1955,11 +1965,11 @@ def _collab_setup_internal(apiurl, username, pkg, ignore_reserved = False, no_re
 def _collab_get_package_with_valid_project(projects, package):
     try:
         pkg = OscCollabApi.get_package_details(projects, package)
-    except OscCollabWebError, e:
+    except OscCollabWebError as e:
         pkg = None
 
     if pkg is None or pkg.project is None or not pkg.project.name:
-        print >>sys.stderr, 'Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package
+        print('Cannot find an appropriate project containing %s. You can use --project to override your project settings.' % package, file=sys.stderr)
         return None
 
     return pkg
@@ -1976,8 +1986,8 @@ def _print_comment_after_setup(pkg, no_devel_project):
         else:
             date_str = ''
 
-        print 'Note the comment from %s%s on this package:' % (comment.user, date_str)
-        print comment.indent()
+        print('Note the comment from %s%s on this package:' % (comment.user, date_str))
+        print(comment.indent())
 
 
 #######################################################################
@@ -1992,7 +2002,7 @@ def _collab_setup(apiurl, username, projects, package, ignore_reserved = False, 
     (setup, branch_project, branch_package) = _collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
     if not setup:
         return
-    print 'Package %s has been prepared for work.' % branch_package
+    print('Package %s has been prepared for work.' % branch_package)
 
     if not ignore_comment:
         _print_comment_after_setup(pkg, no_devel_project)
@@ -2030,8 +2040,8 @@ def _collab_download_internal(url, dest_dir):
         os.unlink(dest_file)
 
     try:
-        fin = urllib2.urlopen(url)
-    except urllib2.HTTPError, e:
+        fin = urlopen(url)
+    except HTTPError as e:
         raise OscCollabDownloadError('Cannot download %s: %s' % (url, e.msg))
 
     fout = open(dest_file, 'wb')
@@ -2042,7 +2052,7 @@ def _collab_download_internal(url, dest_dir):
             if len(bytes) == 0:
                 break
             fout.write(bytes)
-        except urllib2.HTTPError, e:
+        except HTTPError as e:
             fin.close()
             fout.close()
             os.unlink(dest_file)
@@ -2208,7 +2218,7 @@ def _collab_extract_diff_internal(directory, old_tarball, new_tarball):
             if lzma_hack:
                 new_tarball = _lzma_hack(new_tarball, tmpdir)
             new = tarfile.open(new_tarball)
-        except tarfile.TarError, e:
+        except tarfile.TarError as e:
             _cleanup(old, new, tmpdir)
             raise OscCollabDiffError('Error when opening %s: %s' % (new_tarball_basename, e))
     else:
@@ -2353,10 +2363,10 @@ def _collab_subst_defines(s, defines):
 
 def _collab_update_spec(spec_file, upstream_url, upstream_version):
     if not os.path.exists(spec_file):
-        print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(spec_file)
+        print('Cannot update %s: no such file.' % os.path.basename(spec_file), file=sys.stderr)
         return (False, None, None, False)
     elif not os.path.isfile(spec_file):
-        print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(spec_file)
+        print('Cannot update %s: not a regular file.' % os.path.basename(spec_file), file=sys.stderr)
         return (False, None, None, False)
 
     re_spec_header_with_version = re.compile('^(# spec file for package \S*) \(Version \S*\)(.*)', re.IGNORECASE)
@@ -2383,37 +2393,40 @@ def _collab_update_spec(spec_file, upstream_url, upstream_version):
 
         match = re_spec_prep.match(line)
         if match:
-            os.write(fdout, line)
+            os.write(fdout, line.encode('utf-8'))
             break
 
         match = re_spec_header_with_version.match(line)
         if match:
             # We drop the "(Version XYZ)" part of the header
-            os.write(fdout, '%s%s\n' % (match.group(1), match.group(2)))
+            write_line = '%s%s\n' % (match.group(1), match.group(2))
+            os.write(fdout, write_line.encode('utf-8'))
             continue
 
         match = re_spec_define.match(line)
         if match:
             defines[match.group(1)] = _collab_subst_defines(match.group(2), defines)
-            os.write(fdout, line)
+            os.write(fdout, line.encode('utf-8'))
             continue
 
         match = re_spec_name.match(line)
         if match:
             defines['name'] = match.group(1)
-            os.write(fdout, line)
+            os.write(fdout, line.encode('utf-8'))
             continue
 
         match = re_spec_version.match(line)
         if match:
             defines['version'] = match.group(2)
             old_version = _collab_subst_defines(match.group(2), defines)
-            os.write(fdout, '%s%s\n' % (match.group(1), upstream_version))
+            write_line = '%s%s\n' % (match.group(1), upstream_version)
+            os.write(fdout, write_line.encode('utf-8'))
             continue
 
         match = re_spec_release.match(line)
         if match:
-            os.write(fdout, '%s0\n' % match.group(1))
+            write_line = '%s0\n' % match.group(1)
+            os.write(fdout, write_line.encode('utf-8'))
             continue
 
         match = re_spec_source.match(line)
@@ -2426,7 +2439,7 @@ def _collab_update_spec(spec_file, upstream_url, upstream_version):
                 # Use _name in favor of name, as if _name exists, it's for a
                 # good reason
                 for key in [ '_name', 'name', 'version' ]:
-                    if defines.has_key(key):
+                    if key in defines:
                         if key == 'version':
                             new_source = new_source.replace(upstream_version, '%%{%s}' % key)
                         else:
@@ -2439,20 +2452,21 @@ def _collab_update_spec(spec_file, upstream_url, upstream_version):
                 # For instance:
                 # download.php?package=01&release=61&file=01&dummy=gwenhywfar-4.1.0.tar.gz
                 if '?' not in new_source:
-                    os.write(fdout, '%s%s/%s\n' % (match.group(1), non_basename, new_source))
+                    write_line = '%s%s/%s\n' % (match.group(1), non_basename, new_source)
+                    os.write(fdout, write_line.encode('utf-8'))
                     continue
 
-            os.write(fdout, line)
+            os.write(fdout, line.encode('utf-8'))
             continue
 
-        os.write(fdout, line)
+        os.write(fdout, line.encode('utf-8'))
 
     # wild read/write to finish quickly
     while True:
         bytes = fin.read(10 * 1024)
         if len(bytes) == 0:
             break
-        os.write(fdout, bytes)
+        os.write(fdout, bytes.encode('utf-8'))
 
     fin.close()
     os.close(fdout)
@@ -2475,10 +2489,10 @@ def _collab_update_spec(spec_file, upstream_url, upstream_version):
 
 def _collab_update_changes(changes_file, upstream_version, email):
     if not os.path.exists(changes_file):
-        print >>sys.stderr, 'Cannot update %s: no such file.' % os.path.basename(changes_file)
+        print('Cannot update %s: no such file.' % os.path.basename(changes_file), file=sys.stderr)
         return False
     elif not os.path.isfile(changes_file):
-        print >>sys.stderr, 'Cannot update %s: not a regular file.' % os.path.basename(changes_file)
+        print('Cannot update %s: not a regular file.' % os.path.basename(changes_file), file=sys.stderr)
         return False
 
     (fdout, tmp) = tempfile.mkstemp(dir = os.path.dirname(changes_file))
@@ -2488,12 +2502,14 @@ def _collab_update_changes(changes_file, upstream_version, email):
     locale.setlocale(locale.LC_TIME, 'C')
     os.putenv('TZ', 'UTC')
 
-    os.write(fdout, '-------------------------------------------------------------------\n')
-    os.write(fdout, '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email))
-    os.write(fdout, '\n')
-    os.write(fdout, '- Update to version %s:\n' % upstream_version)
-    os.write(fdout, '  + \n')
-    os.write(fdout, '\n')
+    os.write(fdout, '-------------------------------------------------------------------\n'.encode('utf-8'))
+    write_line = '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email)
+    os.write(fdout, write_line.encode('utf-8'))
+    os.write(fdout, '\n'.encode('utf-8'))
+    write_line = '- Update to version %s:\n' % upstream_version
+    os.write(fdout, write_line.encode('utf-8'))
+    os.write(fdout, '  + \n'.encode('utf-8'))
+    os.write(fdout, '\n'.encode('utf-8'))
 
     locale.setlocale(locale.LC_TIME, old_lc_time)
     if old_tz:
@@ -2506,7 +2522,7 @@ def _collab_update_changes(changes_file, upstream_version, email):
         bytes = fin.read(10 * 1024)
         if len(bytes) == 0:
             break
-        os.write(fdout, bytes)
+        os.write(fdout, bytes.encode('utf-8'))
     fin.close()
     os.close(fdout)
 
@@ -2534,7 +2550,7 @@ def _collab_quilt_package(spec_file):
 
     if retval != 0:
         _cleanup(null, tmpdir)
-        print >>sys.stderr, 'Cannot apply patches: \'quilt setup\' failed.'
+        print('Cannot apply patches: \'quilt setup\' failed.', file=sys.stderr)
         return False
 
 
@@ -2554,7 +2570,7 @@ def _collab_quilt_package(spec_file):
 
         if retval != 0:
             _cleanup(null, tmpdir)
-            print >>sys.stderr, 'Cannot apply patches: \'quilt push -a\' failed.'
+            print('Cannot apply patches: \'quilt push -a\' failed.', file=sys.stderr)
             return False
 
 
@@ -2572,8 +2588,8 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
 
         try:
             pkg = OscCollabApi.get_package_details(project, package)
-        except OscCollabWebError, e:
-            print >>sys.stderr, e.msg
+        except OscCollabWebError as e:
+            print(e.msg, file=sys.stderr)
             return
     else:
         pkg = _collab_get_package_with_valid_project(projects, package)
@@ -2583,23 +2599,23 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
 
     # check that the project is up-to-date wrt parent project
     if pkg.parent_more_recent():
-        print 'Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, pkg.parent_project, pkg.parent_version, project, pkg.version, project)
+        print('Package %s is more recent in %s (%s) than in %s (%s). Please synchronize %s first.' % (package, pkg.parent_project, pkg.parent_version, project, pkg.version, project))
         return
 
     # check that an update is really needed
     if not pkg.upstream_version:
-        print 'No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package
+        print('No information about upstream version of package %s is available. Assuming it is not up-to-date.' % package)
     elif pkg.upstream_version == '--':
-        print 'Package %s has no upstream.' % package
+        print('Package %s has no upstream.' % package)
         return
     elif pkg.devel_project and pkg.needs_update() and not no_devel_project and not pkg.devel_needs_update():
         if not pkg.devel_package or pkg.devel_package == package:
-            print 'Package %s is already up-to-date in its development project (%s).' % (package, pkg.devel_project)
+            print('Package %s is already up-to-date in its development project (%s).' % (package, pkg.devel_project))
         else:
-            print 'Package %s is already up-to-date in its development project (%s/%s).' % (package, pkg.devel_project, pkg.devel_package)
+            print('Package %s is already up-to-date in its development project (%s/%s).' % (package, pkg.devel_project, pkg.devel_package))
         return
     elif not pkg.needs_update():
-        print 'Package %s is already up-to-date.' % package
+        print('Package %s is already up-to-date.' % package)
         return
 
     (setup, branch_project, branch_package) = _collab_setup_internal(apiurl, username, pkg, ignore_reserved, no_reserve, no_devel_project, no_branch)
@@ -2621,20 +2637,20 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
 
     if old_version and old_version == pkg.upstream_version:
         if no_branch:
-            print 'Package %s is already up-to-date (the database might not be up-to-date).' % branch_package
+            print('Package %s is already up-to-date (the database might not be up-to-date).' % branch_package)
         else:
-            print 'Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % branch_package
+            print('Package %s is already up-to-date (in your branch only, or the database is not up-to-date).' % branch_package)
         return
 
     if define_in_source:
-        print 'WARNING: the Source tag in %s is using some define that might not be valid anymore.' % spec_file
+        print('WARNING: the Source tag in %s is using some define that might not be valid anymore.' % spec_file)
     if updated:
-        print '%s has been prepared.' % os.path.basename(spec_file)
+        print('%s has been prepared.' % os.path.basename(spec_file))
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
         if file.endswith('.spec') and file != os.path.basename(spec_file):
-            print 'WARNING: %s might need a manual update.' % file
+            print('WARNING: %s might need a manual update.' % file)
 
 
     # start adding an entry to .changes
@@ -2643,29 +2659,29 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
     if not os.path.exists(changes_file) and package != branch_package:
         changes_file = os.path.join(package_dir, branch_package + '.changes')
     if _collab_update_changes(changes_file, pkg.upstream_version, email):
-        print '%s has been prepared.' % os.path.basename(changes_file)
+        print('%s has been prepared.' % os.path.basename(changes_file))
 
     # warn if there are other spec files which might need an update
     for file in os.listdir(package_dir):
         if file.endswith('.changes') and file != os.path.basename(changes_file):
-            print 'WARNING: %s might need a manual update.' % file
+            print('WARNING: %s might need a manual update.' % file)
 
 
     # download the upstream tarball
     # fatal if fails
     if not pkg.upstream_url:
-        print >>sys.stderr, 'Cannot download latest upstream tarball for %s: no URL defined.' % package
+        print('Cannot download latest upstream tarball for %s: no URL defined.' % package, file=sys.stderr)
         return
 
-    print 'Looking for the upstream tarball...'
+    print('Looking for the upstream tarball...')
     try:
         upstream_tarball = _collab_download_internal(pkg.upstream_url, package_dir)
-    except OscCollabDownloadError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabDownloadError as e:
+        print(e.msg, file=sys.stderr)
         return
 
     if not upstream_tarball:
-        print >>sys.stderr, 'No upstream tarball downloaded for %s.' % package
+        print('No upstream tarball downloaded for %s.' % package, file=sys.stderr)
         return
     else:
         upstream_tarball_basename = os.path.basename(upstream_tarball)
@@ -2674,7 +2690,7 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
         if upstream_tarball_basename == old_tarball:
             old_tarball = None
             old_tarball_with_dir = None
-        print '%s has been downloaded.' % upstream_tarball_basename
+        print('%s has been downloaded.' % upstream_tarball_basename)
 
 
     # check integrity of the downloaded file
@@ -2684,69 +2700,69 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
 
     # extract NEWS & ChangeLog from the old + new tarballs, and do a diff
     # not fatal if fails
-    print 'Extracting useful diff between tarballs (NEWS, ChangeLog, configure.{ac,in})...'
+    print('Extracting useful diff between tarballs (NEWS, ChangeLog, configure.{ac,in})...')
     try:
         (news, news_created, news_is_diff, changelog, changelog_created, changelog_is_diff, configure, configure_created, configure_is_diff, meson, meson_created, meson_is_diff, mesonopt, mesonopt_created, mesonopt_is_diff) = _collab_extract_diff_internal(package_dir, old_tarball_with_dir, upstream_tarball)
-    except OscCollabDiffError, e:
-        print >>sys.stderr, e.msg
+    except OscCollabDiffError as e:
+        print(e.msg, file=sys.stderr)
     else:
         if news_created:
             news_basename = os.path.basename(news)
             if news_is_diff:
-                print 'NEWS between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, news_basename)
+                print('NEWS between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, news_basename))
             else:
-                print 'Complete NEWS of %s is available in %s' % (upstream_tarball_basename, news_basename)
+                print('Complete NEWS of %s is available in %s' % (upstream_tarball_basename, news_basename))
         else:
-            print 'No NEWS information found.'
+            print('No NEWS information found.')
 
         if changelog_created:
             changelog_basename = os.path.basename(changelog)
             if changelog_is_diff:
-                print 'ChangeLog between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, changelog_basename)
+                print('ChangeLog between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, changelog_basename))
             else:
-                print 'Complete ChangeLog of %s is available in %s' % (upstream_tarball_basename, changelog_basename)
+                print('Complete ChangeLog of %s is available in %s' % (upstream_tarball_basename, changelog_basename))
         else:
-            print 'No ChangeLog information found.'
+            print('No ChangeLog information found.')
 
         if configure_created:
             configure_basename = os.path.basename(configure)
             if configure_is_diff:
-                print 'Diff in configure.{ac,in} between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, configure_basename)
+                print('Diff in configure.{ac,in} between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, configure_basename))
             else:
-                print 'Complete configure.{ac,in} of %s is available in %s' % (upstream_tarball_basename, configure_basename)
+                print('Complete configure.{ac,in} of %s is available in %s' % (upstream_tarball_basename, configure_basename))
         else:
-            print 'No configure.{ac,in} information found (tarball is probably not using autotools).'
+            print('No configure.{ac,in} information found (tarball is probably not using autotools).')
 
         if meson_created:
             meson_basename = os.path.basename(meson)
             if meson_is_diff:
-                print 'Diff in meson.build between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, meson_basename)
+                print('Diff in meson.build between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, meson_basename))
             else:
-                print 'Complete meson.build of %s is available in %s' % (upstream_tarball_basename, meson_basename)
+                print('Complete meson.build of %s is available in %s' % (upstream_tarball_basename, meson_basename))
         else:
-            print 'No meson.build information found (tarball is probably not using meson).'
+            print('No meson.build information found (tarball is probably not using meson).')
 
         if mesonopt_created:
             mesonopt_basename = os.path.basename(mesonopt)
             if mesonopt_is_diff:
-                print 'Diff in meson_options.txt between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, mesonopt_basename)
+                print('Diff in meson_options.txt between %s and %s is available in %s' % (old_tarball, upstream_tarball_basename, mesonopt_basename))
             else:
-                print 'Complete meson_options.txt of %s is available in %s' % (upstream_tarball_basename, mesonopt_basename)
+                print('Complete meson_options.txt of %s is available in %s' % (upstream_tarball_basename, mesonopt_basename))
         else:
-            print 'No meson_options.txt information found (tarball is probably not using meson or the build has no options).'
+            print('No meson_options.txt information found (tarball is probably not using meson or the build has no options).')
 
 
     # try applying the patches with rpm quilt
     # not fatal if fails
     if _collab_is_program_in_path('quilt'):
-        print 'Running quilt...'
+        print('Running quilt...')
         if _collab_quilt_package(spec_file):
-            print 'Patches still apply.'
+            print('Patches still apply.')
         else:
-            print 'WARNING: make sure that all patches apply before submitting.'
+            print('WARNING: make sure that all patches apply before submitting.')
     else:
-        print 'quilt is not available.'
-        print 'WARNING: make sure that all patches apply before submitting.'
+        print('quilt is not available.')
+        print('WARNING: make sure that all patches apply before submitting.')
 
 
     # 'osc add newfile.tar.bz2' and 'osc del oldfile.tar.bz2'
@@ -2756,18 +2772,18 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
     if old_tarball_with_dir:
         if os.path.exists(old_tarball_with_dir):
             osc_package.delete_file(old_tarball, force=True)
-            print '%s has been removed from the package.' % old_tarball
+            print('%s has been removed from the package.' % old_tarball)
         else:
-            print 'WARNING: the previous tarball could not be found. Please manually remove it.'
+            print('WARNING: the previous tarball could not be found. Please manually remove it.')
     else:
-        print 'WARNING: the previous tarball could not be found. Please manually remove it.'
+        print('WARNING: the previous tarball could not be found. Please manually remove it.')
 
     osc_package.addfile(upstream_tarball_basename)
-    print '%s has been added to the package.' % upstream_tarball_basename
+    print('%s has been added to the package.' % upstream_tarball_basename)
 
 
-    print 'Package %s has been prepared for the update.' % branch_package
-    print 'After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), _osc_collab_alias)
+    print('Package %s has been prepared for the update.' % branch_package)
+    print('After having updated %s, you can use \'osc build\' to start a local build or \'osc %s build\' to start a build on the build service.' % (os.path.basename(changes_file), _osc_collab_alias))
 
     if not ignore_comment:
         _print_comment_after_setup(pkg, no_devel_project)
@@ -2783,7 +2799,7 @@ def _collab_forward(apiurl, user, projects, request_id, no_supersede = False):
     try:
         int_request_id = int(request_id)
     except ValueError:
-        print >>sys.stderr, '%s is not a valid request id.' % (request_id)
+        print('%s is not a valid request id.' % (request_id), file=sys.stderr)
         return
 
     request = OscCollabObs.get_request(request_id)
@@ -2795,32 +2811,32 @@ def _collab_forward(apiurl, user, projects, request_id, no_supersede = False):
 
     if dest_project not in projects:
         if len(projects) == 1:
-            print >>sys.stderr, 'Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, dest_project, projects[0])
+            print('Submission request %s is for %s and not %s. You can use --project to override your project settings.' % (request_id, dest_project, projects[0]), file=sys.stderr)
         else:
-            print >>sys.stderr, 'Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, dest_project)
+            print('Submission request %s is for %s. You can use --project to override your project settings.' % (request_id, dest_project), file=sys.stderr)
         return
 
     if request.state != 'new':
-        print >>sys.stderr, 'Submission request %s is not new.' % request_id
+        print('Submission request %s is not new.' % request_id, file=sys.stderr)
         return
 
     try:
         pkg = OscCollabApi.get_package_details((dest_project,), dest_package)
         if not pkg or not pkg.parent_project:
-            print >>sys.stderr, 'No parent project for %s/%s.' % (dest_project, dest_package)
+            print('No parent project for %s/%s.' % (dest_project, dest_package), file=sys.stderr)
             return
-    except OscCollabWebError, e:
-        print >>sys.stderr, 'Cannot get parent project of %s/%s.' % (dest_project, dest_package)
+    except OscCollabWebError as e:
+        print('Cannot get parent project of %s/%s.' % (dest_project, dest_package), file=sys.stderr)
         return
 
     try:
         devel_project = show_develproject(apiurl, pkg.parent_project, pkg.parent_package)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Cannot get development project for %s/%s: %s' % (pkg.parent_project, pkg.parent_package, e.msg)
+    except HTTPError as e:
+        print('Cannot get development project for %s/%s: %s' % (pkg.parent_project, pkg.parent_package, e.msg), file=sys.stderr)
         return
 
     if devel_project != dest_project:
-        print >>sys.stderr, 'Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project)
+        print('Development project for %s/%s is %s, but package has been submitted to %s.' % (pkg.parent_project, pkg.parent_package, devel_project, dest_project), file=sys.stderr)
         return
 
     if not OscCollabObs.change_request_state(request_id, 'accepted', 'Forwarding to %s' % pkg.parent_project):
@@ -2833,11 +2849,11 @@ def _collab_forward(apiurl, user, projects, request_id, no_supersede = False):
                                    pkg.parent_project, pkg.parent_package,
                                    request.description + ' (forwarded request %s from %s)' % (request_id, request.by))
 
-    print 'Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result)
+    print('Submission request %s has been forwarded to %s (request id: %s).' % (request_id, pkg.parent_project, result))
 
     if not no_supersede:
         for old_id in OscCollabObs.supersede_old_requests(user, pkg.parent_project, pkg.parent_package, result):
-            print 'Previous submission request %s has been superseded.' % old_id
+            print('Previous submission request %s has been superseded.' % old_id)
 
 
 #######################################################################
@@ -2878,8 +2894,8 @@ def _collab_package_set_meta(apiurl, project, package, meta, error_msg_prefix = 
     failed = False
     try:
         http_PUT(meta_url, file=tmp)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, error_str % e.msg
+    except HTTPError as e:
+        print(error_str % e.msg, file=sys.stderr)
         failed = True
 
     os.unlink(tmp)
@@ -2954,9 +2970,7 @@ def _collab_enable_build(apiurl, project, package, meta, repos, archs):
     if all_true:
         return (True, False)
 
-    buf = StringIO()
-    meta_xml.write(buf)
-    meta = buf.getvalue()
+    meta = ET.tostring(package_node)
 
     if _collab_package_set_meta(apiurl, project, package, meta, 'Error while enabling build of package on the build service'):
         return (True, True)
@@ -2969,9 +2983,9 @@ def _collab_get_latest_package_rev_built(apiurl, project, repo, arch, package, v
 
     try:
         history = http_GET(url)
-    except urllib2.HTTPError, e:
+    except HTTPError as e:
         if verbose_error:
-            print >>sys.stderr, 'Cannot get build history: %s' % e.msg
+            print('Cannot get build history: %s' % e.msg, file=sys.stderr)
         return (False, None, None)
 
     try:
@@ -3004,11 +3018,11 @@ def _collab_print_build_status(build_state, header, error_line, hint = False):
         else:
             return arch
 
-    print '%s:' % header
+    print('%s:' % header)
 
     repos = build_state.keys()
     if not repos or len(repos) == 0:
-        print '  %s' % error_line
+        print('  %s' % error_line)
         return
 
     repos_archs = []
@@ -3020,7 +3034,7 @@ def _collab_print_build_status(build_state, header, error_line, hint = False):
             one_result = True
 
     if len(repos_archs) == 0:
-        print '  %s' % error_line
+        print('  %s' % error_line)
         return
 
     show_hint = False
@@ -3048,12 +3062,12 @@ def _collab_print_build_status(build_state, header, error_line, hint = False):
         if build_state[repo][arch]['scheduler']:
             status = '%s (was: %s)' % (build_state[repo][arch]['scheduler'], status)
 
-        print format % (left, status)
+        print(format % (left, status))
 
     if show_hint and hint:
         for (repo, arch) in repos_archs:
             if build_state[repo][arch]['result'] == 'failed':
-                print 'You can see the log of the failed build with: osc buildlog %s %s' % (repo, arch)
+                print('You can see the log of the failed build with: osc buildlog %s %s' % (repo, arch))
 
 
 def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, rev, state, error_counter, verbose_error):
@@ -3061,19 +3075,19 @@ def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, re
         results = show_results_meta(apiurl, project, package=package)
         if len(results) == 0:
             if verbose_error:
-                print >>sys.stderr, 'Error while getting build results of package on the build service: empty results'
+                print('Error while getting build results of package on the build service: empty results', file=sys.stderr)
             error_counter += 1
             return (True, False, error_counter, state)
 
         # reset the error counter
         error_counter = 0
-    except (urllib2.HTTPError, httplib.BadStatusLine), e:
+    except (HTTPError, BadStatusLine) as e:
         if verbose_error:
-            print >>sys.stderr, 'Error while getting build results of package on the build service: %s' % e
+            print('Error while getting build results of package on the build service: %s' % e, file=sys.stderr)
         error_counter += 1
         return (True, False, error_counter, state)
 
-    res_root = ET.XML(''.join(results))
+    res_root = ET.XML(b''.join(results))
     detailed_results = {}
     repos_archs = []
 
@@ -3105,7 +3119,7 @@ def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, re
         except:
             details = None
 
-        if not detailed_results.has_key(repo):
+        if not repo in detailed_results:
             detailed_results[repo] = {}
         detailed_results[repo][arch] = {}
         detailed_results[repo][arch]['status'] = status
@@ -3125,7 +3139,7 @@ def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, re
         bs_not_ready = True
         build_successful = False
         if verbose_error:
-            print >>sys.stderr, 'Build service did not return any information.'
+            print('Build service did not return any information.', file=sys.stderr)
         error_counter += 1
 
     for (repo, arch) in repos_archs:
@@ -3206,15 +3220,15 @@ def _collab_build_get_results(apiurl, project, repos, package, archs, srcmd5, re
         if not scheduler_active and need_rebuild and state[repo][arch]['rebuild'] == 0:
             bs_not_ready = True
 
-            print 'Triggering rebuild for %s as of %s' % (arch, time.strftime('%X (%x)', time.localtime()))
+            print('Triggering rebuild for %s as of %s' % (arch, time.strftime('%X (%x)', time.localtime())))
 
             try:
                 rebuild(apiurl, project, package, repo, arch)
                 # reset the error counter
                 error_counter = 0
-            except (urllib2.HTTPError, httplib.BadStatusLine), e:
+            except (HTTPError, BadStatusLine) as e:
                 if verbose_error:
-                    print >>sys.stderr, 'Cannot trigger rebuild for %s: %s' % (arch, e)
+                    print('Cannot trigger rebuild for %s: %s' % (arch, e), file=sys.stderr)
                 error_counter += 1
 
         state[repo][arch]['scheduler'] = scheduler_active
@@ -3289,8 +3303,8 @@ def _collab_build_wait_loop(apiurl, project, repos, package, archs, srcmd5, rev)
             state[repo][arch]['result'] = 'unknown'
             state[repo][arch]['details'] = ''
 
-    print "Building on %s..." % ', '.join(repos)
-    print "You can press enter to get the current status of the build."
+    print("Building on %s..." % ', '.join(repos))
+    print("You can press enter to get the current status of the build.")
 
     # It's important to start the loop by downloading results since we might
     # already have successful builds, and we don't want to wait to know that.
@@ -3309,7 +3323,7 @@ def _collab_build_wait_loop(apiurl, project, repos, package, archs, srcmd5, rev)
 
                 # just stop if there are too many errors
                 if error_counter > max_errors:
-                    print >>sys.stderr, 'Giving up: too many consecutive errors when contacting the build service.'
+                    print('Giving up: too many consecutive errors when contacting the build service.', file=sys.stderr)
                     break
 
             else:
@@ -3345,8 +3359,8 @@ def _collab_build_wait_loop(apiurl, project, repos, package, archs, srcmd5, rev)
 
     # we catch this exception here since we might need to revert some metadata
     except KeyboardInterrupt:
-        print ''
-        print 'Interrupted: not waiting for the build to finish. Cleaning up...'
+        print('')
+        print('Interrupted: not waiting for the build to finish. Cleaning up...')
 
     return (build_successful, state)
 
@@ -3357,8 +3371,8 @@ def _collab_build_wait_loop(apiurl, project, repos, package, archs, srcmd5, rev)
 def _collab_autodetect_repo(apiurl, project):
     try:
         meta_lines = show_project_meta(apiurl, project)
-        meta = ''.join(meta_lines)
-    except urllib2.HTTPError:
+        meta = b''.join(meta_lines)
+    except HTTPError:
         return None
 
     try:
@@ -3406,14 +3420,14 @@ def _collab_build_internal(apiurl, osc_package, repos, archs):
     package = osc_package.name
 
     if '!autodetect!' in repos:
-        print 'Autodetecting the most appropriate repository for the build...'
+        print('Autodetecting the most appropriate repository for the build...')
         repos.remove('!autodetect!')
         repo = _collab_autodetect_repo(apiurl, project)
         if repo:
             repos.append(repo)
 
     if len(repos) == 0:
-        print >>sys.stderr, 'Error while setting up the build: no usable repository.'
+        print('Error while setting up the build: no usable repository.', file=sys.stderr)
         return False
 
     repos.sort()
@@ -3423,11 +3437,11 @@ def _collab_build_internal(apiurl, osc_package, repos, archs):
     # is not the case, enable it
     try:
         meta_lines = show_package_meta(apiurl, project, package)
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Error while checking if package is set to build: %s' % e.msg
+    except HTTPError as e:
+        print('Error while checking if package is set to build: %s' % e.msg, file=sys.stderr)
         return False
 
-    meta = ''.join(meta_lines)
+    meta = b''.join(meta_lines)
     (success, changed_meta) = _collab_enable_build(apiurl, project, package, meta, repos, archs)
     if not success:
         return False
@@ -3453,8 +3467,8 @@ def _collab_build_internal(apiurl, osc_package, repos, archs):
 def _collab_build(apiurl, user, projects, msg, repos, archs):
     try:
         osc_package = filedir_to_pac('.')
-    except oscerr.NoWorkingCopy, e:
-        print >>sys.stderr, e
+    except oscerr.NoWorkingCopy as e:
+        print(e, file=sys.stderr)
         return
 
     project = osc_package.prjname
@@ -3472,7 +3486,7 @@ def _collab_build(apiurl, user, projects, msg, repos, archs):
     build_success = _collab_build_internal(apiurl, osc_package, repos, archs)
 
     if build_success:
-        print 'Package successfully built on the build service.'
+        print('Package successfully built on the build service.')
 
 
 #######################################################################
@@ -3481,8 +3495,8 @@ def _collab_build(apiurl, user, projects, msg, repos, archs):
 def _collab_build_submit(apiurl, user, projects, msg, repos, archs, forward = False, no_unreserve = False, no_supersede = False):
     try:
         osc_package = filedir_to_pac('.')
-    except oscerr.NoWorkingCopy, e:
-        print >>sys.stderr, e
+    except oscerr.NoWorkingCopy as e:
+        print(e, file=sys.stderr)
         return
 
     project = osc_package.prjname
@@ -3491,23 +3505,23 @@ def _collab_build_submit(apiurl, user, projects, msg, repos, archs, forward = Fa
     # do some preliminary checks on the package/project: it has to be
     # a branch of a development project
     if not osc_package.islink():
-        print >>sys.stderr, 'Package is not a link.'
+        print('Package is not a link.', file=sys.stderr)
         return
 
     parent_project = osc_package.linkinfo.project
     if not parent_project in projects:
         if len(projects) == 1:
-            print >>sys.stderr, 'Package links to project %s and not %s. You can use --project to override your project settings.' % (parent_project, projects[0])
+            print('Package links to project %s and not %s. You can use --project to override your project settings.' % (parent_project, projects[0]), file=sys.stderr)
         else:
-            print >>sys.stderr, 'Package links to project %s. You can use --project to override your project settings.' % parent_project
+            print('Package links to project %s. You can use --project to override your project settings.' % parent_project, file=sys.stderr)
         return
 
     if not project.startswith('home:%s:branches' % user):
-        print >>sys.stderr, 'Package belongs to project %s which does not look like a branch project.' % project
+        print('Package belongs to project %s which does not look like a branch project.' % project, file=sys.stderr)
         return
 
     if project != 'home:%s:branches:%s' % (user, parent_project):
-        print >>sys.stderr, 'Package belongs to project %s which does not look like a branch project for %s.' % (project, parent_project)
+        print('Package belongs to project %s which does not look like a branch project for %s.' % (project, parent_project), file=sys.stderr)
         return
 
 
@@ -3531,11 +3545,11 @@ def _collab_build_submit(apiurl, user, projects, msg, repos, archs, forward = Fa
                                        parent_project, package,
                                        msg)
 
-        print 'Package submitted to %s (request id: %s).' % (parent_project, result)
+        print('Package submitted to %s (request id: %s).' % (parent_project, result))
 
         if not no_supersede:
             for old_id in OscCollabObs.supersede_old_requests(user, parent_project, package, result):
-                print 'Previous submission request %s has been superseded.' % old_id
+                print('Previous submission request %s has been superseded.' % old_id)
 
         if forward:
             # we volunteerly restrict the project list to parent_project for
@@ -3547,10 +3561,10 @@ def _collab_build_submit(apiurl, user, projects, msg, repos, archs, forward = Fa
                 reservation = OscCollabApi.is_package_reserved((parent_project,), package, no_devel_project = True)
                 if reservation and reservation.user == user:
                     _collab_unreserve((parent_project,), (package,), user, no_devel_project = True)
-            except OscCollabWebError, e:
-                print >>sys.stderr, e.msg
+            except OscCollabWebError as e:
+                print(e.msg, file=sys.stderr)
     else:
-        print 'Package was not submitted to %s' % parent_project
+        print('Package was not submitted to %s' % parent_project)
 
 
 #######################################################################
@@ -3671,7 +3685,7 @@ def _collab_get_config_parser():
         return _osc_collab_config_parser
 
     conffile = _osc_collab_osc_conffile
-    _osc_collab_config_parser = ConfigParser.SafeConfigParser()
+    _osc_collab_config_parser = configparser.SafeConfigParser()
     _osc_collab_config_parser.read(conffile)
     return _osc_collab_config_parser
 
@@ -3732,12 +3746,12 @@ def _collab_migrate_gnome_config(apiurl):
     for key in [ 'archs', 'apiurl', 'email', 'projects' ]:
         if _collab_get_config(apiurl, 'collab_' + key) is not None:
             continue
-        elif not conf.config.has_key('gnome_' + key):
+        elif not ('gnome_' + key) in conf.config:
             continue
         _collab_add_config_option(apiurl, 'collab_' + key, conf.config['gnome_' + key])
 
     # migrate repo to repos
-    if _collab_get_config(apiurl, 'collab_repos') is None and conf.config.has_key('gnome_repo'):
+    if _collab_get_config(apiurl, 'collab_repos') is None and 'gnome_repo' in conf.config:
         _collab_add_config_option(apiurl, 'collab_repos', conf.config['gnome_repo'] + ';')
 
 
@@ -3922,7 +3936,7 @@ def do_collab(self, subcmd, opts, *args):
 
     # uncomment this when profiling is needed
     #self.ref = time.time()
-    #print "%.3f - %s" % (time.time()-self.ref, 'start')
+    #print("%.3f - %s" % (time.time()-self.ref, 'start'))
 
     global _osc_collab_alias
     global _osc_collab_osc_conffile
@@ -3930,7 +3944,7 @@ def do_collab(self, subcmd, opts, *args):
     _osc_collab_alias = self.lastcmd[0]
 
     if opts.version:
-        print OSC_COLLAB_VERSION
+        print(OSC_COLLAB_VERSION)
         return
 
     cmds = ['todo', 't', 'todoadmin', 'ta', 'listreserved', 'lr', 'isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'listcommented', 'lc', 'comment', 'c', 'commentset', 'cs', 'commentunset', 'cu', 'setup', 's', 'update', 'up', 'forward', 'f', 'build', 'b', 'buildsubmit', 'bs']
@@ -3948,7 +3962,7 @@ def do_collab(self, subcmd, opts, *args):
         min_args, max_args = 1, 2
     elif cmd in ['isreserved', 'ir', 'reserve', 'r', 'unreserve', 'u', 'comment', 'c', 'commentunset', 'cu']:
         min_args = 1
-        max_args = sys.maxint
+        max_args = sys.maxsize
     else:
         raise RuntimeError('Unknown command: %s' % cmd)
 
