@@ -238,6 +238,7 @@ folks:
 font-util:
 fonttosfnt:
 four-in-a-row:
+freerdp:FreeRDP
 freetype:freetype2
 frei0r-plugins:
 frogr:
@@ -970,6 +971,7 @@ raw-thumbnailer:
 recordmydesktop:
 redland:
 rednotebook:
+remmina:Remmina
 rendercheck:
 rep-gtk:
 rest:librest
@@ -1221,6 +1223,7 @@ xmessage:
 xmh:
 xmodmap:
 xmore:
+xorgxrdp:
 xorg-cf-files:
 xorg-docs:
 xorg-sgml-doctools:
@@ -1231,6 +1234,7 @@ xprehashprinterlist:
 xprop:
 xrandr:
 xrdb:
+xrdp:
 xrefresh:
 xrestop:
 xrx:
