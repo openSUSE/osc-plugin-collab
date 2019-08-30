@@ -69,7 +69,7 @@ from osc import cmdln
 from osc import conf
 
 
-OSC_COLLAB_VERSION = '0.102'
+OSC_COLLAB_VERSION = '0.101'
 
 # This is a hack to have osc ignore the file we create in a package directory.
 _osc_collab_helper_prefixes = [ 'osc-collab.', 'osc-gnome.' ]
@@ -3620,7 +3620,8 @@ def _collab_add_config_option(section, key, value):
         elif line[0] == '[' and in_section and not added:
             if not empty_line:
                 os.write(fdout, '\n')
-            os.write(fdout, '%s = %s\n\n' % (key, value))
+            write_line = '%s = %s\n\n' % (key, value)
+            os.write(fdout, write_line.encode('utf-8'))
             added = True
             in_section = False
         elif line[0] == '[' and in_section:
@@ -3633,16 +3634,18 @@ def _collab_add_config_option(section, key, value):
                 line = '%s= %s\n' % (line[:index], value)
                 added = True
 
-        os.write(fdout, line)
+        os.write(fdout, line.encode('utf-8'))
 
         empty_line = line.strip() == ''
 
     if not added:
         if not empty_line:
-            os.write(fdout, '\n')
+            os.write(fdout, b'\n')
         if not in_section:
-            os.write(fdout, '[%s]\n' % (section,))
-        os.write(fdout, '%s = %s\n' % (key, value))
+            write_line = '[%s]\n' % (section,)
+            os.write(fdout, write_line.encode('utf-8'))
+        write_line = '%s = %s\n' % (key, value)
+        os.write(fdout, write_line.encode('utf-8'))
 
     os.close(fdout)
     os.rename(tmp, conffile)
