@@ -34,6 +34,8 @@
 # Authors: Vincent Untz <vuntz@opensuse.org>
 #
 
+from __future__ import print_function
+
 import difflib
 import locale
 import re
