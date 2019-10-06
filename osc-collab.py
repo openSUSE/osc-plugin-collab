@@ -2501,6 +2501,7 @@ def _collab_update_changes(changes_file, upstream_version, email):
     old_tz = os.getenv('TZ')
     locale.setlocale(locale.LC_TIME, 'C')
     os.putenv('TZ', 'UTC')
+    time.tzset()
 
     os.write(fdout, b'-------------------------------------------------------------------\n')
     write_line = '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email)
@@ -2516,6 +2517,7 @@ def _collab_update_changes(changes_file, upstream_version, email):
         os.putenv('TZ', old_tz)
     else:
         os.unsetenv('TZ')
+    time.tzset()
 
     fin = open(changes_file, 'r')
     while True:
