@@ -307,7 +307,7 @@ class UpstreamDb:
                     majmin = version
                 else:
                     majmin = versions[0] + '.' + versions[1]
-                url = 'http://download.gnome.org/sources/%s/%s/%s-%s.tar.xz' % (name, majmin, name, version)
+                url = 'https://download.gnome.org/sources/%s/%s/%s-%s.tar.xz' % (name, majmin, name, version)
             else:
                 print >> sys.stderr, 'Unknown upstream group for metadata: %s (full line: \'%s\').' % (match.group(1), line)
                 url = ''
