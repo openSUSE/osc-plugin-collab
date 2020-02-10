@@ -73,7 +73,7 @@ class UpstreamDb:
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
         if self._debug:
-            print 'UpstreamDb: %s' % s
+            print('UpstreamDb: %s' % s)
 
     def __del__(self):
         # needed for the commit
@@ -144,7 +144,7 @@ class UpstreamDb:
             oldmatches[row['srcpackage']] = (row['id'], row['upstream'])
 
         if not os.path.exists(matchpath):
-            print >> sys.stderr, 'No upstream/package name match database available, keeping previous data.'
+            print('No upstream/package name match database available, keeping previous data.', file=sys.stderr)
             return
 
         handled = []
@@ -170,8 +170,8 @@ class UpstreamDb:
                 srcpackage = upstream
 
             if srcpackage in handled:
-                print >> sys.stderr, 'Source package %s defined more than once in %s.' % (srcpackage, matchfile)
-            elif oldmatches.has_key(srcpackage):
+                print('Source package %s defined more than once in %s.' % (srcpackage, matchfile), file=sys.stderr)
+            elif srcpackage in oldmatches:
                 # Update the entry if it has changed
                 (id, oldupstream) = oldmatches[srcpackage]
                 if oldupstream != upstream:
@@ -196,11 +196,11 @@ class UpstreamDb:
 
         # Remove matches that were removed in the source file
         if len(oldmatches) > 0:
-            ids = [ id for (id, oldupstream) in oldmatches.values() ]
+            ids = [ id for (id, oldupstream) in list(oldmatches.values()) ]
             where = ' OR '.join([ 'id = ?' for i in range(len(ids)) ])
             self.cursor.execute('''DELETE FROM upstream_pkg_name_match WHERE %s;''' % where, ids)
             #  will be used in get_changed_packages()
-            self._removed_matches = oldmatches.keys()
+            self._removed_matches = list(oldmatches.keys())
         else:
             self._removed_matches = []
 
@@ -215,7 +215,7 @@ class UpstreamDb:
             limit = name_branch[index + 1:]
             item = (name_branch, limit)
 
-            if result.has_key(name):
+            if name in result:
                 name_branches = result[name]
                 name_branches.append(item)
                 result[name] = name_branches
@@ -237,7 +237,7 @@ class UpstreamDb:
         branch_path = os.path.join(self.dest_dir, branch)
 
         if not os.path.exists(branch_path):
-            print >> sys.stderr, 'No file %s available for requested branch %s, keeping previous data if available.' % (branch_path, branch)
+            print('No file %s available for requested branch %s, keeping previous data if available.' % (branch_path, branch), file=sys.stderr)
             return
 
         (branch_id, branch_mtime) = self._get_branch_data(branch)
@@ -309,11 +309,11 @@ class UpstreamDb:
                     majmin = versions[0] + '.' + versions[1]
                 url = 'https://download.gnome.org/sources/%s/%s/%s-%s.tar.xz' % (name, majmin, name, version)
             else:
-                print >> sys.stderr, 'Unknown upstream group for metadata: %s (full line: \'%s\').' % (match.group(1), line)
+                print('Unknown upstream group for metadata: %s (full line: \'%s\').' % (match.group(1), line), file=sys.stderr)
                 url = ''
 
             ignore = False
-            if real_upstream_data.has_key(name):
+            if name in real_upstream_data:
                 (current_version, current_url) = real_upstream_data[name]
                 if util.version_ge(current_version, version):
                     ignore = True
@@ -322,11 +322,11 @@ class UpstreamDb:
                 real_upstream_data[name] = (version, url)
 
             # Now also fill data for 'glib|1.2.10' if it fits
-            if upstream_name_branches.has_key(name):
+            if name in upstream_name_branches:
                 # name = 'glib', upstream_name_branch = 'glib|1.2.10'
                 # and limit = '1.2.10'
                 for (upstream_name_branch, limit) in upstream_name_branches[name]:
-                    if real_upstream_data.has_key(upstream_name_branch):
+                    if upstream_name_branch in real_upstream_data:
                         (current_version, current_url) = real_upstream_data[upstream_name_branch]
                         if util.version_ge(current_version, version):
                             continue
@@ -337,8 +337,8 @@ class UpstreamDb:
                     real_upstream_data[upstream_name_branch] = (version, url)
 
 
-        for (name, (version, url)) in real_upstream_data.items():
-            if olddata.has_key(name):
+        for (name, (version, url)) in list(real_upstream_data.items()):
+            if name in olddata:
                 # Update the entry if it has changed
                 (id, oldversion, oldurl) = olddata[name]
                 if oldversion != version or oldurl != url:
@@ -361,7 +361,7 @@ class UpstreamDb:
 
         # Remove data that was removed in the source file
         if len(olddata) > 0:
-            ids = [ id for (id, version, url) in olddata.values() ]
+            ids = [ id for (id, version, url) in list(olddata.values()) ]
             # Delete by group of 50, since it once had to remove ~1800 items
             # and it didn't work fine
             chunk_size = 50
@@ -376,7 +376,7 @@ class UpstreamDb:
                 where = ' OR '.join([ 'id = ?' for i in range(len(chunk_ids)) ])
                 self.cursor.execute('''DELETE FROM upstream WHERE %s;''' % where, chunk_ids)
 
-            self._removed_upstream[branch] = olddata.keys()
+            self._removed_upstream[branch] = list(olddata.keys())
         else:
             self._removed_upstream[branch] = []
 
@@ -482,6 +482,8 @@ class UpstreamDb:
         max_match = self.cursor.fetchone()[0]
         self.cursor.execute('''SELECT MAX(updated) FROM upstream;''')
         max_data = self.cursor.fetchone()[0]
+        if not isinstance(max_data, int):
+            max_data = 0
         return max(max_match, max_data)
 
     def get_changed_packages(self, old_mtime):
@@ -499,7 +501,7 @@ class UpstreamDb:
         branches = []
         for (id, branch) in self.cursor:
             branches.append((id, branch))
-            if self._removed_upstream.has_key(branch):
+            if branch in self._removed_upstream:
                 changed[branch] = self._removed_upstream[branch]
             else:
                 changed[branch] = []
@@ -508,7 +510,7 @@ class UpstreamDb:
         match_cache = {}
         self.cursor.execute('''SELECT srcpackage, upstream FROM upstream_pkg_name_match;''')
         for (srcpackage, upstream) in self.cursor:
-            if match_cache.has_key(upstream):
+            if upstream in match_cache:
                 match_cache[upstream].append(srcpackage)
             else:
                 match_cache[upstream] = [ srcpackage ]
@@ -527,12 +529,12 @@ class UpstreamDb:
                     changed[branch].append(name)
             else:
                 for (name,) in self.cursor:
-                    if match_cache.has_key(name):
+                    if name in match_cache:
                         changed[branch].extend(match_cache[name])
 
-        self._debug_print('%d upstream(s) changed' % sum([ len(i) for i in changed.values() ]))
+        self._debug_print('%d upstream(s) changed' % sum([ len(i) for i in list(changed.values()) ]))
 
-        for branch in changed.keys():
+        for branch in list(changed.keys()):
             if not changed[branch]:
                 del changed[branch]
 
@@ -551,7 +553,7 @@ class UpstreamDb:
         upstream_name_branches = self._get_upstream_name_branches()
 
         branches = []
-        for project in project_configs.keys():
+        for project in list(project_configs.keys()):
             branches.extend(project_configs[project].branches)
         branches = set(branches)
 
@@ -578,14 +580,14 @@ def main(args):
     upstream = UpstreamDb('/tmp/obs-dissector/cache/upstream', '/tmp/obs-dissector/tmp')
     upstream.update(configs)
 
-    print 'glib (latest): %s' % (upstream.get_upstream_data('latest', 'glib', True),)
-    print 'glib2 (latest): %s' % (upstream.get_upstream_data('latest', 'glib2', True),)
-    print 'gtk2 (2.32): %s' % (upstream.get_upstream_data('gnome-2.32', 'gtk2', True),)
-    print 'gtk2 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk2', True),)
-    print 'gtk3 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk3', True),)
-    print 'gobby04 (latest): %s' % (upstream.get_upstream_data('latest', 'gobby04', True),)
-    print 'gobby (latest): %s' % (upstream.get_upstream_data('latest', 'gobby', True),)
-    print 'OpenOffice_org (latest, fallback): %s' % (upstream.get_upstream_data('latest', 'OpenOffice_org', False),)
+    print('glib (latest): %s' % (upstream.get_upstream_data('latest', 'glib', True),))
+    print('glib2 (latest): %s' % (upstream.get_upstream_data('latest', 'glib2', True),))
+    print('gtk2 (2.32): %s' % (upstream.get_upstream_data('gnome-2.32', 'gtk2', True),))
+    print('gtk2 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk2', True),))
+    print('gtk3 (latest): %s' % (upstream.get_upstream_data('latest', 'gtk3', True),))
+    print('gobby04 (latest): %s' % (upstream.get_upstream_data('latest', 'gobby04', True),))
+    print('gobby (latest): %s' % (upstream.get_upstream_data('latest', 'gobby', True),))
+    print('OpenOffice_org (latest, fallback): %s' % (upstream.get_upstream_data('latest', 'OpenOffice_org', False),))
 
 
 if __name__ == '__main__':

@@ -38,7 +38,7 @@ import os
 import sys
 
 import re
-import urlparse
+import urllib.parse
 
 import feedparser
 
@@ -273,7 +273,7 @@ class HermesReader:
             self._debug_print('No defined feed')
         else:
             resource = '/feeds/' + ','.join(feeds) + '.rdf'
-            self._feed = urlparse.urljoin(base_url, resource)
+            self._feed = urllib.parse.urljoin(base_url, resource)
             self._debug_print('Feed to be used: %s' % self._feed)
 
         self._last_parsed_id = -1
@@ -282,7 +282,7 @@ class HermesReader:
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
         if self._conf.debug:
-            print 'HermesReader: %s' % s
+            print('HermesReader: %s' % s)
 
 
     def _get_entry_id(self, entry):
@@ -339,10 +339,10 @@ class HermesReader:
 
             try:
                 event = self._parse_entry(id, entry)
-            except UnicodeEncodeError, e:
+            except UnicodeEncodeError as e:
                 error_encoded = True
                 event = None
-                print >> sys.stderr, 'Cannot convert hermes message %d to str: %s' % (id, e)
+                print('Cannot convert hermes message %d to str: %s' % (id, e), file=sys.stderr)
 
             # Note that hermes can be buggy and give events without the proper
             # project/package. If it's '' and not None, then it means it has
@@ -355,11 +355,11 @@ class HermesReader:
                 self._events.append((id, event))
             # in case of UnicodeEncodeError, we already output a message
             elif not error_encoded:
-                print >> sys.stderr, 'Buggy hermes message %d (%s): "%s".' % (id, entry['updated'], entry['title'])
-                print >> sys.stderr, '----------'
+                print('Buggy hermes message %d (%s): "%s".' % (id, entry['updated'], entry['title']), file=sys.stderr)
+                print('----------', file=sys.stderr)
                 for line in entry['summary'].split('\n'):
-                    print >> sys.stderr, '> %s' % line
-                print >> sys.stderr, '----------'
+                    print('> %s' % line, file=sys.stderr)
+                print('----------', file=sys.stderr)
 
             if id > self.last_known_id:
                 self.last_known_id = id
@@ -546,8 +546,8 @@ def main(args):
     reader = HermesReader(last_known_id, 'https://hermes.opensuse.org/', feeds, Conf())
     reader.read()
 
-    print 'Number of events: %d' % len(reader.get_events(2094133))
-    print 'Last known event: %d' % reader.last_known_id
+    print('Number of events: %d' % len(reader.get_events(2094133)))
+    print('Last known event: %d' % reader.last_known_id)
 
 
 if __name__ == '__main__':

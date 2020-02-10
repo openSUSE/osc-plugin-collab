@@ -64,10 +64,6 @@ obs-db/
         database.py:
         Creates a database based on the checkout and the upstream data.
 
-        feedparser.py:
-        Universal feed parser: http://www.feedparser.org/
-        Put here for convenience, so you don't have to install it.
-
         hermes.py:
         Looks at hermes feeds to know what has changed.
 

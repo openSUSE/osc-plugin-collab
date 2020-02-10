@@ -76,8 +76,8 @@ def get_conf(args, parser = None):
 
     try:
         conf = config.Config(options.config, use_opensuse = options.opensuse)
-    except config.ConfigException, e:
-        print >>sys.stderr, e
+    except config.ConfigException as e:
+        print(e, file=sys.stderr)
         return (args, options, None)
 
     if conf.sockettimeout > 0:
@@ -86,9 +86,9 @@ def get_conf(args, parser = None):
 
     try:
         os.makedirs(conf.cache_dir)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
-            print >>sys.stderr, 'Cannot create cache directory.'
+            print('Cannot create cache directory.', file=sys.stderr)
             return (args, options, None)
 
     return (args, options, conf)
@@ -112,7 +112,7 @@ def read_status(filename, template):
         line = line[:-1]
         handled = False
 
-        for key in result.keys():
+        for key in list(result.keys()):
             if line.startswith(key + '='):
                 value = line[len(key + '='):]
                 try:
@@ -138,7 +138,7 @@ def write_status(filename, status_dict):
 
     # it's always better to have things sorted, since it'll be predictable
     # (so better for human eyes ;-))
-    items = status_dict.items()
+    items = list(status_dict.items())
     items.sort()
 
     file = open(tmpfilename, 'w')
@@ -161,7 +161,7 @@ def lock_run(conf, name = None):
         running_file = os.path.join(conf.cache_dir, 'running')
 
     if os.path.exists(running_file):
-        print >>sys.stderr, 'Another instance of the script is running.'
+        print('Another instance of the script is running.', file=sys.stderr)
         return False
 
     open(running_file, 'w').write('')
