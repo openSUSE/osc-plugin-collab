@@ -11,8 +11,8 @@ setup() {
 
 	NAME=`basename $0`
 	TOP_DIR=`dirname $0`
-	LOGFILE="${TOP_DIR}/logs/$NAME.log"
-	LOCKFILE="${TOP_DIR}/locks/$NAME.lock"
+	LOGFILE="${HOME}/.local/osc-collab/logs/$NAME.log"
+	LOCKFILE="${HOME}/.local/osc-collab/$NAME.lock"
 
 	### Values to setup
 
