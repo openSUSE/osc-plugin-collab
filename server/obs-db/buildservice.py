@@ -45,8 +45,8 @@ import shutil
 import socket
 import tempfile
 import time
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+from osc import core
+import urllib.parse, urllib.error
 
 import queue
 import threading
@@ -257,37 +257,13 @@ class ObsCheckout:
         timeout = 0
         length = 0
         try:
-            debug_thread('url', 'start %s (timeout = %d)' % (url, socket.getdefaulttimeout() or 0), ' ')
-            fin = urllib.request.urlopen(url)
-            debug_thread('url', 'opened', ' ')
-
-            self.socket_timeouts_acquire()
-            timeout = time.time() + SOCKET_TIMEOUT
-            bisect.insort(self.socket_timeouts, (timeout, fin, url))
-            self.socket_timeouts_release()
-
+            fin = core.http_GET(url)
             fout = open(file, 'w')
 
-            while True:
-                # This generally happens because of the monitor thread
-                if not fin.fp:
-                    raise socket.error('Timeout')
-
-                bytes = fin.read(500 * 1024)
-                cur_length = len(bytes)
-                if cur_length == 0:
-                    break
-                fout.write(bytes)
-                length += cur_length
+            bytes = fin.read()
+            cur_length = len(bytes)
+            fout.write(bytes.decode())
             fout.close()
-
-            self.socket_timeouts_acquire()
-            if (timeout, fin, url) in self.socket_timeouts:
-                self.socket_timeouts.remove((timeout, fin, url))
-            fin.close()
-            self.socket_timeouts_release()
-
-            debug_thread('url', 'done', ' ')
 
             return length
 
@@ -893,7 +869,7 @@ class ObsCheckout:
 
 
     def _copy_project_config(self, project, copy_from):
-        from_file = os.path.join(self, self.dest_dir, copy_from, '_obs-db-options')
+        from_file = os.path.join(self.dest_dir, copy_from, '_obs-db-options')
         if not os.path.exists(from_file):
             return
 
