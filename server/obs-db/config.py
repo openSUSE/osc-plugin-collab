@@ -37,8 +37,8 @@
 import os
 import sys
 
-import ConfigParser
-import cStringIO as StringIO
+import configparser
+import io as StringIO
 
 from osc import conf as oscconf
 from osc import oscerr
@@ -66,7 +66,7 @@ class ConfigException(Exception):
 #######################################################################
 
 
-class EasyConfigParser(ConfigParser.SafeConfigParser):
+class EasyConfigParser(configparser.SafeConfigParser):
 
     def safe_get(self, section, option, default):
         try:
@@ -177,11 +177,11 @@ class Config:
 
         try:
             oscconf.get_config(override_apiurl = self.apiurl)
-        except oscerr.NoConfigfile, e:
+        except oscerr.NoConfigfile as e:
             sys.stderr = oldstderr
             buffer.close()
             raise ConfigException(e)
-        except Exception, e:
+        except Exception as e:
             sys.stderr = oldstderr
             buffer.close()
             raise e
@@ -197,7 +197,7 @@ class Config:
 
         # M2Crypto and socket timeout are not friends. See
         # https://bugzilla.osafoundation.org/show_bug.cgi?id=2341
-        if (oscconf.config['api_host_options'][self.apiurl].has_key('sslcertck') and
+        if ('sslcertck' in oscconf.config['api_host_options'][self.apiurl] and
             oscconf.config['api_host_options'][self.apiurl]['sslcertck']):
             self.sockettimeout = 0
 
@@ -222,7 +222,7 @@ class Config:
                 ignore_empty = False
                 continue
             ignore_empty = False
-            print >>sys.stderr, line[:-1]
+            print(line[:-1], file=sys.stderr)
 
     def _get_opensuse_conf_path(self):
         """ Return the path to the openSUSE configuration file. """
@@ -311,7 +311,7 @@ class Config:
                 continue
 
             name = section[len('Project '):]
-            if self.projects.has_key(name):
+            if name in self.projects:
                 raise ConfigException('More than one section for project %s in %s.' % (name, self.filename))
 
             project = ConfigProject(cp, section, name)

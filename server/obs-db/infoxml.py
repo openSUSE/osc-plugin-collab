@@ -58,7 +58,7 @@ import util
 # Create a global dictionary that will contain the name of the SQL tables, for
 # easier use
 SQL_TABLES = {}
-for attrname in database.__dict__.keys():
+for attrname in list(database.__dict__.keys()):
     attr = database.__getattribute__(attrname)
     if hasattr(attr, 'sql_table'):
         SQL_TABLES[attrname] = attr.sql_table
@@ -85,13 +85,13 @@ class InfoXml:
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
         if self._debug:
-            print 'XML: %s' % s
+            print('XML: %s' % s)
 
     def _get_version(self, project, package):
         """ Gets the version of a package, in a safe way. """
         try:
             return self._version_cache[project][package]
-        except KeyError, e:
+        except KeyError as e:
             return None
 
     def _get_package_node_from_row(self, row, ignore_upstream, default_parent_project):
@@ -175,7 +175,7 @@ class InfoXml:
         if not row:
             raise InfoXmlException('Non-existing project: %s' % project)
 
-        if not self._version_cache.has_key(project):
+        if project not in self._version_cache:
             raise InfoXmlException('Version cache was not created correctly: %s is not in the cache' % project)
 
         project_id = row['id']
@@ -213,7 +213,7 @@ class InfoXml:
 
         if len(should_exist) > 0:
             missing_node = ET.Element('missing')
-            for (should_package_name, (should_parent_project, should_parent_package)) in should_exist.iteritems():
+            for (should_package_name, (should_parent_project, should_parent_package)) in should_exist.items():
                 missing_pkg_node = ET.Element('package')
 
                 missing_pkg_node.set('name', should_package_name)
@@ -278,7 +278,7 @@ class InfoXml:
                     return
 
             os.rename(tmpfilename, filename)
-        except Exception, e:
+        except Exception as e:
             if os.path.exists(tmpfilename):
                 os.unlink(tmpfilename)
             raise e
@@ -345,20 +345,20 @@ def main(args):
     import sqlite3
 
     if len(args) != 3:
-        print >> sys.stderr, 'Usage: %s dbfile project' % args[0]
+        print('Usage: %s dbfile project' % args[0], file=sys.stderr)
         sys.exit(1)
 
     filename = args[1]
     project = args[2]
 
     if not os.path.exists(filename):
-        print >> sys.stderr, '%s does not exist.' % filename
+        print('%s does not exist.' % filename, file=sys.stderr)
         sys.exit(1)
 
     try:
         db = sqlite3.connect(filename)
-    except sqlite3.OperationalError, e:
-        print >> sys.stderr, 'Error while opening %s: %s' % (filename, e)
+    except sqlite3.OperationalError as e:
+        print('Error while opening %s: %s' % (filename, e), file=sys.stderr)
         sys.exit(1)
 
     db.row_factory = sqlite3.Row
@@ -370,13 +370,13 @@ def main(args):
     try:
         info._create_version_cache(cursor)
         node = info._get_project_node(cursor, project)
-    except InfoXmlException, e:
-        print >> sys.stderr, 'Error while creating the XML for %s: %s' % (project, e)
+    except InfoXmlException as e:
+        print('Error while creating the XML for %s: %s' % (project, e), file=sys.stderr)
         sys.exit(1)
 
     tree = ET.ElementTree(node)
     try:
-        print ET.tostring(tree, pretty_print = True)
+        print(ET.tostring(tree, pretty_print = True))
     except TypeError:
         # pretty_print only works with lxml
         tree.write(sys.stdout)
@@ -390,6 +390,6 @@ if __name__ == '__main__':
       main(sys.argv)
     except KeyboardInterrupt:
       pass
-    except IOError, e:
+    except IOError as e:
         if e.errno == errno.EPIPE:
             pass

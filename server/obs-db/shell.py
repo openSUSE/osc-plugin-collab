@@ -104,7 +104,7 @@ class Runner:
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
         if self.conf.debug:
-            print 'Main: %s' % s
+            print('Main: %s' % s)
 
 
     def _read_status(self):
@@ -132,12 +132,12 @@ class Runner:
             line = line[:-1]
             s = line.split('/')
             if len(s) not in [1, 2]:
-                print >>sys.stderr, 'Cannot handle catchup line: %s' % line
+                print('Cannot handle catchup line: %s' % line, file=sys.stderr)
                 continue
 
             if len(s) == 1:
                 if not self.conf.allow_project_catchup:
-                    print >>sys.stderr, 'Cannot handle catchup line: %s (per config, projects are ignored)' % line
+                    print('Cannot handle catchup line: %s (per config, projects are ignored)' % line, file=sys.stderr)
                     continue
 
                 (project,) = s
@@ -146,10 +146,10 @@ class Runner:
             elif len(s) == 2:
                 (project, package) = s
                 if not project:
-                    print >>sys.stderr, 'Cannot handle catchup line: %s' % line
+                    print('Cannot handle catchup line: %s' % line, file=sys.stderr)
                     continue
                 if not package and not self.conf.allow_project_catchup:
-                    print >>sys.stderr, 'Cannot handle catchup line: %s (per config, projects are ignored)' % line
+                    print('Cannot handle catchup line: %s (per config, projects are ignored)' % line, file=sys.stderr)
                     continue
 
                 catchup.add((project, package))
@@ -168,8 +168,8 @@ class Runner:
         if os.path.exists(self._status_catchup):
             try:
                 os.unlink(self._status_catchup)
-            except Exception, e:
-                print >>sys.stderr, 'Cannot remove catchup file: %s' % e
+            except Exception as e:
+                print('Cannot remove catchup file: %s' % e, file=sys.stderr)
 
 
     def _had_mirror_error(self, project, package):
@@ -214,8 +214,8 @@ class Runner:
 
         try:
             os.unlink(self._mirror_error)
-        except Exception, e:
-            print >>sys.stderr, 'Cannot remove mirror-error file: %s' % e
+        except Exception as e:
+            print('Cannot remove mirror-error file: %s' % e, file=sys.stderr)
 
 
     def _run_mirror(self, conf_changed):
@@ -234,7 +234,7 @@ class Runner:
             self.hermes.fetch_last_known_id()
 
             # checkout the projects (or look if we need to update them)
-            for name in self.conf.projects.keys():
+            for name in list(self.conf.projects.keys()):
                 if self.conf.mirror_only_new:
                     if os.path.exists(os.path.join(self._mirror_dir, name)):
                         continue
@@ -363,7 +363,7 @@ class Runner:
 
                 if package:
                     if project not in db_projects:
-                        print >>sys.stderr, 'Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package)
+                        print('Cannot handle %s/%s catchup: project is not part of our analysis' % (project, package), file=sys.stderr)
                         continue
 
                     changed = True
@@ -451,7 +451,7 @@ class Runner:
         # If one project exists in the database, but it's not an explicitly
         # requested project, nor a devel project that we should have, then we
         # can safely remove it from the mirror and from the database
-        requested_projects = self.conf.projects.keys()
+        requested_projects = list(self.conf.projects.keys())
 
         needed = []
         for project in requested_projects:
@@ -515,7 +515,7 @@ class Runner:
 
         # keep in sync this boolean expression and the one used in _run_mirror
         if self.conf.no_full_check and (self._status['mirror'] == -1 or conf_changed):
-            print 'Full checkout check needed, but disabled by config.'
+            print('Full checkout check needed, but disabled by config.')
             return
 
         # Setup hermes, it will be call before the mirror update, depending on
@@ -618,9 +618,9 @@ def main(args):
     try:
         runner.run()
         retval = 0
-    except Exception, e:
+    except Exception as e:
         if isinstance(e, (RunnerException, shellutils.ShellException, config.ConfigException, hermes.HermesException, database.ObsDbException, infoxml.InfoXmlException)):
-            print >>sys.stderr, e
+            print(e, file=sys.stderr)
         else:
             traceback.print_exc()
 

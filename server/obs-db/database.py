@@ -145,8 +145,8 @@ class File(Base):
         self.src_package = src
         try:
             self.mtime = int(mtime)
-        except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s as mtime for %s/%s: %s' % (mtime, src, name, e)
+        except SyntaxError as e:
+            print('Cannot parse %s as mtime for %s/%s: %s' % (mtime, src, name, e), file=sys.stderr)
             self.mtime = -1
 
     def sql_add(self, cursor):
@@ -424,7 +424,7 @@ class Patch(Base):
         if match:
             self.short_descr = match.group(1)
         else:
-            print >> sys.stderr, 'Weird error with patch tag analysis on %s: ' % tag_line
+            print('Weird error with patch tag analysis on %s: ' % tag_line, file=sys.stderr)
             self.short_descr = buf
 
     def set_apply_order(self, order):
@@ -628,7 +628,7 @@ class RpmlintReport(Base):
                     try:
                         line = int(line)
                     except:
-                        print >> sys.stderr, 'Cannot parse source package line in rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, package)
+                        print('Cannot parse source package line in rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, package), file=sys.stderr)
                         line = None
                 else:
                     line = None
@@ -649,7 +649,7 @@ class RpmlintReport(Base):
             # description for the past few rpmlint entries. This is only
             # expected if we had some entries before
             if len(rpmlints_without_descr) == 0:
-                print >> sys.stderr, 'Unexpected rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, line[:-1])
+                print('Unexpected rpmlint line from %s (%s): %s' % (srcpackage.name, srcpackage.project.name, line[:-1]), file=sys.stderr)
                 continue
 
             if descr:
@@ -1194,8 +1194,8 @@ class SrcPackage(Base):
 
             try:
                 root = ET.parse(linkfile).getroot()
-            except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse %s: %s' % (linkfile, e)
+            except SyntaxError as e:
+                print('Cannot parse %s: %s' % (linkfile, e), file=sys.stderr)
             else:
                 node = root.find('patches')
                 if node is not None:
@@ -1211,8 +1211,8 @@ class SrcPackage(Base):
         if os.path.exists(files):
             try:
                 root = ET.parse(files).getroot()
-            except SyntaxError, e:
-                print >> sys.stderr, 'Cannot parse %s: %s' % (files, e)
+            except SyntaxError as e:
+                print('Cannot parse %s: %s' % (files, e), file=sys.stderr)
             else:
                 self.srcmd5 = root.get('srcmd5')
                 linkinfo = root.find('linkinfo')
@@ -1278,8 +1278,8 @@ class SrcPackage(Base):
 
         try:
             parent_root = ET.parse(files).getroot()
-        except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (files, e)
+        except SyntaxError as e:
+            print('Cannot parse %s: %s' % (files, e), file=sys.stderr)
             return
 
         parent_files = {}
@@ -1295,7 +1295,7 @@ class SrcPackage(Base):
             if filename in IGNORE_FILES:
                 continue
             md5 = node.get('md5')
-            if not parent_files.has_key(filename):
+            if filename not in parent_files:
                 self.has_delta = 2
                 break
             elif md5 != parent_files[filename]:
@@ -1407,7 +1407,7 @@ class SrcPackage(Base):
     def _analyze_spec(self, filename):
         '''Analyze a spec file and extract the relevant data from there'''
         if not os.path.exists(filename):
-            print >> sys.stderr, 'Spec file %s of %s/%s does not exist' % (os.path.basename(filename), self.project.name, self.name)
+            print('Spec file %s of %s/%s does not exist' % (os.path.basename(filename), self.project.name, self.name), file=sys.stderr)
             return
 
         spec = open(filename)
@@ -1419,7 +1419,7 @@ class SrcPackage(Base):
         def subst_defines(s, defines):
             '''Replace macros like %{version} and %{name} in strings. Useful
                for sources and patches '''
-            for key in defines.keys():
+            for key in list(defines.keys()):
                 if s.find(key) != -1:
                     value = defines[key]
                     s = s.replace('%%{%s}' % key, value)
@@ -1559,8 +1559,8 @@ class SrcPackage(Base):
 
         try:
             package = ET.parse(meta_file).getroot()
-        except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
+        except SyntaxError as e:
+            print('Cannot parse %s: %s' % (meta_file, e), file=sys.stderr)
             return
 
         self.has_meta = True
@@ -1729,7 +1729,7 @@ class Project(Base):
 
         name = override_project_name or self.name
 
-        if not projects_config.has_key(name):
+        if name not in projects_config:
             if not override_project_name and self.parent:
                 return self._sync_config(projects_config, override_project_name = self.parent)
 
@@ -1800,8 +1800,8 @@ class Project(Base):
 
         try:
             collection = ET.parse(meta_file).getroot()
-        except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
+        except SyntaxError as e:
+            print('Cannot parse %s: %s' % (meta_file, e), file=sys.stderr)
             return ('', '')
 
         for package in collection.findall('package'):
@@ -1832,8 +1832,8 @@ class Project(Base):
 
         try:
             collection = ET.parse(meta_file).getroot()
-        except SyntaxError, e:
-            print >> sys.stderr, 'Cannot parse %s: %s' % (meta_file, e)
+        except SyntaxError as e:
+            print('Cannot parse %s: %s' % (meta_file, e), file=sys.stderr)
             return meta_devel
 
         for package in collection.findall('package'):
@@ -1876,7 +1876,7 @@ class Project(Base):
             srcpackage = SrcPackage(file, self)
             srcpackage.read_from_disk(project_dir, upstream_db)
 
-            if not srcpackage.has_meta and meta_devel.has_key(srcpackage.name):
+            if not srcpackage.has_meta and srcpackage.name in meta_devel:
                 (srcpackage.devel_project, srcpackage.devel_package) = meta_devel[srcpackage.name]
 
             self.srcpackages.append(srcpackage)
@@ -1900,7 +1900,7 @@ class ObsDb:
     def _debug_print(self, s):
         """ Print s if debug is enabled. """
         if self.conf.debug:
-            print 'ObsDb: %s' % s
+            print('ObsDb: %s' % s)
 
     def __del__(self):
         # needed for the commit
@@ -2003,7 +2003,7 @@ class ObsDb:
 
             self._close_db()
             os.rename(tmpfilename, self._filename)
-        except Exception, e:
+        except Exception as e:
             if os.path.exists(tmpfilename):
                 os.unlink(tmpfilename)
             raise e
@@ -2046,7 +2046,7 @@ class ObsDb:
         project_dir = os.path.join(self.mirror_dir, prj_object.name)
         srcpackage_dir = os.path.join(project_dir, package)
         if not os.path.exists(srcpackage_dir):
-            print >> sys.stderr, 'Added package %s in %s does not exist in mirror.' % (package, prj_object.name)
+            print('Added package %s in %s does not exist in mirror.' % (package, prj_object.name), file=sys.stderr)
             return
 
         pkg_object = SrcPackage(package, prj_object)
@@ -2061,7 +2061,7 @@ class ObsDb:
         pkg_object.sql_add(self._cursor)
 
         # Make sure we also have the devel project if we're interested in that
-        if pkg_object.has_meta and pkg_object.devel_project and self.conf.projects.has_key(prj_object.name) and self.conf.projects[prj_object.name].checkout_devel_projects:
+        if pkg_object.has_meta and pkg_object.devel_project and prj_object.name in self.conf.projects and self.conf.projects[prj_object.name].checkout_devel_projects:
             devel_prj_object = Project.sql_get(self._cursor, pkg_object.devel_project)
             if not devel_prj_object:
                 self.add_project(pkg_object.devel_project)
@@ -2073,7 +2073,7 @@ class ObsDb:
         project_dir = os.path.join(self.mirror_dir, prj_object.name)
         srcpackage_dir = os.path.join(project_dir, package)
         if not os.path.exists(srcpackage_dir):
-            print >> sys.stderr, 'Updated package %s in %s does not exist in mirror.' % (package, prj_object.name)
+            print('Updated package %s in %s does not exist in mirror.' % (package, prj_object.name), file=sys.stderr)
             return
 
         update_children = False
@@ -2107,7 +2107,7 @@ class ObsDb:
                 self.update_package(child_project, child_package)
 
         # Make sure we also have the devel project if we're interested in that
-        if pkg_object.has_meta and pkg_object.devel_project and self.conf.projects.has_key(prj_object.name) and self.conf.projects[prj_object.name].checkout_devel_projects:
+        if pkg_object.has_meta and pkg_object.devel_project and prj_object.name in self.conf.projects and self.conf.projects[prj_object.name].checkout_devel_projects:
             self._debug_print('Looking at meta during update of %s/%s' % (prj_object.name, package))
             devel_prj_object = Project.sql_get(self._cursor, pkg_object.devel_project)
             if not devel_prj_object:
@@ -2185,7 +2185,7 @@ class ObsDb:
         updated_projects = set()
 
         for project in projects:
-            for branch in branches.keys():
+            for branch in list(branches.keys()):
                 if branch != upstream.MATCH_CHANGE_NAME and not branch in project.branches:
                     continue
 
@@ -2242,7 +2242,7 @@ class ObsDb:
         result = {}
 
         for project in projects:
-            for branch in branches.keys():
+            for branch in list(branches.keys()):
                 if branch != upstream.MATCH_CHANGE_NAME and not branch in project.branches:
                     continue
 
@@ -2260,7 +2260,7 @@ class ObsDb:
                 if not affected_srcpackages:
                     continue
 
-                if not result.has_key(project.name):
+                if project.name not in result:
                     result[project.name] = {}
 
                 self._debug_print('Upstream changes: %s -- %s' % (project.name, affected_srcpackages))

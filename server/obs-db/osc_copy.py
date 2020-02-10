@@ -8,8 +8,8 @@
 # This file contains copy of some trivial functions from osc that we want to
 # use. It is copied here to avoid importing large python modules.
 
-from urllib import urlencode
-from urlparse import urlsplit, urlunsplit
+from urllib.parse import urlencode
+from urllib.parse import urlsplit, urlunsplit
 
 def makeurl(baseurl, l, query=[]):
     """Given a list of path compoments, construct a complete URL.

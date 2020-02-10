@@ -45,10 +45,10 @@ import shutil
 import socket
 import tempfile
 import time
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 
-import Queue
+import queue
 import threading
 
 try:
@@ -87,7 +87,7 @@ def debug_thread(context, state, indent = '', use_remaining = False):
         name = threading.currentThread().getName()
 
     if context == 'main':
-        print '%s%s: %s' % (indent, name, state)
+        print('%s%s: %s' % (indent, name, state))
         return
 
     try:
@@ -103,8 +103,8 @@ def debug_thread(context, state, indent = '', use_remaining = False):
                 remaining += i.name + ', '
             fout.write('Remaining: %s\n' % (remaining,))
         fout.close()
-    except Exception, e:
-        print >>sys.stderr, 'Exception in debug_thread: %s' % (e,)
+    except Exception as e:
+        print('Exception in debug_thread: %s' % (e,), file=sys.stderr)
 
 
 def socket_closer_thread_run(obs_checkout, empty_event):
@@ -198,12 +198,12 @@ def obs_checkout_thread_run(obs_checkout):
                     else:
                         obs_checkout.checkout_package(project, package)
                 debug_thread('thread_loop', 'work done')
-            except Exception, e:
-                print >>sys.stderr, 'Exception in worker thread for %s/%s (meta: %d): %s' % (project, package, meta, e)
+            except Exception as e:
+                print('Exception in worker thread for %s/%s (meta: %d): %s' % (project, package, meta, e), file=sys.stderr)
 
             obs_checkout.queue.task_done()
             debug_thread('thread_loop', 'end loop', use_remaining = True)
-    except Queue.Empty:
+    except queue.Empty:
         pass
     debug_thread('thread_loop', 'exit loop', use_remaining = True)
 
@@ -225,9 +225,9 @@ class ObsCheckout:
         self.conf = conf
         self.dest_dir = dest_dir
 
-        self.queue = Queue.Queue()
-        self.queue2 = Queue.Queue()
-        self.error_queue = Queue.Queue()
+        self.queue = queue.Queue()
+        self.queue2 = queue.Queue()
+        self.error_queue = queue.Queue()
         self.errors = set()
         self.socket_timeouts = []
         self.socket_timeouts_lock = None
@@ -258,7 +258,7 @@ class ObsCheckout:
         length = 0
         try:
             debug_thread('url', 'start %s (timeout = %d)' % (url, socket.getdefaulttimeout() or 0), ' ')
-            fin = urllib2.urlopen(url)
+            fin = urllib.request.urlopen(url)
             debug_thread('url', 'opened', ' ')
 
             self.socket_timeouts_acquire()
@@ -291,7 +291,7 @@ class ObsCheckout:
 
             return length
 
-        except Exception, e:
+        except Exception as e:
             debug_thread('url', 'exception: %s' % (e,), ' ')
 
             self.socket_timeouts_acquire()
@@ -316,7 +316,7 @@ class ObsCheckout:
             query = None
             if revision:
                 query = { 'rev': revision }
-            url = osc_copy.makeurl(self.conf.apiurl, ['public', 'source', project, package, urllib.pathname2url(filename)], query=query)
+            url = osc_copy.makeurl(self.conf.apiurl, ['public', 'source', project, package, urllib.request.pathname2url(filename)], query=query)
             length = self._download_url_to_file(url, tmpdestfile)
 
             if length != size:
@@ -326,15 +326,15 @@ class ObsCheckout:
 
             os.rename(tmpdestfile, destfile)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(tmpdestfile)
 
-            if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'File in package %s of project %s doesn\'t exist.' % (filename, package, project)
+            if type(e) == urllib.error.HTTPError and e.code == 404:
+                print('File in package %s of project %s doesn\'t exist.' % (filename, package, project), file=sys.stderr)
             elif try_again:
                 self._get_file(project, package, filename, size, revision, False)
             else:
-                print >>sys.stderr, 'Cannot get file %s for %s from %s: %s (queueing for next run)' % (filename, package, project, e)
+                print('Cannot get file %s for %s from %s: %s (queueing for next run)' % (filename, package, project, e), file=sys.stderr)
                 self.error_queue.put((project, package))
 
             return
@@ -362,31 +362,31 @@ class ObsCheckout:
 
             os.rename(tmpfilename, filename)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(tmpfilename)
 
-            if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'Package %s doesn\'t exist in %s.' % (package, project)
+            if type(e) == urllib.error.HTTPError and e.code == 404:
+                print('Package %s doesn\'t exist in %s.' % (package, project), file=sys.stderr)
             elif try_again:
                 return self._get_files_metadata(project, package, save_basename, revision, False)
             elif revision:
-                print >>sys.stderr, 'Cannot download file list of %s from %s with specified revision: %s' % (package, project, e)
+                print('Cannot download file list of %s from %s with specified revision: %s' % (package, project, e), file=sys.stderr)
             else:
-                print >>sys.stderr, 'Cannot download file list of %s from %s: %s (queueing for next run)' % (package, project, e)
+                print('Cannot download file list of %s from %s: %s (queueing for next run)' % (package, project, e), file=sys.stderr)
                 self.error_queue.put((project, package))
 
             return None
 
         try:
             return ET.parse(filename).getroot()
-        except SyntaxError, e:
+        except SyntaxError as e:
             if try_again:
                 os.unlink(filename)
                 return self._get_files_metadata(project, package, save_basename, revision, False)
             elif revision:
-                print >>sys.stderr, 'Cannot parse file list of %s from %s with specified revision: %s' % (package, project, e)
+                print('Cannot parse file list of %s from %s with specified revision: %s' % (package, project, e), file=sys.stderr)
             else:
-                print >>sys.stderr, 'Cannot parse file list of %s from %s: %s' % (package, project, e)
+                print('Cannot parse file list of %s from %s: %s' % (package, project, e), file=sys.stderr)
             return None
 
 
@@ -430,7 +430,7 @@ class ObsCheckout:
             return None
 
         if algo not in [ 'md5' ]:
-            print >>sys.stderr, 'Internal error: _get_hash_from_file called with unknown hash algorithm: %s' % algo
+            print('Internal error: _get_hash_from_file called with unknown hash algorithm: %s' % algo, file=sys.stderr)
             return None
 
         hash = hashlib.new(algo)
@@ -446,7 +446,7 @@ class ObsCheckout:
 
     def _get_package_file_checked_out(self, project, package, filename, cache, md5, mtime):
         """ Tells if a file of the package is already checked out. """
-        if not cache.has_key(filename):
+        if filename not in cache:
             return False
         if cache[filename] != (md5, mtime):
             return False
@@ -483,7 +483,7 @@ class ObsCheckout:
 
         """
         if not package:
-            print >>sys.stderr, 'Internal error: checkout_package called instead of checkout_project_pkgmeta'
+            print('Internal error: checkout_package called instead of checkout_project_pkgmeta', file=sys.stderr)
             self.checkout_project_pkgmeta(project)
             return
 
@@ -516,7 +516,7 @@ class ObsCheckout:
             link_error = link_node.get('error') not in [ None, '' ]
             link_md5 = link_node.get('xsrcmd5')
         elif linkinfos_nb > 1:
-            print >>sys.stderr, 'Ignoring link in %s from %s: more than one <linkinfo>' % (package, project)
+            print('Ignoring link in %s from %s: more than one <linkinfo>' % (package, project), file=sys.stderr)
 
         if is_link:
             # download the _link file first. This makes it possible to know if
@@ -538,7 +538,7 @@ class ObsCheckout:
                 return
 
             # look if we need to download the metadata of the expanded package
-            if metadata_cache.has_key('_files-expanded') and metadata_cache['_files-expanded'][0] == link_md5:
+            if '_files-expanded' in metadata_cache and metadata_cache['_files-expanded'][0] == link_md5:
                 files = os.path.join(self.dest_dir, project, package, '_files-expanded')
                 try:
                     root = ET.parse(files).getroot()
@@ -594,22 +594,22 @@ class ObsCheckout:
 
             os.rename(tmpfilename, filename)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(tmpfilename)
 
-            if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'Package %s of project %s doesn\'t exist.' % (package, project)
+            if type(e) == urllib.error.HTTPError and e.code == 404:
+                print('Package %s of project %s doesn\'t exist.' % (package, project), file=sys.stderr)
             elif try_again:
                 self.checkout_package_meta(project, package, False)
             else:
-                print >>sys.stderr, 'Cannot get metadata of package %s in %s: %s (queueing for next run)' % (package, project, e)
+                print('Cannot get metadata of package %s in %s: %s (queueing for next run)' % (package, project, e), file=sys.stderr)
                 self.error_queue.put((project, package))
 
             return
 
         # Are we interested in devel projects of this project, and if yes,
         # should we check out the devel project if needed?
-        if not self.conf.projects.has_key(project):
+        if project not in self.conf.projects:
             return
         if not self.conf.projects[project].checkout_devel_projects:
             return
@@ -646,31 +646,31 @@ class ObsCheckout:
                     util.safe_unlink(filename)
                     return self.check_project(project, False)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(filename)
 
-            if type(e) == urllib2.HTTPError:
+            if type(e) == urllib.error.HTTPError:
                 if e.code == 404:
-                    print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+                    print('Project %s doesn\'t exist.' % (project,), file=sys.stderr)
                 elif e.code == 400:
                     # the status page doesn't always work :/
                     self.queue_checkout_project(project, primary = False, force_simple_checkout = True, no_config = True)
             elif try_again:
                 self.check_project(project, False)
             else:
-                print >>sys.stderr, 'Cannot get status of %s: %s' % (project, e)
+                print('Cannot get status of %s: %s' % (project, e), file=sys.stderr)
 
             return
 
         try:
             packages_node = ET.parse(filename).getroot()
-        except SyntaxError, e:
+        except SyntaxError as e:
             util.safe_unlink(filename)
 
             if try_again:
                 return self.check_project(project, False)
             else:
-                print >>sys.stderr, 'Cannot parse status of %s: %s' % (project, e)
+                print('Cannot parse status of %s: %s' % (project, e), file=sys.stderr)
 
             return
 
@@ -759,7 +759,7 @@ class ObsCheckout:
         tmpfilename = filename + '.new'
 
         try:
-            url = osc_copy.makeurl(self.conf.apiurl, ['search', 'package'], ['match=%s' % urllib.quote('@project=\'%s\'' % project)])
+            url = osc_copy.makeurl(self.conf.apiurl, ['search', 'package'], ['match=%s' % urllib.parse.quote('@project=\'%s\'' % project)])
             length = self._download_url_to_file(url, tmpfilename)
 
             if length == 0:
@@ -770,22 +770,22 @@ class ObsCheckout:
 
             os.rename(tmpfilename, filename)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(tmpfilename)
 
-            if type(e) == urllib2.HTTPError and e.code == 404:
-                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+            if type(e) == urllib.error.HTTPError and e.code == 404:
+                print('Project %s doesn\'t exist.' % (project,), file=sys.stderr)
             elif try_again:
                 self.checkout_project_pkgmeta(project, False)
             else:
-                print >>sys.stderr, 'Cannot get packages metadata of %s: %s' % (project, e)
+                print('Cannot get packages metadata of %s: %s' % (project, e), file=sys.stderr)
 
             return
 
 
     def _run_helper(self):
         if self.socket_timeouts != []:
-            print >>sys.stderr, 'Internal error: list of socket timeouts is not empty before running'
+            print('Internal error: list of socket timeouts is not empty before running', file=sys.stderr)
             return
         # queue is empty or does not exist: it could be that the requested
         # project does not exist
@@ -849,14 +849,14 @@ class ObsCheckout:
                             obs_checkout.checkout_package_meta(project, package)
                         else:
                             obs_checkout.checkout_package(project, package)
-            except Queue.Empty:
+            except queue.Empty:
                 pass
 
         # secondary queue is not empty, so we do a second run
         if not self.queue2.empty():
             debug_thread('main', 'Working on second queue')
             self.queue = self.queue2
-            self.queue2 = Queue.Queue()
+            self.queue2 = queue.Queue()
             self._run_helper()
 
 
@@ -876,7 +876,7 @@ class ObsCheckout:
             remembers if a project is a devel project, and from which project
             it is, so it's impossible to know what settings should apply
             without such a file. """
-        if not self.conf.projects.has_key(project):
+        if project not in self.conf.projects:
             return
 
         project_dir = os.path.join(self.dest_dir, project)
@@ -920,10 +920,10 @@ class ObsCheckout:
                     util.safe_unlink(filename)
                     return self._get_packages_in_project(project, False)
 
-        except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
+        except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
             util.safe_unlink(filename)
 
-            if type(e) == urllib2.HTTPError and e.code == 404:
+            if type(e) == urllib.error.HTTPError and e.code == 404:
                 return (None, 'Project %s doesn\'t exist.' % (project,))
             elif try_again:
                 return self._get_packages_in_project(project, False)
@@ -932,7 +932,7 @@ class ObsCheckout:
 
         try:
             root = ET.parse(filename).getroot()
-        except SyntaxError, e:
+        except SyntaxError as e:
             util.safe_unlink(filename)
 
             if try_again:
@@ -1024,13 +1024,13 @@ class ObsCheckout:
             (packages, error) = self._get_packages_in_project(project)
 
             if error is not None:
-                print >>sys.stderr, 'Ignoring project %s: %s' % (project, error)
+                print('Ignoring project %s: %s' % (project, error), file=sys.stderr)
                 return
 
             self.queue_checkout_packages(project, packages, primary)
 
         if not force_simple_checkout:
-            if (not self.conf.projects.has_key(project) or
+            if (project not in self.conf.projects or
                 not self.conf.projects[project].checkout_devel_projects):
                 # the pkgmeta of the project is automatically downloaded when
                 # looking for devel projects
@@ -1043,7 +1043,7 @@ class ObsCheckout:
         self.checkout_project_pkgmeta(project)
         pkgmeta_file = os.path.join(self.dest_dir, project, '_pkgmeta')
         if not os.path.exists(pkgmeta_file):
-            print >>sys.stderr, 'Ignoring devel projects for project %s: no packages metadata' % (project,)
+            print('Ignoring devel projects for project %s: no packages metadata' % (project,), file=sys.stderr)
             return
 
         devel_projects = set()
@@ -1052,7 +1052,7 @@ class ObsCheckout:
             collection = ET.parse(pkgmeta_file).getroot()
             package = collection.find('package')
             if package == None:
-                print >>sys.stderr, 'Project %s doesn\'t exist.' % (project,)
+                print('Project %s doesn\'t exist.' % (project,), file=sys.stderr)
                 return
 
             for package in collection.findall('package'):
@@ -1065,8 +1065,8 @@ class ObsCheckout:
                 if devel_project and devel_project != project:
                     devel_projects.add(devel_project)
 
-        except SyntaxError, e:
-            print >>sys.stderr, 'Ignoring devel projects for project %s: %s' % (project, e)
+        except SyntaxError as e:
+            print('Ignoring devel projects for project %s: %s' % (project, e), file=sys.stderr)
             return
 
         for devel_project in devel_projects:
