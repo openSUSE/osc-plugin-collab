@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -30,10 +30,10 @@ import socket
 import sys
 import time
 
-import StringIO
+import io
 import gzip
 import optparse
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from util import *
 
@@ -48,8 +48,8 @@ def parse_cpan_details():
     tarballs = {}
     last_updated = ''
 
-    fd = urllib2.urlopen(PACKAGE_DETAILS)
-    stream = StringIO.StringIO(fd.read())
+    fd = urllib.request.urlopen(PACKAGE_DETAILS)
+    stream = io.StringIO(fd.read())
     fd.close()
 
     gzipper = gzip.GzipFile(fileobj=stream)
@@ -83,14 +83,14 @@ def parse_cpan_details():
         # We ignore data when there's no version
         data = line.split()
         if len(data) != 3:
-            print >>sys.stderr, 'Cannot parse line: %s' % line
+            print('Cannot parse line: %s' % line, file=sys.stderr)
             continue
 
         (perl_class, version, tarball) = data
         if version == 'undef':
             continue
 
-        if tarballs.has_key(tarball):
+        if tarball in tarballs:
             continue
 
         tarballs[tarball] = (perl_class, version)
@@ -143,7 +143,7 @@ def main(args):
 
         if os.path.exists(save_file):
             if not os.path.isfile(save_file):
-                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
+                print('Save file %s is not a regular file.' % save_file, file=sys.stderr)
                 return 1
             if options.only_if_old:
                 stats = os.stat(save_file)
@@ -163,12 +163,12 @@ def main(args):
 
     try:
         (last_updated, tarballs) = parse_cpan_details()
-    except urllib2.URLError, e:
-        print >>sys.stderr, 'Error when downloading CPAN metadata: %s' % e
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Error when downloading CPAN metadata: server sent %s' % e
+    except urllib.error.URLError as e:
+        print('Error when downloading CPAN metadata: %s' % e, file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        print('Error when downloading CPAN metadata: server sent %s' % e, file=sys.stderr)
     else:
-        for (tarball, (perl_class, version)) in tarballs.iteritems():
+        for (tarball, (perl_class, version)) in tarballs.items():
             out.write('cpan:%s:%s:%s\n' % (perl_class_to_package(perl_class), version, tarball))
         ret = 0
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -31,7 +31,7 @@ import sys
 import time
 
 import optparse
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from util import *
 
@@ -45,7 +45,7 @@ FALLBACK_URL = 'http://users.suse.com/~meissner/factory.upstream.lst'
 def parse_fallback_data():
     metadatas = []
 
-    fd = urllib2.urlopen(FALLBACK_URL)
+    fd = urllib.request.urlopen(FALLBACK_URL)
 
     while True:
         line = fd.readline()
@@ -58,14 +58,14 @@ def parse_fallback_data():
 
         data = line.split(',')
         if len(data) < 2:
-            print >>sys.stderr, 'Cannot parse fallback line: %s' % line
+            print('Cannot parse fallback line: %s' % line, file=sys.stderr)
             continue
 
         name = data[0]
         version = data[1]
 
         if not name or not version:
-            print >>sys.stderr, 'Fallback line with nothing useful: %s' % line
+            print('Fallback line with nothing useful: %s' % line, file=sys.stderr)
             continue
 
         metadatas.append((name, version))
@@ -116,7 +116,7 @@ def main(args):
 
         if os.path.exists(save_file):
             if not os.path.isfile(save_file):
-                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
+                print('Save file %s is not a regular file.' % save_file, file=sys.stderr)
                 return 1
             if options.only_if_old:
                 stats = os.stat(save_file)
@@ -135,10 +135,10 @@ def main(args):
 
     try:
         metadatas = parse_fallback_data()
-    except urllib2.URLError, e:
-        print >>sys.stderr, 'Error when downloading fallback metadata: %s' % e
-    except urllib2.HTTPError, e:
-        print >>sys.stderr, 'Error when downloading fallback metadata: server sent %s' % e
+    except urllib.error.URLError as e:
+        print('Error when downloading fallback metadata: %s' % e, file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        print('Error when downloading fallback metadata: server sent %s' % e, file=sys.stderr)
     else:
         for (name, version) in metadatas:
             out.write('fallback:%s:%s:\n' % (name, version))

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # Copyright (c) 2014, SUSE LINUX Products GmbH
@@ -31,7 +31,7 @@ import time
 from multiprocessing import Pool
 
 try:
-    import xmlrpclib
+    import xmlrpc.client
 except ImportError:
     # Python3 support
     import xmlrpc.client as xmlrpclib
@@ -110,7 +110,7 @@ def __get_cached_changelog_last_serial(save_file):
 def __write_cached_changelog_last_serial(save_file, changelog_serial=None):
     """update the cached changelog serial with the current serial from pypi"""
     if not changelog_serial:
-        client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+        client = xmlrpc.client.ServerProxy(XMLRPC_SERVER_PROXY)
         changelog_serial = str(client.changelog_last_serial())
 
     serial_file = __get_save_file_serial_name(save_file)
@@ -192,7 +192,7 @@ def __update_pypi_package_file(save_file, current_changelog):
     try:
         if os.path.exists(save_file):
             packages = __read_pypi_package_file(save_file)
-            client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+            client = xmlrpc.client.ServerProxy(XMLRPC_SERVER_PROXY)
             changelog_serial = str(client.changelog_last_serial())
             changes = client.changelog_since_serial(current_changelog)
             handled_changes = 0
@@ -229,7 +229,7 @@ def __update_pypi_package_file(save_file, current_changelog):
 
 def __get_package_list():
     """get a list with packages available on pypi"""
-    client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+    client = xmlrpc.client.ServerProxy(XMLRPC_SERVER_PROXY)
     packages_list = client.list_packages()
     return packages_list
 
@@ -237,7 +237,7 @@ def __get_package_list():
 def __get_package_info(package):
     """get highest sdist package version for the given package name"""
     try:
-        client = xmlrpclib.ServerProxy(XMLRPC_SERVER_PROXY)
+        client = xmlrpc.client.ServerProxy(XMLRPC_SERVER_PROXY)
         releases = client.package_releases(package)
         if len(releases) > 0:
             for data in client.release_urls(package, releases[0]):
