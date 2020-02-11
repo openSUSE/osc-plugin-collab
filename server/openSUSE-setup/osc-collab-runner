@@ -1,0 +1,16 @@
+#!/bin/sh
+
+LIBEXEC=/usr/lib/osc-collab-server
+
+# Find out what the latest gnome-versions are
+${LIBEXEC}/run-gnome-versions
+
+# Merge gnome-versions and find other upstream versions; update upstream.db
+${LIBEXEC}/rrun-upstream
+
+# Update obs.db: sync with changes in OBS
+${LIBEXEC}/rrun-obs
+
+# Update attributes in OBS
+${LIBEXEC}/rrun-attributes
+
