@@ -78,7 +78,6 @@ fi
 
 mkdir -p $CACHE_DIR
 
-
 ##############################################################
 # Download latest upstream versions
 # For non-GNOME:Factory, we only care about the official GNOME modules.
