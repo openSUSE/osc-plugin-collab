@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -56,7 +56,7 @@ AUTHORIZED_IPS = config.upload_authorized_ips
 AUTHORIZED_HOSTS = config.upload_authorized_hosts
 
 def log_error (s):
-    print >>sys.stderr, 'obs-upload: %s' % s,
+    print('obs-upload: %s' % s, end=' ', file=sys.stderr)
 
 def save_uploaded_file_internal (filename, fileitem, tmppath, destpath):
     fout = file (tmppath, 'wb')
@@ -82,13 +82,13 @@ def save_uploaded_file_internal (filename, fileitem, tmppath, destpath):
     fout.close()
 
     if not complete:
-        print 'File upload cancelled: file is too big'
+        print('File upload cancelled: file is too big')
         log_error ('File upload cancelled: file is too big')
         return False
 
     if filename == 'obs.db':
         if size < 1024*1024*8:
-            print 'File upload cancelled: file is not as expected'
+            print('File upload cancelled: file is not as expected')
             log_error ('File upload cancelled: obs.db too small (%d)' % size)
             return False
 
@@ -96,12 +96,12 @@ def save_uploaded_file_internal (filename, fileitem, tmppath, destpath):
         os.rename(tmppath, destpath)
         return True
     except:
-        print 'File upload cancelled: cannot rename file'
+        print('File upload cancelled: cannot rename file')
         log_error ('File upload cancelled: cannot rename file')
         return False
 
 def save_uploaded_file (form, form_field, upload_dir, filename):
-    if not form.has_key(form_field):
+    if form_field not in form:
         return False
 
     fileitem = form[form_field]
@@ -117,8 +117,8 @@ def save_uploaded_file (form, form_field, upload_dir, filename):
             os.makedirs(upload_dir)
 
         ret = save_uploaded_file_internal (filename, fileitem, tmppath, destpath)
-    except Exception, e:
-        print 'Unknown error'
+    except Exception as e:
+        print('Unknown error')
         log_error ('Unknown error: %s' % str(e))
         ret = False
 
@@ -133,13 +133,13 @@ def create_cache(filename):
 
     try:
         info = libinfoxml.InfoXml()
-    except Exception, e:
-        print 'Unknown error when accessing the database'
+    except Exception as e:
+        print('Unknown error when accessing the database')
         log_error ('Unknown error when accessing the database: %s' % str(e))
         return
 
     if os.path.exists(info.cache_dir) and not os.access(info.cache_dir, os.W_OK):
-        print 'Cannot verify database: no access'
+        print('Cannot verify database: no access')
         log_error ('Cannot verify database: no access')
         return
 
@@ -172,8 +172,8 @@ def create_cache(filename):
         os.rename(tmp_cache_dir, cache_dir)
         if os.path.exists(bak_cache_dir):
             shutil.rmtree(bak_cache_dir)
-    except Exception, e:
-        print 'Cannot verify database'
+    except Exception as e:
+        print('Cannot verify database')
         log_error ('Cannot verify database: no access (%s)' % str(e))
         try:
             if os.path.exists(tmp_cache_dir):
@@ -186,13 +186,13 @@ def create_cache(filename):
         except:
             pass
 
-print 'content-type: text/html\n'
+print('content-type: text/html\n')
 
 form = cgi.FieldStorage()
-if form.has_key('destfile'):
+if 'destfile' in form:
     dest = form.getfirst('destfile')
     if not dest in ['obs.db']:
-        print 'Unknown file'
+        print('Unknown file')
         sys.exit(0)
 else:
     # Just assume it's the standard database
@@ -211,4 +211,4 @@ if os.environ['REMOTE_ADDR'] in authorized_ips:
     if ret and dest in ['obs.db']:
         create_cache(dest)
 else:
-    print 'Unauthorized access'
+    print('Unauthorized access')

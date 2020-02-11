@@ -38,7 +38,7 @@ import hashlib
 import optparse
 from posixpath import join as posixjoin # Handy for URLs
 import re
-from sgmllib import SGMLParser
+from sgmllib3k import SGMLParser
 import shutil
 import tempfile
 import urllib.request, urllib.parse, urllib.error

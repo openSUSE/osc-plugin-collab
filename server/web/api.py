@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -38,7 +38,7 @@
 import os
 import sys
 
-import cStringIO
+import io
 import gzip
 import re
 import sqlite3
@@ -82,7 +82,7 @@ class ApiOutput:
 
     def set_compress(self, compress):
         can_compress = False
-        if os.environ.has_key('HTTP_ACCEPT_ENCODING'):
+        if 'HTTP_ACCEPT_ENCODING' in os.environ:
             accepted = os.environ['HTTP_ACCEPT_ENCODING'].split(',')
             accepted = [ item.strip() for item in accepted ]
             can_compress = 'gzip' in accepted
@@ -104,23 +104,23 @@ class ApiOutput:
         self.root.append(node)
 
     def _output(self):
-        print 'Content-type: text/xml'
-        print
+        print('Content-type: text/xml')
+        print()
 
         ET.ElementTree(self.root).write(sys.stdout)
 
     def _output_compressed(self):
         # Thanks to http://www.xhaus.com/alan/python/httpcomp.html
-        zbuf = cStringIO.StringIO()
+        zbuf = io.StringIO()
         zfile = gzip.GzipFile(mode = 'wb', fileobj = zbuf)
         ET.ElementTree(self.root).write(zfile)
         zfile.close()
         compressed = zbuf.getvalue()
 
-        print 'Content-type: text/xml'
-        print 'Content-Encoding: gzip'
-        print 'Content-Length: %d' % len(compressed)
-        print
+        print('Content-type: text/xml')
+        print('Content-Encoding: gzip')
+        print('Content-Length: %d' % len(compressed))
+        print()
 
         sys.stdout.write(compressed)
 
@@ -247,7 +247,7 @@ class ApiInfo(ApiGeneric):
             node = info.get_project_node(project)
             self.output.add_node(node)
             output.set_compress(True)
-        except libinfoxml.InfoXmlException, e:
+        except libinfoxml.InfoXmlException as e:
             self.output.set_result(False, e.msg)
 
     def _list_package(self, project, package):
@@ -257,7 +257,7 @@ class ApiInfo(ApiGeneric):
             pkg_node = info.get_package_node(project, package)
             prj_node.append(pkg_node)
             self.output.add_node(prj_node)
-        except libinfoxml.InfoXmlException, e:
+        except libinfoxml.InfoXmlException as e:
             self.output.set_result(False, e.msg)
 
     def run(self):
@@ -390,7 +390,7 @@ class ApiPackageMetadata(ApiGeneric):
 
     def _run_project_package(self, project, package):
         ignore_devel = False
-        if form.has_key('ignoredevel'):
+        if 'ignoredevel' in form:
             if form.getfirst('ignoredevel').lower() in [ '1', 'true' ]:
                 ignore_devel = True
 
@@ -401,7 +401,7 @@ class ApiPackageMetadata(ApiGeneric):
             self.output.set_result(False, 'Non existing package: %s/%s' % (project, package))
             return
 
-        if form.has_key('cmd'):
+        if 'cmd' in form:
             cmd = form.getfirst('cmd')
         else:
             cmd = 'list'
@@ -410,7 +410,7 @@ class ApiPackageMetadata(ApiGeneric):
             self.output.set_result(False, 'Unknown "%s" subcommand: %s' % (self.command, cmd))
             return
 
-        if form.has_key('user'):
+        if 'user' in form:
             user = form.getfirst('user')
         else:
             user = None
@@ -472,7 +472,7 @@ class ApiReserve(ApiPackageMetadata):
 
     def _create_node(self, row):
         # Note: row can be a sqlite3.Row or a tuple
-        keys = row.keys()
+        keys = list(row.keys())
         if not ('project' in keys and 'package' in keys):
             return None
 
@@ -541,7 +541,7 @@ class ApiComment(ApiPackageMetadata):
 
     def _create_node(self, row):
         # Note: row can be a sqlite3.Row or a tuple
-        keys = row.keys()
+        keys = list(row.keys())
         if not ('project' in keys and 'package' in keys):
             return None
 
@@ -569,7 +569,7 @@ class ApiComment(ApiPackageMetadata):
         return node
 
     def _run_project_package_helper(self, user, subcommand, project, package):
-        if form.has_key('comment'):
+        if 'comment' in form:
             form_comment = form.getfirst('comment')
         else:
             form_comment = None
@@ -637,7 +637,7 @@ def handle_args(output, path, form):
     else:
         (command, args) = paths
 
-    if form.has_key('version'):
+    if 'version' in form:
         client_version = form.getfirst('version')
     else:
         client_version = '0.1'
@@ -668,19 +668,19 @@ def handle_args(output, path, form):
         try:
             info = ApiInfo(output, protocol, args, form)
             info.run()
-        except libdbcore.ObsDbException, e:
+        except libdbcore.ObsDbException as e:
             output.set_result(False, str(e))
     elif command == 'reserve':
         try:
             reserve = ApiReserve(output, protocol, args, form)
             reserve.run()
-        except libdbcore.ObsDbException, e:
+        except libdbcore.ObsDbException as e:
             output.set_result(False, str(e))
     elif command == 'comment':
         try:
             comment = ApiComment(output, protocol, args, form)
             comment.run()
-        except libdbcore.ObsDbException, e:
+        except libdbcore.ObsDbException as e:
             output.set_result(False, str(e))
     else:
         output.set_result(False, 'Unknown command "%s"' % command)
@@ -688,7 +688,7 @@ def handle_args(output, path, form):
 
 #######################################################################
 
-if os.environ.has_key('PATH_INFO'):
+if 'PATH_INFO' in os.environ:
     path = os.environ['PATH_INFO']
     # remove consecutive slashes
     path = re.sub('//+', '/', path)

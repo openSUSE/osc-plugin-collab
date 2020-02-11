@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -49,7 +49,7 @@ if config.cgitb:
 libhttp.print_html_header()
 libhttp.print_header("Our playground for openSUSE")
 
-print '''
+print('''
 <h2>Our playground for openSUSE</h2>
 
 <p>If you're simply interested in browsing the openSUSE source, head to the <a href="http://build.opensuse.org/">openSUSE instance</a> of the <a href="http://open-build-service.org/">Open Build Service</a>! No need to login, just browse the packages; the most interesting projects are the ones starting with "openSUSE:", like <a href="https://build.opensuse.org/project/show?project=openSUSE%3AFactory">openSUSE:Factory</a>.</p>
@@ -59,6 +59,6 @@ print '''
 <p>This playground also hosts a service that makes it easier to collaborate within the openSUSE community, via <a href="http://en.opensuse.org/openSUSE:Osc_Collab">osc collab</a>. This service works for all packages part of <a href="https://build.opensuse.org/project/show?project=openSUSE%3AFactory">openSUSE:Factory</a>!</p>
 
 <p>On the right side, you can find a few links that are, hopefully, self-explanatory :-)</p>
-'''
+''')
 
 libhttp.print_foot()

@@ -12,6 +12,8 @@ fi
 # 10 minutes max
 setup 600
 
+echo starting ${PRE_CMD} "${OSC_PLUGIN_COLLAB_DIR}/server/upstream/runme"
+
 ${PRE_CMD} "${OSC_PLUGIN_COLLAB_DIR}/server/upstream/runme" -o "${OBS_CONF}" -l $LOGFILE
 
 cleanup
