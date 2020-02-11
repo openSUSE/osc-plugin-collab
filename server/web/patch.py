@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -204,7 +204,7 @@ content = get_page_content(db, project, srcpackage, tag)
 libhttp.print_header(title)
 
 if not srcpackage:
-    print(libdbhtml.get_project_selector(current_project = project, db = db))
-print(content)
+    print libdbhtml.get_project_selector(current_project = project, db = db)
+print content
 
 libhttp.print_foot()

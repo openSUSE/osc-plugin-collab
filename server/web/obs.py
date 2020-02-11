@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -216,7 +216,7 @@ def get_table_for_project(project, only_missing_upstream, only_missing_parent):
     info = libinfoxml.InfoXml()
     try:
         node = info.get_project_node(project)
-    except libinfoxml.InfoXmlException as e:
+    except libinfoxml.InfoXmlException, e:
         return 'Error: %s' % e.msg
 
     parent = node.get('parent')
@@ -311,7 +311,7 @@ table = get_table_for_project(project, only_missing_upstream, only_missing_paren
 
 libhttp.print_header('Versions of packages in the Build Service for project %s' % escape(project))
 
-print(libdbhtml.get_project_selector(current_project = project))
-print(table)
+print libdbhtml.get_project_selector(current_project = project)
+print table
 
 libhttp.print_foot(additional_box = get_legend_box())
