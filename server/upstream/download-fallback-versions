@@ -53,10 +53,10 @@ def parse_fallback_data():
             break
 
         line = line.strip()
-        if not line or line.startswith('#'):
+        if not line or line.startswith(b'#'):
             continue
 
-        data = line.split(',')
+        data = line.split(b',')
         if len(data) < 2:
             print('Cannot parse fallback line: %s' % line, file=sys.stderr)
             continue

@@ -48,9 +48,7 @@ def parse_cpan_details():
     tarballs = {}
     last_updated = ''
 
-    fd = urllib.request.urlopen(PACKAGE_DETAILS)
-    stream = io.StringIO(fd.read())
-    fd.close()
+    stream = urllib.request.urlopen(PACKAGE_DETAILS)
 
     gzipper = gzip.GzipFile(fileobj=stream)
     in_classes_data = False
@@ -69,12 +67,12 @@ def parse_cpan_details():
             continue
 
         # Skip comments
-        if line.startswith('#'):
+        if line.startswith(b'#'):
             continue
 
         # Global metadata about the details
         if not in_classes_data:
-            if line.startswith('Last-Updated:'):
+            if line.startswith(b'Last-Updated:'):
                 last_updated = line[len('Last-Updated:'):].strip()
             continue
 
@@ -101,7 +99,7 @@ def parse_cpan_details():
 
 
 def perl_class_to_package(perl_class):
-    return 'perl-' + perl_class.replace('::', '-')
+    return b'perl-' + perl_class.replace(b'::', b'-')
 
 
 #######################################################################
