@@ -21,7 +21,7 @@ setup() {
 	#WATCHDOG_CMD="${TOP_DIR}/excubitor -d $MAXTIME --"
 
 	## Common directories / files
-	COLLAB_DATA_DIR="${HOME}/.local/collab-data"
+	COLLAB_DATA_DIR="${HOME}/.cache"
 	COLLAB_INSTALL_DIR="/usr/share/osc-collab-server"
 	OBS_CONF="${HOME}/.config/osc-collab/obs.conf"
 	OSC_PLUGIN_COLLAB_DIR="${COLLAB_INSTALL_DIR}"
