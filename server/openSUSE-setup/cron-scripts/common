@@ -23,7 +23,7 @@ setup() {
 	## Common directories / files
 	COLLAB_DATA_DIR="${HOME}/.cache"
 	COLLAB_INSTALL_DIR="/usr/share/osc-collab-server"
-	OBS_CONF="${HOME}/.config/osc-collab/obs.conf"
+	OBS_CONF="/etc/osc-collab.conf"
 	OSC_PLUGIN_COLLAB_DIR="${COLLAB_INSTALL_DIR}"
 
 	## OBS_UPLOAD_URL should stay empty if there is no need to upload the
