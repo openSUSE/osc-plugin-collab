@@ -1,0 +1,146 @@
+#!/bin/sh
+
+VERBOSE=0
+
+TMPDIR=$(mktemp -d)
+
+if test $# -ne 1; then
+  echo "Usage: $(basename $0) DEST-DIR"
+  exit 1
+fi
+
+DESTDIR=$1
+
+GENERATEVERSIONS=$(readlink -f $(dirname $0))/generate-versions
+
+die_if_error () {
+	if test $? -ne 0; then
+		if test "x$1" != "x"; then
+			echo $1
+		else
+			echo "Unknown error"
+		fi
+
+		exit 1
+	fi
+}
+
+echo_verbose () {
+        if test $VERBOSE -ne 0; then
+                echo "$*"
+        fi
+}
+
+
+DOWNLOAD_STABLE="3.`curl --tlsv1 --silent --fail https://download.gnome.org/core/ | grep /icons/folder.png | sed 's/.*href="//g;s/\/".*//g' | grep "^3\." | sed "s/^3\.//g" | sort -g | tail -n 2 | grep [02468]$ | tail -n 1`"
+#TEMPORARY_STABLE="3.4"
+
+if test -z "$DOWNLOAD_STABLE"; then
+  echo "Cannot find stable release from download.gnome.org."
+  exit 1
+fi
+
+if test -n "$TEMPORARY_STABLE" -a "x$DOWNLOAD_STABLE" = "x$TEMPORARY_STABLE"; then
+	echo "TEMPORARY_STABLE hack can be removed"
+fi
+
+if test -n "$TEMPORARY_STABLE"; then
+	STABLE="$TEMPORARY_STABLE"
+else
+	STABLE="$DOWNLOAD_STABLE"
+fi
+
+STABLE_MAJOR=`echo $STABLE | sed "s/\(^[0-9]\+\.\).*/\1/g"`
+STABLE_MINOR=`echo $STABLE | sed "s/^[0-9]\+\.//g"`
+
+UNSTABLE_MINOR=`echo "$STABLE_MINOR + 2" | bc`
+UNSTABLE="$STABLE_MAJOR$UNSTABLE_MINOR"
+
+if test "x`echo "$UNSTABLE_MINOR - $STABLE_MINOR" | bc`" != "x2"; then
+	echo "Cannot find current stable/unstable versions"
+	exit 1
+fi
+echo_verbose "Stable: $STABLE - Unstable: $UNSTABLE"
+
+mkdir -p $DESTDIR
+die_if_error "Error while creating destination directory"
+
+cd $TMPDIR
+die_if_error "Cannot change directory to $TMPDIR"
+
+if test -z "$GNOME_OFFLINE"; then
+  curl --tlsv1 --silent --show-error --output $TMPDIR/sources.html                     https://download.gnome.org/sources/
+  die_if_error "Error while downloading list of sources"
+
+  if test -d $TMPDIR/json-cache; then
+    rm -f $TMPDIR/json-cache/*
+    rmdir $TMPDIR/json-cache
+  fi
+
+  if test -e $TMPDIR/json-cache; then
+    echo "JSON cache directory still exists."
+    exit 1
+  fi
+
+  mkdir $TMPDIR/json-cache
+  die_if_error "Error while creating JSON cache directory"
+
+  for dir in $(cat $TMPDIR/sources.html | grep /icons/folder.png | sed 's/.*href="//g;s/".*//g'); do
+    module=${dir%%/}
+    if test "$dir" == "$module"; then
+      continue
+    fi
+    for try in 1 2 3; do
+      # --fail/-f: do not ouput HTTP 40x error pages
+      # --location/-L: follow redirects
+      curl --tlsv1 --silent --fail --location https://download.gnome.org/sources/$module/cache.json > $TMPDIR/json-cache/$module.json
+      test $? -eq 0 -o $? -eq 22 && break
+
+      if test $try -eq 3; then
+	echo "Cannot download cache.json for $module"
+	exit 1
+      fi
+
+      sleep 3
+    done
+  done
+
+  curl --tlsv1 --silent --show-error --output $TMPDIR/tarball-conversion.config        https://gitlab.gnome.org/GNOME/releng/raw/master/tools/smoketesting/tarball-conversion.config
+  die_if_error "Error while downloading tarball-conversion.config"
+  curl --tlsv1 --silent --show-error --output $TMPDIR/tarball-conversion-stable.config https://gitlab.gnome.org/GNOME/releng/raw/master/tools/smoketesting/tarball-conversion-stable.config
+  die_if_error "Error while downloading tarball-conversion-stable.config"
+fi
+
+echo_verbose "Generating stable versions..."
+$GENERATEVERSIONS --json-dir=$TMPDIR/json-cache --output-dir=$TMPDIR --conversion-config=$TMPDIR/tarball-conversion-stable.config --stable-version=$STABLE
+die_if_error "Error while creating stable versions"
+mv $TMPDIR/versions $DESTDIR/gnome-$STABLE
+die_if_error "Error while moving stable versions"
+cp -f $DESTDIR/gnome-$STABLE $DESTDIR/gnome-stable
+die_if_error "Error while copying the stable versions"
+mv $TMPDIR/versions-extras $DESTDIR/gnome-$STABLE-extras
+die_if_error "Error while moving stable extras versions"
+cp -f $DESTDIR/gnome-$STABLE-extras $DESTDIR/gnome-stable-extras
+die_if_error "Error while copying the stable extras versions"
+
+echo_verbose "Generating unstable versions..."
+$GENERATEVERSIONS --json-dir=$TMPDIR/json-cache --output-dir=$TMPDIR --conversion-config=$TMPDIR/tarball-conversion.config
+die_if_error "Error while creating unstable versions"
+mv $TMPDIR/versions $DESTDIR/gnome-$UNSTABLE
+die_if_error "Error while moving unstable versions"
+cp -f $DESTDIR/gnome-$UNSTABLE $DESTDIR/gnome-unstable
+die_if_error "Error while copying the unstable versions"
+mv $TMPDIR/versions-extras $DESTDIR/gnome-$UNSTABLE-extras
+die_if_error "Error while moving unstable extras versions"
+cp -f $DESTDIR/gnome-$UNSTABLE-extras $DESTDIR/gnome-unstable-extras
+die_if_error "Error while copying the unstable extras versions"
+
+# To update a versions file for an old stable version:
+# - Get the tarball-conversion-stable.config from git, when the stable version
+#   was still the old stable version and put it in ~/local/share/
+# - Then:
+#   cd ~/local/tmp
+#   export VERSION=2.28
+#   ~/local/bin/generate-versions --output-dir=/home/users/vuntz/local/tmp/ --conversion-config=/home/users/vuntz/local/share/tarball-conversion-$VERSION.config
+#   mv versions ~/public_html/tmp/versions/versions-$VERSION
+#   mv versions-extras ~/public_html/tmp/versions/versions-$VERSION-extras

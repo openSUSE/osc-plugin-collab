@@ -1,0 +1,17 @@
+#!/bin/sh
+
+TOP_DIR=`dirname $0`
+
+if test ! -f "${TOP_DIR}/common"; then
+	echo "No common infrastructure available."
+	exit 1
+fi
+
+. "${TOP_DIR}/common"
+
+# 20 minutes max
+setup 1200
+
+${PRE_CMD} "${OSC_PLUGIN_COLLAB_DIR}/server/upstream/gnome-versions/update-versions ${COLLAB_DATA_DIR}/cache/upstream/"
+
+cleanup
