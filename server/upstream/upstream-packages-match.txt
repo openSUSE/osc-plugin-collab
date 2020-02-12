@@ -504,7 +504,7 @@ gthumb:
 gtk+|1.3:gtk
 gtk+|2.90:gtk2
 gtk+|3.89:gtk3
-gtk+:gtk4
+gtk:gtk4
 gtk-doc:
 gtk-engines-cleanice:gtk2-engine-cleanice
 gtk-engines|2.90:gtk2-engines
