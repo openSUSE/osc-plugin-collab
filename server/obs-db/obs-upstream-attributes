@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -41,7 +41,7 @@ import sys
 import optparse
 import socket
 import traceback
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 try:
     from lxml import etree as ET
@@ -94,9 +94,9 @@ def package_get_attribute(apiurl, project, package, namespace, name, try_again =
 
     try:
         fin = core.http_GET(url)
-    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
-        if type(e) == urllib2.HTTPError and e.code == 404:
-            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+    except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
+        if type(e) == urllib.error.HTTPError and e.code == 404:
+            print('Package %s in project %s doesn\'t exist.' % (package, project), file=sys.stderr)
         elif try_again:
             return package_get_attribute(apiurl, project, package, namespace, name, False)
         else:
@@ -106,7 +106,7 @@ def package_get_attribute(apiurl, project, package, namespace, name, try_again =
 
     try:
         attributes_node = ET.parse(fin).getroot()
-    except SyntaxError, e:
+    except SyntaxError as e:
         fin.close()
         raise UpstreamAttributesException('Cannot look for attribute %s for package %s in project %s: %s' % (attribute_name, package, project, e))
 
@@ -140,7 +140,7 @@ def package_has_attribute(apiurl, project, package, namespace, name):
 def package_set_attribute_handle_reply(fin, error_str):
     try:
         node = ET.parse(fin).getroot()
-    except SyntaxError, e:
+    except SyntaxError as e:
         fin.close()
         raise UpstreamAttributesException('s: %s' % (error_str, e))
 
@@ -195,9 +195,9 @@ def package_unset_attribute(apiurl, project, package, namespace, name, try_again
 
     try:
         fin = core.http_DELETE(url)
-    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
-        if type(e) == urllib2.HTTPError and e.code == 404:
-            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+    except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
+        if type(e) == urllib.error.HTTPError and e.code == 404:
+            print('Package %s in project %s doesn\'t exist.' % (package, project), file=sys.stderr)
         elif try_again:
             package_unset_attribute(apiurl, project, package, namespace, name, False)
         else:
@@ -229,9 +229,9 @@ def package_set_attributes(apiurl, project, package, attributes, try_again = Tru
 
     try:
         fin = core.http_POST(url, data = xml)
-    except (urllib2.HTTPError, urllib2.URLError, socket.error), e:
-        if type(e) == urllib2.HTTPError and e.code == 404:
-            print >>sys.stderr, 'Package %s in project %s doesn\'t exist.' % (package, project)
+    except (urllib.error.HTTPError, urllib.error.URLError, socket.error) as e:
+        if type(e) == urllib.error.HTTPError and e.code == 404:
+            print('Package %s in project %s doesn\'t exist.' % (package, project), file=sys.stderr)
         elif try_again:
             package_set_attributes(apiurl, project, package, attributes, False)
         else:
@@ -311,27 +311,27 @@ def run(conf, do_projects = None, initial = False):
     for (project, package, upstream_version, upstream_url) in old_failed:
         try:
             if conf.debug:
-                print 'UpstreamAttributes: %s/%s' % (project, package)
+                print('UpstreamAttributes: %s/%s' % (project, package))
             package_set_upstream_attributes(conf.apiurl, project, package, upstream_version, upstream_url)
-        except UpstreamAttributesException, e:
-            print >>sys.stderr, e
+        except UpstreamAttributesException as e:
+            print(e, file=sys.stderr)
             failed.append((project, package, upstream_version, upstream_url))
 
     # Remove the failed file as soon as we know it was handled
     if os.path.exists(failed_file):
         os.unlink(failed_file)
 
-    for (project, packages) in projects.items():
+    for (project, packages) in list(projects.items()):
         if do_projects and project not in do_projects:
             continue
 
-        for (package, (upstream_version, upstream_url)) in packages.items():
+        for (package, (upstream_version, upstream_url)) in list(packages.items()):
             try:
                 if conf.debug:
-                    print 'UpstreamAttributes: %s/%s' % (project, package)
+                    print('UpstreamAttributes: %s/%s' % (project, package))
                 package_set_upstream_attributes(conf.apiurl, project, package, upstream_version, upstream_url, ignore_empty = initial)
-            except UpstreamAttributesException, e:
-                print >>sys.stderr, e
+            except UpstreamAttributesException as e:
+                print(e, file=sys.stderr)
                 failed.append((project, package, upstream_version, upstream_url))
 
     # Save the failed packages for next run
@@ -373,9 +373,9 @@ def main(args):
     try:
         run(conf, options.projects, options.initial)
         retval = 0
-    except Exception, e:
+    except Exception as e:
         if isinstance(e, (UpstreamAttributesException, shellutils.ShellException, config.ConfigException, database.ObsDbException)):
-            print >>sys.stderr, e
+            print(e, file=sys.stderr)
         else:
             traceback.print_exc()
 

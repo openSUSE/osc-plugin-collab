@@ -44,7 +44,7 @@ def safe_mkdir(dir):
 
     try:
         os.mkdir(dir)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
 
@@ -54,7 +54,7 @@ def safe_mkdir_p(dir):
 
     try:
         os.makedirs(dir)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
 
@@ -62,7 +62,7 @@ def safe_unlink(filename):
     """ Unlink a file, but ignores the exception if the file doesn't exist. """
     try:
         os.unlink(filename)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT:
             raise e
 

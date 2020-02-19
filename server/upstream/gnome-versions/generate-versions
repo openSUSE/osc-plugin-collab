@@ -1,0 +1,577 @@
+#!/usr/bin/python3
+# vim: set sw=4 ts=4 et:
+
+import errno
+import os
+import sys
+
+import json
+import optparse
+from operator import attrgetter
+
+try:
+    from lxml import etree as ET
+except ImportError:
+    try:
+        from xml.etree import cElementTree as ET
+    except ImportError:
+        import cElementTree as ET
+
+JSON_FORMAT = 4
+
+BRANCH_LIMITS = {
+    'glib': '1.3',
+    'gnome-desktop': '2.90',
+    'gnome-menus': '3.1',
+    'goffice': '0.9',
+    'goocanvas': '1.90',
+    'gtk+': '1.3',
+    'gtk-engines': '2.90',
+    'gtkmm': '2.90',
+    'gtkmm-documentation': '2.90',
+    'gtksourceview': ('1.9', '2.11'),
+    'gtksourceviewmm': '2.90',
+    'libgda': ('3.99', '4.99'),
+    'libgnomedb': '3.99',
+    'libsigc++': ('1.3', '2.99'),
+    'libunique': '2',
+    'libwnck': '2.90',
+    'pygobject': '2.29',
+    'vala': '0.13',
+    'vala': '0.15',
+    'vte': '0.29',
+# modules with an unstable branch as current branch
+    'gmime': '2.5'
+}
+
+STABLE_BRANCH_SAME_LIMITS = {
+# Modules with the same branch as something in the modulesets
+    'anjuta-extras': 'anjuta',
+    'eog-plugins': 'eog',
+    'epiphany-extensions': 'epiphany',
+    'evolution-ews': 'evolution',
+    'evolution-exchange': 'evolution',
+    'evolution-groupwise': 'evolution',
+    'evolution-kolab': 'evolution',
+    'evolution-mapi': 'evolution',
+    'gdl': 'anjuta',
+    # Gone in 3.10:
+    #'gnome-applets': 'gnome-panel',
+    'gnome-shell-extensions': 'gnome-shell'
+}
+
+STABLE_BRANCHES_LIMITS = {
+    '3.4': {
+        'NetworkManager-openconnect': '0.9.5.0',
+        'NetworkManager-openswan': '0.9.5.0',
+        'NetworkManager-openvpn': '0.9.5.0',
+        'NetworkManager-pptp': '0.9.5.0',
+        'NetworkManager-vpnc': '0.9.5.0',
+        'ghex': '3.5',
+        'gtkhtml': '4.5',
+        'libgda': '5.1',
+        'libgdata': '0.13',
+        'pyatspi': '2.5',
+        'tomboy': '1.11'
+     },
+    '3.6': {
+        'NetworkManager-openconnect': '0.9.7.0',
+        'NetworkManager-openswan': '0.9.7.0',
+        'NetworkManager-openvpn': '0.9.7.0',
+        'NetworkManager-pptp': '0.9.7.0',
+        'NetworkManager-vpnc': '0.9.7.0',
+        'alacarte': '3.7',
+        'ghex': '3.7',
+        'glom': '1.23',
+        'gnote': '3.7',
+        'gtkhtml': '4.7',
+        'libgda': '5.3',
+        'libgdata': '0.15',
+        'pyatspi': '2.7',
+        'tomboy': '1.13'
+     },
+    '3.8': {
+        'NetworkManager-openconnect': '0.9.9.0',
+        'NetworkManager-openswan': '0.9.9.0',
+        'NetworkManager-openvpn': '0.9.9.0',
+        'NetworkManager-pptp': '0.9.9.0',
+        'NetworkManager-vpnc': '0.9.9.0',
+        'alacarte': '3.9',
+        'ghex': '3.9',
+        'glom': '1.25',
+        'gnome-applets': '3.9',
+        'gnome-panel': '3.9',
+        'gnote': '3.9',
+        'gtkhtml': '4.7',
+        'libgda': '5.3',
+        'pyatspi': '2.9',
+        'tomboy': '1.15'
+     },
+    '3.10': {
+        'gnome-applets': '3.11',
+        'gnome-panel': '3.11'
+     },
+    '3.12': {
+        'gnome-applets': '3.13',
+        'gnome-panel': '3.13'
+     },
+    '3.14': {
+        'gnome-applets': '3.15',
+        'gnome-panel': '3.15'
+     }
+}
+
+BLACKLISTED_SOURCES = [
+    # Sources not using ftpadmin
+    #Seems to use it now: 'banshee',
+    # Sources that are now hosted elsewhere (and listing them from
+    # ftp.gnome.org can be an issue).
+    'abiword',
+    'balsa'
+    'clutter-gst',
+    'gimp',
+    'gnucash',
+    'gst-python',
+    'g-wrap',
+    'intltool',
+    'libgnomesu',
+    'librep',
+    'pkg-config',
+    'rep-gtk',
+    'sawfish',
+    'startup-notification',
+    'xchat',
+    # Sources that we know have no cache.json
+    'librep-2002-03',
+    'rep-gtk-2002-03',
+    'sawfish-2002-03',
+    'xpenguins_applet',
+    'labyrinth_0.4.0',
+    'labyrinth_0.4.0rc3',
+    'delme'
+]
+
+##################################################################
+# All this code is taken from osc-plugin-collab
+##################################################################
+
+def safe_mkdir_p(dir):
+    if not dir:
+        return
+
+    try:
+        os.makedirs(dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+
+##################################################################
+# End of code taken from osc-plugin-collab
+##################################################################
+
+##################################################################
+# All this code is taken from convert-to-tarballs.py
+##################################################################
+
+def _bigger_version(a, b):
+    a_nums = a.split('.')
+    b_nums = b.split('.')
+    num_fields = min(len(a_nums), len(b_nums))
+    for i in range(0,num_fields):
+        if   int(a_nums[i]) > int(b_nums[i]):
+            return a
+        elif int(a_nums[i]) < int(b_nums[i]):
+            return b
+    if len(a_nums) > len(b_nums):
+        return a
+    else:
+        return b
+
+# This is nearly the same as _bigger_version, except that
+#   - It returns a boolean value
+#   - If max_version is None, it just returns False
+#   - It treats 2.13 as == 2.13.0 instead of 2.13 as < 2.13.0
+# The second property is particularly important with directory hierarchies
+def _version_greater_or_equal_to_max(a, max_version):
+    if not max_version:
+        return False
+    a_nums = a.split('.')
+    b_nums = max_version.split('.')
+    num_fields = min(len(a_nums), len(b_nums))
+    for i in range(0,num_fields):
+        if   int(a_nums[i]) > int(b_nums[i]):
+            return True
+        elif int(a_nums[i]) < int(b_nums[i]):
+            return False
+    return True
+
+def _get_latest_version(versions, max_version):
+    biggest = versions[0]
+    for version in versions[1:]:
+        # Just ignore '-' in versions
+        if version.find('-') >= 0:
+            version = version[:version.find('-')]
+        if (version == _bigger_version(biggest, version) and \
+            not _version_greater_or_equal_to_max(version, max_version)):
+            biggest = version
+    return biggest
+
+##################################################################
+# End of code taken from convert-to-tarballs.py
+##################################################################
+
+
+class Module:
+    ''' Object representing a module '''
+
+    def __init__(self, name, limit):
+        self.name = name
+        self.limit = limit
+        self.version = ''
+
+    def fetch_version(self, all_versions):
+        if self.name not in all_versions:
+            return
+        versions = all_versions[self.name]
+        latest = _get_latest_version(versions, self.limit)
+        if latest:
+            self.version = latest
+
+    def get_str(self, release_set, subdir = None):
+        if not self.version:
+            prefix = '#'
+        else:
+            prefix = ''
+
+        release_set = 'fgo'
+        if subdir:
+            return '%s%s:%s:%s:%s\n' % (prefix, release_set, self.name, self.version, subdir)
+        else:
+            return '%s%s:%s:%s:\n' % (prefix, release_set, self.name, self.version)
+
+
+class SubReleaseSet:
+    ''' Object representing a sub-release set (like the bindings) (made of
+        modules)
+    '''
+
+    def __init__(self, name):
+        self.name = name
+        self.modules = []
+
+    def add(self, module):
+        self.modules.append(module)
+
+    def fetch_versions(self, all_versions):
+        for module in self.modules:
+            module.fetch_version(all_versions)
+
+    def get_str(self, release_set):
+        # Sort by name, then version (sorts are stable)
+        self.modules.sort(key=attrgetter('version'))
+        self.modules.sort(key=attrgetter('name'))
+
+        res = '# %s\n' % self.name.title()
+        for module in self.modules:
+            res += module.get_str(release_set, self.name)
+        res += '\n'
+
+        return res
+
+
+class ReleaseSet:
+    ''' Object representing a release set (made of modules, and sub-release
+        sets, like the bindings ones)
+    '''
+    
+    def __init__(self, name):
+        self.name = name
+        self.subrelease_sets = []
+        self.modules = []
+
+    def add(self, module, subdir):
+        if subdir:
+            sub = self.find_subrelease_set(subdir)
+            if sub is None:
+                sub = SubReleaseSet(subdir)
+                self.subrelease_sets.append(sub)
+            sub.add(module)
+        else:
+            self.modules.append(module)
+
+    def find_subrelease_set(self, subrelease_set):
+        for sub in self.subrelease_sets:
+            if sub.name == subrelease_set:
+                return sub
+        return None
+
+    def fetch_versions(self, all_versions):
+        for module in self.modules:
+            module.fetch_version(all_versions)
+        for sub in self.subrelease_sets:
+            sub.fetch_versions(all_versions)
+
+    def get_all_modules(self):
+        res = []
+        res.extend(self.modules)
+        for sub in self.subrelease_sets:
+            res.extend(sub.modules)
+        return res
+
+    def get_str(self):
+        # Sort by name, then version (sorts are stable)
+        self.modules.sort(key=attrgetter('version'))
+        self.modules.sort(key=attrgetter('name'))
+        self.subrelease_sets.sort(key=attrgetter('name'))
+
+        res = '## %s\n' % self.name.upper()
+        for module in self.modules:
+            res += module.get_str(self.name)
+        res += '\n'
+        for sub in self.subrelease_sets:
+            res += sub.get_str(self.name)
+
+        return res
+
+
+class Release:
+    ''' Object representing a release (made of release sets) '''
+
+    def __init__(self):
+        self.release_sets = []
+
+    def add(self, release_set, module, subdir):
+        rel_set = self.find_release_set(release_set)
+        if rel_set is None:
+            rel_set = ReleaseSet(release_set)
+            self.release_sets.append(rel_set)
+        rel_set.add(module, subdir)
+
+    def find_release_set(self, release_set):
+        for rel_set in self.release_sets:
+            if rel_set.name == release_set:
+                return rel_set
+        return None
+
+    def fetch_versions(self, all_versions):
+        for rel_set in self.release_sets:
+            rel_set.fetch_versions(all_versions)
+
+    def get_all_modules(self):
+        res = []
+        for rel_set in self.release_sets:
+            res.extend(rel_set.get_all_modules())
+        return res
+
+    def get_str(self):
+        res = ''
+        for rel_set in self.release_sets:
+            res += rel_set.get_str()
+        return res
+
+
+def get_release(tarball_conversion):
+    ''' We take all packages under <whitelist> that have a non-empty 'set'
+        attribute.
+        Interesting examples:
+        <package name="libwnck-2" module="libwnck" limit="2.90" set="core"/>
+        <package name="seed"               subdir="js"     set="bindings" limit="2.33"/>
+    '''
+    rel = Release()
+
+    root = ET.parse(tarball_conversion).getroot()
+    for whitelist in root.findall('whitelist'):
+        for package in whitelist.findall('package'):
+            release_set = package.get('set')
+            if not release_set:
+                continue
+            module = package.get('module') or package.get('name')
+            limit = package.get('limit') or None
+            subdir = package.get('subdir')
+
+            mod = Module(module, limit)
+            rel.add(release_set, mod, subdir)
+
+    return rel
+
+
+def fetch_all_versions(json_dir):
+    ''' Get all versions for all modules installed on ftp.gnome.org, based on
+        the json file.
+    '''
+    all_versions = {}
+
+    for child in os.listdir(json_dir):
+        if not os.path.isfile(os.path.join(json_dir, child)):
+            continue
+
+        if not child[-5:] == '.json':
+            continue
+
+        module = child[:-5]
+        json_file = os.path.join(json_dir, child)
+
+        if module in BLACKLISTED_SOURCES:
+            continue
+
+        j = json.load(open(json_file, 'rb'))
+        json_format = j[0]
+        if json_format != JSON_FORMAT:
+            print('Format of cache.json for \'%s\' is %s while we support \'%s\'.' % (module, json_format, JSON_FORMAT), file=sys.stderr)
+            continue
+
+        json_format, json_info, json_versions, json_ignored = j
+
+        versions = json_versions[module]
+        versions.sort()
+
+        if not versions:
+            continue
+
+        all_versions[module] = versions
+
+    return all_versions
+
+
+def get_extras_limit(module, release, stable_version):
+    # Workaround https://bugzilla.gnome.org/show_bug.cgi?id=649331
+    if module == 'dia':
+        return '1'
+    if not stable_version:
+        return None
+
+    if stable_version in STABLE_BRANCHES_LIMITS:
+        limits = STABLE_BRANCHES_LIMITS[stable_version]
+        if module in limits:
+            return limits[module]
+
+    if not release:
+        return None
+    if module not in STABLE_BRANCH_SAME_LIMITS:
+        return None
+
+    stable_module = STABLE_BRANCH_SAME_LIMITS[module]
+    modules = release.get_all_modules()
+    for m in modules:
+        if m.name == stable_module:
+            return m.limit
+
+    print('Cannot find limit for \'%s\': no module \'%s\' in moduleset.' % (module, stable_module), file=sys.stderr)
+
+    return None
+
+
+def get_extras_versions(all_versions, release, stable_version):
+    ''' Get the latest version of all modules (except the ones already in
+        release), as well as the latest versions for all limits configured in
+        the BRANCH_LIMITS variable for those modules. '''
+    if release:
+        modules_in_release = [ x.name for x in release.get_all_modules() ]
+    else:
+        modules_in_release = []
+
+    res = []
+
+    for (module, versions) in list(all_versions.items()):
+        if module not in modules_in_release:
+            limit = get_extras_limit(module, release, stable_version)
+            latest = _get_latest_version(versions, limit)
+            if latest:
+                res.append((module, latest))
+
+        if module in BRANCH_LIMITS:
+            limits_module = BRANCH_LIMITS[module]
+            if type(limits_module) == str:
+                latest = _get_latest_version(versions, limits_module)
+                if latest:
+                    res.append((module, latest))
+            elif type(limits_module) == tuple:
+                for limit in limits_module:
+                    latest = _get_latest_version(versions, limit)
+                    if latest:
+                        res.append((module, latest))
+            else:
+                print('Unknown limit format \'%s\' for \'%s\'.' % (limits_module, module), file=sys.stderr)
+
+    return res
+
+
+def main(args):
+    parser = optparse.OptionParser()
+    parser.add_option("-s", "--stable-version", dest="stable_version",
+                      help="stable branch to consider", metavar="VERSION")
+    parser.add_option("-c", "--conversion-config", dest="conversion_config",
+                      help="tarball-conversion config file", metavar="FILE")
+    parser.add_option("-d", "--output-dir", dest="output_dir",
+                      help="output dir", metavar="DIR")
+    parser.add_option("-j", "--json-dir", dest="json_dir",
+                      help="JSON cache dir", metavar="DIR")
+
+    (options, args) = parser.parse_args()
+
+    versions_all = []
+    packages_in_conversion_config = []
+
+    release = None
+    all_versions = None
+
+    if options.conversion_config is not None:
+        if not os.path.exists(options.conversion_config):
+            print('tarball-conversion config file \'%s\' does not exist.' % options.conversion_config, file=sys.stderr)
+            return 1
+        try:
+            release = get_release(options.conversion_config)
+        except SyntaxError as e:
+            print('Cannot parse tarball-conversion config file \'%s\': %s' % (options.conversion_config, e), file=sys.stderr)
+            return 1
+        if len(release.get_all_modules()) == 0:
+            print('Parsing tarball-conversion config file \'%s\' resulted in no module in release sets.' % options.conversion_config, file=sys.stderr)
+            return 1
+
+    if options.stable_version and options.stable_version not in STABLE_BRANCHES_LIMITS:
+        print('No defined limits for stable version \'%s\'.' % options.stable_version, file=sys.stderr)
+
+    if options.json_dir is None:
+        print('JSON cache directory must be specified.' % options.json_dir, file=sys.stderr)
+        return 1
+    if not os.path.exists(options.json_dir) or not os.path.isdir(options.json_dir):
+        print('JSON cache directory \'%s\' is not a directory.' % options.json_dir, file=sys.stderr)
+        return 1
+
+    all_versions = fetch_all_versions(options.json_dir)
+    if release is not None:
+        release.fetch_versions(all_versions)
+    extras_versions = get_extras_versions(all_versions, release, options.stable_version)
+    extras_versions.sort()
+
+    if options.output_dir is None:
+        output_dir = '.'
+    else:
+        output_dir = options.output_dir
+        if os.path.exists(output_dir):
+            if not os.path.isdir(output_dir):
+                print('Output directory \'%s\' is not a directory.' % output_dir, file=sys.stderr)
+                return 1
+        else:
+            safe_mkdir_p(output_dir)
+
+    if release is not None:
+        out = open(os.path.join(output_dir, 'versions'), 'w')
+        out.write(release.get_str())
+        out.close()
+
+    out = open(os.path.join(output_dir, 'versions-extras'), 'w')
+    out.write('## EXTRAS\n')
+    for (module, version) in extras_versions:
+        #out.write('%s:%s:%s:\n' % ('extras', module, version))
+        out.write('%s:%s:%s:\n' % ('fgo', module, version))
+    out.close()
+
+    return 0
+
+if __name__ == '__main__':
+    try:
+      ret = main(sys.argv)
+      sys.exit(ret)
+    except KeyboardInterrupt:
+      pass

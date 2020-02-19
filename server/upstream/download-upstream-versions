@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et: coding=UTF-8
 
 #
@@ -41,11 +41,11 @@ import re
 from sgmllib import SGMLParser
 import shutil
 import tempfile
-import urllib
-import urllib2
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
 
-import Queue
+import queue
 import threading
 
 try:
@@ -155,7 +155,7 @@ def _get_files_from_http(url, cache_dir):
     elif cache and os.path.exists(cache):
         fin = open(cache)
     else:
-        obj = urllib2.build_opener()
+        obj = urllib.request.build_opener()
         fin = obj.open(url)
 
     # Get the files
@@ -173,7 +173,7 @@ def _get_files_from_http(url, cache_dir):
 
 # based on code from convert-to-tarball.py
 def _get_files_from_ftp(url):
-    parsed_url = urlparse.urlparse(url)
+    parsed_url = urllib.parse.urlparse(url)
 
     ftp = ftplib.FTP(parsed_url.hostname)
     ftp.login(parsed_url.username or 'anonymous', parsed_url.password or '')
@@ -189,7 +189,7 @@ def _get_files_from_ftp(url):
 
 # based on code from convert-to-tarball.py
 def _get_files_from_subdir_http(url, limit):
-    obj = urllib2.build_opener()
+    obj = urllib.request.build_opener()
     # Note that we accept directories called 1.x.X
     good_dir = re.compile('^(([0-9]+|[xX])\.)*([0-9]+|[xX])/?$')
     def hasdirs(x): return good_dir.search(x)
@@ -207,8 +207,8 @@ def _get_files_from_subdir_http(url, limit):
         files = parser.urls
 
         # Check to see if we need to descend to a subdirectory
-        newdirs = filter(hasdirs, files)
-        newdirs = map(fixdirs, newdirs)
+        newdirs = list(filter(hasdirs, files))
+        newdirs = list(map(fixdirs, newdirs))
         if newdirs:
             newdir = _get_latest_version(newdirs, limit)
             # This is a weird case, that we handled for compiz-fusion:
@@ -237,7 +237,7 @@ def _get_files_from_subdir_http(url, limit):
 
 
 def _get_files_from_svn(url):
-    obj = urllib2.build_opener()
+    obj = urllib.request.build_opener()
 
     # Get the files
     usock = obj.open(url)
@@ -267,7 +267,7 @@ def _setup_limit(limit):
         limit_data = limit[5:]
         limit = 'skip'
     else:
-        print >>sys.stderr, 'Unsupported limit: %s' % limit
+        print('Unsupported limit: %s' % limit, file=sys.stderr)
         limit = None
 
     return (limit, limit_data)
@@ -345,7 +345,7 @@ def _get_version_from_files(modulename, location, files, limit):
         if not modulename in file:
             return False
 
-        parsed = urlparse.urlparse(file)
+        parsed = urllib.parse.urlparse(file)
         if os.path.basename(parsed.path).startswith(modulename):
             return True
 
@@ -369,9 +369,9 @@ def _get_version_from_files(modulename, location, files, limit):
     re_tarball = r'^.*'+modulename+'[_-]v?(([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
     # Don't include -beta -installer -stub-installer and all kinds of
     # other weird-named tarballs
-    tarballs = filter(lambda t: re.search(re_tarball, t), tarballs)
+    tarballs = [t for t in tarballs if re.search(re_tarball, t)]
 
-    versions = map(lambda t: re.sub(re_tarball, r'\1', t), tarballs)
+    versions = [re.sub(re_tarball, r'\1', t) for t in tarballs]
 
     if not len(versions):
         raise UpstreamDownloadError('No versions found')
@@ -406,7 +406,7 @@ def _get_version_from_files(modulename, location, files, limit):
     # first one
     tarball = tarballs[0]
 
-    if urlparse.urlparse(tarball).scheme != '':
+    if urllib.parse.urlparse(tarball).scheme != '':
         # full URI
         location = tarball
     else:
@@ -418,7 +418,7 @@ def _get_version_from_files(modulename, location, files, limit):
         # add potentially missing slash to the directory
         if location[-1:] != '/':
             location = location + '/'
-        location = urlparse.urljoin(location, tarball)
+        location = urllib.parse.urljoin(location, tarball)
 
     return (location, version)
 
@@ -457,7 +457,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
     url = 'http://sourceforge.net/api/file/index/project-id/%s/rss' % ids[0]
     if len(ids) > 1:
         # we do not want urlencode since spaces are %20 and not +
-        url += '?path=/%s' % urllib.quote(ids[1])
+        url += '?path=/%s' % urllib.parse.quote(ids[1])
 
     feed = feedparser.parse(url)
 
@@ -468,7 +468,7 @@ def _get_version_from_sf_rss(modulename, id, limit):
     best_ext = None
 
     for entry in feed['entries']:
-        unquoted_link = urllib.unquote(entry.link)
+        unquoted_link = urllib.parse.unquote(entry.link)
         match = re_tarball.match(unquoted_link)
         if not match:
             continue
@@ -594,7 +594,7 @@ def _get_version_from_launchpad_series(project, limit, limit_data, series):
     release_re = re.compile('^/%s/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % (re.escape(project), re.escape(series)))
     biggest = '0'
 
-    fd = urllib2.urlopen(url)
+    fd = urllib.request.urlopen(url)
     root = ET.parse(fd).getroot().find(LP_NS + 'ProductSeries')
     fd.close()
 
@@ -627,7 +627,7 @@ def _get_version_from_launchpad(project, limit):
     url = 'https://launchpad.net/%s/+rdf' % project
     series_re = re.compile('^/%s/((?:[0-9]+\.)*[0-9]+)/\+rdf$' % re.escape(project))
 
-    fd = urllib2.urlopen(url)
+    fd = urllib.request.urlopen(url)
     root = ET.parse(fd).getroot().find(LP_NS + 'Product')
     fd.close()
 
@@ -662,7 +662,7 @@ def _get_version_from_launchpad(project, limit):
             (location, biggest) = (trunk_location, trunk_biggest)
     except UpstreamDownloadError:
         pass
-    except urllib2.HTTPError, e:
+    except urllib.error.HTTPError as e:
         if e.code != 404:
             raise e
 
@@ -705,7 +705,7 @@ class trac_urllister(SGMLParser):
 def _get_version_from_trac(modulename, url, limit):
     # this is clearly based on _get_version_from_files, so read comments there
 
-    obj = urllib2.build_opener()
+    obj = urllib.request.build_opener()
 
     # Get the files
     usock = obj.open(url)
@@ -717,8 +717,8 @@ def _get_version_from_trac(modulename, url, limit):
 
     (limit, limit_data) = _setup_limit(limit)
     re_tarball = r'^.*'+modulename+'[_-](([0-9]+[\.\-])*[0-9]+)\.(?:tar.*|t[bg]z2?)$'
-    tarballs = filter(lambda t: re.search(re_tarball, t[1]), files)
-    versions = map(lambda t: re.sub(re_tarball, r'\1', t[1]), tarballs)
+    tarballs = [t for t in files if re.search(re_tarball, t[1])]
+    versions = [re.sub(re_tarball, r'\1', t[1]) for t in tarballs]
     version = _get_latest_version(versions, limit)
 
     indexes = _all_indexes(versions, version)
@@ -746,11 +746,11 @@ def _get_version_from_trac(modulename, url, limit):
     tarball = tarballs[0]
     semi_url = tarball[0]
 
-    if urlparse.urlparse(semi_url).scheme != '':
+    if urllib.parse.urlparse(semi_url).scheme != '':
         # full URI
         location = semi_url
     else:
-        location = urlparse.urljoin(url, semi_url)
+        location = urllib.parse.urljoin(url, semi_url)
 
     return (location, version)
 
@@ -763,7 +763,7 @@ def get_upstream_version(cache_dir, modulename, method, additional_info, limit):
     modulename = modulename.split('|')[0]
 
     if method not in [ 'upstream', 'ftpls', 'httpls', 'dualhttpls', 'subdirhttpls', 'svnls', 'sf', 'sf_jp', 'google', 'lp', 'trac' ]:
-        print >>sys.stderr, 'Unsupported method: %s' % method
+        print('Unsupported method: %s' % method, file=sys.stderr)
         return (None, None)
 
     if method == 'upstream':
@@ -891,31 +891,31 @@ def parse_data(data_file):
 def do_task(cache_dir, modulename, method, additional_info, fast_update, limits, fallback_data):
     (location, version) = (None, None)
 
-    if fast_update and fallback_data.has_key(modulename) and fallback_data[modulename][0]:
+    if fast_update and modulename in fallback_data and fallback_data[modulename][0]:
         # fast update: we don't download data if we have something in cache
         pass
     else:
-        if limits.has_key(modulename):
+        if modulename in limits:
             limit = limits[modulename]
         else:
             limit = None
 
         try:
             (location, version) = get_upstream_version(cache_dir, modulename, method, additional_info, limit)
-        except urllib2.URLError, e:
-            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
-        except urllib2.HTTPError, e:
-            print >>sys.stderr, 'Error when downloading information about %s: server sent %s' % (modulename, e.code)
-        except ftplib.all_errors, e:
-            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
-        except socket.timeout, e:
-            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e)
-        except UpstreamRawDownloadError, e:
-            print >>sys.stderr, 'Error when downloading information about %s: %s' % (modulename, e.msg)
-        except UpstreamDownloadError, e:
-            print >>sys.stderr, 'No matching tarball found for %s: %s' % (modulename, e.msg)
+        except urllib.error.URLError as e:
+            print('Error when downloading information about %s: %s' % (modulename, e), file=sys.stderr)
+        except urllib.error.HTTPError as e:
+            print('Error when downloading information about %s: server sent %s' % (modulename, e.code), file=sys.stderr)
+        except ftplib.all_errors as e:
+            print('Error when downloading information about %s: %s' % (modulename, e), file=sys.stderr)
+        except socket.timeout as e:
+            print('Error when downloading information about %s: %s' % (modulename, e), file=sys.stderr)
+        except UpstreamRawDownloadError as e:
+            print('Error when downloading information about %s: %s' % (modulename, e.msg), file=sys.stderr)
+        except UpstreamDownloadError as e:
+            print('No matching tarball found for %s: %s' % (modulename, e.msg), file=sys.stderr)
 
-    if fallback_data.has_key(modulename):
+    if modulename in fallback_data:
         fallback_version = fallback_data[modulename][0]
         fallback_location = fallback_data[modulename][1]
 
@@ -949,16 +949,16 @@ def do_cache(cache_dir, url):
     error = None
 
     try:
-        obj = urllib2.build_opener()
+        obj = urllib.request.build_opener()
         fin = obj.open(url)
         fout = open(cache, 'w')
 
         fout.write(fin.read())
-    except urllib2.URLError, e:
+    except urllib.error.URLError as e:
         error = str(e)
-    except urllib2.HTTPError, e:
+    except urllib.error.HTTPError as e:
         error = 'server sent %s' % e.code
-    except socket.timeout, e:
+    except socket.timeout as e:
         error = str(e)
 
     if fin:
@@ -987,7 +987,7 @@ def debug_thread(s):
     else:
         name = threading.currentThread().getName()
 
-    print '%s: %s' % (name, s)
+    print('%s: %s' % (name, s))
 
 
 #######################################################################
@@ -1004,12 +1004,12 @@ def thread_cache(task_cache, cache_dir):
 
             try:
                 do_cache(cache_dir, url)
-            except Exception, e:
-                print >>sys.stderr, 'Exception in worker thread for caching %s: %s' % (url, e)
+            except Exception as e:
+                print('Exception in worker thread for caching %s: %s' % (url, e), file=sys.stderr)
 
             task_cache.task_done()
 
-    except Queue.Empty:
+    except queue.Empty:
         pass
 
 
@@ -1028,12 +1028,12 @@ def thread_upstream(cache_dir, task, result, fast_update, limits, fallback_data)
             try:
                 (cat, version, location) = do_task(cache_dir, modulename, method, additional_info, fast_update, limits, fallback_data)
                 result.put((cat, modulename, version, location))
-            except Exception, e:
-                print >>sys.stderr, 'Exception in worker thread for %s: %s' % (modulename, e)
+            except Exception as e:
+                print('Exception in worker thread for %s: %s' % (modulename, e), file=sys.stderr)
 
             task.task_done()
 
-    except Queue.Empty:
+    except queue.Empty:
         pass
 
 
@@ -1119,15 +1119,15 @@ def main(args):
             save_file = os.path.join(directory, 'versions-upstream')
 
         if not os.path.exists(upstream_file):
-            print >>sys.stderr, 'Upstream data file %s does not exist.' % upstream_file
+            print('Upstream data file %s does not exist.' % upstream_file, file=sys.stderr)
             return 1
         elif not os.path.isfile(upstream_file):
-            print >>sys.stderr, 'Upstream data file %s is not a regular file.' % upstream_file
+            print('Upstream data file %s is not a regular file.' % upstream_file, file=sys.stderr)
             return 1
 
         if os.path.exists(save_file):
             if not os.path.isfile(save_file):
-                print >>sys.stderr, 'Save file %s is not a regular file.' % save_file
+                print('Save file %s is not a regular file.' % save_file, file=sys.stderr)
                 return 1
             if options.only_if_old:
                 stats = os.stat(save_file)
@@ -1150,9 +1150,9 @@ def main(args):
     socket.setdefaulttimeout(10)
 
     to_cache = set()
-    task_cache = Queue.Queue()
-    task = Queue.Queue()
-    result = Queue.Queue()
+    task_cache = queue.Queue()
+    task = queue.Queue()
+    result = queue.Queue()
 
     for line in lines:
         if _line_is_comment(line):

@@ -46,6 +46,8 @@ import tarfile
 import tempfile
 import time
 import urllib
+from osc import core
+from osc import conf
 
 try:
     import configparser
@@ -2489,7 +2491,7 @@ def _collab_update_spec(spec_file, upstream_url, upstream_version):
 #######################################################################
 
 
-def _collab_update_changes(changes_file, upstream_version, email):
+def _collab_update_changes(changes_file, upstream_version, realname, email):
     if not os.path.exists(changes_file):
         print('Cannot update %s: no such file.' % os.path.basename(changes_file), file=sys.stderr)
         return False
@@ -2506,7 +2508,7 @@ def _collab_update_changes(changes_file, upstream_version, email):
     time.tzset()
 
     os.write(fdout, b'-------------------------------------------------------------------\n')
-    write_line = '%s - %s\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), email)
+    write_line = '%s - %s <%s>\n' % (time.strftime("%a %b %e %H:%M:%S %Z %Y"), realname, email)
     os.write(fdout, write_line.encode('utf-8'))
     os.write(fdout, b'\n')
     write_line = '- Update to version %s:\n' % upstream_version
@@ -2586,7 +2588,7 @@ def _collab_quilt_package(spec_file):
 #######################################################################
 
 
-def _collab_update(apiurl, username, email, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
+def _collab_update(apiurl, username, realname, email, projects, package, ignore_reserved = False, ignore_comment = False, no_reserve = False, no_devel_project = False, no_branch = False):
     if len(projects) == 1:
         project = projects[0]
 
@@ -2662,7 +2664,7 @@ def _collab_update(apiurl, username, email, projects, package, ignore_reserved =
     changes_file = os.path.join(package_dir, package + '.changes')
     if not os.path.exists(changes_file) and package != branch_package:
         changes_file = os.path.join(package_dir, branch_package + '.changes')
-    if _collab_update_changes(changes_file, pkg.upstream_version, email):
+    if _collab_update_changes(changes_file, pkg.upstream_version, realname, email):
         print('%s has been prepared.' % os.path.basename(changes_file))
 
     # warn if there are other spec files which might need an update
@@ -3981,8 +3983,11 @@ def do_collab(self, subcmd, opts, *args):
     if opts.details and opts.no_details:
         raise oscerr.WrongArgs('--details and --no-details cannot be used at the same time.')
 
-    apiurl = conf.config['apiurl']
-    user = conf.config['user']
+    apiurl = self.get_api_url()
+    user = conf.get_apiurl_usr(apiurl)
+    userdata = core.get_user_data(apiurl, user, *['realname', 'email'])
+    realname = userdata[0]
+    email = userdata[1]
 
     # See get_config() in osc/conf.py and postoptparse() in
     # osc/commandline.py
@@ -3991,9 +3996,6 @@ def do_collab(self, subcmd, opts, *args):
     else:
         conffile = conf.identify_conf()
     _osc_collab_osc_conffile = os.path.expanduser(conffile)
-
-    _collab_migrate_gnome_config(apiurl)
-    email = _collab_ensure_email(apiurl)
 
     if opts.apiurl:
         collab_apiurl = opts.apiurl
@@ -4072,7 +4074,7 @@ def do_collab(self, subcmd, opts, *args):
 
     elif cmd in ['update', 'up']:
         package = _collab_parse_arg_packages(args[1])
-        _collab_update(apiurl, user, email, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
+        _collab_update(apiurl, user, realname, email, projects, package, ignore_reserved = opts.ignore_reserved, ignore_comment = opts.ignore_comments, no_reserve = opts.no_reserve, no_devel_project = opts.no_devel_project, no_branch = opts.no_branch)
 
     elif cmd in ['forward', 'f']:
         request_id = args[1]
