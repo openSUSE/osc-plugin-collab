@@ -215,6 +215,7 @@ fillmore-lombard:subdirhttpls:http://yorba.org/download/media/
 flickrapi:httpls:http://pypi.python.org/pypi/flickrapi
 font-util:httpls:http://xorg.freedesktop.org/releases/individual/font/
 fonttosfnt:httpls:http://xorg.freedesktop.org/releases/individual/app/
+freerdp:httpls:https://github.com/FreeRDP/FreeRDP/releases
 freetype:httpls:http://download.savannah.gnu.org/releases/freetype/
 frei0r-plugins:httpls:http://www.piksel.no/frei0r/releases/
 fslsfonts:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -615,6 +616,7 @@ raw-thumbnailer:httpls:http://libopenraw.freedesktop.org/download/
 recordmydesktop:sf:172357|recordmydesktop
 redland:httpls:http://download.librdf.org/source/
 rednotebook:sf:238077
+remmina:httpls:https://github.com/FreeRDP/Remmina/releases
 rendercheck:httpls:http://xorg.freedesktop.org/releases/individual/app/
 rep-gtk:httpls:http://download.tuxfamily.org/librep/rep-gtk/
 rgb:httpls:http://xorg.freedesktop.org/releases/individual/app/
@@ -824,6 +826,7 @@ xman:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmessage:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmh:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xmodmap:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xorgxrdp:httpls:https://github.com/neutrinolabs/xorgxrdp/releases
 xmore:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xorg-cf-files:httpls:http://xorg.freedesktop.org/releases/individual/util/
 xorg-docs:httpls:http://xorg.freedesktop.org/releases/individual/doc/
@@ -835,6 +838,7 @@ xpr:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xprop:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xrandr:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xrdb:httpls:http://xorg.freedesktop.org/releases/individual/app/
+xrdp:httpls:https://github.com/neutrinolabs/xrdp/releases
 xrefresh:httpls:http://xorg.freedesktop.org/releases/individual/app/
 xrestop:httpls:http://downloads.yoctoproject.org/releases/xrestop/
 xrx:httpls:http://xorg.freedesktop.org/releases/individual/app/
