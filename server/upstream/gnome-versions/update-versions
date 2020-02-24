@@ -20,7 +20,7 @@ die_if_error () {
 		else
 			echo "Unknown error"
 		fi
-
+                rm -rf $TMPDIR
 		exit 1
 	fi
 }
@@ -134,6 +134,8 @@ mv $TMPDIR/versions-extras $DESTDIR/gnome-$UNSTABLE-extras
 die_if_error "Error while moving unstable extras versions"
 cp -f $DESTDIR/gnome-$UNSTABLE-extras $DESTDIR/gnome-unstable-extras
 die_if_error "Error while copying the unstable extras versions"
+
+rf -rf $TMPDIR
 
 # To update a versions file for an old stable version:
 # - Get the tarball-conversion-stable.config from git, when the stable version
