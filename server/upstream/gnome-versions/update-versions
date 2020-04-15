@@ -107,7 +107,7 @@ if test -z "$GNOME_OFFLINE"; then
 
   curl --tlsv1 --silent --show-error --output $TMPDIR/tarball-conversion.config        https://gitlab.gnome.org/GNOME/releng/raw/master/tools/smoketesting/tarball-conversion.config
   die_if_error "Error while downloading tarball-conversion.config"
-  curl --tlsv1 --silent --show-error --output $TMPDIR/tarball-conversion-stable.config https://gitlab.gnome.org/GNOME/releng/raw/master/tools/smoketesting/tarball-conversion-stable.config
+  curl --tlsv1 --silent --show-error --output $TMPDIR/tarball-conversion-stable.config https://gitlab.gnome.org/GNOME/releng/raw/master/tools/smoketesting/tarball-conversion-3-36.config
   die_if_error "Error while downloading tarball-conversion-stable.config"
 fi
 
