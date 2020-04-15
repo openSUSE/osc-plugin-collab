@@ -135,7 +135,7 @@ die_if_error "Error while moving unstable extras versions"
 cp -f $DESTDIR/gnome-$UNSTABLE-extras $DESTDIR/gnome-unstable-extras
 die_if_error "Error while copying the unstable extras versions"
 
-rf -rf $TMPDIR
+rm -rf $TMPDIR
 
 # To update a versions file for an old stable version:
 # - Get the tarball-conversion-stable.config from git, when the stable version
