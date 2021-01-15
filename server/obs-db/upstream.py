@@ -305,6 +305,8 @@ class UpstreamDb:
                 versions = version.split('.')
                 if len(versions) == 1:
                     majmin = version
+                elif versions[0] >= 40:
+                    majmin = versions[0]
                 else:
                     majmin = versions[0] + '.' + versions[1]
                 url = 'https://download.gnome.org/sources/%s/%s/%s-%s.tar.xz' % (name, majmin, name, version)
