@@ -8,6 +8,7 @@ import sys
 import json
 import optparse
 from operator import attrgetter
+import urllib.parse
 
 try:
     from lxml import etree as ET
@@ -49,11 +50,12 @@ STABLE_BRANCH_SAME_LIMITS = {
     'anjuta-extras': 'anjuta',
     'eog-plugins': 'eog',
     'epiphany-extensions': 'epiphany',
-    'evolution-ews': 'evolution',
-    'evolution-exchange': 'evolution',
-    'evolution-groupwise': 'evolution',
-    'evolution-kolab': 'evolution',
-    'evolution-mapi': 'evolution',
+    'evolution': 'evolution-data-server',
+    'evolution-ews': 'evolution-data-server',
+    'evolution-exchange': 'evolution-data-server',
+    'evolution-groupwise': 'evolution-data-server',
+    'evolution-kolab': 'evolution-data-server',
+    'evolution-mapi': 'evolution-data-server',
     'gdl': 'anjuta',
     # Gone in 3.10:
     #'gnome-applets': 'gnome-panel',
@@ -422,13 +424,13 @@ def fetch_all_versions(json_dir):
 
         json_format, json_info, json_versions, json_ignored = j
 
-        versions = json_versions[module]
+        versions = json_versions[urllib.parse.unquote(module)]
         versions.sort()
 
         if not versions:
             continue
 
-        all_versions[module] = versions
+        all_versions[urllib.parse.unquote(module)] = versions
 
     return all_versions
 
