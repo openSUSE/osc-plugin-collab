@@ -77,7 +77,7 @@ obs-db/
         obs-upstream-attributes:
         Executable script to update the openSUSE:UpstreamVersion and
         openSUSE:UpstreamTarballURL attributes in the build service with the
-        upstream data we habe.
+        upstream data we have.
 
         osc_copy.py:
         Some convenience functions copied from osc.

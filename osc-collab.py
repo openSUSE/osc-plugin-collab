@@ -453,6 +453,9 @@ class OscCollabPackage:
         if self.upstream_version in [ None, '', '--' ]:
             return False
 
+        if self.parent_version in [ None, '', '--' ]:
+            return True
+
         return self._compare_versions_a_gt_b(self.upstream_version, self.parent_version) and self._compare_versions_a_gt_b(self.upstream_version, self.version)
 
 
