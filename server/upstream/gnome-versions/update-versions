@@ -87,7 +87,7 @@ if test -z "$GNOME_OFFLINE"; then
 
   for dir in $(cat $TMPDIR/sources.html | grep 'a href=".*/"' | sed 's/.*href="//g;s/".*//g'); do
     module=${dir%%/}
-    if test "$dir" == "$module"; then
+    if test "$dir" == "$module" -o "$dir" == "../"; then
       continue
     fi
     for try in 1 2 3; do
