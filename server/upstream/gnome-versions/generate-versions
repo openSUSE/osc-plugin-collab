@@ -9,6 +9,7 @@ import json
 import optparse
 from operator import attrgetter
 import urllib.parse
+import rpm
 
 try:
     from lxml import etree as ET
@@ -176,15 +177,8 @@ def safe_mkdir_p(dir):
 ##################################################################
 
 def _bigger_version(a, b):
-    a_nums = a.split('.')
-    b_nums = b.split('.')
-    num_fields = min(len(a_nums), len(b_nums))
-    for i in range(0,num_fields):
-        if   int(a_nums[i]) > int(b_nums[i]):
-            return a
-        elif int(a_nums[i]) < int(b_nums[i]):
-            return b
-    if len(a_nums) > len(b_nums):
+    rc = rpm.labelCompare(("0", a, "0"), ("0", b, "0"))
+    if rc > 0:
         return a
     else:
         return b
@@ -197,15 +191,11 @@ def _bigger_version(a, b):
 def _version_greater_or_equal_to_max(a, max_version):
     if not max_version:
         return False
-    a_nums = a.split('.')
-    b_nums = max_version.split('.')
-    num_fields = min(len(a_nums), len(b_nums))
-    for i in range(0,num_fields):
-        if   int(a_nums[i]) > int(b_nums[i]):
-            return True
-        elif int(a_nums[i]) < int(b_nums[i]):
-            return False
-    return True
+    rc = rpm.labelCompare(("0", a, "0"), ("0", max_version , "0"))
+    if rc >= 0:
+        return True
+    else:
+        return False
 
 def _get_latest_version(versions, max_version):
     biggest = versions[0]
