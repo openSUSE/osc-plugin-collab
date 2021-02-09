@@ -443,7 +443,6 @@ class OscCollabPackage:
     def parent_more_recent(self):
         if not self.parent_version:
             return False
-
         return self._compare_versions_a_gt_b(self.parent_version, self.version)
 
 
@@ -454,6 +453,9 @@ class OscCollabPackage:
             return False
 
         if self.parent_version in [ None, '', '--' ]:
+            return True
+
+        if self.version in [ None, '', '--' ]:
             return True
 
         return self._compare_versions_a_gt_b(self.upstream_version, self.parent_version) and self._compare_versions_a_gt_b(self.upstream_version, self.version)
