@@ -368,7 +368,7 @@ class UpstreamDb:
             # and it didn't work fine
             chunk_size = 50
             ids_len = len(ids)
-            for index in range(ids_len / chunk_size):
+            for index in range(int(ids_len / chunk_size)):
                 chunk_ids = ids[index * chunk_size : (index + 1) * chunk_size]
                 where = ' OR '.join([ 'id = ?' for i in range(len(chunk_ids)) ])
                 self.cursor.execute('''DELETE FROM upstream WHERE %s;''' % where, chunk_ids)
