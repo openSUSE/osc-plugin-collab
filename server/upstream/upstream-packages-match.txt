@@ -363,6 +363,7 @@ gnome-icon-theme-extras:
 gnome-icon-theme-symbolic:
 gnome-icon-theme:
 gnome-initial-setup:
+gnome-internet-radio-locator:
 gnome-js-common:
 gnome-keyring-sharp:
 gnome-keyring:
@@ -428,6 +429,7 @@ gnome-todo:
 gnome-tour:
 gnome-tweak-tool:
 gnome-tweaks:
+gnome-usage:
 gnome-user-docs:
 gnome-user-share:
 gnome-utils:
@@ -590,6 +592,7 @@ inkscape:
 input-pad:
 intel-gpu-tools:
 intltool:
+json-glib:
 ipod-sharp:
 iproute2:
 iptables:
@@ -649,6 +652,7 @@ libXvMC:
 libXxf86dga:
 libXxf86misc:
 libXxf86vm:
+libadwaita:
 libao-pulse:
 libart_lgpl:
 libassuan:
@@ -726,6 +730,7 @@ libgtop:
 libgusb:
 libgweather:
 libgxps:
+libhandy:
 libhangul:
 libical:
 libical-glib:
@@ -743,6 +748,7 @@ libmediaart:
 libmnl:
 libmodman:
 libmowgli:
+libnma:
 libnetfilter_conntrack:
 libnetfilter_log:
 libnetfilter_queue:
@@ -915,6 +921,7 @@ pidgin:
 pinentry:
 pino:
 pinpoint:
+pipewire:
 pithos:
 pitivi:
 pixman:
