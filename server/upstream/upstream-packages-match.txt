@@ -106,6 +106,7 @@ cairo-compmgr:
 cairo:
 cairomm:
 california:
+calls:
 cantarell-fonts:
 caribou:
 ccgfs:
@@ -282,10 +283,12 @@ genius:
 geoclue:geoclue2
 geoclue|1.0:geoclue
 geocode-glib:
+gexiv2:
 gfbgraph:
 gftp:
 ggz-client-libs:
 ghex:
+gi-docgen:python-gi-docgen
 giggle:
 gimp-dds:
 gimp-gap:
@@ -321,6 +324,7 @@ gnome-2048:
 gnome-activity-journal:
 gnome-applets:
 gnome-audio:
+gnome-autoar:
 gnome-backgrounds:
 gnome-battery-bench:
 gnome-blog:
@@ -339,6 +343,7 @@ gnome-color-manager:
 gnome-colors:gnome-colors-icon-theme
 gnome-commander:
 gnome-common:
+gnome-connections:
 gnome-contacts:
 gnome-control-center:
 gnome-desktop:gnome-desktop
@@ -399,6 +404,7 @@ gnome-presence-applet:
 gnome-python-desktop:
 gnome-python-extras:python-gnome-extras
 gnome-python:python-gnome
+gnome-radio:
 gnome-recipes:
 gnome-reset:
 gnome-robots:
@@ -422,6 +428,7 @@ gnome-system-monitor:
 gnome-taquin:
 gnome-terminal:
 gnome-tetravex:
+gnome-text-editor:
 gnome-themes-extras:
 gnome-themes-standard:
 gnome-themes:
@@ -531,7 +538,8 @@ gtkpod:
 gtksourceview|1.9:gtksourceview18
 gtksourceview|2.90:gtksourceview2
 gtksourceview|3.90:gtksourceview
-gtksourceview:gtksourceview4
+gtksourceview|4.90:gtksourceview4
+gtksourceview:gtksourceview5
 gtksourceviewmm:
 gtksourceviewmm|2.90:gtksourceviewmm2
 gtkspell:
@@ -679,6 +687,7 @@ libdv:
 libebml:
 libedit:
 libepc:
+libepoxy:
 libesmtp:
 libfontenc:
 libgadu:
@@ -727,6 +736,7 @@ libgsystem:
 libgtkhtml:
 libgtksourceviewmm:
 libgtop:
+libgudev:
 libgusb:
 libgweather:
 libgxps:
@@ -1062,6 +1072,7 @@ tangerine:
 tango-icon-theme:
 tasks:
 tasque:
+telegnome:
 telepathy-butterfly:
 telepathy-farsight:
 telepathy-farstream:
@@ -1153,6 +1164,9 @@ xcursorgen:
 xdbedizzy:
 xdelta:
 xdg-app:
+xdg-desktop-portal:
+xdg-desktop-portal-gnome:
+xdg-desktop-portal-gtk:
 xdg-user-dirs-gtk:
 xdg-user-dirs:
 xdg-utils:
