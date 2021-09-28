@@ -372,6 +372,7 @@ gnome-internet-radio-locator:
 gnome-js-common:
 gnome-keyring-sharp:
 gnome-keyring:
+gnome-kiosk:
 gnome-klotski:
 gnome-libs:
 gnome-logs:
@@ -406,6 +407,7 @@ gnome-python-extras:python-gnome-extras
 gnome-python:python-gnome
 gnome-radio:
 gnome-recipes:
+gnome-remote-desktop:
 gnome-reset:
 gnome-robots:
 gnome-schedule:
@@ -909,6 +911,7 @@ pam_mount:
 paman:
 pango:
 pangomm:
+pangomm|2.47:pangomm1_4
 pangox-compat:
 paprefs:
 papyon:
