@@ -2,6 +2,9 @@
 
 LIBEXEC=/usr/lib/osc-collab-server
 
+# self-heal if runaway task detected: none can run longer than a day
+find /var/lib/osc-collab/.cache -name running -mtime +1 -delete -print
+
 # Find out what the latest gnome-versions are
 ${LIBEXEC}/run-gnome-versions
 
