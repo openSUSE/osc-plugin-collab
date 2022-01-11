@@ -32,8 +32,8 @@ echo_verbose () {
 }
 
 
-DOWNLOAD_STABLE="3.`curl --tlsv1 --silent --fail https://download.gnome.org/core/ | grep 'a href=".*/"' | sed 's/.*href="//g;s/\/".*//g' | grep "^3\." | sed "s/^3\.//g" | sort -g | tail -n 2 | grep [02468]$ | tail -n 1`"
-#TEMPORARY_STABLE="3.4"
+DOWNLOAD_STABLE="`curl --tlsv1 --silent --fail https://download.gnome.org/core/ | grep 'a href=".*/"' | sed 's/.*href="//g;s/\/".*//g' | grep -P "^(3\.|4)" | sort -g | tail -n 1`"
+#TEMPORARY_STABLE="41"
 
 if test -z "$DOWNLOAD_STABLE"; then
   echo "Cannot find stable release from download.gnome.org."
@@ -51,15 +51,9 @@ else
 fi
 
 STABLE_MAJOR=`echo $STABLE | sed "s/\(^[0-9]\+\.\).*/\1/g"`
-STABLE_MINOR=`echo $STABLE | sed "s/^[0-9]\+\.//g"`
 
-UNSTABLE_MINOR=`echo "$STABLE_MINOR + 2" | bc`
-UNSTABLE="$STABLE_MAJOR$UNSTABLE_MINOR"
+UNSTABLE="$(echo $STABLE_MAJOR +1 | bc)"
 
-if test "x`echo "$UNSTABLE_MINOR - $STABLE_MINOR" | bc`" != "x2"; then
-	echo "Cannot find current stable/unstable versions"
-	exit 1
-fi
 echo_verbose "Stable: $STABLE - Unstable: $UNSTABLE"
 
 mkdir -p $DESTDIR
