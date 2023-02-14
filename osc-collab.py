@@ -3955,7 +3955,7 @@ def do_collab(self, subcmd, opts, *args):
     global _osc_collab_alias
     global _osc_collab_osc_conffile
 
-    _osc_collab_alias = self.lastcmd[0]
+    _osc_collab_alias = 'collab'
 
     if opts.version:
         print(OSC_COLLAB_VERSION)
