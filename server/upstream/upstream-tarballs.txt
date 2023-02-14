@@ -81,6 +81,7 @@ DeviceKit-power:httpls:http://upower.freedesktop.org/releases/
 DeviceKit:httpls:http://hal.freedesktop.org/releases/
 LaTeXPlugin:sf:204144
 LibRaw:httpls:http://www.libraw.org/download
+ModemManager:httpls:http://www.freedesktop.org/software/ModemManager/
 NetworkManager-strongswan:httpls:http://download.strongswan.org/NetworkManager/
 PackageKit:httpls:http://www.freedesktop.org/software/PackageKit/releases/
 PackageKit-Qt:httpls:http://www.freedesktop.org/software/PackageKit/releases/
