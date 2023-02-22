@@ -88,6 +88,18 @@ _osc_collab_alias = 'collab'
 _osc_collab_config_parser = None
 _osc_collab_osc_conffile = None
 
+def filedir_to_pac(f, progress_obj=None):
+    """Takes a working copy path, or a path to a file inside a working copy,
+    and returns a Package object instance
+    If the argument was a filename, add it onto the "todo" list of the Package """
+    if os.path.isdir(f):
+        wd = f
+        p = Package(wd, progress_obj=progress_obj)
+    else:
+        wd = os.path.dirname(f) or os.curdir
+        p = Package(wd, progress_obj=progress_obj)
+        p.todo = [ os.path.basename(f) ]
+    return p
 
 class OscCollabError(Exception):
     def __init__(self, value):
