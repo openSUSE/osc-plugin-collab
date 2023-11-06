@@ -745,10 +745,9 @@ class OscCollabApi:
     _supported_api_major = '0'
 
     @classmethod
-    def init(cls, apiurl = None):
-        if apiurl:
-            cls._api_url = apiurl
-
+    def init(cls, collapiurl = None):
+        if collapiurl:
+            cls._api_url = collapiurl
 
     @classmethod
     def _append_data_to_url(cls, url, data):
@@ -3823,7 +3822,7 @@ def _collab_parse_arg_packages(packages):
 
 @cmdln.alias('gnome')
 @cmdln.option('-A', '--apiurl', metavar='URL',
-              dest='apiurl',
+              dest='collapiurl',
               help='url to use to connect to the database (different from the build service server)')
 @cmdln.option('--xs', '--exclude-submitted', action='store_true',
               dest='exclude_submitted',
@@ -4014,8 +4013,8 @@ def do_collab(self, subcmd, opts, *args):
         conffile = conf.identify_conf()
     _osc_collab_osc_conffile = os.path.expanduser(conffile)
 
-    if opts.apiurl:
-        collab_apiurl = opts.apiurl
+    if opts.collapiurl:
+        collab_apiurl = opts.collapiurl
     else:
         collab_apiurl = _collab_get_config(apiurl, 'collab_apiurl')
 
