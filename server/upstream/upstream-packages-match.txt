@@ -96,6 +96,7 @@ bombermaze:
 bot-sentry:
 brasero:
 brltty:
+btrfs-progs:btrfsprogs
 bug-buddy:
 byzanz:
 c++-gtk-utils:
@@ -175,8 +176,10 @@ dmapi:
 dmlangsel:
 docky:
 dogtail:
+dosfstools:
 drwright:
 dwarves:
+e2fsprogs:
 easytag:
 ed:
 editres:
@@ -208,6 +211,8 @@ evolution-tray:
 evolution-webcal:
 evolution:
 exempi:
+exfat-utils:
+exfatprogs:
 exiv2:
 f-spot:
 farsight2:
@@ -245,6 +250,8 @@ frei0r-plugins:
 frogr:
 fslsfonts:
 fstobdf:
+fuse:fuse3
+fusefs:exfat:fuse-exfat
 fyre:
 g-wrap:
 gail:
@@ -597,6 +604,7 @@ iceauth:
 ico:
 icon-naming-utils:
 iio-sensor-proxy:
+ima-evm-utils:
 imake:
 inkscape:
 input-pad:
@@ -604,6 +612,7 @@ intel-gpu-tools:
 intltool:
 json-glib:
 ipod-sharp:
+iputils:
 iproute2:
 iptables:
 iptraf-ng:iptraf
@@ -877,6 +886,7 @@ neon:
 net6:
 netspeed_applet:gnome-netspeed-applet
 network-manager-applet:NetworkManager-applet
+nfs-utils:
 nimbus:gtk2-metatheme-nimbus
 njb-sharp:
 notification-daemon:
