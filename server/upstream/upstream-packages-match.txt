@@ -610,12 +610,11 @@ inkscape:
 input-pad:
 intel-gpu-tools:
 intltool:
-json-glib:
 ipod-sharp:
-iputils:
 iproute2:
 iptables:
 iptraf-ng:iptraf
+iputils:
 irda-utils:irda
 iso-codes:
 istanbul:
